@@ -117,8 +117,8 @@ lemma degree_add [T2Space X] [CompactSpace X] (D₁ D₂ : Div X) :
   set S : Finset X := S₁ ∪ S₂ ∪ S₁₂
   -- Each individual sum extends to S because added points carry value 0.
   have h₁ : ∑ x ∈ S₁, D₁ x = ∑ x ∈ S, D₁ x := by
-    apply (Finset.sum_subset (by intro x hx; exact Finset.mem_union_left _
-      (Finset.mem_union_left _ hx))).symm
+    refine (Finset.sum_subset ?_ ?_).symm
+    · intro x hx; exact Finset.mem_union_left _ (Finset.mem_union_left _ hx)
     intro x _ hxS₁
     -- x ∉ supportFinset D₁ ⇒ x ∉ support D₁ ⇒ D₁ x = 0
     by_contra hne
@@ -129,8 +129,8 @@ lemma degree_add [T2Space X] [CompactSpace X] (D₁ D₂ : Div X) :
     rw [Set.Finite.mem_toFinset]
     exact hne
   have h₂ : ∑ x ∈ S₂, D₂ x = ∑ x ∈ S, D₂ x := by
-    apply (Finset.sum_subset (by intro x hx; exact Finset.mem_union_left _
-      (Finset.mem_union_right _ hx))).symm
+    refine (Finset.sum_subset ?_ ?_).symm
+    · intro x hx; exact Finset.mem_union_left _ (Finset.mem_union_right _ hx)
     intro x _ hxS₂
     by_contra hne
     apply hxS₂
@@ -140,7 +140,8 @@ lemma degree_add [T2Space X] [CompactSpace X] (D₁ D₂ : Div X) :
     rw [Set.Finite.mem_toFinset]
     exact hne
   have h₁₂ : ∑ x ∈ S₁₂, (D₁ + D₂) x = ∑ x ∈ S, (D₁ + D₂) x := by
-    apply (Finset.sum_subset (by intro x hx; exact Finset.mem_union_right _ hx))
+    refine Finset.sum_subset ?_ ?_
+    · intro x hx; exact Finset.mem_union_right _ hx
     intro x _ hxS₁₂
     by_contra hne
     apply hxS₁₂
