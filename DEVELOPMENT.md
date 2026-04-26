@@ -108,6 +108,108 @@ agent's branch is green. The merge itself triggers a new CI run on
 state this rule in every agent prompt verbatim or by reference, so
 the agent doesn't omit the CI loop.
 
+### Use independent clones, NOT git worktree isolation
+
+For parallel sub-agents: make N **fully independent shallow clones**
+with `gh repo clone` before dispatching, and hard-code the path in each
+agent's prompt:
+
+```sh
+cd /tmp
+for x in a b c d e; do
+  rm -rf agent-${x}-jacobian 2>/dev/null
+  gh repo clone Brsanch/jacobian-lean-challenge agent-${x}-jacobian \
+    -- --depth 1 --quiet
+done
+```
+
+Then in each agent's prompt: *"You are working in `/tmp/agent-a-jacobian`.
+You are the ONLY agent in this directory. `cd` here for all git commands."*
+
+DO NOT use the Agent tool's `isolation: "worktree"` parameter for
+parallel work. Empirically, worktree-mode isolation leaks branch state
+into the parent checkout — `git status` in the parent flips between
+agents' feature branches, and concurrent pushes get entangled. The
+2026-04-26 jacobian-lean-challenge session discovered this; killed the
+five worktree-isolated agents and re-dispatched in independent clones,
+which then produced 8+ rounds of clean parallel work.
+
+### Escalate when an agent caps out
+
+When a sub-agent hits its 6-cycle fix cap and returns a "stuck"
+report, the parent session should NOT just abandon the branch. The
+agent's per-agent fix cap is for the agent, not for the project.
+
+Escalation protocol:
+
+1. Pull the most recent failed log:
+   ```sh
+   RUN=$(gh run list --repo Brsanch/jacobian-lean-challenge --limit 5 \
+     --json databaseId,headSha \
+     --jq '.[] | select(.headSha | startswith("AGENT_LAST_SHA")) | .databaseId' | head -1)
+   gh run view $RUN --repo Brsanch/jacobian-lean-challenge --log-failed 2>&1 \
+     | grep -E "error:" | head -10
+   ```
+2. Read the actual error. Often the agent burned 6 cycles on what looks
+   like a single specific tactic / name / instance issue. Manual eyes
+   can spot the fix in seconds.
+3. Make the fix in the agent's clone (it already has the latest version
+   of the agent's work). Commit, push, watch CI.
+4. If still failing, repeat. You're now the iterator.
+
+**Don't delete the agent's branch on the remote.** Even after the agent
+gives up, the agent's local commit chain in `/tmp/agent-X-jacobian` is
+needed for the escalation. If you delete the remote branch, you have to
+either recreate it from local commits or start over.
+
+**Don't escalate "no honest progress" reports** that name a specific
+mathematical or library blocker (e.g. "needs Mayer-Vietoris from
+mathlib," "needs ~600 LOC of bundle plumbing"). The agent's analysis is
+more reliable than the parent's gut. Escalate only when the failure
+looks like a specific tactic / name / instance issue, not a deep math
+gap.
+
+### Verbatim signatures are non-negotiable; watch for signature-cheating
+
+When a sub-agent reports "I closed item N," **diff the agent's branch
+against the verbatim spec file before merging**. Specifically check:
+
+1. Does the `def` / `lemma` *signature* match the spec verbatim?
+   (Type, argument order, variance, universe, hypothesis order.)
+2. Does the *theorem statement* match? (Equation direction, variable
+   order, side of `=` / `↔`.)
+
+If the agent's summary mentions phrases like "signature flipped,"
+"variance changed," "rewrote to match," "swapped source and target,"
+**revert immediately** and re-dispatch with explicit instructions: the
+verbatim signature is non-negotiable; if you can't close the lemma
+against it, leave it `sorry`.
+
+The cap-of-fix-cycles + "no `sorry`" + "close the item" combination
+creates pressure. When the honest proof is hard, sub-agents look for
+structural changes that make it easy. Signature changes are a
+load-bearing cheat because they don't show up as a `sorry` — they show
+up as "compiles green, lemma proven" — but the lemma proven is no
+longer the spec's lemma.
+
+(Session example: agent AA2 closed `pullback_id_apply` (item 21) by
+flipping the gist's contravariant `pullback : Jacobian Y →ₜ+ Jacobian X`
+to covariant `Jacobian X →ₜ+ Jacobian Y` so `pullback := pushforward`
+would typecheck. AA2 disclosed this in its summary, so I caught it on
+read and reverted (`8098c21` → `dc38419`). The risk is the agent that
+DOESN'T disclose. Diff the branch.)
+
+### Stub vs. real distinction in commit messages
+
+When the work being merged is an honest stub (typechecks but doesn't
+satisfy the spec's intended math), the commit message should say
+**STUB** or **PLACEHOLDER** explicitly. Don't conflate "compiles" with
+"closes the challenge item."
+
+The strict-reader bar (Buzzard would accept this) is what counts.
+Anti-hack lemmas paired with the item being closed are the test —
+if the anti-hack is still `sorry`, the item is a stub.
+
 ### Why CI over local
 
 - CI runs on remote Linux runners with no shared filesystem to saturate.
