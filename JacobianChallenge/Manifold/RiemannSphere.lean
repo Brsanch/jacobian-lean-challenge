@@ -13,6 +13,7 @@ import Mathlib.Geometry.Manifold.IsManifold.Basic
 import Mathlib.Analysis.Analytic.Constructions
 import Mathlib.Analysis.Normed.Field.Lemmas
 import Mathlib.Topology.MetricSpace.Bounded
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 
 set_option diagnostics.threshold 100
 
@@ -510,5 +511,29 @@ instance : IsManifold 𝓘(ℂ) ω RiemannSphere :=
         exact this.1
 
 end RiemannSphere
+
+/-! ### Homeomorphism with the unit 2-sphere in `ℝ³`
+
+Mathlib provides
+`onePointEquivSphereOfFinrankEq : OnePoint V ≃ₜ sphere (0 : EuclideanSpace ℝ ι) 1`
+for any finite-dimensional real topological vector space `V` together with a
+finite index type `ι` whose cardinality matches `finrank ℝ V + 1`.
+
+For `V = ℂ` (real-rank `2`) and `ι = Fin 3` we get
+`OnePoint ℂ ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1`.
+This is the topological half of the genus-zero ↔ Riemann-sphere bridge
+(challenge item 14, `genus_eq_zero_iff_homeo`). All the typeclass
+prerequisites on `ℂ` (`AddCommGroup`, `Module ℝ`, `FiniteDimensional ℝ`,
+`IsTopologicalAddGroup`, `ContinuousSMul ℝ`, `T2Space`) are inferred from
+its normed-field structure; `finrank ℝ ℂ = 2` is `Complex.finrank_real_complex`
+in `Mathlib/LinearAlgebra/Complex/FiniteDimensional.lean`. -/
+
+/-- The Riemann sphere is homeomorphic to the unit `2`-sphere in `ℝ³`,
+viewed as `Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1`. -/
+noncomputable def RiemannSphere.toSphereHomeo :
+    RiemannSphere ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1 :=
+  onePointEquivSphereOfFinrankEq (V := ℂ) (ι := Fin 3) (by
+    -- `finrank ℝ ℂ + 1 = 3 = Fintype.card (Fin 3)`.
+    rw [Complex.finrank_real_complex, Fintype.card_fin])
 
 end JacobianChallenge
