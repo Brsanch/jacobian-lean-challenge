@@ -5,6 +5,7 @@ Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.Cotangent
 import Mathlib.Geometry.Manifold.VectorBundle.SmoothSection
+import Mathlib.Geometry.Manifold.Complex
 import Mathlib.LinearAlgebra.FiniteDimensional.Defs
 
 /-! # Holomorphic 1-forms and the genus of a compact Riemann surface
@@ -58,7 +59,7 @@ finite-dimensionality (and hence the agreement with the topological genus) is
 a separate theorem and is not asserted here.
 -/
 
-open scoped Manifold Topology Bundle
+open scoped Manifold Topology Bundle ContDiff
 
 noncomputable section
 
