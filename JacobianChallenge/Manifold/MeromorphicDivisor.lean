@@ -173,48 +173,51 @@ def divisor
       have h_src_nhds : e.source ∈ 𝓝 z := h_open_src.mem_nhds hz_src
       exact Filter.inter_mem h_src_nhds h_pre
     · -- Finiteness of `(e.source ∩ e ⁻¹' t') ∩ (orderFun I f).support`.
-      -- We exhibit an injection of this set into `t' ∩ D.support`.
-      -- A point `x` in the LHS lies in `e.source` (so `e x ∈ e.target`),
-      -- in `e ⁻¹' t'`, and has `orderFun I f x ≠ 0`.
-      -- Under `hf0`, `orderFun I f x ≠ 0 ↔ mmeromorphicOrderAt I f x ≠ 0`.
-      -- Chart-independence equates that to `meromorphicOrderAt (f ∘ e.symm) (e x) ≠ 0`,
-      -- i.e. `D (e x) ≠ 0`, i.e. `e x ∈ D.support`.
-      apply Set.Finite.subset ht'_finite
-      rintro x ⟨⟨hx_src, hx_pre⟩, hx_supp⟩
-      -- `hx_supp : orderFun I f x ≠ 0`.
-      have hx_order_ne_zero : mmeromorphicOrderAt I f x ≠ 0 := by
-        intro h0
-        apply hx_supp
-        unfold orderFun
-        rw [h0]; rfl
-      have hx_order_ne_top : mmeromorphicOrderAt I f x ≠ ⊤ := hf0 x
-      -- Chart-independence: `mmeromorphicOrderAt I f x = meromorphicOrderAt (f ∘ e.symm) (e x)`.
-      have h_eq := JacobianChallenge.mmeromorphicOrderAt_eq_of_isManifold
-        (M := X) (e := e) (x := x) (f := f) he_atlas hx_src
-      -- We need to massage I to 𝓘(ℂ,ℂ); but the LHS uses `mmeromorphicOrderAt I f x`,
-      -- and the lemma is stated for `𝓘(ℂ, ℂ)`. The function `mmeromorphicOrderAt`
-      -- has its model argument as `_I` (unused), so any `I` gives the same value.
-      have h_eq_I : mmeromorphicOrderAt I f x = meromorphicOrderAt (f ∘ e.symm) (e x) :=
-        h_eq
-      have h_chart_order_ne_zero : meromorphicOrderAt (f ∘ e.symm) (e x) ≠ 0 := by
-        rw [← h_eq_I]; exact hx_order_ne_zero
-      have h_chart_order_ne_top : meromorphicOrderAt (f ∘ e.symm) (e x) ≠ ⊤ := by
-        rw [← h_eq_I]; exact hx_order_ne_top
-      -- The mathlib divisor at `e x ∈ e.target` is
-      -- `(meromorphicOrderAt (f ∘ e.symm) (e x)).untop₀`, which is nonzero.
-      have hex_target : e x ∈ e.target := e.map_source hx_src
-      have h_D_apply : D (e x) = (meromorphicOrderAt (f ∘ e.symm) (e x)).untop₀ := by
-        unfold_let D
-        exact MeromorphicOn.divisor_apply h_mero_chart hex_target
-      have h_D_ne_zero : D (e x) ≠ 0 := by
-        rw [h_D_apply]
-        intro h
-        rcases WithTop.untop₀_eq_zero.mp h with h0 | htop
-        · exact h_chart_order_ne_zero h0
-        · exact h_chart_order_ne_top htop
-      -- Therefore `e x ∈ t' ∩ D.support`.
-      refine ⟨hx_pre, ?_⟩
-      exact h_D_ne_zero
+      -- Strategy: every element of this set sits in `e.source` and maps under `e`
+      -- into `t' ∩ D.support`. Since `e` is injective on `e.source`, the LHS
+      -- injects into `t' ∩ D.support` (which is finite by `ht'_finite`).
+      -- We use `Set.Finite.of_finite_image` after building the explicit image map.
+      have h_inj : Set.InjOn e (e.source ∩ e ⁻¹' t' ∩
+          (Function.support fun x => orderFun I f x)) := by
+        -- `e.injOn` has type `Set.InjOn e e.source`. Restrict via `Set.InjOn.mono`.
+        apply e.injOn.mono
+        intro y hy
+        exact hy.1.1
+      have h_image_subset :
+          e '' (e.source ∩ e ⁻¹' t' ∩ (Function.support fun x => orderFun I f x))
+            ⊆ t' ∩ D.support := by
+        rintro w ⟨x, ⟨⟨hx_src, hx_pre⟩, hx_supp⟩, rfl⟩
+        -- Goal: `e x ∈ t' ∩ D.support`.
+        -- `hx_supp : orderFun I f x ≠ 0`.
+        have hx_order_ne_zero : mmeromorphicOrderAt I f x ≠ 0 := by
+          intro h0
+          apply hx_supp
+          show (mmeromorphicOrderAt I f x).untop₀ = 0
+          rw [h0]; rfl
+        have hx_order_ne_top : mmeromorphicOrderAt I f x ≠ ⊤ := hf0 x
+        -- Chart-independence at `x` (using `e = chartAt ℂ z`, which is in the atlas).
+        have h_eq : mmeromorphicOrderAt I f x = meromorphicOrderAt (f ∘ e.symm) (e x) :=
+          JacobianChallenge.mmeromorphicOrderAt_eq_of_isManifold
+            (M := X) (e := e) (x := x) (f := f) he_atlas hx_src
+        have h_chart_order_ne_zero : meromorphicOrderAt (f ∘ e.symm) (e x) ≠ 0 := by
+          rw [← h_eq]; exact hx_order_ne_zero
+        have h_chart_order_ne_top : meromorphicOrderAt (f ∘ e.symm) (e x) ≠ ⊤ := by
+          rw [← h_eq]; exact hx_order_ne_top
+        -- The mathlib divisor at `e x ∈ e.target` is `(meromorphicOrderAt _ _).untop₀`.
+        have hex_target : e x ∈ e.target := e.map_source hx_src
+        have h_D_apply : D (e x) = (meromorphicOrderAt (f ∘ e.symm) (e x)).untop₀ :=
+          MeromorphicOn.divisor_apply h_mero_chart hex_target
+        have h_D_ne_zero : D (e x) ≠ 0 := by
+          rw [h_D_apply]
+          intro h
+          rcases WithTop.untop₀_eq_zero.mp h with h0 | htop
+          · exact h_chart_order_ne_zero h0
+          · exact h_chart_order_ne_top htop
+        exact ⟨hx_pre, h_D_ne_zero⟩
+      have h_image_finite :
+          (e '' (e.source ∩ e ⁻¹' t' ∩ (Function.support fun x => orderFun I f x))).Finite :=
+        ht'_finite.subset h_image_subset
+      exact (Set.Finite.of_finite_image h_image_finite h_inj)
 
 end MMeromorphicOn
 
