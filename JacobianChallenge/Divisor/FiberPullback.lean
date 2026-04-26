@@ -185,6 +185,51 @@ noncomputable def pullback
     pullback f hf N hN (QuotientAddGroup.mk D : Pic0 Y)
       = (QuotientAddGroup.mk (divPullback f hf N hN D) : Pic0 X) := rfl
 
+/-! ### Contravariant composition at `Pic⁰` level -/
+
+section Comp
+
+variable {X Y Z : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+  [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+  [DecidableEq X] [DecidableEq Y]
+
+/-- Contravariant composition at the `Pic⁰` level: pulling back along
+    `g ∘ f` agrees with first pulling back along `g` then along `f`,
+    provided the cardinality witnesses compose multiplicatively
+    (`(g∘f)⁻¹{z}` has cardinality `M * N` when fibres of `g` have
+    cardinality `M` and fibres of `f` have cardinality `N`). -/
+lemma pullback_comp_apply
+    (f : X → Y) (g : Y → Z)
+    (hf : ∀ y, (f ⁻¹' {y}).Finite)
+    (hg : ∀ z, (g ⁻¹' {z}).Finite)
+    (hgf : ∀ z, ((g ∘ f) ⁻¹' {z}).Finite)
+    (Nf Ng : ℕ)
+    (hNf : ∀ y, (hf y).toFinset.card = Nf)
+    (hNg : ∀ z, (hg z).toFinset.card = Ng)
+    (hNgf : ∀ z, (hgf z).toFinset.card = Ng * Nf)
+    (P : Pic0 Z) :
+    pullback (g ∘ f) hgf (Ng * Nf) hNgf P
+      = pullback f hf Nf hNf (pullback g hg Ng hNg P) := by
+  refine QuotientAddGroup.induction_on P ?_
+  intro D
+  rw [pullback_mk, pullback_mk, pullback_mk]
+  -- Need `divPullback (g ∘ f) hgf (Ng * Nf) hNgf D
+  --        = divPullback f hf Nf hNf (divPullback g hg Ng hNg D)`.
+  have hDiv : (divPullback (g ∘ f) hgf (Ng * Nf) hNgf D : Div X)
+      = (divPullback f hf Nf hNf (divPullback g hg Ng hNg D) : Div X) := by
+    rw [divPullback_coe, divPullback_coe, divPullback_coe]
+    -- Reduces to the underlying `fiberSum`-level composition, freshly merged
+    -- as `Div.fiberSum_comp_apply` in `FiberSum.lean`.
+    exact Div.fiberSum_comp_apply f g hf hg hgf (D : Div Z)
+  have h : divPullback (g ∘ f) hgf (Ng * Nf) hNgf D
+      = divPullback f hf Nf hNf (divPullback g hg Ng hNg D) :=
+    Subtype.ext hDiv
+  rw [h]
+
+end Comp
+
 end Pic0
 
 end JacobianChallenge
