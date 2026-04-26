@@ -151,12 +151,12 @@ pole set of `f`.
 `Manifold/MeromorphicExtension.lean` package. -/
 def R1_poleExtension_statement : Prop :=
   ∀ (f : MeromorphicNonzero X),
-    ∃ f̃ : X → RiemannSphere,
-      ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f̃ ∧
-      (∀ x : X, f̃ x = (∞ : RiemannSphere) ↔
+    ∃ fTilde : X → RiemannSphere,
+      ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ) ω fTilde ∧
+      (∀ x : X, fTilde x = (∞ : RiemannSphere) ↔
         (mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x).untop₀ < 0) ∧
       (∀ x : X, (mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x).untop₀ ≥ 0 →
-        f̃ x = ((f.toFun x : ℂ) : RiemannSphere))
+        fTilde x = ((f.toFun x : ℂ) : RiemannSphere))
 
 /-- **(R2) Zero and pole fibres are finite.** For every `f`, the sets
 `{x | (mmeromorphicOrderAt I f x).untop₀ > 0}` (zeros) and
