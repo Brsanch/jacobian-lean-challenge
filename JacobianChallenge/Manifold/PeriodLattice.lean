@@ -289,20 +289,35 @@ noncomputable def toModelHomeomorph :
         (QuotientAddGroup.quotientBot
           (G := Fin (JacobianChallenge.genus X) → ℂ)).right_inv x }
   continuous_toFun := by
-    -- Continuity of `quotientBot` via the open-quotient-map property
-    -- of `mk`: `quotientBot ∘ mk = id` is continuous.
+    -- The goal mentions `AnalyticTorus X`; we expand it to the
+    -- underlying quotient so that `IsOpenQuotientMap.continuous_comp_iff`
+    -- can match its pattern.
+    show Continuous
+      (QuotientAddGroup.quotientBot
+          (G := Fin (JacobianChallenge.genus X) → ℂ) :
+        ((Fin (JacobianChallenge.genus X) → ℂ) ⧸ PeriodLattice X) →
+          (Fin (JacobianChallenge.genus X) → ℂ))
+    -- `mk` is an open quotient map, so continuity of `quotientBot`
+    -- reduces to continuity of `quotientBot ∘ mk`.
     have hmk : IsOpenQuotientMap
         (QuotientAddGroup.mk (s := PeriodLattice X) :
-          (Fin (JacobianChallenge.genus X) → ℂ) → AnalyticTorus X) :=
+          (Fin (JacobianChallenge.genus X) → ℂ) →
+            ((Fin (JacobianChallenge.genus X) → ℂ) ⧸ PeriodLattice X)) :=
       QuotientAddGroup.isOpenQuotientMap_mk
     rw [← hmk.continuous_comp_iff]
     refine continuous_id.congr (fun x => ?_)
-    -- Goal: `id x = (quotientBot ∘ mk) x = quotientBot (mk x) = x`.
+    -- Goal after `congr`: `id x = (quotientBot ∘ mk) x`, i.e.
+    -- `x = quotientBot (mk x)`.
     exact ((QuotientAddGroup.quotientBot
             (G := Fin (JacobianChallenge.genus X) → ℂ)).right_inv x).symm
-  continuous_invFun :=
-    -- The inverse function is exactly `mk`, which is continuous.
-    QuotientAddGroup.continuous_mk
+  continuous_invFun := by
+    -- The inverse function is `mk`. We expand `AnalyticTorus X` so
+    -- the type of `mk` matches the codomain of `_.toEquiv.symm`.
+    show Continuous
+      ((QuotientAddGroup.mk (s := PeriodLattice X) :
+        (Fin (JacobianChallenge.genus X) → ℂ) →
+          ((Fin (JacobianChallenge.genus X) → ℂ) ⧸ PeriodLattice X)))
+    exact QuotientAddGroup.continuous_mk
 
 /-- The single global chart on `AnalyticTorus X`, packaged as an
 `OpenPartialHomeomorph` whose `source` and `target` are both `Set.univ`.
