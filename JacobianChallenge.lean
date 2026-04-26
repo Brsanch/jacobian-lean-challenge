@@ -5,6 +5,7 @@ import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.PeriodIntegral
 import JacobianChallenge.Manifold.PeriodLattice
 import JacobianChallenge.Manifold.MeromorphicAt
+import JacobianChallenge.Manifold.MeromorphicDivisor
 import JacobianChallenge.Manifold.LocalMultiplicity
 import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Manifold.RiemannSphere
