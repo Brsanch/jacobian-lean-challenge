@@ -289,35 +289,29 @@ noncomputable def toModelHomeomorph :
         (QuotientAddGroup.quotientBot
           (G := Fin (JacobianChallenge.genus X) → ℂ)).right_inv x }
   continuous_toFun := by
-    -- The goal mentions `AnalyticTorus X`; we expand it to the
-    -- underlying quotient so that `IsOpenQuotientMap.continuous_comp_iff`
-    -- can match its pattern.
-    show Continuous
-      (QuotientAddGroup.quotientBot
-          (G := Fin (JacobianChallenge.genus X) → ℂ) :
-        ((Fin (JacobianChallenge.genus X) → ℂ) ⧸ PeriodLattice X) →
-          (Fin (JacobianChallenge.genus X) → ℂ))
-    -- `mk` is an open quotient map, so continuity of `quotientBot`
-    -- reduces to continuity of `quotientBot ∘ mk`.
+    -- After elaboration of the `toEquiv` field, the goal sees the type
+    -- `(ℂ^g) ⧸ ⊥` (because `PeriodLattice X` reduces to `⊥`), with
+    -- topology `QuotientAddGroup.instTopologicalSpace ⊥` rather than
+    -- `instTopologicalSpace (PeriodLattice X)`. We must produce
+    -- `hmk : IsOpenQuotientMap mk` matching the *same* `⊥` so the
+    -- subsequent `rw [← hmk.continuous_comp_iff]` unifies.
     have hmk : IsOpenQuotientMap
-        (QuotientAddGroup.mk (s := PeriodLattice X) :
+        (QuotientAddGroup.mk (s := (⊥ : AddSubgroup
+            (Fin (JacobianChallenge.genus X) → ℂ))) :
           (Fin (JacobianChallenge.genus X) → ℂ) →
-            ((Fin (JacobianChallenge.genus X) → ℂ) ⧸ PeriodLattice X)) :=
+            ((Fin (JacobianChallenge.genus X) → ℂ) ⧸
+              (⊥ : AddSubgroup (Fin (JacobianChallenge.genus X) → ℂ)))) :=
       QuotientAddGroup.isOpenQuotientMap_mk
     rw [← hmk.continuous_comp_iff]
     refine continuous_id.congr (fun x => ?_)
     -- Goal after `congr`: `id x = (quotientBot ∘ mk) x`, i.e.
-    -- `x = quotientBot (mk x)`.
+    -- `x = quotientBot (mk x)`. The `right_inv` field of the
+    -- underlying `Equiv` gives `quotientBot (mk x) = x`.
     exact ((QuotientAddGroup.quotientBot
             (G := Fin (JacobianChallenge.genus X) → ℂ)).right_inv x).symm
-  continuous_invFun := by
-    -- The inverse function is `mk`. We expand `AnalyticTorus X` so
-    -- the type of `mk` matches the codomain of `_.toEquiv.symm`.
-    show Continuous
-      ((QuotientAddGroup.mk (s := PeriodLattice X) :
-        (Fin (JacobianChallenge.genus X) → ℂ) →
-          ((Fin (JacobianChallenge.genus X) → ℂ) ⧸ PeriodLattice X)))
-    exact QuotientAddGroup.continuous_mk
+  continuous_invFun :=
+    -- The inverse function is `mk`, which is continuous.
+    QuotientAddGroup.continuous_mk
 
 /-- The single global chart on `AnalyticTorus X`, packaged as an
 `OpenPartialHomeomorph` whose `source` and `target` are both `Set.univ`.
