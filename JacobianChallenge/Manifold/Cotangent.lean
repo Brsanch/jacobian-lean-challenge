@@ -80,25 +80,28 @@ def CotangentSpace {𝕜 : Type*} [NontriviallyNormedField 𝕜]
     {M : Type*} [TopologicalSpace M] [ChartedSpace H M] (_x : M) : Type _ :=
   E →L[𝕜] 𝕜
 
-instance : AddCommGroup (CotangentSpace I x) :=
+-- Project lakefile sets `relaxedAutoImplicit = false`, so the `x : M`
+-- mathlib's analogous `TangentSpace` instances rely on auto-binding
+-- here must be supplied explicitly as `{x : M}`.
+instance {x : M} : AddCommGroup (CotangentSpace I x) :=
   inferInstanceAs (AddCommGroup (E →L[𝕜] 𝕜))
 
-instance : Module 𝕜 (CotangentSpace I x) :=
+instance {x : M} : Module 𝕜 (CotangentSpace I x) :=
   inferInstanceAs (Module 𝕜 (E →L[𝕜] 𝕜))
 
-instance : TopologicalSpace (CotangentSpace I x) :=
+instance {x : M} : TopologicalSpace (CotangentSpace I x) :=
   inferInstanceAs (TopologicalSpace (E →L[𝕜] 𝕜))
 
-instance : IsTopologicalAddGroup (CotangentSpace I x) :=
+instance {x : M} : IsTopologicalAddGroup (CotangentSpace I x) :=
   inferInstanceAs (IsTopologicalAddGroup (E →L[𝕜] 𝕜))
 
-instance : ContinuousSMul 𝕜 (CotangentSpace I x) :=
+instance {x : M} : ContinuousSMul 𝕜 (CotangentSpace I x) :=
   inferInstanceAs (ContinuousSMul 𝕜 (E →L[𝕜] 𝕜))
 
-instance : ContinuousConstSMul 𝕜 (CotangentSpace I x) :=
+instance {x : M} : ContinuousConstSMul 𝕜 (CotangentSpace I x) :=
   inferInstanceAs (ContinuousConstSMul 𝕜 (E →L[𝕜] 𝕜))
 
-instance : Inhabited (CotangentSpace I x) := ⟨0⟩
+instance {x : M} : Inhabited (CotangentSpace I x) := ⟨0⟩
 
 variable (I M) in
 /-- The cotangent bundle to a manifold, as a `Bundle.TotalSpace`. Defined in
