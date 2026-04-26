@@ -243,6 +243,119 @@ lemma fiberSum_id_apply (D : Div X) :
       exact absurd (hzy ▸ hy) hz
     · simp [hzy]
 
+/-! ### Contravariant composition -/
+
+/-- The set-level decomposition behind contravariant functoriality:
+the fiber of `g ∘ f` over `z` is the (disjoint) union, over `y ∈ g⁻¹{z}`,
+of the fibers `f⁻¹{y}`. -/
+lemma preimage_comp_singleton {X Y Z : Type*} (f : X → Y) (g : Y → Z) (z : Z) :
+    (g ∘ f) ⁻¹' {z} = ⋃ y ∈ g ⁻¹' {z}, f ⁻¹' {y} := by
+  ext x
+  simp [Set.mem_preimage, Set.mem_iUnion, Function.comp_apply]
+
+/-- Finite-fiber hypothesis for `g ∘ f` is implied by finite-fiber hypotheses
+for `f` and `g`: each `(g ∘ f)⁻¹{z}` is a finite (in `g⁻¹{z}`) union of finite
+sets `f⁻¹{y}`. -/
+lemma finite_fiber_comp {X Y Z : Type*} (f : X → Y) (g : Y → Z)
+    (hf : ∀ y, (f ⁻¹' {y}).Finite) (hg : ∀ z, (g ⁻¹' {z}).Finite) :
+    ∀ z, ((g ∘ f) ⁻¹' {z}).Finite := by
+  intro z
+  rw [preimage_comp_singleton]
+  exact (hg z).biUnion (fun y _ => hf y)
+
+variable {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+  [DecidableEq Y]
+
+/-- Contravariant composition: `fiberSum (g ∘ f) = fiberSum f ∘ fiberSum g`
+on each divisor. The combinatorial fact behind this is the disjoint
+decomposition `(g ∘ f)⁻¹{z} = ⋃_{y ∈ g⁻¹{z}} f⁻¹{y}` (see
+`preimage_comp_singleton`); the `hgf` hypothesis is in fact implied by
+`hf` and `hg` (see `finite_fiber_comp`), but we keep it as a parameter so
+the statement matches the natural pullback signature without forcing the
+caller to thread the derivation. -/
+lemma fiberSum_comp_apply
+    (f : X → Y) (g : Y → Z)
+    (hf : ∀ y, (f ⁻¹' {y}).Finite)
+    (hg : ∀ z, (g ⁻¹' {z}).Finite)
+    (hgf : ∀ z, ((g ∘ f) ⁻¹' {z}).Finite)
+    (D : Div Z) :
+    fiberSum (g ∘ f) hgf D = fiberSum f hf (fiberSum g hg D) := by
+  classical
+  -- LHS expands to ∑ z ∈ supp D, D z • (∑ x ∈ ((g∘f)⁻¹{z}).toFinset, single x).
+  -- RHS = fiberSum f hf (∑ z ∈ supp D, D z • (∑ y ∈ (g⁻¹{z}).toFinset, single y)).
+  -- Push fiberSum f hf through the outer sum and ℤ-smul, then through each
+  -- inner sum, and apply fiberSum_single twice.
+  -- Step 1: rewrite the inner `fiberSum g hg D` as its finset-sum form.
+  have hg_eq : fiberSum g hg D
+      = ∑ z ∈ D.supportFinset, D z • ∑ y ∈ (hg z).toFinset, Div.single y := by
+    show fiberSumFun g hg D = _
+    rfl
+  -- Step 2: rewrite the LHS `fiberSum (g∘f) hgf D` similarly.
+  have hLHS : fiberSum (g ∘ f) hgf D
+      = ∑ z ∈ D.supportFinset, D z •
+          ∑ x ∈ (hgf z).toFinset, (Div.single x : Div X) := by
+    show fiberSumFun (g ∘ f) hgf D = _
+    rfl
+  rw [hLHS, hg_eq, map_sum (fiberSum f hf)]
+  refine Finset.sum_congr rfl ?_
+  intro z _
+  -- For each `z`, push through the ℤ-smul and the inner sum.
+  rw [map_zsmul, map_sum (fiberSum f hf)]
+  -- Strip the common ℤ-smul `D z • ·` and reduce to a sum equality.
+  congr 1
+  -- Goal:
+  --   ∑ x ∈ (hgf z).toFinset, single x
+  --     = ∑ y ∈ (hg z).toFinset, fiberSum f hf (single y)
+  -- Step A: rewrite each RHS summand using `fiberSum_single`.
+  -- Step B: identify the resulting double sum with the LHS via
+  --         `Finset.sum_biUnion` on the disjoint decomposition
+  --         `(hgf z).toFinset = (hg z).toFinset.biUnion (...)`.
+  -- Disjointness of the fibre family.
+  have hdisj : ((hg z).toFinset : Set Y).PairwiseDisjoint
+      (fun y => (hf y).toFinset) := by
+    intro y₁ _ y₂ _ hne
+    -- `PairwiseDisjoint` here unfolds to `Disjoint ((hf y₁).toFinset) ((hf y₂).toFinset)`
+    -- via `Function.onFun`. We prove this via `Finset.disjoint_left`.
+    show Disjoint ((hf y₁).toFinset) ((hf y₂).toFinset)
+    rw [Finset.disjoint_left]
+    intro x hx₁ hx₂
+    rw [Set.Finite.mem_toFinset] at hx₁ hx₂
+    -- `hx₁ : x ∈ f ⁻¹' {y₁}`, i.e. `f x = y₁`; same for `hx₂`.
+    have e1 : f x = y₁ := hx₁
+    have e2 : f x = y₂ := hx₂
+    exact hne (e1.symm.trans e2)
+  -- The finset equality `(hgf z).toFinset = (hg z).toFinset.biUnion (...)`.
+  have hset_eq : (hgf z).toFinset
+      = (hg z).toFinset.biUnion (fun y => (hf y).toFinset) := by
+    ext x
+    rw [Finset.mem_biUnion, Set.Finite.mem_toFinset]
+    constructor
+    · intro hx
+      -- `hx : x ∈ (g ∘ f) ⁻¹' {z}`, i.e., `g (f x) = z`.
+      have hgfx : g (f x) = z := hx
+      refine ⟨f x, ?_, ?_⟩
+      · rw [Set.Finite.mem_toFinset]
+        -- Need: `f x ∈ g ⁻¹' {z}`, i.e., `g (f x) = z`.
+        exact hgfx
+      · rw [Set.Finite.mem_toFinset]
+        -- Need: `x ∈ f ⁻¹' {f x}`, i.e., `f x = f x`.
+        rfl
+    · rintro ⟨y, hy, hxy⟩
+      rw [Set.Finite.mem_toFinset] at hy hxy
+      -- `hy : g y = z`, `hxy : f x = y`, so `g (f x) = z`.
+      have e : f x = y := hxy
+      show g (f x) = z
+      rw [e]; exact hy
+  -- Now rewrite the LHS using the biUnion decomposition.
+  rw [hset_eq, Finset.sum_biUnion hdisj]
+  -- Goal:
+  --   ∑ y ∈ (hg z).toFinset, ∑ x ∈ (hf y).toFinset, single x
+  --     = ∑ y ∈ (hg z).toFinset, fiberSum f hf (single y)
+  refine Finset.sum_congr rfl ?_
+  intro y _
+  -- `fiberSum f hf (single y) = ∑ x ∈ (hf y).toFinset, single x`.
+  exact (fiberSum_single f hf y).symm
+
 end Div
 
 end JacobianChallenge
