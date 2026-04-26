@@ -145,7 +145,7 @@ lemma localOrder_eq_zero_iff
     {I : ModelWithCorners ℂ ℂ ℂ} {f : X → ℂ} {x : X}
     (hf0 : mmeromorphicOrderAt I f x ≠ ⊤) :
     localOrder I f x = 0 ↔ mmeromorphicOrderAt I f x = 0 := by
-  show (mmeromorphicOrderAt I f x).untop₀ = 0 ↔ _
+  change (mmeromorphicOrderAt I f x).untop₀ = 0 ↔ _
   constructor
   · intro h
     rcases WithTop.untop₀_eq_zero.mp h with h0 | htop
@@ -204,7 +204,7 @@ theorem exists_local_normal_form
       meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = (k : WithTop ℤ) := by
     -- `k = (mmeromorphicOrderAt I f x).untop₀ = meromorphicOrderAt _ _.untop₀`,
     -- and a `WithTop ℤ` value `≠ ⊤` equals the cast of its `untop₀`.
-    show meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) =
+    change meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) =
       ((meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)).untop₀ : WithTop ℤ)
     exact (WithTop.coe_untop₀_of_ne_top h_order_ne_top).symm
   -- Apply the mathlib characterization.
@@ -221,7 +221,7 @@ Proof: combine the punctured-neighborhood form with continuity of the
 right-hand side at `(chartAt ℂ x) x` (where `(z - x₀)^k` is continuous
 for `k ≥ 0` and the value at `x₀` is `0` for `k > 0`, matching `f x`). -/
 theorem exists_local_normal_form_of_nonneg
-    (hf : MMeromorphicAt I f x)
+    (_hf : MMeromorphicAt I f x)
     (hf0 : mmeromorphicOrderAt I f x ≠ ⊤)
     (hk : 0 ≤ localOrder I f x)
     (hf_an : AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)) :
