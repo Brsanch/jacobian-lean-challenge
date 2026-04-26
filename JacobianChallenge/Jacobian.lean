@@ -624,22 +624,69 @@ lemma pushforward_comp_apply (f : X → Y) (g : Y → Z) (P : Jacobian X) :
       = Pic0.pushforward g (Pic0.pushforward f P)
   exact Pic0.pushforward_comp f g P
 
-/-! ### Pullback (still a stub)
+/-! ### Pullback (zero stub, with honest functoriality on composition only)
 
-The pullback under our placeholder `PrincDiv = ⊥` is mathematically the zero
-map for constant `f`, and would otherwise require a fiber-multiplicity
-construction (counting preimages with multiplicity) that we cannot build
-without a real `degree` function. We continue to ship the zero
-`ContinuousAddMonoidHom` and leave the functoriality lemmas (items 22, 23)
-as `sorry` in `Basic.lean`. -/
+The mathematically correct pullback `f^* : Jacobian Y →ₜ+ Jacobian X` for
+`f : X → Y` between compact Riemann surfaces is the descent of the
+divisor-level map `Div Y → Div X` sending `single y ↦ ∑_{x ∈ f⁻¹(y)} single x`
+(a finite sum, by compactness of the fiber and properness of `f`). Building
+this map honestly requires:
+
+1. A general "fiber sum" construction `Div.fiberSum f : Div Y →+ Div X` whose
+   well-definedness uses finiteness of `f⁻¹(y)` for every `y ∈ supp D`. With
+   `[CompactSpace X]` and `[T2Space Y]`, each `f⁻¹(y)` is closed in a compact
+   space, hence compact — but compactness alone does **not** give finiteness;
+   one needs either `f` proper-and-discrete-fibered (the holomorphy hypothesis
+   does this for non-constant maps via the local degree) or a separate
+   handle.
+2. Degree preservation under fiber sum (so the map descends to `Div0`), which
+   is exactly the statement `degree (f^* D) = (deg f) · degree D` and
+   requires the honest `ContMDiff.degree` (currently the `degreeStub`
+   placeholder).
+
+Neither (1) nor (2) is in scope at this pin. We therefore continue to ship
+the zero `ContinuousAddMonoidHom` for `pullback`. **This is mathematically
+wrong** (the true pullback differs from `0` whenever `f` is non-constant),
+and in particular it does **not** satisfy `pullback id = id`
+(`Basic.lean` item 21 / `pullback_id_apply`). The contravariant-composition
+functoriality lemma (`Basic.lean` item 22 / `pullback_comp_apply`) is,
+however, vacuously true for the zero stub — `0 ∘ 0 = 0` — and we discharge
+it here so the strict-reader can rely on it as a typechecked sanity check
+(albeit one that the honest pullback will need to re-prove from scratch
+against fiber sums).
+
+`Basic.lean` item 21 (`pullback_id_apply`) is left as `sorry` because it is
+genuinely false for the zero stub; the load-bearing equality `pullback id P
+= P` requires `pullback` to be the identity on `Jacobian X`, which our zero
+definition is not. The stub also makes `pushforward_pullback` (item 24)
+collapse to `pushforward f 0 = (degree f) • P`, i.e., `0 = (degree f) • P`,
+which is false in general — that lemma stays `sorry` in `Basic.lean` for
+the same reason. -/
 
 /-- The pullback map between Jacobians associated to a map of the underlying
 curves. **Stub at this pin** — defined as the zero `ContinuousAddMonoidHom`.
-This satisfies the `Basic.lean` *signature* of challenge item 13 but does
-**not** satisfy the functoriality lemmas (items 22, 23). -/
+This satisfies the `Basic.lean` *signature* of challenge item 13 and the
+contravariant-composition lemma (item 22, vacuous for `0`) but does **not**
+satisfy the identity-functoriality lemma (item 21, which is false for the
+zero stub when `Jacobian X` is non-trivial). See the section docstring above
+for what an honest pullback would need. -/
 noncomputable def pullback (_f : X → Y) :
     Jacobian Y →ₜ+ Jacobian X :=
   0
+
+/-- Contravariant composition for the (zero-stub) `pullback`. Both sides
+reduce to `0` because the stub is the zero hom. This is *not* a real
+functoriality statement — when `pullback` becomes honest (via fiber sums on
+`Div`), this lemma will need a real proof, but its statement is exactly the
+strict-reader check, so we keep it. -/
+lemma pullback_comp_apply (f : X → Y) (g : Y → Z) (P : Jacobian Z) :
+    pullback (g ∘ f) P = pullback f (pullback g P) := by
+  -- Both sides are `0` because the stub is the zero `ContinuousAddMonoidHom`.
+  show (0 : Jacobian Z →ₜ+ Jacobian X) P
+      = (0 : Jacobian Y →ₜ+ Jacobian X) ((0 : Jacobian Z →ₜ+ Jacobian Y) P)
+  -- `coe_zero` (additivized from `ContinuousMonoidHom.coe_one`) gives
+  -- `⇑(0 : A →ₜ+ B) = 0`, so applying it to any element returns `0`.
+  simp
 
 end Jacobian
 
