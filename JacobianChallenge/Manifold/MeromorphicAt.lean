@@ -331,46 +331,152 @@ lemma mmeromorphicOrderAt_eq_of_chart
        comp_chart_transition_eqOn hxe⟩
   exact h_nhds.filter_mono nhdsWithin_le_nhds
 
-/-! ### Discharge of the analyticity hypothesis (still owed)
+/-! ### Discharge of the analyticity hypothesis on a complex analytic manifold
 
-On a complex analytic manifold `[ChartedSpace ℂ M] [IsManifold I ω M]` with
-`I = 𝓘(ℂ, ℂ)`, the hypothesis `AnalyticAt ℂ ((chartAt ℂ x) ∘ e.symm) (e x)`
-should be **automatic** for every `e ∈ atlas ℂ M` with `x ∈ e.source`: chart
-transitions on an analytic manifold are analytic biholomorphisms.
+On a complex analytic manifold `[ChartedSpace ℂ M] [IsManifold 𝓘(ℂ, ℂ) ω M]`,
+the hypotheses `AnalyticAt ℂ ((chartAt ℂ x) ∘ e.symm) (e x)` and the
+`deriv ≠ 0` condition are automatic for any chart `e ∈ atlas ℂ M` with
+`x ∈ e.source`. We discharge them via the structure-groupoid API:
 
-The mathlib pieces are:
+* `compatible_of_mem_maximalAtlas` gives `e.symm ≫ₕ e' ∈ contDiffGroupoid ω 𝓘(ℂ,ℂ)`,
+* `mem_groupoid_of_pregroupoid` unfolds membership to the pregroupoid property,
+* for `𝓘(ℂ, ℂ)` the model and its inverse are the identity (`modelWithCornersSelf_coe`
+  / `_coe_symm` are `id`) and `range 𝓘(ℂ,ℂ) = univ` (Boundaryless),
+* `ContDiffOn.analyticOn` upgrades `ContDiffOn ℂ ω` to `AnalyticOn ℂ`,
+* `AnalyticOn.analyticAt` extracts pointwise analyticity using that the
+  source is open (hence a neighborhood of any of its points).
 
-* `chart_mem_maximalAtlas (I := I) (n := ω) x : chartAt ℂ x ∈ maximalAtlas I ω M`,
-* `subset_maximalAtlas (I := I) (n := ω) : atlas ℂ M ⊆ maximalAtlas I ω M`,
-* `compatible_of_mem_maximalAtlas : … → e.symm.trans e' ∈ contDiffGroupoid ω I`,
-* `ContDiffOn.analyticOn : ContDiffOn ℂ ω f s → AnalyticOn ℂ f s`,
+For the derivative non-vanishing condition, applying the analyticity result
+in both directions yields `(e ∘ e'.symm) ∘ (e' ∘ e.symm) =ᶠ[𝓝 (e x)] id`,
+and the chain-rule product equals `deriv id (e x) = 1 ≠ 0`. -/
 
-plus the unfold of `contDiffPregroupoid` membership for `I = 𝓘(ℂ, ℂ)` (where
-`I` and `I.symm` are the identity, so the pregroupoid `property` reduces from
-`ContDiffOn ℂ ω (I ∘ f ∘ I.symm) (I.symm ⁻¹' s ∩ range I)` to
-`ContDiffOn ℂ ω f s`). The `OpenPartialHomeomorph` ↔ `Pregroupoid.groupoid`
-membership unfold is API-heavy at this pin and would add ≥ 100 LOC of
-boilerplate; rather than ship a long proof speculatively (the pregroupoid
-unfold has historically tripped on `mfld_simps`-vs-`simp` mismatches), we
-park the discharge as a follow-up and ship the conditional API above.
+/-- The chart transition between two charts in the atlas of a complex analytic
+manifold is analytic at every interior point of its source. This is the
+unconditional discharge of the analyticity hypothesis used by
+`MMeromorphicAt.iff_of_chart` and `mmeromorphicOrderAt_eq_of_chart`. -/
+lemma analyticAt_chart_transition_of_isManifold
+    [IsManifold 𝓘(ℂ, ℂ) ω M]
+    {e e' : OpenPartialHomeomorph M ℂ}
+    (he : e ∈ atlas ℂ M) (he' : e' ∈ atlas ℂ M)
+    {x : M} (hxe : x ∈ e.source) (hxe' : x ∈ e'.source) :
+    AnalyticAt ℂ (e' ∘ e.symm) (e x) := by
+  -- Membership of the transition map in `contDiffGroupoid ω 𝓘(ℂ, ℂ)`.
+  have h_compat : e.symm ≫ₕ e' ∈ contDiffGroupoid ω (𝓘(ℂ, ℂ)) :=
+    StructureGroupoid.compatible_of_mem_maximalAtlas
+      (StructureGroupoid.subset_maximalAtlas _ he)
+      (StructureGroupoid.subset_maximalAtlas _ he')
+  -- Unfold to pregroupoid membership.
+  rw [contDiffGroupoid, mem_groupoid_of_pregroupoid] at h_compat
+  obtain ⟨h_fwd, _⟩ := h_compat
+  -- `h_fwd : ContDiffOn ℂ ω (𝓘(ℂ,ℂ) ∘ (e.symm ≫ₕ e') ∘ 𝓘(ℂ,ℂ).symm)
+  --                          (𝓘(ℂ,ℂ).symm ⁻¹' (e.symm ≫ₕ e').source ∩ range 𝓘(ℂ,ℂ))`.
+  -- Simplify the model: `𝓘(ℂ,ℂ)` and `𝓘(ℂ,ℂ).symm` are `id`; `range = univ`.
+  simp only [contDiffPregroupoid, modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
+    Function.id_comp, Function.comp_id, preimage_id_eq, id_eq,
+    ModelWithCorners.range_eq_univ, inter_univ] at h_fwd
+  -- `h_fwd : ContDiffOn ℂ ω (e.symm ≫ₕ e') (e.symm ≫ₕ e').source`.
+  have h_an_on : AnalyticOn ℂ (e.symm ≫ₕ e') (e.symm ≫ₕ e').source :=
+    h_fwd.analyticOn
+  -- `(e.symm ≫ₕ e' : ℂ → ℂ) = e' ∘ e.symm` definitionally (via `coe_trans`).
+  have h_coe : ((e.symm ≫ₕ e') : ℂ → ℂ) = e' ∘ e.symm :=
+    OpenPartialHomeomorph.coe_trans _ _
+  rw [h_coe] at h_an_on
+  -- The source is open and contains `e x`: it equals `e.target ∩ e.symm ⁻¹' e'.source`.
+  have h_src_open : IsOpen (e.symm ≫ₕ e').source := (e.symm ≫ₕ e').open_source
+  have h_ex_mem : e x ∈ (e.symm ≫ₕ e').source := by
+    rw [OpenPartialHomeomorph.trans_source]
+    refine ⟨?_, ?_⟩
+    · -- `e x ∈ e.symm.source = e.target`.
+      simpa [OpenPartialHomeomorph.symm_source] using e.map_source hxe
+    · -- `e.symm (e x) = x ∈ e'.source`.
+      show e.symm (e x) ∈ e'.source
+      rw [e.left_inv hxe]; exact hxe'
+  exact h_an_on.analyticAt (h_src_open.mem_nhds h_ex_mem)
 
-The intended downstream signature, once the discharge lands, is
+/-- The derivative of the chart transition between two atlas charts is nonzero
+at every interior point of its source on a complex analytic manifold. -/
+lemma deriv_chart_transition_of_isManifold_ne_zero
+    [IsManifold 𝓘(ℂ, ℂ) ω M]
+    {e e' : OpenPartialHomeomorph M ℂ}
+    (he : e ∈ atlas ℂ M) (he' : e' ∈ atlas ℂ M)
+    {x : M} (hxe : x ∈ e.source) (hxe' : x ∈ e'.source) :
+    deriv (e' ∘ e.symm) (e x) ≠ 0 := by
+  -- Forward analyticity at `e x`.
+  have h_an_fwd : AnalyticAt ℂ (e' ∘ e.symm) (e x) :=
+    analyticAt_chart_transition_of_isManifold he he' hxe hxe'
+  -- Backward analyticity at `e' x`.
+  have h_an_bwd : AnalyticAt ℂ (e ∘ e'.symm) (e' x) :=
+    analyticAt_chart_transition_of_isManifold he' he hxe' hxe
+  -- The composition `(e ∘ e'.symm) ∘ (e' ∘ e.symm)` equals `id` on a neighborhood of `e x`.
+  -- Build the witness set: `e.target ∩ e.symm ⁻¹' e'.source`.
+  set U : Set ℂ := e.target ∩ e.symm ⁻¹' e'.source with hU
+  have hU_open : IsOpen U := e.isOpen_inter_preimage_symm e'.open_source
+  have hex_mem : e x ∈ U := by
+    refine ⟨e.map_source hxe, ?_⟩
+    show e.symm (e x) ∈ e'.source
+    rw [e.left_inv hxe]; exact hxe'
+  have h_eqOn : Set.EqOn ((e ∘ e'.symm) ∘ (e' ∘ e.symm)) id U := by
+    intro y hy
+    have hy_target : y ∈ e.target := hy.1
+    have hy_pre : e.symm y ∈ e'.source := hy.2
+    show e (e'.symm (e' (e.symm y))) = id y
+    rw [e'.left_inv hy_pre, e.right_inv hy_target]
+    rfl
+  have h_evEq : ((e ∘ e'.symm) ∘ (e' ∘ e.symm)) =ᶠ[nhds (e x)] id :=
+    Filter.eventuallyEq_iff_exists_mem.mpr ⟨U, hU_open.mem_nhds hex_mem, h_eqOn⟩
+  -- Differentiability at the relevant points.
+  have h_diff_fwd : DifferentiableAt ℂ (e' ∘ e.symm) (e x) := h_an_fwd.differentiableAt
+  -- We need backward differentiability at `(e' ∘ e.symm) (e x) = e' x`.
+  have h_pt : (e' ∘ e.symm) (e x) = e' x := by
+    show e' (e.symm (e x)) = e' x
+    rw [e.left_inv hxe]
+  have h_diff_bwd : DifferentiableAt ℂ (e ∘ e'.symm) ((e' ∘ e.symm) (e x)) := by
+    rw [h_pt]; exact h_an_bwd.differentiableAt
+  -- Chain rule: `deriv ((e ∘ e'.symm) ∘ (e' ∘ e.symm)) (e x)
+  --             = deriv (e ∘ e'.symm) ((e' ∘ e.symm) (e x)) * deriv (e' ∘ e.symm) (e x)`.
+  have h_chain : deriv ((e ∘ e'.symm) ∘ (e' ∘ e.symm)) (e x)
+      = deriv (e ∘ e'.symm) ((e' ∘ e.symm) (e x)) * deriv (e' ∘ e.symm) (e x) :=
+    deriv_comp (e x) h_diff_bwd h_diff_fwd
+  -- LHS via `EventuallyEq.deriv_eq` equals `deriv id (e x) = 1`.
+  have h_lhs : deriv ((e ∘ e'.symm) ∘ (e' ∘ e.symm)) (e x) = 1 := by
+    rw [h_evEq.deriv_eq, deriv_id]
+  -- Combine: product equals 1, so neither factor is zero.
+  intro h_zero
+  rw [h_chain, h_zero, mul_zero] at h_lhs
+  exact one_ne_zero h_lhs.symm
 
-```
-lemma analyticAt_chart_transition_of_atlas
-    [IsManifold I ω M]
-    {e : OpenPartialHomeomorph M ℂ} (he : e ∈ atlas ℂ M)
-    {x : M} (hxe : x ∈ e.source) :
-    AnalyticAt ℂ ((chartAt ℂ x) ∘ e.symm) (e x)
-```
+/-- **Unconditional chart independence of `MMeromorphicAt`.** For any chart
+`e ∈ atlas ℂ M` of a complex analytic manifold containing `x` in its source,
+`MMeromorphicAt I f x` is equivalent to ordinary meromorphy of `f ∘ e.symm`
+at `e x`. Specializes `MMeromorphicAt.iff_of_chart` by discharging the
+analyticity and derivative-non-vanishing hypotheses on
+`[IsManifold 𝓘(ℂ, ℂ) ω M]`. -/
+lemma MMeromorphicAt.iff_of_isManifold
+    [IsManifold 𝓘(ℂ, ℂ) ω M]
+    (he : e ∈ atlas ℂ M)
+    (hxe : x ∈ e.source) :
+    MMeromorphicAt 𝓘(ℂ, ℂ) f x ↔ MeromorphicAt (f ∘ e.symm) (e x) := by
+  -- Apply `iff_of_chart` with the now-discharged hypotheses, using the canonical chart for `x`.
+  have h_can : chartAt ℂ x ∈ atlas ℂ M := chart_mem_atlas ℂ x
+  have h_xcan : x ∈ (chartAt ℂ x).source := mem_chart_source ℂ x
+  exact MMeromorphicAt.iff_of_chart hxe
+    (analyticAt_chart_transition_of_isManifold he h_can hxe h_xcan)
+    (deriv_chart_transition_of_isManifold_ne_zero he h_can hxe h_xcan)
 
-at which point `MMeromorphicAt.iff_of_chart` and
-`mmeromorphicOrderAt_eq_of_chart` upgrade to unconditional statements (with
-the `h_deriv` hypothesis dischargeable from `e.symm`-being-a-homeomorphism +
-analytic-inverse-function-theorem). The current file deliberately exposes the
-hypotheses explicitly so that downstream callers can either supply them by
-hand on case-by-case manifolds (e.g. `ℂ` itself, `ℙ¹(ℂ)`) or wait for the
-discharge lemma. -/
+/-- **Unconditional chart independence of `mmeromorphicOrderAt`.** For any chart
+`e ∈ atlas ℂ M` of a complex analytic manifold containing `x` in its source,
+the chart-pullback order equals the ordinary `meromorphicOrderAt` of `f ∘ e.symm`
+at `e x`. -/
+lemma mmeromorphicOrderAt_eq_of_isManifold
+    [IsManifold 𝓘(ℂ, ℂ) ω M]
+    (he : e ∈ atlas ℂ M)
+    (hxe : x ∈ e.source) :
+    mmeromorphicOrderAt 𝓘(ℂ, ℂ) f x = meromorphicOrderAt (f ∘ e.symm) (e x) := by
+  have h_can : chartAt ℂ x ∈ atlas ℂ M := chart_mem_atlas ℂ x
+  have h_xcan : x ∈ (chartAt ℂ x).source := mem_chart_source ℂ x
+  exact mmeromorphicOrderAt_eq_of_chart hxe
+    (analyticAt_chart_transition_of_isManifold he h_can hxe h_xcan)
+    (deriv_chart_transition_of_isManifold_ne_zero he h_can hxe h_xcan)
 
 end ChartIndependence
 
