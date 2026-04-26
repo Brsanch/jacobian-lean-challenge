@@ -6,7 +6,11 @@ Authors: Bryan Sanchez
 import Mathlib.Topology.Compactification.OnePoint.Basic
 import Mathlib.Topology.Compactification.OnePoint.Sphere
 import Mathlib.Topology.OpenPartialHomeomorph.Basic
+import Mathlib.Topology.OpenPartialHomeomorph.Composition
 import Mathlib.Geometry.Manifold.ChartedSpace
+import Mathlib.Geometry.Manifold.HasGroupoid
+import Mathlib.Geometry.Manifold.IsManifold.Basic
+import Mathlib.Analysis.Analytic.Constructions
 import Mathlib.Analysis.Normed.Field.Lemmas
 import Mathlib.Topology.MetricSpace.Bounded
 
@@ -45,21 +49,20 @@ giving a `ChartedSpace ℂ RiemannSphere` instance.
   delegates the first slot — `∞ = none` — without needing
   `DecidableEq ℂ`).
 
-## Deferred to follow-up
-
-The `IsManifold 𝓘(ℂ) ω RiemannSphere` instance — which would require
-verifying analyticity of the transition map `chartN ∘ chartS.symm = 1/z`
-on `ℂ \ {0}` along with the trivial diagonal cases — is intentionally
-not proved here. The transition-map composition manipulation
-(`OpenPartialHomeomorph.symm_trans_*` source/target intersection chasing
-through the model-with-corners identity) is delicate enough at this
-mathlib pin (`8e3c989...`, 2026-04-15) that landing it in the same patch
-risks the same fate as the previous chart attempt that was reverted on
-`feat/riemann-sphere`. It is queued as a follow-up PR. The pure
-analyticity ingredient is already present in mathlib at this pin
-(`analyticOnNhd_inv : AnalyticOnNhd 𝕜 (fun z ↦ z⁻¹) {z | z ≠ 0}`,
-`Mathlib/Analysis/Analytic/Constructions.lean`); only the
-chart-transition wiring remains to write. -/
+* `instance : IsManifold 𝓘(ℂ) ω RiemannSphere` — the analytic manifold
+  structure. Proved via `isManifold_of_contDiffOn`, with a four-way case
+  analysis on the atlas:
+  - the diagonal cases `chartN.symm ≫ₕ chartN` and `chartS.symm ≫ₕ chartS`
+    are handled uniformly by `symm_trans_mem_contDiffGroupoid`;
+  - the off-diagonal cases `chartN.symm ≫ₕ chartS` and
+    `chartS.symm ≫ₕ chartN` both reduce on their source `{z : ℂ | z ≠ 0}`
+    to the analytic map `z ↦ z⁻¹`, via `analyticOnNhd_inv` from
+    `Mathlib/Analysis/Analytic/Constructions.lean`. The model with corners
+    is `modelWithCornersSelf ℂ ℂ`, so the conjugation `I ∘ · ∘ I.symm`
+    collapses through `modelWithCornersSelf_coe[_symm]` and
+    `ModelWithCorners.range_self`, leaving a pure analyticity check on
+    `{z | z ≠ 0}`. The `ContDiffOn ℂ ω` upgrade uses
+    `AnalyticOnNhd.contDiffOn_of_completeSpace` (since `ℂ` is complete). -/
 
 open OnePoint Set Topology
 
@@ -306,6 +309,201 @@ noncomputable def chartS : OpenPartialHomeomorph RiemannSphere ℂ where
       -- `chartSToFun ∘ (↑)` reduces to `Inv.inv` definitionally.
       exact continuousAt_inv₀ hz
   continuousOn_invFun := continuous_chartSInvFun.continuousOn
+
+@[simp] lemma chartS_source :
+    chartS.source = {x : RiemannSphere | x ≠ ((0 : ℂ) : RiemannSphere)} := rfl
+
+@[simp] lemma chartS_target : chartS.target = (Set.univ : Set ℂ) := rfl
+
+lemma chartS_apply_coe (z : ℂ) :
+    chartS ((z : RiemannSphere)) = z⁻¹ := rfl
+
+lemma chartS_apply_infty : chartS (∞ : RiemannSphere) = 0 := rfl
+
+lemma chartS_symm_apply_zero : chartS.symm (0 : ℂ) = (∞ : RiemannSphere) :=
+  chartSInvFun_zero
+
+lemma chartS_symm_apply_of_ne {z : ℂ} (hz : z ≠ 0) :
+    chartS.symm z = ((z⁻¹ : ℂ) : RiemannSphere) :=
+  chartSInvFun_of_ne hz
+
+lemma chartN_apply_coe (z : ℂ) :
+    chartN ((z : RiemannSphere)) = z := by
+  unfold chartN
+  rfl
+
+lemma chartN_symm_apply (z : ℂ) :
+    chartN.symm z = ((z : ℂ) : RiemannSphere) := by
+  unfold chartN
+  rfl
+
+/-! ### The two-chart atlas
+
+We give `RiemannSphere` a `ChartedSpace ℂ` instance with atlas `{chartN, chartS}`.
+For a point `x : RiemannSphere`, we choose `chartN` if `x ≠ ∞` (so `x` lies in
+`chartN.source`) and `chartS` if `x = ∞` (so `x` lies in `chartS.source`,
+since `∞ ≠ some 0`). The choice is implemented via `OnePoint.rec` to avoid
+needing `DecidableEq ℂ`. -/
+
+/-- The chart selector: `chartN` for finite points, `chartS` for `∞`. -/
+noncomputable def chartAt' : RiemannSphere → OpenPartialHomeomorph RiemannSphere ℂ :=
+  fun x => OnePoint.rec chartS (fun _ => chartN) x
+
+@[simp] lemma chartAt'_infty : chartAt' (∞ : RiemannSphere) = chartS := rfl
+
+@[simp] lemma chartAt'_coe (z : ℂ) : chartAt' ((z : RiemannSphere)) = chartN := rfl
+
+instance : ChartedSpace ℂ RiemannSphere where
+  atlas := {chartN, chartS}
+  chartAt := chartAt'
+  mem_chart_source := by
+    intro x
+    induction x using OnePoint.rec with
+    | infty =>
+      rw [chartAt'_infty]
+      show (∞ : RiemannSphere) ≠ ((0 : ℂ) : RiemannSphere)
+      exact OnePoint.infty_ne_coe (0 : ℂ)
+    | coe z =>
+      rw [chartAt'_coe]
+      rw [chartN_source]
+      exact OnePoint.coe_ne_infty z
+  chart_mem_atlas := by
+    intro x
+    induction x using OnePoint.rec with
+    | infty =>
+      rw [chartAt'_infty]
+      exact Set.mem_insert_of_mem _ rfl
+    | coe z =>
+      rw [chartAt'_coe]
+      exact Set.mem_insert _ _
+
+/-! ### Analytic chart transitions
+
+The four chart transitions are:
+
+* `chartN.symm ≫ₕ chartN` and `chartS.symm ≫ₕ chartS` — handled uniformly by
+  `symm_trans_mem_contDiffGroupoid`, which says `e.symm ≫ₕ e ∈ contDiffGroupoid n I`
+  for any open partial homeomorphism `e`.
+* `chartN.symm ≫ₕ chartS` and `chartS.symm ≫ₕ chartN` — both reduce to the map
+  `z ↦ z⁻¹` on `{z : ℂ | z ≠ 0}`, which is analytic via `analyticOnNhd_inv`.
+
+For the off-diagonal cases we work directly with `mem_groupoid_of_pregroupoid`.
+The model with corners is `𝓘(ℂ) = modelWithCornersSelf ℂ ℂ`, so the simp lemmas
+`modelWithCornersSelf_coe` and `modelWithCornersSelf_coe_symm` collapse the
+`I ∘ · ∘ I.symm` conjugation. -/
+
+/-- `chartN.symm ≫ₕ chartS` has source `{z : ℂ | z ≠ 0}`. -/
+lemma chartN_symm_trans_chartS_source :
+    (chartN.symm.trans chartS).source = {z : ℂ | z ≠ 0} := by
+  rw [OpenPartialHomeomorph.trans_source]
+  ext z
+  constructor
+  · rintro ⟨_, hz⟩
+    -- hz : chartN.symm z ∈ chartS.source = {x | x ≠ some 0}
+    rw [Set.mem_preimage] at hz
+    rw [chartN_symm_apply] at hz
+    -- hz : ((z : ℂ) : RiemannSphere) ≠ ((0 : ℂ) : RiemannSphere)
+    intro hz0
+    apply hz
+    rw [hz0]
+  · intro hz
+    refine ⟨?_, ?_⟩
+    · -- chartN.symm.source = univ
+      change z ∈ (chartN.symm.source : Set ℂ)
+      rw [OpenPartialHomeomorph.symm_source, chartN_target]
+      trivial
+    · rw [Set.mem_preimage, chartN_symm_apply]
+      change ((z : ℂ) : RiemannSphere) ≠ ((0 : ℂ) : RiemannSphere)
+      intro h
+      exact hz (OnePoint.coe_injective h)
+
+/-- `chartS.symm ≫ₕ chartN` has source `{z : ℂ | z ≠ 0}`. -/
+lemma chartS_symm_trans_chartN_source :
+    (chartS.symm.trans chartN).source = {z : ℂ | z ≠ 0} := by
+  rw [OpenPartialHomeomorph.trans_source]
+  ext z
+  constructor
+  · rintro ⟨_, hz⟩
+    rw [Set.mem_preimage] at hz
+    -- hz : chartS.symm z ∈ chartN.source = {x | x ≠ ∞}
+    rw [chartN_source] at hz
+    intro hz0
+    subst hz0
+    rw [chartS_symm_apply_zero] at hz
+    exact hz rfl
+  · intro hz
+    refine ⟨?_, ?_⟩
+    · change z ∈ (chartS.symm.source : Set ℂ)
+      rw [OpenPartialHomeomorph.symm_source, chartS_target]
+      trivial
+    · rw [Set.mem_preimage, chartS_symm_apply_of_ne hz, chartN_source]
+      exact OnePoint.coe_ne_infty _
+
+/-- `chartN.symm ≫ₕ chartS` agrees with `z ↦ z⁻¹` on its source `{z | z ≠ 0}`. -/
+lemma chartN_symm_trans_chartS_eqOn :
+    Set.EqOn (chartN.symm.trans chartS) (fun z : ℂ => z⁻¹)
+      (chartN.symm.trans chartS).source := by
+  intro z hz
+  rw [chartN_symm_trans_chartS_source] at hz
+  rw [OpenPartialHomeomorph.trans_apply, chartN_symm_apply, chartS_apply_coe]
+
+/-- `chartS.symm ≫ₕ chartN` agrees with `z ↦ z⁻¹` on its source `{z | z ≠ 0}`. -/
+lemma chartS_symm_trans_chartN_eqOn :
+    Set.EqOn (chartS.symm.trans chartN) (fun z : ℂ => z⁻¹)
+      (chartS.symm.trans chartN).source := by
+  intro z hz
+  rw [chartS_symm_trans_chartN_source] at hz
+  rw [OpenPartialHomeomorph.trans_apply, chartS_symm_apply_of_ne hz, chartN_apply_coe]
+
+/-- The transition `chartN.symm ≫ₕ chartS` is `C^ω` (analytic) when read through
+the identity model `𝓘(ℂ) = modelWithCornersSelf ℂ ℂ`. -/
+lemma contDiffOn_chartN_symm_trans_chartS :
+    ContDiffOn ℂ ω (𝓘(ℂ) ∘ (chartN.symm.trans chartS) ∘ 𝓘(ℂ).symm)
+      (𝓘(ℂ).symm ⁻¹' (chartN.symm.trans chartS).source ∩ Set.range 𝓘(ℂ)) := by
+  -- The model is the identity; its `coe` and `symm` are `id`, range is `univ`.
+  simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
+    Function.id_comp, Function.comp_id, Set.preimage_id, ModelWithCorners.range_self,
+    Set.inter_univ]
+  -- It suffices to show the transition is analytic on its source.
+  refine ContDiffOn.congr ?_ chartN_symm_trans_chartS_eqOn
+  rw [chartN_symm_trans_chartS_source]
+  exact analyticOnNhd_inv.contDiffOn_of_completeSpace
+
+/-- The transition `chartS.symm ≫ₕ chartN` is `C^ω` (analytic) when read through
+the identity model. -/
+lemma contDiffOn_chartS_symm_trans_chartN :
+    ContDiffOn ℂ ω (𝓘(ℂ) ∘ (chartS.symm.trans chartN) ∘ 𝓘(ℂ).symm)
+      (𝓘(ℂ).symm ⁻¹' (chartS.symm.trans chartN).source ∩ Set.range 𝓘(ℂ)) := by
+  simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
+    Function.id_comp, Function.comp_id, Set.preimage_id, ModelWithCorners.range_self,
+    Set.inter_univ]
+  refine ContDiffOn.congr ?_ chartS_symm_trans_chartN_eqOn
+  rw [chartS_symm_trans_chartN_source]
+  exact analyticOnNhd_inv.contDiffOn_of_completeSpace
+
+/-- The Riemann sphere is a complex analytic manifold modelled on `ℂ`. -/
+instance : IsManifold 𝓘(ℂ) ω RiemannSphere :=
+  isManifold_of_contDiffOn _ _ _ <| by
+    intro e e' he he'
+    -- atlas = {chartN, chartS}; do four cases.
+    rcases he with rfl | he
+    · rcases he' with rfl | he'
+      · -- chartN.symm ≫ₕ chartN
+        have : chartN.symm.trans chartN ∈ contDiffGroupoid ω 𝓘(ℂ) :=
+          symm_trans_mem_contDiffGroupoid chartN
+        exact this.1
+      · rw [Set.mem_singleton_iff] at he'; subst he'
+        -- chartN.symm ≫ₕ chartS
+        exact contDiffOn_chartN_symm_trans_chartS
+    · rw [Set.mem_singleton_iff] at he; subst he
+      rcases he' with rfl | he'
+      · -- chartS.symm ≫ₕ chartN
+        exact contDiffOn_chartS_symm_trans_chartN
+      · rw [Set.mem_singleton_iff] at he'; subst he'
+        -- chartS.symm ≫ₕ chartS
+        have : chartS.symm.trans chartS ∈ contDiffGroupoid ω 𝓘(ℂ) :=
+          symm_trans_mem_contDiffGroupoid chartS
+        exact this.1
 
 end RiemannSphere
 
