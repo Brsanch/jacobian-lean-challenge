@@ -101,8 +101,13 @@ as the complex dimension of the space of global holomorphic 1-forms.
 For a compact connected Riemann surface this agrees with the topological
 genus (challenge item 14, not proved here). For a non-compact or
 infinite-dimensional `H⁰(X, Ω¹)` situation, `Module.finrank` returns `0` by
-convention. -/
-def genus : ℕ :=
+convention.
+
+Lives in the `JacobianChallenge` namespace so it does not collide with the
+verbatim challenge `def _root_.genus ... := sorry` in `Basic.lean`; that
+top-level `genus` will eventually be filled in as `JacobianChallenge.genus
+X`, modulo lining up the (slightly different) typeclass hypotheses. -/
+def JacobianChallenge.genus : ℕ :=
   Module.finrank ℂ (HolomorphicOneForm X)
 
 end
