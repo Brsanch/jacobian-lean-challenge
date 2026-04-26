@@ -138,9 +138,10 @@ variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [Connecte
 variable (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
 
 /-- The pushforward map between Jacobians associated to a map of the underlying curves. -/
-def pushforward (f : X → Y)
-    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    Jacobian X →ₜ+ Jacobian Y := sorry
+noncomputable def pushforward (f : X → Y)
+    (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    Jacobian X →ₜ+ Jacobian Y :=
+  JacobianChallenge.Jacobian.pushforward f
 
 -- pushforward is holomorphic
 theorem pushforward_contMDiff :
@@ -148,7 +149,8 @@ theorem pushforward_contMDiff :
   (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ)) ω (pushforward f hf) := sorry
 
 -- functoriality
-lemma pushforward_id_apply (P : Jacobian X) : pushforward id contMDiff_id P = P := sorry
+lemma pushforward_id_apply (P : Jacobian X) : pushforward id contMDiff_id P = P :=
+  JacobianChallenge.Jacobian.pushforward_id_apply P
 
 variable {Z : Type*} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [ConnectedSpace Z]
   [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
@@ -158,7 +160,7 @@ variable (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
 -- functoriality
 lemma pushforward_comp_apply (P : Jacobian X) :
     pushforward (g ∘ f) (hg.comp hf) P = pushforward g hg (pushforward f hf P) :=
-  sorry
+  JacobianChallenge.Jacobian.pushforward_comp_apply f g P
 
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
 Equal to the zero map if the map on curves is constant. -/
