@@ -35,6 +35,8 @@ surface) is owed by `MeromorphicAt.lean` and downstream files.
 * `JacobianChallenge.Div.degree_add` — additivity of the degree.
 * `JacobianChallenge.Div.degreeHom : Div X →+ ℤ` — the degree as a group
   homomorphism.
+* `JacobianChallenge.Div.degree_neg` / `Div.degree_sub` — corollaries
+  (degree commutes with `-` and `-`).
 * `JacobianChallenge.Div0 X := degreeHom.ker` — degree-zero subgroup.
 * `JacobianChallenge.PrincDiv X : AddSubgroup (Div X)` — placeholder `⊥`
   (see its docstring for the missing analytic input).
@@ -166,6 +168,22 @@ noncomputable def degreeHom [T2Space X] [CompactSpace X] : Div X →+ ℤ where
 
 @[simp] lemma degreeHom_apply [T2Space X] [CompactSpace X] (D : Div X) :
     degreeHom D = degree D := rfl
+
+/-- The degree of `-D` is `-D.degree`. Immediate consequence of
+`degreeHom` being an additive group homomorphism. -/
+@[simp] lemma degree_neg [T2Space X] [CompactSpace X] (D : Div X) :
+    degree (-D) = - degree D := by
+  have h : degree (-D) = degreeHom (X := X) (-D) := rfl
+  rw [h, map_neg]
+  simp [degreeHom_apply]
+
+/-- The degree of `D₁ - D₂` is `D₁.degree - D₂.degree`. Immediate
+consequence of `degreeHom` being an additive group homomorphism. -/
+@[simp] lemma degree_sub [T2Space X] [CompactSpace X] (D₁ D₂ : Div X) :
+    degree (D₁ - D₂) = degree D₁ - degree D₂ := by
+  have h : degree (D₁ - D₂) = degreeHom (X := X) (D₁ - D₂) := rfl
+  rw [h, map_sub]
+  simp [degreeHom_apply]
 
 end Div
 
