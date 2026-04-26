@@ -6,6 +6,7 @@ import JacobianChallenge.Manifold.PeriodIntegral
 import JacobianChallenge.Manifold.PeriodLattice
 import JacobianChallenge.Manifold.MeromorphicAt
 import JacobianChallenge.Manifold.LocalMultiplicity
+import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Manifold.RiemannSphere
 import JacobianChallenge.Manifold.RiemannSphereMobius
 import JacobianChallenge.Divisor
