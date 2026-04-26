@@ -271,18 +271,20 @@ noncomputable def chartS : OpenPartialHomeomorph RiemannSphere ℂ where
       refine ⟨Metric.closedBall (0 : ℂ) r⁻¹, Metric.isClosed_closedBall,
               isCompact_closedBall 0 r⁻¹, ?_⟩
       intro z hz
-      simp only [Metric.mem_closedBall, dist_zero_right, not_le] at hz
+      -- hz : z ∈ (closedBall 0 r⁻¹)ᶜ, i.e., r⁻¹ < ‖z‖.
+      have hz' : r⁻¹ < ‖z‖ := by
+        rw [Set.mem_compl_iff, Metric.mem_closedBall, dist_zero_right, not_le] at hz
+        exact hz
       have hz_ne : z ≠ 0 := by
         intro h
-        subst h
-        simp at hz
-        exact absurd hz (not_lt.mpr (by positivity))
+        rw [h, norm_zero] at hz'
+        exact absurd hz' (not_lt.mpr (by positivity))
       have h1 : (chartSToFun ∘ ((↑) : ℂ → RiemannSphere)) z = z⁻¹ := rfl
       rw [h1]
       apply hball
       simp only [Metric.mem_ball, dist_zero_right, norm_inv]
-      rw [inv_lt_comm₀ (by positivity) hr_pos] at hz
-      · exact hz
+      rw [inv_lt_comm₀ (by positivity) hr_pos] at hz'
+      exact hz'
     | coe z =>
       -- ContinuousAt at `(some z)` with `some z ≠ some 0`, hence `z ≠ 0`.
       have hz : z ≠ 0 := by
@@ -291,7 +293,11 @@ noncomputable def chartS : OpenPartialHomeomorph RiemannSphere ℂ where
         show ((z : ℂ) : RiemannSphere) = ((0 : ℂ) : RiemannSphere)
         rw [h]
       rw [OnePoint.continuousAt_coe]
-      exact (continuousAt_inv₀ hz).congr (by intro w; rfl)
+      -- `chartSToFun ∘ (↑) = Inv.inv` by definition of `chartSToFun_coe`.
+      have heq : (chartSToFun ∘ ((↑) : ℂ → RiemannSphere)) = Inv.inv := by
+        funext w; rfl
+      rw [heq]
+      exact continuousAt_inv₀ hz
   continuousOn_invFun := continuous_chartSInvFun.continuousOn
 
 end RiemannSphere
