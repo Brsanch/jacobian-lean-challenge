@@ -187,4 +187,166 @@ noncomputable def pullback
 
 end Pic0
 
+/-! ### `pushforward ∘ pullback` is multiplication by the (constant) fibre cardinality
+
+This is the divisor-side of challenge item 24 (`pushforward_pullback`). The
+core lemma `Div.singletonMap_fiberSum` is a pure divisor identity: collapsing
+each fibre back to its image multiplies multiplicities by the (constant)
+fibre cardinality `N`. The `Pic0`-level statement
+`Pic0.pushforward_pullback` follows by quotient induction. -/
+
+namespace Div
+
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+  [DecidableEq X] [DecidableEq Y]
+
+/-- The composition `singletonMap f ∘ fiberSum f hf` collapses each fibre
+    back to its image and so multiplies divisor multiplicities by the
+    (constant) fibre cardinality. -/
+lemma singletonMap_fiberSum
+    (f : X → Y) (hf : ∀ y, (f ⁻¹' {y}).Finite)
+    (N : ℕ) (hN : ∀ y, (hf y).toFinset.card = N)
+    (D : Div Y) :
+    Div.singletonMap f (Div.fiberSum f hf D) = (N : ℤ) • D := by
+  classical
+  -- Step 1: rewrite `fiberSum f hf D` as its sum-of-smul form.
+  have hfs : Div.fiberSum f hf D
+      = ∑ y ∈ D.supportFinset,
+          D y • (∑ x ∈ (hf y).toFinset, (Div.single x : Div X)) := by
+    show Div.fiberSumFun f hf D = _
+    rfl
+  rw [hfs, map_sum]
+  -- Step 2: for each `y ∈ supp D`, push `singletonMap f` through the
+  -- ℤ-smul and the inner sum, then simplify each `Div.single (f x)` to
+  -- `Div.single y` (since `x ∈ (hf y).toFinset` means `f x = y`), and
+  -- collapse the resulting constant sum to `(card · single y) = N · single y`.
+  have hterm : ∀ y ∈ D.supportFinset,
+      Div.singletonMap f
+          (D y • (∑ x ∈ (hf y).toFinset, (Div.single x : Div X)))
+        = D y • ((N : ℤ) • (Div.single y : Div Y)) := by
+    intro y _hy
+    -- Push `singletonMap f` through the ℤ-smul.
+    rw [map_zsmul]
+    -- Push `singletonMap f` through the inner sum.
+    rw [map_sum]
+    -- Strip the common `D y • ·` by `congr 1`.
+    congr 1
+    -- Goal: ∑ x ∈ (hf y).toFinset, singletonMap f (single x)
+    --       = (N : ℤ) • Div.single y.
+    -- Each summand equals `Div.single (f x) = Div.single y` since `f x = y`.
+    have hsumm : ∀ x ∈ (hf y).toFinset,
+        Div.singletonMap f (Div.single x : Div X) = (Div.single y : Div Y) := by
+      intro x hx
+      rw [Set.Finite.mem_toFinset] at hx
+      -- `hx : x ∈ f ⁻¹' {y}`, i.e., `f x = y`.
+      have hfx : f x = y := hx
+      rw [Div.singletonMap_single, hfx]
+    rw [Finset.sum_congr rfl hsumm]
+    -- Constant sum: `∑ x ∈ S, c = S.card • c` (for `c : Div Y`).
+    rw [Finset.sum_const]
+    -- Replace `(hf y).toFinset.card` by `N` via `hN`.
+    rw [hN y]
+    -- Goal: `N • Div.single y = (N : ℤ) • Div.single y`.
+    -- The ℕ-smul on an `AddCommGroup` agrees with the ℤ-smul of the cast.
+    -- Prove by induction on `N` (extracted inline to avoid depending on a
+    -- specific mathlib lemma name).
+    have hcast : ∀ (m : ℕ) (c : Div Y), m • c = (m : ℤ) • c := by
+      intro m c
+      induction m with
+      | zero => simp
+      | succ k ih =>
+        rw [succ_nsmul, ih, Nat.cast_succ, add_zsmul, one_zsmul]
+    exact hcast N (Div.single y : Div Y)
+  rw [Finset.sum_congr rfl hterm]
+  -- Step 3: pull `(N : ℤ) • ·` outside the outer sum and identify the
+  -- remaining sum `∑ y ∈ supp D, D y • Div.single y` with `D` (this is
+  -- the same identity that `Div.singletonMap_id_apply` proves for the
+  -- identity map).
+  -- First, swap `D y • ((N : ℤ) • single y)` to `(N : ℤ) • (D y • single y)`
+  -- using ℤ-smul commutativity.
+  have hswap : ∀ y ∈ D.supportFinset,
+      D y • ((N : ℤ) • (Div.single y : Div Y))
+        = (N : ℤ) • (D y • (Div.single y : Div Y)) := by
+    intro y _
+    -- `m • (n • x) = (m * n) • x = (n * m) • x = n • (m • x)` for ℤ-smul.
+    rw [smul_comm]
+  rw [Finset.sum_congr rfl hswap]
+  -- Pull `(N : ℤ) • ·` out via `Finset.smul_sum` (additivity of ℤ-smul over Finset.sum).
+  rw [← Finset.smul_sum]
+  -- Goal: `(N : ℤ) • ∑ y ∈ supp D, D y • single y = (N : ℤ) • D`.
+  -- Identify the inner sum with `D` via `singletonMap_id_apply` on `Y`.
+  have hD : (∑ y ∈ D.supportFinset, D y • (Div.single y : Div Y)) = D := by
+    have h := Div.singletonMap_id_apply (X := Y) D
+    -- `singletonMap (id : Y → Y) D = singletonMapFun id D
+    --   = ∑ y ∈ supp D, D y • single (id y)
+    --   = ∑ y ∈ supp D, D y • single y`.
+    have hexp : Div.singletonMap (id : Y → Y) D
+        = ∑ y ∈ D.supportFinset, D y • (Div.single y : Div Y) := by
+      show Div.singletonMapFun (id : Y → Y) D = _
+      rfl
+    rw [hexp] at h
+    exact h
+  rw [hD]
+
+end Div
+
+namespace Pic0
+
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+  [DecidableEq X] [DecidableEq Y]
+
+/-- The composite `pushforward ∘ pullback` is multiplication by the (constant)
+fibre cardinality. This is the divisor-side of challenge item 24
+(`pushforward_pullback`); the `Basic.lean` version replaces `N` with
+`ContMDiff.degree f hf` and is gated on a derivation `Nonempty witness ⇒
+constant-fibre-cardinality with that exact value`. -/
+lemma pushforward_pullback
+    (f : X → Y) (hf : ∀ y, (f ⁻¹' {y}).Finite)
+    (N : ℕ) (hN : ∀ y, (hf y).toFinset.card = N)
+    (P : Pic0 Y) :
+    Pic0.pushforward f (Pic0.pullback f hf N hN P) = (N : ℤ) • P := by
+  -- Match the `Classical.decEq Y` instance used inside `divPushforwardHom`,
+  -- so that `singletonMap (Y := Y) f` (whose `[DecidableEq Y]` instance is
+  -- supplied here via `Classical.decEq Y`) is the *same* function as the one
+  -- inside `divPushforwardHom`.
+  letI : DecidableEq Y := Classical.decEq Y
+  -- Quotient-induction on `P` to a representative `D : Div0 Y`.
+  refine QuotientAddGroup.induction_on P ?_
+  intro D
+  -- Step through `pullback_mk` and `pushforward_mk`.
+  rw [Pic0.pullback_mk, Pic0.pushforward_mk]
+  -- Compare in `Pic0 Y`: both sides are quotient classes; reduce to a
+  -- `Div0 Y`-equality, then to a `Div Y`-equality.
+  -- RHS: `(N : ℤ) • mk D = mk ((N : ℤ) • D)` (ℤ-smul lifts pointwise from
+  -- the AddCommGroup instance on the quotient).
+  rw [show ((N : ℤ) • (QuotientAddGroup.mk D : Pic0 Y))
+      = (QuotientAddGroup.mk ((N : ℤ) • D) : Pic0 Y) by
+        rw [← QuotientAddGroup.mk_zsmul]]
+  -- Equality of two quotient classes: it suffices that the underlying
+  -- `Div0 Y`-elements are equal.
+  congr 1
+  -- Reduce `Div0 Y`-equality to `Div Y`-equality via `Subtype.ext`.
+  apply Subtype.ext
+  -- LHS coerces to `divPushforwardHom f (Div.fiberSum f hf D)`.
+  -- RHS coerces to `(N : ℤ) • (D : Div Y)` (ℤ-smul on a subgroup is the
+  -- pointwise ℤ-smul on the ambient group).
+  show ((Pic0.divPushforward f (Pic0.divPullback f hf N hN D) : Div0 Y) : Div Y)
+      = (((N : ℤ) • D : Div0 Y) : Div Y)
+  rw [Pic0.divPushforward_coe, Pic0.divPullback_coe]
+  -- Unfold `divPushforwardHom f` to `singletonMap (Y := Y) f` (which is what
+  -- it is, after the `letI` above makes the `DecidableEq Y` instance match).
+  change Div.singletonMap (Y := Y) f (Div.fiberSum f hf (D : Div Y))
+      = (((N : ℤ) • D : Div0 Y) : Div Y)
+  -- Apply the divisor-level identity.
+  rw [Div.singletonMap_fiberSum (Y := Y) f hf N hN (D : Div Y)]
+  -- Goal: `(N : ℤ) • (D : Div Y) = (((N : ℤ) • D : Div0 Y) : Div Y)`.
+  -- `(N : ℤ) • ·` on `Div0 Y` is the underlying `(N : ℤ) • ·` on `Div Y`.
+  rfl
+
+end Pic0
+
 end JacobianChallenge
