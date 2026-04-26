@@ -2,6 +2,7 @@
 import JacobianChallenge.Basic
 import JacobianChallenge.Manifold.Cotangent
 import JacobianChallenge.Manifold.HolomorphicOneForm
+import JacobianChallenge.Manifold.PeriodIntegral
 import JacobianChallenge.Manifold.MeromorphicAt
 import JacobianChallenge.Manifold.LocalMultiplicity
 import JacobianChallenge.Divisor
