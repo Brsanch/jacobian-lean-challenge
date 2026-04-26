@@ -181,14 +181,18 @@ Registered as an `instance` so that mathlib's `QuotientAddGroup.instT2Space`
 (and `instT3Space`, `instT1Space`) can fire on `AnalyticTorus X`.
 
 For `PeriodLattice X = ⊥`, the carrier is `{0}`, which is closed in any
-T2 space; `ℂ^g` is T2 because it is a finite product of T2 spaces. -/
+T2 space; `ℂ^g` is T2 because it is a finite product of T2 spaces.
+
+The exact form of the goal type matches mathlib's instance argument
+`[IsClosed (H : Set G)]` in `QuotientGroup.instT2Space`, with the
+`SetLike` coercion `↑H` from `AddSubgroup G` to `Set G`. -/
 instance instIsClosedPeriodLattice :
-    IsClosed ((PeriodLattice X : AddSubgroup _) : Set _) := by
+    IsClosed ((PeriodLattice X : Set (Fin (JacobianChallenge.genus X) → ℂ))) := by
   -- Reduce the carrier of `⊥` to `{0}`.
-  show IsClosed
+  change IsClosed
     ((⊥ : AddSubgroup (Fin (JacobianChallenge.genus X) → ℂ)) :
       Set (Fin (JacobianChallenge.genus X) → ℂ))
-  simp only [AddSubgroup.coe_bot]
+  rw [AddSubgroup.coe_bot]
   exact isClosed_singleton
 
 /-- `AnalyticTorus X` is Hausdorff: with the closedness instance above
