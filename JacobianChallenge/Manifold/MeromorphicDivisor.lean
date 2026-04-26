@@ -1,0 +1,221 @@
+/-
+Copyright (c) 2026 Bryan Sanchez. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bryan Sanchez
+-/
+import JacobianChallenge.Manifold.MeromorphicAt
+import Mathlib.Analysis.Meromorphic.Divisor
+import Mathlib.Topology.LocallyFinsupp
+
+set_option diagnostics.threshold 100
+
+/-! # The order divisor of a meromorphic function on a complex manifold
+
+This file packages the chart-pulled-back meromorphic order
+(`mmeromorphicOrderAt`) into a `Function.locallyFinsuppWithin (Set.univ) ℤ`
+— the carrier of `JacobianChallenge.Div X`. This is one of the load-bearing
+analytic inputs to the honest definition of `JacobianChallenge.PrincDiv`
+(see the docstring on `PrincDiv` in `Divisor.lean`).
+
+## Strategy
+
+The integer value at `x ∈ X` is `(mmeromorphicOrderAt I f x).untop₀` — a
+positive integer at zeros, negative at poles, `0` at regular nonzero points
+or wherever the order is `⊤` (germ-zero). Mathlib's
+`MeromorphicOn.divisor` already does this packaging on `ℂ → ℂ`; we lift
+it through the **canonical chart** at each point, using
+`mmeromorphicOrderAt_eq_of_isManifold` (which discharges chart-independence
+on a complex analytic manifold) to identify the value with the underlying
+flat-domain order.
+
+Local finiteness (the load-bearing field of `Function.locallyFinsuppWithin`)
+is obtained by, for every `z : X`:
+
+1. Take the canonical chart `e := chartAt ℂ z`.
+2. Pull `f` back to `f ∘ e.symm : ℂ → ℂ`. The hypothesis
+   `MMeromorphicOn I f Set.univ` plus chart-independence
+   (`MMeromorphicAt.iff_of_isManifold`) gives
+   `MeromorphicOn (f ∘ e.symm) e.target`.
+3. Mathlib's `MeromorphicOn.divisor (f ∘ e.symm) e.target` is locally
+   finsupp within `e.target`; in particular at the chart image `e z` there
+   exists `t' ∈ 𝓝 (e z)` with `Set.Finite (t' ∩ support')`.
+4. The pullback set `t := e ⁻¹' t' ∩ e.source` is open, contains `z`,
+   and the image of `t ∩ support` under `e` is contained in
+   `t' ∩ support'`, which is finite. Since `e` is injective on its source,
+   `t ∩ support` is finite.
+
+The hypothesis `hf0 : ∀ x, mmeromorphicOrderAt I f x ≠ ⊤` is **load-bearing**:
+without it, the support `{x | (mmeromorphicOrderAt I f x).untop₀ ≠ 0}` could
+fail to coincide with `{x | mmeromorphicOrderAt I f x ≠ 0}`
+(`(⊤ : WithTop ℤ).untop₀ = 0` is a default-collapse that would silently
+fold "germ identically zero" points into "regular nonzero"). We use `hf0`
+to upgrade the support identification used in the local-finiteness proof:
+the support set is exactly `{x | mmeromorphicOrderAt I f x ≠ 0}`, which on
+a chart corresponds to `{w | meromorphicOrderAt (f ∘ e.symm) w ≠ 0}`, and
+that set's local-finiteness then follows from the codiscrete-of-zero-or-top
+characterization in mathlib.
+
+## Main definition
+
+* `JacobianChallenge.MMeromorphicOn.divisor I f hf hf0` —
+  `Function.locallyFinsuppWithin (Set.univ : Set X) ℤ`. -/
+
+noncomputable section
+
+open scoped Manifold Topology ContDiff
+open Filter Set
+
+namespace JacobianChallenge
+
+namespace MMeromorphicOn
+
+universe u
+
+variable {X : Type u}
+  [TopologicalSpace X] [ChartedSpace ℂ X]
+  [IsManifold (modelWithCornersSelf ℂ ℂ) ω X]
+
+/-- The integer-valued **order function** of a meromorphic function on a
+complex manifold: `(mmeromorphicOrderAt I f x).untop₀`. Positive at zeros,
+negative at poles, `0` at regular non-zero points. Under the hypothesis
+`hf0` (no germ is identically zero), the value is also `0` at points where
+`mmeromorphicOrderAt I f x = ⊤`, but those points do not exist by `hf0`. -/
+def orderFun (I : ModelWithCorners ℂ ℂ ℂ) (f : X → ℂ) (x : X) : ℤ :=
+  (mmeromorphicOrderAt I f x).untop₀
+
+/-- Under `hf0`, `orderFun I f x = 0` is equivalent to
+`mmeromorphicOrderAt I f x = 0`, i.e. there is no spurious `⊤ ↦ 0` collapse. -/
+lemma orderFun_eq_zero_iff
+    {I : ModelWithCorners ℂ ℂ ℂ} {f : X → ℂ} {x : X}
+    (hf0 : mmeromorphicOrderAt I f x ≠ ⊤) :
+    orderFun I f x = 0 ↔ mmeromorphicOrderAt I f x = 0 := by
+  unfold orderFun
+  constructor
+  · intro h
+    have := WithTop.untop₀_eq_zero.mp h
+    rcases this with h0 | htop
+    · exact h0
+    · exact (hf0 htop).elim
+  · intro h
+    rw [h]; rfl
+
+/-- The **order divisor** of a meromorphic function `f` on a complex manifold,
+valued in `ℤ` (positive at zeros, negative at poles, `0` elsewhere). The
+`locallyFinsuppWithin Set.univ` packaging encodes the local-finiteness
+statement that, for a non-identically-zero meromorphic function, the set
+`{x | mmeromorphicOrderAt I f x ≠ 0}` is locally finite (in particular has
+no accumulation point in any chart).
+
+The hypothesis `hf0 : ∀ x, mmeromorphicOrderAt I f x ≠ ⊤` says that no
+germ of `f` is identically zero; it is the standard hypothesis under which
+the order divisor is a well-defined locally-finite object.
+
+Construction: pull `f` back to each canonical chart, invoke mathlib's
+`MeromorphicOn.divisor` (whose local-finiteness comes from
+`MeromorphicOn.codiscrete_setOf_meromorphicOrderAt_eq_zero_or_top`), and
+transport the local-finite-support neighborhood through the chart map.
+Chart-independence is handled by `mmeromorphicOrderAt_eq_of_isManifold`. -/
+def divisor
+    (I : ModelWithCorners ℂ ℂ ℂ)
+    (f : X → ℂ)
+    (hf : MMeromorphicOn I f Set.univ)
+    (hf0 : ∀ x, mmeromorphicOrderAt I f x ≠ ⊤) :
+    Function.locallyFinsuppWithin (Set.univ : Set X) ℤ where
+  toFun := fun x => orderFun I f x
+  supportWithinDomain' := by
+    intro x _
+    trivial
+  supportLocallyFiniteWithinDomain' := by
+    intro z _
+    -- Take the canonical chart at `z`.
+    set e : OpenPartialHomeomorph X ℂ := chartAt ℂ z with he_def
+    have he_atlas : e ∈ atlas ℂ X := chart_mem_atlas ℂ z
+    have hz_src : z ∈ e.source := mem_chart_source ℂ z
+    -- Step 1: prove `MeromorphicOn (f ∘ e.symm) e.target`.
+    have h_mero_chart : MeromorphicOn (f ∘ e.symm) e.target := by
+      intro w hw
+      -- Set `y := e.symm w`. Then `y ∈ e.source` and `e y = w`.
+      set y : X := e.symm w with hy_def
+      have hy_src : y ∈ e.source := e.map_target hw
+      have h_eyw : e y = w := e.right_inv hw
+      have hMy : MMeromorphicAt I f y := hf y trivial
+      -- We need to specialize chart-independence. The lemma lives in
+      -- `JacobianChallenge` namespace; it's proved for `I = 𝓘(ℂ,ℂ)` only.
+      -- Since `I : ModelWithCorners ℂ ℂ ℂ` is a parameter, we accept the
+      -- specialization at `𝓘(ℂ,ℂ)` (the only meaningful case for this file).
+      -- The `MMeromorphicAt` definition itself does not depend on `I`
+      -- (the model is a `_` argument in `MMeromorphicAt`).
+      have hMy' : MMeromorphicAt (𝓘(ℂ, ℂ)) f y := hMy
+      have h_iff := JacobianChallenge.MMeromorphicAt.iff_of_isManifold
+        (M := X) (e := e) (x := y) (f := f) he_atlas hy_src
+      have : MeromorphicAt (f ∘ e.symm) (e y) := h_iff.mp hMy'
+      rw [h_eyw] at this
+      exact this
+    -- Step 2: build mathlib's divisor and extract local-finiteness at `e z`.
+    set D : Function.locallyFinsuppWithin e.target ℤ :=
+      MeromorphicOn.divisor (f ∘ e.symm) e.target with hD_def
+    have h_ez_target : e z ∈ e.target := e.map_source hz_src
+    obtain ⟨t', ht'_nhds, ht'_finite⟩ :=
+      D.supportLocallyFiniteWithinDomain (e z) h_ez_target
+    -- Step 3: pull back to `X`. Use the open neighborhood
+    -- `t := e ⁻¹' t' ∩ e.source`.
+    -- The chart map `e` is continuous on `e.source` and `t' ∈ 𝓝 (e z)`
+    -- with `e z ∈ e.target`, so the preimage in `e.source` is a nhd of `z`.
+    refine ⟨e.source ∩ e ⁻¹' t', ?_, ?_⟩
+    · -- `e.source ∩ e ⁻¹' t' ∈ 𝓝 z`.
+      -- `e.source` is open and contains `z`; the continuous map `e`
+      -- pulls back the nhd `t'` of `e z` to a nhd of `z` (within `e.source`).
+      have h_open_src : IsOpen e.source := e.open_source
+      have h_continuousAt : ContinuousAt e z := by
+        have hco : ContinuousOn e e.source := e.continuousOn
+        exact hco.continuousAt (h_open_src.mem_nhds hz_src)
+      have h_pre : e ⁻¹' t' ∈ 𝓝 z := h_continuousAt.preimage_mem_nhds ht'_nhds
+      have h_src_nhds : e.source ∈ 𝓝 z := h_open_src.mem_nhds hz_src
+      exact Filter.inter_mem h_src_nhds h_pre
+    · -- Finiteness of `(e.source ∩ e ⁻¹' t') ∩ (orderFun I f).support`.
+      -- We exhibit an injection of this set into `t' ∩ D.support`.
+      -- A point `x` in the LHS lies in `e.source` (so `e x ∈ e.target`),
+      -- in `e ⁻¹' t'`, and has `orderFun I f x ≠ 0`.
+      -- Under `hf0`, `orderFun I f x ≠ 0 ↔ mmeromorphicOrderAt I f x ≠ 0`.
+      -- Chart-independence equates that to `meromorphicOrderAt (f ∘ e.symm) (e x) ≠ 0`,
+      -- i.e. `D (e x) ≠ 0`, i.e. `e x ∈ D.support`.
+      apply Set.Finite.subset ht'_finite
+      rintro x ⟨⟨hx_src, hx_pre⟩, hx_supp⟩
+      -- `hx_supp : orderFun I f x ≠ 0`.
+      have hx_order_ne_zero : mmeromorphicOrderAt I f x ≠ 0 := by
+        intro h0
+        apply hx_supp
+        unfold orderFun
+        rw [h0]; rfl
+      have hx_order_ne_top : mmeromorphicOrderAt I f x ≠ ⊤ := hf0 x
+      -- Chart-independence: `mmeromorphicOrderAt I f x = meromorphicOrderAt (f ∘ e.symm) (e x)`.
+      have h_eq := JacobianChallenge.mmeromorphicOrderAt_eq_of_isManifold
+        (M := X) (e := e) (x := x) (f := f) he_atlas hx_src
+      -- We need to massage I to 𝓘(ℂ,ℂ); but the LHS uses `mmeromorphicOrderAt I f x`,
+      -- and the lemma is stated for `𝓘(ℂ, ℂ)`. The function `mmeromorphicOrderAt`
+      -- has its model argument as `_I` (unused), so any `I` gives the same value.
+      have h_eq_I : mmeromorphicOrderAt I f x = meromorphicOrderAt (f ∘ e.symm) (e x) :=
+        h_eq
+      have h_chart_order_ne_zero : meromorphicOrderAt (f ∘ e.symm) (e x) ≠ 0 := by
+        rw [← h_eq_I]; exact hx_order_ne_zero
+      have h_chart_order_ne_top : meromorphicOrderAt (f ∘ e.symm) (e x) ≠ ⊤ := by
+        rw [← h_eq_I]; exact hx_order_ne_top
+      -- The mathlib divisor at `e x ∈ e.target` is
+      -- `(meromorphicOrderAt (f ∘ e.symm) (e x)).untop₀`, which is nonzero.
+      have hex_target : e x ∈ e.target := e.map_source hx_src
+      have h_D_apply : D (e x) = (meromorphicOrderAt (f ∘ e.symm) (e x)).untop₀ := by
+        unfold_let D
+        exact MeromorphicOn.divisor_apply h_mero_chart hex_target
+      have h_D_ne_zero : D (e x) ≠ 0 := by
+        rw [h_D_apply]
+        intro h
+        rcases WithTop.untop₀_eq_zero.mp h with h0 | htop
+        · exact h_chart_order_ne_zero h0
+        · exact h_chart_order_ne_top htop
+      -- Therefore `e x ∈ t' ∩ D.support`.
+      refine ⟨hx_pre, ?_⟩
+      exact h_D_ne_zero
+
+end MMeromorphicOn
+
+end JacobianChallenge
