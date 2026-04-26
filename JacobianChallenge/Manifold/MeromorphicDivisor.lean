@@ -266,16 +266,16 @@ lemma orderFun_support_finite
   -- The divisor packages the order function with local-finiteness of its support.
   set D : Function.locallyFinsuppWithin (Set.univ : Set X) ℤ :=
     MMeromorphicOn.divisor I f hf hf0 with hD_def
-  -- Its `support` is `{x | D x ≠ 0}` and `D x = orderFun I f x` by construction.
-  have h_support_eq :
-      (Function.support fun x => (D : X → ℤ) x) = {x : X | orderFun I f x ≠ 0} := by
-    ext x
-    simp [Function.mem_support, hD_def, MMeromorphicOn.divisor]
   -- Compactness of `Set.univ` upgrades local finiteness of the support to global.
   have h_finite : (Function.support fun x => (D : X → ℤ) x).Finite :=
     D.finiteSupport isCompact_univ
-  rw [h_support_eq] at h_finite
-  exact h_finite
+  -- Pointwise, `D x = orderFun I f x` by definition of `divisor`.
+  have h_apply : ∀ x : X, (D : X → ℤ) x = orderFun I f x := by
+    intro x; rfl
+  -- Convert the support into the order-function form.
+  convert h_finite using 1
+  ext x
+  simp [Function.mem_support, h_apply x]
 
 /-- The set of points where `f` has **strictly positive order** ("zeros" in the
 order-divisor sense) is **finite** on a compact Hausdorff complex 1-manifold.
@@ -296,10 +296,9 @@ lemma zeros_finite
   -- Reduce to `orderFun_support_finite` by showing the LHS is contained in the support.
   apply (orderFun_support_finite (X := X) I f hf hf0).subset
   intro x hx
-  -- `hx : 0 < mmeromorphicOrderAt I f x`. Show `orderFun I f x ≠ 0`.
-  -- Since `mmeromorphicOrderAt I f x ≠ ⊤` (by `hf0`), `coe_untop₀_of_ne_top` gives
-  -- `(mmeromorphicOrderAt I f x).untop₀ = mmeromorphicOrderAt I f x` as `WithTop ℤ`.
-  -- We then convert `0 < a` (via `WithTop.coe_lt_coe`) to deduce `untop₀ ≠ 0`.
+  -- Unfold `Set.mem` so that `hx : 0 < mmeromorphicOrderAt I f x` is rewritable.
+  simp only [Set.mem_setOf_eq] at hx
+  -- Goal: `x ∈ {x | orderFun I f x ≠ 0}`, i.e. `orderFun I f x ≠ 0`.
   show orderFun I f x ≠ 0
   unfold orderFun
   -- `WithTop.untop₀_eq_zero : a.untop₀ = 0 ↔ a = 0 ∨ a = ⊤`. Negate.
@@ -330,7 +329,8 @@ lemma poles_finite
   -- Reduce to `orderFun_support_finite` by showing the LHS is contained in the support.
   apply (orderFun_support_finite (X := X) I f hf hf0).subset
   intro x hx
-  -- `hx : mmeromorphicOrderAt I f x < 0`. Show `orderFun I f x ≠ 0`.
+  -- Unfold `Set.mem` so that `hx : mmeromorphicOrderAt I f x < 0` is rewritable.
+  simp only [Set.mem_setOf_eq] at hx
   show orderFun I f x ≠ 0
   unfold orderFun
   intro h
