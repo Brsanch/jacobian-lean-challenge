@@ -303,7 +303,11 @@ variable {X Y : Type*}
 fibre cardinality. This is the divisor-side of challenge item 24
 (`pushforward_pullback`); the `Basic.lean` version replaces `N` with
 `ContMDiff.degree f hf` and is gated on a derivation `Nonempty witness ⇒
-constant-fibre-cardinality with that exact value`. -/
+constant-fibre-cardinality with that exact value`.
+
+The `[DecidableEq Y]` instance is part of the spec signature and threads
+through `Div.singletonMap_fiberSum`, even though the proof body also uses
+`Classical.decEq Y` to match the instance baked into `divPushforwardHom`. -/
 lemma pushforward_pullback
     (f : X → Y) (hf : ∀ y, (f ⁻¹' {y}).Finite)
     (N : ℕ) (hN : ∀ y, (hf y).toFinset.card = N)
@@ -319,16 +323,18 @@ lemma pushforward_pullback
   intro D
   -- Step through `pullback_mk` and `pushforward_mk`.
   rw [Pic0.pullback_mk, Pic0.pushforward_mk]
-  -- Compare in `Pic0 Y`: both sides are quotient classes; reduce to a
-  -- `Div0 Y`-equality, then to a `Div Y`-equality.
-  -- RHS: `(N : ℤ) • mk D = mk ((N : ℤ) • D)` (ℤ-smul lifts pointwise from
-  -- the AddCommGroup instance on the quotient).
-  rw [show ((N : ℤ) • (QuotientAddGroup.mk D : Pic0 Y))
-      = (QuotientAddGroup.mk ((N : ℤ) • D) : Pic0 Y) by
-        rw [← QuotientAddGroup.mk_zsmul]]
-  -- Equality of two quotient classes: it suffices that the underlying
-  -- `Div0 Y`-elements are equal.
-  congr 1
+  -- Both sides are now `mk` classes in `Pic0 Y`; we'll prove the equality by
+  -- producing a `Div0 Y`-equality of representatives.
+  -- The RHS `(N : ℤ) • (mk D : Pic0 Y)` equals `mk ((N : ℤ) • D)` because
+  -- `QuotientAddGroup.mk : Div0 Y →+ Pic0 Y` is an additive group hom.
+  have hRHS : ((N : ℤ) • (QuotientAddGroup.mk D : Pic0 Y))
+      = (QuotientAddGroup.mk ((N : ℤ) • D) : Pic0 Y) := by
+    rw [← (QuotientAddGroup.mk' ((PrincDiv Y).addSubgroupOf (Div0 Y))).map_zsmul]
+    rfl
+  rw [hRHS]
+  -- Equality of quotient classes: it suffices to show the representatives
+  -- are equal (the strong form).
+  refine congrArg (QuotientAddGroup.mk (s := (PrincDiv Y).addSubgroupOf (Div0 Y))) ?_
   -- Reduce `Div0 Y`-equality to `Div Y`-equality via `Subtype.ext`.
   apply Subtype.ext
   -- LHS coerces to `divPushforwardHom f (Div.fiberSum f hf D)`.
