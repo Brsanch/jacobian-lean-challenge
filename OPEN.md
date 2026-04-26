@@ -41,7 +41,7 @@ whenever a status changes.
 | 5 | `instance : ChartedSpace (Fin (genus X) → ℂ) (Jacobian X)` | **OPEN** | Requires the analytic-Jacobian construction (period-lattice or honest `Pic⁰`); not landable on the current discrete-topology placeholder. The parallel `AnalyticTorus X` carries an honest `ChartedSpace` instance (`Manifold/PeriodLattice.lean`), but is not wired into `Jacobian`. |
 | 6 | `Jacobian.ofCurve : X → Jacobian X` | **STUB** | Body: `Q ↦ [δQ − δP]` in `Pic⁰` (honest formula). Lands in stub `Pic⁰`, so the *object* of the map is wrong. |
 | 7 | `Jacobian.pushforward f hf` | **STUB** | Body: honest `Pic⁰` pushforward via `Div.singletonMap` + descent. Object is stub `Pic⁰`. |
-| 8 | `Jacobian.pullback f hf` | **STUB** | Body: zero `ContinuousAddMonoidHom`. **Wrong implementation** (honest map is the divisor fiber-sum). `Div.fiberSum` infrastructure lives on branch `feat/div-fiber-sum` (in flight). |
+| 8 | `Jacobian.pullback f hf` | **STUB** | Body: zero `ContinuousAddMonoidHom`. **Wrong implementation** (honest map is the divisor fiber-sum). `Div.fiberSum` (`Divisor/FiberSum.lean`) and `Pic0.pullback (f, hf, N, hN)` (`Divisor/FiberPullback.lean`) are landed; the swap into `Basic.lean` waits on a derivation of finite-fibres + constant-card from `ContMDiff` smoothness alone. |
 | 9 | `ContMDiff.degree f hf : ℕ` | **STUB** | Body: `degreeStub f hf` (0 for constant, 1 otherwise). `degreeFiber` infrastructure (with `RegularValueWitness` bundle) merged at `2985cdd` in `Manifold/Degree.lean`; not wired into `Basic.lean` yet because honest fibre-cardinality requires three classical inputs not in mathlib. |
 
 ## Theorems (Prop) — Basic.lean items 10–24 in OPEN.md numbering
@@ -73,9 +73,14 @@ items 1, 2, 5, 8, 9 will need infrastructure not in mathlib at the pin.
   Riemann surface — needed for `genus X` to be the right integer. Hodge
   theory; not yet proved.
 - **Honest `PrincDiv X`** — requires the residue theorem on a compact Riemann
-  surface (∑_x ord_x f = 0), plus chart-independence of `mmeromorphicOrderAt`
-  (already done unconditionally in `Manifold/MeromorphicAt.lean`) and local
-  finiteness (in flight on branch `feat/meromorphic-divisor`).
+  surface (∑_x ord_x f = 0). The other two classical inputs are now landed:
+  chart-independence of `mmeromorphicOrderAt` is unconditional in
+  `Manifold/MeromorphicAt.lean`, and local finiteness lives in
+  `Manifold/MeromorphicDivisor.lean` (`MMeromorphicOn.divisor`). The
+  `principalDivisorMap : MeromorphicNonzero X → Div X` is built in
+  `Divisor/PrincipalDivisor.lean`; the eventual honest `PrincDiv X` is
+  `AddSubgroup.range principalDivisorMap` once the residue-theorem leg
+  shows the range lands in `Div⁰`.
 - **Honest period lattice** as a rank-`2g` `Submodule ℤ` of `ℂ^g` — requires
   H₁(X; ℤ) for compact Riemann surfaces (not in mathlib at the pin) plus
   period-pairing integration of holomorphic 1-forms over loops.
@@ -98,12 +103,16 @@ items 1, 2, 5, 8, 9 will need infrastructure not in mathlib at the pin.
 - `Manifold/RiemannSphereMobius.lean` (~204 LOC) — `z ↦ −1/z` involution.
 - `Manifold/LocalMultiplicity.lean` (~155 LOC) — `degreeStub` (constant indicator).
 - `Manifold/Degree.lean` (~247 LOC, 2026-04-26) — `degreeFiber` + `RegularValueWitness` + named owed classical statements.
+- `Manifold/MeromorphicDivisor.lean` (~224 LOC, 2026-04-26) — `MMeromorphicOn.orderFun` + `divisor` packaging as `Function.locallyFinsuppWithin`.
+- `Divisor/FiberSum.lean` (~361 LOC, 2026-04-26) — `Div.fiberSum f hf` (divisor pullback under finite-fibres) + `fiberSum_id_apply` + `fiberSum_comp_apply` (full contravariant functoriality).
+- `Divisor/FiberPullback.lean` (~190 LOC, 2026-04-26) — `Pic0.pullback (f, hf, N, hN)` via `divPullback` descent under constant-fibre-cardinality.
+- `Divisor/PrincipalDivisor.lean` (~115 LOC, 2026-04-26) — `MeromorphicNonzero X` + `principalDivisorMap : MeromorphicNonzero X → Div X` (the future honest input to `PrincDiv X`).
 - `Topology/SurfaceGenus.lean` (~108 LOC) — `TopologicalGenus = finrank ℚ H₁` + invariance.
 - `Divisor.lean` (~225 LOC) — `Div X`, `Div.degree`, `degreeHom`, `Div0`, `Pic0` modulo `PrincDiv := ⊥` placeholder.
 - `Divisor/Single.lean` (~150 LOC) — `Div.single`, `degree_single = 1`, `single_sub_single_mem_Div0`.
 - `Jacobian.lean` (~470 LOC) — honest `ofCurve`, honest `Pic⁰` pushforward via `Div.singletonMap`, zero-stub pullback.
 
-**Roughly ~3,750 LOC of real local infrastructure**, none of which strict-closes any item by itself.
+**Roughly ~4,890 LOC of real local infrastructure**, none of which strict-closes any item by itself.
 
 ## Honest scoring (per the four-status bar above)
 
