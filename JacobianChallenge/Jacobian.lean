@@ -267,9 +267,6 @@ lemma zsmul_single_apply [TopologicalSpace X] [DecidableEq X]
   classical
   rw [Function.locallyFinsuppWithin.coe_zsmul, Pi.smul_apply, single_apply,
       smul_eq_mul]
-  by_cases h : y = x
-  · simp [h]
-  · simp [h]
 
 /-! ### The singleton map `Div X →+ Div Y` -/
 
@@ -294,20 +291,21 @@ terms contribute zero. -/
 lemma singletonMapFun_eq_sum [DecidableEq Y] (f : X → Y) (D : Div X)
     (S : Finset X) (hS : D.supportFinset ⊆ S) :
     singletonMapFun f D = ∑ x ∈ S, D x • Div.single (f x) := by
-  classical
-  unfold singletonMapFun
-  refine (Finset.sum_subset hS ?_).symm
+  -- Unfold the LHS to make the sum visible.
+  change (∑ x ∈ D.supportFinset, D x • Div.single (f x) : Div Y)
+        = ∑ x ∈ S, D x • Div.single (f x)
+  -- `Finset.sum_subset hS h` gives `∑ x ∈ supp, _ = ∑ x ∈ S, _`.
+  refine Finset.sum_subset hS ?_
   intro x _ hxS
-  have hx : (D : X → ℤ) x = 0 := apply_eq_zero_of_notMem_supportFinset hxS
-  -- need to show `D x • Div.single (f x) = 0`
-  -- D x = 0, so 0 • _ = 0.
+  -- need to show `D x • Div.single (f x) = (0 : Div Y)`.
+  -- D x = 0 (outside support), so 0 • _ = 0.
+  have hx : (D : Div X) x = 0 := apply_eq_zero_of_notMem_supportFinset hxS
   rw [hx, zero_smul]
 
 /-- Pointwise evaluation of `singletonMapFun f D` at a point `y : Y`. -/
 lemma singletonMapFun_apply [DecidableEq Y] (f : X → Y) (D : Div X) (y : Y) :
     ((singletonMapFun f D : Div Y) : Y → ℤ) y
       = ∑ x ∈ D.supportFinset, D x * (if y = f x then 1 else 0) := by
-  classical
   unfold singletonMapFun
   rw [Function.locallyFinsuppWithin.coe_sum]
   simp only [Finset.sum_apply]
@@ -318,7 +316,6 @@ lemma singletonMapFun_apply [DecidableEq Y] (f : X → Y) (D : Div X) (y : Y) :
 /-- The singleton map sends `0` to `0`. -/
 lemma singletonMapFun_zero [DecidableEq Y] (f : X → Y) :
     singletonMapFun f (0 : Div X) = 0 := by
-  classical
   -- Pointwise reduction: enough to show evaluation at every `y` is zero.
   refine DFunLike.ext _ _ ?_
   intro y
@@ -488,24 +485,39 @@ namespace Pic0
 variable {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 variable [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
 
-/-- The pushforward `Div0 X →+ Div0 Y` induced by a map `f : X → Y`. -/
-noncomputable def divPushforward (f : X → Y) : Div0 X →+ Div0 Y := by
+/-- A divisor lies in `Div0 X` iff its degree is zero. -/
+lemma _root_.JacobianChallenge.mem_Div0_iff
+    {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] (D : Div X) :
+    D ∈ Div0 X ↔ D.degree = 0 := by
+  show D ∈ (Div.degreeHom (X := X)).ker ↔ D.degree = 0
+  rw [AddMonoidHom.mem_ker, Div.degreeHom_apply]
+
+/-- The underlying `Div X →+ Div Y` of `divPushforward f`.
+
+We fix the `DecidableEq Y` instance to `Classical.decEq Y` so that downstream
+lemmas can pattern-match definitionally without instance-resolution drift. -/
+noncomputable def divPushforwardHom (f : X → Y) : Div X →+ Div Y :=
   letI : DecidableEq Y := Classical.decEq Y
-  refine AddMonoidHom.codRestrict
-    ((Div.singletonMap (Y := Y) f).comp (Div0 X).subtype) (Div0 Y) ?_
-  intro D
-  -- `D : Div0 X`, so `D.1 : Div X` has degree zero.
-  -- Need `Div.singletonMap f D.1 ∈ Div0 Y`, i.e., its degree is zero.
-  show Div.singletonMap f (D : Div X) ∈ Div0 Y
-  rw [show Div0 Y = (Div.degreeHom (X := Y)).ker from rfl,
-      AddMonoidHom.mem_ker]
-  rw [Div.degreeHom_apply, Div.degree_singletonMap]
-  -- `(D : Div X).degree = D.1.degree`, which is zero by `D ∈ Div0 X`.
-  have hD : (D : Div X) ∈ Div0 X := D.2
-  rw [show Div0 X = (Div.degreeHom (X := X)).ker from rfl,
-      AddMonoidHom.mem_ker] at hD
-  rw [Div.degreeHom_apply] at hD
-  exact hD
+  Div.singletonMap (Y := Y) f
+
+/-- Membership in `Div0 Y` for `divPushforwardHom f D`, when `D ∈ Div0 X`. -/
+lemma divPushforwardHom_mem_Div0 (f : X → Y) {D : Div X} (hD : D ∈ Div0 X) :
+    divPushforwardHom f D ∈ Div0 Y := by
+  letI : DecidableEq Y := Classical.decEq Y
+  show Div.singletonMap f D ∈ Div0 Y
+  rw [JacobianChallenge.mem_Div0_iff, Div.degree_singletonMap]
+  exact (JacobianChallenge.mem_Div0_iff D).mp hD
+
+/-- The pushforward `Div0 X →+ Div0 Y` induced by a map `f : X → Y`. -/
+noncomputable def divPushforward (f : X → Y) : Div0 X →+ Div0 Y :=
+  AddMonoidHom.codRestrict
+    ((divPushforwardHom f).comp (Div0 X).subtype) (Div0 Y)
+    (fun D => divPushforwardHom_mem_Div0 f D.2)
+
+/-- Compute the underlying `Div Y`-element of `divPushforward f D`. -/
+@[simp] lemma divPushforward_coe (f : X → Y) (D : Div0 X) :
+    ((divPushforward f D : Div0 Y) : Div Y) = divPushforwardHom f (D : Div X) :=
+  rfl
 
 /-- The pushforward `Pic0 X →+ Pic0 Y` induced by a map `f : X → Y`.
 
@@ -533,18 +545,34 @@ noncomputable def pushforward (f : X → Y) : Pic0 X →+ Pic0 Y := by
     pushforward f (QuotientAddGroup.mk D : Pic0 X)
       = (QuotientAddGroup.mk (divPushforward f D) : Pic0 Y) := rfl
 
+/-- The underlying `Div`-hom of `id : X → X` is the identity. -/
+lemma divPushforwardHom_id_apply (D : Div X) :
+    divPushforwardHom (id : X → X) D = D := by
+  letI : DecidableEq X := Classical.decEq X
+  show Div.singletonMap (id : X → X) D = D
+  exact Div.singletonMap_id_apply D
+
+/-- The underlying `Div`-hom is functorial under composition. -/
+lemma divPushforwardHom_comp_apply {Z : Type*} [TopologicalSpace Z] [T2Space Z]
+    [CompactSpace Z] (f : X → Y) (g : Y → Z) (D : Div X) :
+    divPushforwardHom (g ∘ f) D
+      = divPushforwardHom g (divPushforwardHom f D) := by
+  letI : DecidableEq Y := Classical.decEq Y
+  letI : DecidableEq Z := Classical.decEq Z
+  show Div.singletonMap (g ∘ f) D
+      = Div.singletonMap g (Div.singletonMap f D)
+  exact Div.singletonMap_comp_apply f g D
+
 /-- Identity functoriality on `Pic0`. -/
 lemma pushforward_id (P : Pic0 X) :
     pushforward (id : X → X) P = P := by
-  classical
   refine QuotientAddGroup.induction_on P ?_
   intro D
   rw [pushforward_mk]
   -- Need: `divPushforward id D = D` as elements of `Div0 X`.
   -- Reduce to underlying `Div X`-equality via `Subtype.ext`.
   have hDiv : (divPushforward (id : X → X) D : Div X) = (D : Div X) := by
-    show Div.singletonMap (id : X → X) (D : Div X) = (D : Div X)
-    exact Div.singletonMap_id_apply (D : Div X)
+    rw [divPushforward_coe, divPushforwardHom_id_apply]
   have h : divPushforward (id : X → X) D = D := Subtype.ext hDiv
   rw [h]
 
@@ -552,16 +580,14 @@ lemma pushforward_id (P : Pic0 X) :
 lemma pushforward_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z]
     [CompactSpace Z] (f : X → Y) (g : Y → Z) (P : Pic0 X) :
     pushforward (g ∘ f) P = pushforward g (pushforward f P) := by
-  classical
   refine QuotientAddGroup.induction_on P ?_
   intro D
   rw [pushforward_mk, pushforward_mk, pushforward_mk]
   -- Need `divPushforward (g ∘ f) D = divPushforward g (divPushforward f D)`.
   have hDiv : (divPushforward (g ∘ f) D : Div Z)
       = (divPushforward g (divPushforward f D) : Div Z) := by
-    show Div.singletonMap (g ∘ f) (D : Div X)
-        = Div.singletonMap g (Div.singletonMap f (D : Div X))
-    exact Div.singletonMap_comp_apply f g (D : Div X)
+    rw [divPushforward_coe, divPushforward_coe, divPushforward_coe,
+        divPushforwardHom_comp_apply]
   have h : divPushforward (g ∘ f) D = divPushforward g (divPushforward f D) :=
     Subtype.ext hDiv
   rw [h]
