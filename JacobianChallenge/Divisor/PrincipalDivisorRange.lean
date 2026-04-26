@@ -185,28 +185,10 @@ variable {X : Type u}
 
 end PrincipalDivisorMultiplicative
 
-/-! ## The principal divisor map as an `AddMonoidHom` -/
-
 variable {X : Type u}
   [TopologicalSpace X] [T2Space X] [CompactSpace X]
   [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
 
-/-- The **principal divisor map as an `AddMonoidHom`**, sending a
-non-vanishing-germ meromorphic function `f` (viewed *additively* via the
-`Additive` `TypeTag` wrapper) to its order divisor `(f) ∈ Div X`.
-
-* `toFun` is `principalDivisorMap` composed with `Additive.toMul`'s
-  underlying carrier identification (the carrier of `Additive G` is
-  literally `G`; we use `Additive.toMul` only to get the multiplicative
-  `1` and `*` to line up with `principalDivisorMap_one` /
-  `principalDivisorMap_mul`).
-* `map_zero'` is exactly `principalDivisorMap_one` (after rewriting
-  `Additive.toMul (0 : Additive G) = (1 : G)`).
-* `map_add'` is exactly `principalDivisorMap_mul` (after rewriting
-  `Additive.toMul (a + b) = Additive.toMul a * Additive.toMul b`).
-
-Both compatibility fields are **load-bearing**: they are the typeclass
-`PrincipalDivisorMultiplicative X` fields, not duplicated proofs. -/
 /-! ## The eventual honest `PrincDiv X`
 
 `MeromorphicNonzero X` is a `CommMonoid`, not a `CommGroup` (pointwise
