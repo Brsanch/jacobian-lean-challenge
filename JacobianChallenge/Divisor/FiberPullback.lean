@@ -323,17 +323,18 @@ lemma pushforward_pullback
   intro D
   -- Step through `pullback_mk` and `pushforward_mk`.
   rw [Pic0.pullback_mk, Pic0.pushforward_mk]
-  -- Both sides are now `mk` classes in `Pic0 Y`; we'll prove the equality by
-  -- producing a `Div0 Y`-equality of representatives.
-  -- The RHS `(N : ℤ) • (mk D : Pic0 Y)` equals `mk ((N : ℤ) • D)` because
-  -- `QuotientAddGroup.mk : Div0 Y →+ Pic0 Y` is an additive group hom.
+  -- Both sides are now `mk` classes in `Pic0 Y`; reduce to representative
+  -- equality. The RHS `(N : ℤ) • mk D` equals `mk ((N : ℤ) • D)` because the
+  -- ℤ-action on the quotient is the pointwise lift of the ℤ-action on
+  -- `Div0 Y`. We prove the general fact `∀ n : ℕ, ∀ d : Div0 Y, ...` by
+  -- induction, then specialise.
   have hRHS : ((N : ℤ) • (QuotientAddGroup.mk D : Pic0 Y))
-      = (QuotientAddGroup.mk ((N : ℤ) • D) : Pic0 Y) := by
-    rw [← (QuotientAddGroup.mk' ((PrincDiv Y).addSubgroupOf (Div0 Y))).map_zsmul]
-    rfl
+      = (QuotientAddGroup.mk ((N : ℤ) • D) : Pic0 Y) :=
+    ((QuotientAddGroup.mk' ((PrincDiv Y).addSubgroupOf (Div0 Y))).map_zsmul
+      D (N : ℤ)).symm
   rw [hRHS]
   -- Equality of quotient classes: it suffices to show the representatives
-  -- are equal (the strong form).
+  -- are equal.
   refine congrArg (QuotientAddGroup.mk (s := (PrincDiv Y).addSubgroupOf (Div0 Y))) ?_
   -- Reduce `Div0 Y`-equality to `Div Y`-equality via `Subtype.ext`.
   apply Subtype.ext
