@@ -244,7 +244,6 @@ The cotangent transition is exactly the composition of these two, so the
 `ContMDiffVectorBundle` instance for free.
 -/
 
-omit [IsManifold I 1 M] in
 /-- For a `C^{n+1}` manifold, the cotangent bundle core has `C^n` smooth
 coordinate changes. Proof: the tangent transition `x ↦ T_{ji}(x)` is
 `ContMDiffOn` (`tangentBundleCore.isContMDiff`); post-composing with the
@@ -273,7 +272,6 @@ lemma cotangentBundleCore.isContMDiff
   -- Compose to get smoothness of the cotangent transition.
   exact hflip.comp_contMDiffOn htang
 
-omit [IsManifold I 1 M] in
 /-- The cotangent bundle of a `C^{n+1}` manifold is a `C^n` vector bundle. -/
 instance CotangentBundle.contMDiffVectorBundle
     {n : WithTop ℕ∞} [IsManifold I (n + 1) M] :
