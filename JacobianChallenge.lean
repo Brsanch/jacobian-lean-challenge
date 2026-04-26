@@ -11,5 +11,6 @@ import JacobianChallenge.Manifold.RiemannSphere
 import JacobianChallenge.Manifold.RiemannSphereMobius
 import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.Single
+import JacobianChallenge.Divisor.FiberSum
 import JacobianChallenge.Jacobian
 import JacobianChallenge.Topology.SurfaceGenus
