@@ -134,13 +134,25 @@ lemma localOrder_eq_untop₀
     localOrder I f x = (mmeromorphicOrderAt I f x).untop₀ := rfl
 
 /-- Under the no-germ-zero hypothesis, `localOrder I f x = 0` iff
-`mmeromorphicOrderAt I f x = 0` (no spurious `⊤ ↦ 0` collapse). -/
+`mmeromorphicOrderAt I f x = 0` (no spurious `⊤ ↦ 0` collapse).
+
+Inlined (rather than delegated to `MMeromorphicOn.orderFun_eq_zero_iff`)
+because the latter carries a spurious `[IsManifold ...]` dependency from
+its enclosing `variable` block; the statement here is purely about
+`WithTop ℤ.untop₀` and needs no manifold structure. -/
 lemma localOrder_eq_zero_iff
     {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
     {I : ModelWithCorners ℂ ℂ ℂ} {f : X → ℂ} {x : X}
     (hf0 : mmeromorphicOrderAt I f x ≠ ⊤) :
-    localOrder I f x = 0 ↔ mmeromorphicOrderAt I f x = 0 :=
-  MMeromorphicOn.orderFun_eq_zero_iff hf0
+    localOrder I f x = 0 ↔ mmeromorphicOrderAt I f x = 0 := by
+  show (mmeromorphicOrderAt I f x).untop₀ = 0 ↔ _
+  constructor
+  · intro h
+    rcases WithTop.untop₀_eq_zero.mp h with h0 | htop
+    · exact h0
+    · exact (hf0 htop).elim
+  · intro h
+    rw [h]; rfl
 
 /-! ## The chart-coordinate local normal form
 
@@ -307,13 +319,17 @@ def localMultiplicity_eq_localOrder_statement : Prop :=
     (x : X),
     -- Positive-order (zero) case: the topological multiplicity at `x` over
     -- nearby values `w` is the natural-number absolute value of the local order.
+    -- We use `Set.ncard` (cardinality of a `Set`, `0` for infinite sets) so
+    -- the statement does not need a separate finiteness hypothesis embedded in
+    -- the type. The implicit content of "for sufficiently nearby `w`, the count
+    -- equals `k`" includes the assertion that the preimage set is finite (and
+    -- so `ncard` is the honest cardinality).
     0 < localOrder (modelWithCornersSelf ℂ ℂ) f x →
       ∃ (U : Set X) (V : Set ℂ),
         IsOpen U ∧ x ∈ U ∧
         IsOpen V ∧ f x ∈ V ∧
         ∀ w ∈ V, w ≠ f x →
-          (Set.Finite.toFinset (s := {y ∈ U | f y = w})
-              (Set.toFinite {y ∈ U | f y = w})).card =
+          ({y ∈ U | f y = w} : Set X).ncard =
             (localOrder (modelWithCornersSelf ℂ ℂ) f x).natAbs
 
 /-! ## Compatibility statement bridging `localOrder` to the existing
