@@ -19,7 +19,8 @@ challenge item 5 (the analytic-Jacobian construction).
   a covector field along the path-image and `c : ℝ → ℂ` is the chart-coordinate
   representation of the path. This is a literal `intervalIntegral` of a
   `ℂ`-valued function and carries the elementary linearity / vanishing
-  properties one expects.
+  properties one expects (zero, degenerate interval, reversal, constant path,
+  negation, scalar multiplication, additivity, interval splitting).
 * `Path.LiesInChart γ φ` — predicate: every point of the path image
   `γ(t)` lies in the source of the chart `φ : OpenPartialHomeomorph X ℂ`.
 * `Path.chartCoord φ γ` — the underlying real-valued chart-coordinate map
@@ -125,6 +126,60 @@ theorem pathIntegralOnInterval_symm (f : ℝ → ℂ →L[ℂ] ℂ) (c : ℝ →
     pathIntegralOnInterval f c b a = - pathIntegralOnInterval f c a b := by
   unfold pathIntegralOnInterval
   exact integral_symm a b
+
+/-- Negating the covector field negates the chart-local integral. -/
+@[simp]
+theorem pathIntegralOnInterval_neg (f : ℝ → ℂ →L[ℂ] ℂ) (c : ℝ → ℂ) (a b : ℝ) :
+    pathIntegralOnInterval (-f) c a b = - pathIntegralOnInterval f c a b := by
+  unfold pathIntegralOnInterval
+  -- `(-f) t (deriv c t) = - f t (deriv c t)` pointwise.
+  have hpt : (fun t => (-f) t (deriv c t)) = fun t => - f t (deriv c t) := by
+    funext t
+    simp [Pi.neg_apply, ContinuousLinearMap.neg_apply]
+  rw [hpt]
+  exact integral_neg
+
+/-- Scaling the covector field by a complex scalar scales the chart-local
+integral. The scalar `k : ℂ` acts on the integrand pointwise via the
+`Module ℂ (ℂ →L[ℂ] ℂ)` structure on continuous linear maps. -/
+@[simp]
+theorem pathIntegralOnInterval_smul (k : ℂ) (f : ℝ → ℂ →L[ℂ] ℂ) (c : ℝ → ℂ)
+    (a b : ℝ) :
+    pathIntegralOnInterval (k • f) c a b = k • pathIntegralOnInterval f c a b := by
+  unfold pathIntegralOnInterval
+  -- `(k • f) t (deriv c t) = k • (f t (deriv c t))` pointwise.
+  have hpt : (fun t => (k • f) t (deriv c t)) = fun t => k • f t (deriv c t) := by
+    funext t
+    simp [Pi.smul_apply, ContinuousLinearMap.smul_apply]
+  rw [hpt]
+  exact integral_smul k _
+
+/-- Additivity of the chart-local integral in the covector field. Requires
+both pointwise pairings to be `IntervalIntegrable` on `[a, b]`. -/
+theorem pathIntegralOnInterval_add (f g : ℝ → ℂ →L[ℂ] ℂ) (c : ℝ → ℂ) (a b : ℝ)
+    (hf : IntervalIntegrable (fun t => f t (deriv c t)) MeasureTheory.volume a b)
+    (hg : IntervalIntegrable (fun t => g t (deriv c t)) MeasureTheory.volume a b) :
+    pathIntegralOnInterval (f + g) c a b =
+      pathIntegralOnInterval f c a b + pathIntegralOnInterval g c a b := by
+  unfold pathIntegralOnInterval
+  -- `(f + g) t (deriv c t) = f t (deriv c t) + g t (deriv c t)` pointwise.
+  have hpt : (fun t => (f + g) t (deriv c t)) =
+      fun t => f t (deriv c t) + g t (deriv c t) := by
+    funext t
+    simp [Pi.add_apply, ContinuousLinearMap.add_apply]
+  rw [hpt]
+  exact integral_add hf hg
+
+/-- Splitting the integration interval at an intermediate point `c₀ ∈ [a, b]`.
+Requires the pairing to be `IntervalIntegrable` on each subinterval. -/
+theorem pathIntegralOnInterval_split (f : ℝ → ℂ →L[ℂ] ℂ) (c : ℝ → ℂ)
+    (a c₀ b : ℝ)
+    (hac : IntervalIntegrable (fun t => f t (deriv c t)) MeasureTheory.volume a c₀)
+    (hcb : IntervalIntegrable (fun t => f t (deriv c t)) MeasureTheory.volume c₀ b) :
+    pathIntegralOnInterval f c a c₀ + pathIntegralOnInterval f c c₀ b =
+      pathIntegralOnInterval f c a b := by
+  unfold pathIntegralOnInterval
+  exact integral_add_adjacent_intervals hac hcb
 
 /-- For a *constant* path `c ≡ p`, the chart-local integral vanishes:
 the velocity `deriv c t = 0` everywhere, so the integrand is identically `0`.
