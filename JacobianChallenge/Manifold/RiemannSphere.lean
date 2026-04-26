@@ -279,8 +279,7 @@ noncomputable def chartS : OpenPartialHomeomorph RiemannSphere ℂ where
         intro h
         rw [h, norm_zero] at hz'
         exact absurd hz' (not_lt.mpr (by positivity))
-      have h1 : (chartSToFun ∘ ((↑) : ℂ → RiemannSphere)) z = z⁻¹ := rfl
-      rw [h1]
+      -- Goal: `(chartSToFun ∘ ↑) z ∈ s`, which reduces to `z⁻¹ ∈ s`.
       apply hball
       simp only [Metric.mem_ball, dist_zero_right, norm_inv]
       rw [inv_lt_comm₀ (by positivity) hr_pos] at hz'
@@ -293,10 +292,7 @@ noncomputable def chartS : OpenPartialHomeomorph RiemannSphere ℂ where
         show ((z : ℂ) : RiemannSphere) = ((0 : ℂ) : RiemannSphere)
         rw [h]
       rw [OnePoint.continuousAt_coe]
-      -- `chartSToFun ∘ (↑) = Inv.inv` by definition of `chartSToFun_coe`.
-      have heq : (chartSToFun ∘ ((↑) : ℂ → RiemannSphere)) = Inv.inv := by
-        funext w; rfl
-      rw [heq]
+      -- `chartSToFun ∘ (↑)` reduces to `Inv.inv` definitionally.
       exact continuousAt_inv₀ hz
   continuousOn_invFun := continuous_chartSInvFun.continuousOn
 
