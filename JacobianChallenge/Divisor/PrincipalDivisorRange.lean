@@ -141,8 +141,7 @@ The two named compatibility lemmas are precisely what is required for
 the additive packaging of `principalDivisorMap` into an `AddMonoidHom`. -/
 class PrincipalDivisorMultiplicative (X : Type u)
     [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
-    extends CommGroup (MeromorphicNonzero X) where
+    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X] : Prop where
   /-- The principal divisor of the constant function `1` is the zero
       divisor. -/
   principalDivisorMap_one :
@@ -153,6 +152,18 @@ class PrincipalDivisorMultiplicative (X : Type u)
   principalDivisorMap_mul :
     ∀ f g : MeromorphicNonzero X,
       principalDivisorMap (f * g) = principalDivisorMap f + principalDivisorMap g
+
+/-- Default instance of `PrincipalDivisorMultiplicative X` using the
+    standalone `principalDivisorMap_one` and `principalDivisorMap_mul`
+    lemmas from `Divisor/PrincipalDivisor.lean` (I1's contribution).
+    Means downstream `[PrincipalDivisorMultiplicative X]` requirements
+    are satisfied automatically. -/
+instance principalDivisorMultiplicativeInstance (X : Type u)
+    [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X] :
+    PrincipalDivisorMultiplicative X where
+  principalDivisorMap_one := principalDivisorMap_one
+  principalDivisorMap_mul := principalDivisorMap_mul
 
 namespace PrincipalDivisorMultiplicative
 
