@@ -232,4 +232,53 @@ end Comp
 
 end Pic0
 
+/-! ### Identity functoriality at the `Pic⁰` level -/
+
+namespace Pic0
+
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [DecidableEq X]
+
+/-- The identity map has finite fibres (singletons). Stated as a `def` for
+    re-use as a hypothesis in `pullback_id`. -/
+lemma _root_.JacobianChallenge.Div.id_finite_fibers
+    (x : X) : ((id : X → X) ⁻¹' {x}).Finite :=
+  Set.finite_singleton x
+
+/-- The identity map has fibre-cardinality 1 everywhere. -/
+lemma _root_.JacobianChallenge.Div.id_fibers_card_one (x : X) :
+    ((Div.id_finite_fibers x).toFinset.card : ℕ) = 1 := by
+  -- `Div.id_finite_fibers x` is, by definition, `Set.finite_singleton x`.
+  -- Its `toFinset` is `{x}`, which has cardinality `1`.
+  show (Set.finite_singleton x).toFinset.card = 1
+  have htf : (Set.finite_singleton x).toFinset = ({x} : Finset X) := by
+    ext z
+    simp
+  rw [htf, Finset.card_singleton]
+
+/-- Identity functoriality at the `Pic⁰` level: pulling back along `id`
+    with the canonical singleton-fibre witnesses returns the identity hom.
+    The honest proof reduces, via `pullback_mk` and `divPullback_coe`, to
+    `Div.fiberSum_id_apply` (already in `FiberSum.lean`) — note that the
+    `N = 1` case lets us cancel the `1 • _` in the degree formula trivially. -/
+lemma pullback_id (P : Pic0 X) :
+    pullback (id : X → X) Div.id_finite_fibers 1 Div.id_fibers_card_one P = P := by
+  refine QuotientAddGroup.induction_on P ?_
+  intro D
+  rw [pullback_mk]
+  -- Reduce to `divPullback id _ 1 _ D = D` as elements of `Div0 X`,
+  -- then via `Subtype.ext` to the underlying `Div X`-equality.
+  have hDiv : (divPullback (id : X → X) Div.id_finite_fibers 1
+        Div.id_fibers_card_one D : Div X) = (D : Div X) := by
+    rw [divPullback_coe]
+    -- Goal: `Div.fiberSum id Div.id_finite_fibers (D : Div X) = (D : Div X)`.
+    -- `Div.id_finite_fibers` is *definitionally* `fun y => Set.finite_singleton y`,
+    -- so this matches the existing `fiberSum_id_apply`.
+    exact Div.fiberSum_id_apply (D : Div X)
+  have h : divPullback (id : X → X) Div.id_finite_fibers 1
+      Div.id_fibers_card_one D = D := Subtype.ext hDiv
+  rw [h]
+
+end Pic0
+
 end JacobianChallenge
