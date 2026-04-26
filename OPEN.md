@@ -8,7 +8,7 @@ not regenerate this list from context — query this file.
 
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 1 | `genus X : ℕ` | OPEN | Anti-hack pair with item 7. Likely route: define via `Module.finrank ℂ` of holomorphic 1-forms once that infrastructure exists, or via `H¹` rank. |
+| 1 | `genus X : ℕ` | **CLOSED 2026-04-26** | `genus X := JacobianChallenge.genus X = Module.finrank ℂ (HolomorphicOneForm X)`. Geometric genus via the dual cotangent-bundle infrastructure in `JacobianChallenge/Manifold/{Cotangent,HolomorphicOneForm}.lean`. Anti-hack pair (item 14) still OPEN — no `genus_eq_zero_iff_homeo`. |
 | 2 | `Jacobian X : Type u` | OPEN | Anti-hack pair with item 9. Two main candidate constructions: (a) `Pic⁰(X) = Div⁰(X) / PrincDiv(X)`; (b) `(Fin (genus X) → ℂ) ⧸ PeriodLattice X`. |
 | 3 | `instance : AddCommGroup (Jacobian X)` | OPEN | Falls out of (2) in either construction. |
 | 4 | `instance : TopologicalSpace (Jacobian X)` | OPEN | Quotient topology under either construction. |
@@ -44,12 +44,37 @@ These are *not* part of the challenge directly, but the constructions for
 items 1, 2, 6, 9 will need infrastructure not in mathlib at the pinned commit.
 Each is plausibly a standalone mathlib PR.
 
-- `Divisor` on a complex manifold and `principalDivisor` of a meromorphic function
-- `OrderOfVanishing` for meromorphic functions at a point
-- `HolomorphicOneForm` as a complex vector space; finite-dimensionality on compact Riemann surface
-- The period lattice as a `Submodule ℤ` of the dual of `HolomorphicOneForm`
-- Topological degree of proper holomorphic maps between Riemann surfaces (currently mathlib only has degree for `S^n → S^n`)
-- Connection between `ChartedSpace ℂ X` + `IsManifold 𝓘(ℂ) ω X` and the classical Riemann-surface API in textbooks (Forster, Miranda, Griffiths-Harris)
+- ~~`HolomorphicOneForm` as a complex vector space~~ — done locally in
+  `JacobianChallenge/Manifold/HolomorphicOneForm.lean` (~113 LOC) on top of
+  the local `CotangentBundle` (`JacobianChallenge/Manifold/Cotangent.lean`,
+  ~210 LOC, mathlib-PR shape — dual of `Mathlib.Geometry.Manifold.VectorBundle.Tangent`).
+- ~~`MeromorphicAt` on a complex manifold~~ — *partial* local at
+  `JacobianChallenge/Manifold/MeromorphicAt.lean` (~216 LOC). Has
+  `MMeromorphicAt`, `MMeromorphicOn`, `mmeromorphicOrderAt`, plus
+  `add/mul/neg/sub/zero/const` and `mono/union`. **Owed:** chart-independence
+  of `mmeromorphicOrderAt` (the `OpenPartialHomeomorph` ↔ analytic-groupoid
+  bridge), `inv/pow/zpow/const_smul/div`, and `MMeromorphicOn.divisor` →
+  `Function.locallyFinsuppWithin`.
+- Finite-dimensionality of `HolomorphicOneForm X` on compact connected Riemann
+  surface — needed for `genus X` to be the right integer (without it,
+  `Module.finrank` returns 0 by convention on infinite-dim).
+- `Divisor` infrastructure — *partial* local at
+  `JacobianChallenge/Divisor.lean` (~109 LOC). Has `Div X` (abbrev for
+  `Function.locallyFinsuppWithin (Set.univ) ℤ`), `supportFinset`, `degree`,
+  `degree_zero`. **Owed:** `degree_add`, `degreeHom`, `Div0`, `PrincDiv`,
+  `Pic0` — see Divisor.lean docstring for the API-mismatch issues at this pin.
+- `principalDivisor` and the residue-theorem identity (compact Riemann
+  surface ⇒ ∑ ord_x f = 0) — multi-PR work, not in scope.
+- The period lattice as a `Submodule ℤ` of the dual of `HolomorphicOneForm` —
+  needed for the `(Fin g → ℂ) ⧸ PeriodLattice` construction of `Jacobian X`.
+- Topological degree of proper holomorphic maps between Riemann surfaces
+  (currently mathlib only has degree for `S^n → S^n`). The pinned scoping
+  agent recommended a *generic-fiber cardinality* construction off
+  `mmeromorphicOrderAt`-on-manifold; that route requires the chart-
+  independence above.
+- `genus_eq_zero_iff_homeo` (challenge item 14) requires the topological
+  classification of compact connected orientable surfaces — multi-month
+  mathlib gap. Not in scope.
 
 Track each prereq as it is identified, and prefer landing it as a mathlib PR
 rather than carrying a private copy; the PR review process is the validation
