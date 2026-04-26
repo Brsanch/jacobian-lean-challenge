@@ -53,8 +53,8 @@ the space of global holomorphic 1-forms (the *geometric* genus).
 For a compact connected Riemann surface this equals the topological genus, but
 that identification is challenge item 14 (`genus_eq_zero_iff_homeo`) and is not
 proved here. -/
-def genus (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-  [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : ℕ :=
+noncomputable def genus (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : ℕ :=
   JacobianChallenge.genus X
 
 -- let X be a compact Riemann surface
