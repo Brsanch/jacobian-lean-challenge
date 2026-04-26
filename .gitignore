@@ -1,0 +1,15 @@
+/.lake
+.metadata_never_index
+
+# Internal review / audit / working artifacts — not public-facing
+**/scratch/
+**/drafts/
+**/TODO*.md
+**/NOTES*.md
+
+# Editor / OS
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/

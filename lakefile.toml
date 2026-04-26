@@ -1,0 +1,21 @@
+name = "jacobian_challenge"
+version = "0.1.0"
+keywords = ["math"]
+defaultTargets = ["JacobianChallenge"]
+
+[leanOptions]
+pp.unicode.fun = true # pretty-prints `fun a ↦ b`
+relaxedAutoImplicit = false
+weak.linter.mathlibStandardSet = true
+maxSynthPendingDepth = 3
+
+# Pinned to the exact mathlib commit Buzzard specified in the challenge gist
+# (https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9, v0.3,
+# "compiles with commit 8e3c989104daaa052921bf43de9eef0e1ac9fbf5 (15th April 2026)").
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "8e3c989104daaa052921bf43de9eef0e1ac9fbf5"
+
+[[lean_lib]]
+name = "JacobianChallenge"
