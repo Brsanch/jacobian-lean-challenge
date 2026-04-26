@@ -1,30 +1,32 @@
 # OPEN
 
 The 24 challenge items in `JacobianChallenge/Basic.lean`, mapped to Buzzard's
-spec. **Four** statuses are used so the bar is visible at a glance:
+spec. Three statuses, with one tag for partial progress:
 
 - **OPEN** — `sorry` still present in `Basic.lean`.
 - **STUB** — `sorry` replaced by a body that compiles against the verbatim
-  signature but **is not the intended mathematics**. Either the formula is
-  wrong (`pullback := 0`, `degree := 0/1 indicator`, `TopologicalSpace := ⊥`),
-  or the underlying object the lemma is about is itself a stub
-  (`Jacobian := Pic⁰` with `PrincDiv := ⊥`).
-- **STRICT-CLOSED** — the proof body is honest and would **survive future
-  honest replacement** of the upstream placeholders without re-proof. Not yet
-  Buzzard-acceptable because the underlying object is still a stub, but the
-  proof is real and durable.
-- **BUZZARD-ACCEPTED** — the implementation is honest, the underlying object is the
-  intended one, and the lemma is what a Buzzard-grade reviewer would accept
-  with no further qualification. *Reaching this for any item requires either
-  the residue theorem (honest `PrincDiv`) or honest period-lattice
-  integration (honest `PeriodLattice` of rank 2g) plus, for items 14, 22, 24,
-  additional deep classical inputs.*
+  signature but is not the intended mathematics. Either the formula is wrong
+  (`pullback := 0`, `degree := 0/1 indicator`, `TopologicalSpace := ⊥`), the
+  underlying object the lemma is about is itself a stub (`Jacobian := Pic⁰`
+  with `PrincDiv := ⊥`), or the proof crucially depends on a placeholder
+  being a placeholder.
+- **STRICT-CLOSED** — Buzzard-acceptable: the implementation is honest, the
+  underlying object is the intended analytic Jacobian, and the lemma is
+  what a strict reviewer would sign off on with no further qualification.
+  This is the *only* "closed" bar in this repo.
+- *(tag)* **PROOF-HONEST** — applies to a STUB item whose proof body is
+  honest and would survive future honest replacement of the upstream
+  placeholders. Not closure; it's a tag indicating the proof is real even
+  though the underlying object is a stub.
 
 **Current scoreboard (audited against `Basic.lean` HEAD `3bdce62`):**
 
-- **STRICT-CLOSED:** 3 / 24 — items 15 (`ofCurve_self`), 19 (`pushforward_id_apply`), 20 (`pushforward_comp_apply`). *This is the headline count — what "strict-closed" means in this repo.*
-- **BUZZARD-ACCEPTED:** 0 / 24
-- **STUB:** 11 / 24 (items 1, 2, 3, 4, 6, 7, 10, 16, 22, 23, plus item 8 still STUB even though `Pic0.pullback` infra is landed because Basic.lean still routes through the zero stub).
+- **STRICT-CLOSED:** 0 / 24 — reaching the first one requires landing
+  honest `PrincDiv` (residue theorem) or honest period lattice (rank 2g),
+  plus for items 14, 22, 24 additional classical inputs.
+- **STUB:** 14 / 24 — of which 3 carry the **PROOF-HONEST** tag (items 15,
+  19, 20: their proof bodies are real and would survive future honest
+  routing).
 - **OPEN:** 10 / 24 (sorries still in `Basic.lean`).
 
 Do not regenerate this list from context — query this file. Update this file
@@ -53,12 +55,12 @@ whenever a status changes.
 | 12 | `instance : IsManifold ... ω (Jacobian X)` | **OPEN** | Requires analytic-Jacobian construction. `AnalyticTorus X` has an honest `IsManifold` instance modulo `Λ = ⊥`; not wired into `Jacobian`. |
 | 13 | `instance : LieAddGroup ... ω (Jacobian X)` | **OPEN** | Requires item 12 plus smoothness of group ops. |
 | 14 | `genus_eq_zero_iff_homeo` (anti-hack vs. `genus := 0`) | **OPEN** | Genus 0 ↔ `X ≃ₜ S²`. Multi-month: requires closed-orientable-surface classification + Riemann sphere as `ChartedSpace` + bridge to geometric genus. |
-| 15 | `ofCurve_self : ofCurve P P = 0` | **STRICT-CLOSED** | Real proof reducing to `[δP − δP] = 0` in `Pic⁰`. Lemma is true under any honest `PrincDiv`; proof survives. Not CLOSED only because the *target* object `Jacobian X` is itself a stub. |
+| 15 | `ofCurve_self : ofCurve P P = 0` | **STUB** *(PROOF-HONEST)* | Real proof reducing to `[δP − δP] = 0` in `Pic⁰`. Proof would survive future honest `PrincDiv`. Not STRICT-CLOSED because the *target* `Jacobian X` is itself a stub. |
 | 16 | `ofCurve_inj` (anti-hack vs. `Jacobian := PUnit`) | **STUB** | Currently provable because `PrincDiv = ⊥` makes the quotient faithful — but the proof **uses the placeholder** and will not survive honest `PrincDiv` (under which the Abel–Jacobi theorem becomes load-bearing). Listed STUB rather than STRICT-CLOSED because the proof's correctness is contingent on the stub. |
 | 17 | `Jacobian.ofCurve_contMDiff` | **OPEN** | Requires item 5 (`ChartedSpace`) plus a real `ofCurve`. |
 | 18 | `Jacobian.pushforward_contMDiff` | **OPEN** | Requires item 5 plus a real `pushforward`. |
-| 19 | `pushforward_id_apply` | **STRICT-CLOSED** | Real proof via `Pic0.pushforward_id` ↦ `Div.singletonMap_id_apply`. Functoriality of `singletonMap` is honest and survives any honest `PrincDiv` (modulo a one-line "principal divisor pushforward = principal divisor" check). |
-| 20 | `pushforward_comp_apply` | **STRICT-CLOSED** | Real proof via `Pic0.pushforward_comp` ↦ `Div.singletonMap_comp_apply`. Same survives-future-honest argument as 19. |
+| 19 | `pushforward_id_apply` | **STUB** *(PROOF-HONEST)* | Real proof via `Pic0.pushforward_id` ↦ `Div.singletonMap_id_apply`. Functoriality of `singletonMap` survives any honest `PrincDiv`. Not STRICT-CLOSED because the underlying `Jacobian` is stub. |
+| 20 | `pushforward_comp_apply` | **STUB** *(PROOF-HONEST)* | Real proof via `Pic0.pushforward_comp` ↦ `Div.singletonMap_comp_apply`. Same survives-future-honest argument as 19. |
 | 21 | `Jacobian.pullback_contMDiff` | **OPEN** | Requires item 5 plus a real `pullback`. |
 | 22 | `pullback_id_apply` | **OPEN** | Genuinely false for the zero-stub `pullback`; remains `sorry`. |
 | 23 | `pullback_comp_apply` | **STUB** | Vacuously `0 ∘ 0 = 0`. Not STRICT-CLOSED: the proof crucially depends on `pullback` being the zero stub. |
@@ -114,16 +116,17 @@ items 1, 2, 5, 8, 9 will need infrastructure not in mathlib at the pin.
 
 **Roughly ~4,890 LOC of real local infrastructure**, none of which strict-closes any item by itself.
 
-## Honest scoring (per the four-status bar above)
+## Honest scoring
 
-- **BUZZARD-ACCEPTED**: 0 (Buzzard would not yet accept any item without the upstream
-  stubs being made honest first).
-- **STRICT-CLOSED**: 3 (items 15, 19, 20 — proof bodies survive future honest
-  routing; the bottleneck is the underlying `Jacobian` object).
-- **STUB**: 11.
+- **STRICT-CLOSED**: 0 (no item is yet Buzzard-acceptable; every filled item
+  routes through the stub `Jacobian X = Pic⁰ X` with `PrincDiv := ⊥` or
+  through stub `pullback`/`degree`).
+- **STUB**: 14, of which **3 are PROOF-HONEST** (items 15, 19, 20 — proof
+  bodies survive future honest routing; the bottleneck is the underlying
+  object).
 - **OPEN**: 10.
 
-Reaching the first **BUZZARD-ACCEPTED** requires landing one of: the residue theorem
+Reaching the first **STRICT-CLOSED** requires landing one of: the residue theorem
 on compact Riemann surfaces, an honest period lattice, the
 closed-orientable-surface classification, or honest fibre-cardinality
 for proper holomorphic maps.
