@@ -34,12 +34,27 @@ jobs:
       # running `lake update` locally. After the first successful CI run,
       # commit the generated manifest and this step becomes a no-op.
       - name: Bootstrap lake-manifest.json if missing
+        id: bootstrap_manifest
         run: |
           if [ ! -f lake-manifest.json ]; then
             curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
             export PATH="$HOME/.elan/bin:$PATH"
             lake update
+            echo "generated=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "generated=false" >> "$GITHUB_OUTPUT"
           fi
+      # Upload the freshly-generated manifest so a developer can pull
+      # it down via `gh run download` and commit it. This step + the
+      # bootstrap step both no-op once `lake-manifest.json` is in git.
+      - name: Upload lake-manifest.json artifact (only when freshly generated)
+        if: steps.bootstrap_manifest.outputs.generated == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lake-manifest
+          path: lake-manifest.json
+          if-no-files-found: error
+          retention-days: 7
       - uses: leanprover/lean-action@v1
       # docgen is known to hang on sister projects; give it a short timeout
       # and mark it non-blocking so the job finishes and dedupe-caches runs.
