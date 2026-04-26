@@ -19,6 +19,7 @@ import JacobianChallenge.Divisor.PrincipalDivisorRange
 import JacobianChallenge.Manifold.ResidueTheorem
 import JacobianChallenge.Manifold.MeromorphicExtension
 import JacobianChallenge.Manifold.FibreBalance
+import JacobianChallenge.Divisor.StrictClosurePath
 import JacobianChallenge.Jacobian
 import JacobianChallenge.Divisor.FiberPullback
 import JacobianChallenge.Topology.SurfaceGenus
