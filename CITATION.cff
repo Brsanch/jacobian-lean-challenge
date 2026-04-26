@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this formalization, please cite it as below."
+type: software
+title: "Jacobian Challenge: A Lean 4 Formalization of Compact Riemann Surfaces and their Jacobians (Buzzard challenge response)"
+authors:
+  - family-names: Sanchez
+    given-names: Bryan
+    alias: Brsanch
+version: 0.1.0
+date-released: "2026-04-26"
+url: "https://github.com/Brsanch/jacobian-lean-challenge"
+repository-code: "https://github.com/Brsanch/jacobian-lean-challenge"
+license: MIT
+keywords:
+  - Lean 4
+  - mathlib
+  - formal verification
+  - interactive theorem proving
+  - Riemann surfaces
+  - Jacobian variety
+  - Abel-Jacobi
+  - algebraic geometry
+references:
+  - type: misc
+    title: "Jacobian challenge (gist), v0.3"
+    authors:
+      - family-names: Buzzard
+        given-names: Kevin
+    url: "https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9"
+    date-released: "2026-04-15"
