@@ -466,10 +466,9 @@ the identity model `𝓘(ℂ) = modelWithCornersSelf ℂ ℂ`. -/
 lemma contDiffOn_chartN_symm_trans_chartS :
     ContDiffOn ℂ ω (𝓘(ℂ) ∘ (chartN.symm.trans chartS) ∘ 𝓘(ℂ).symm)
       (𝓘(ℂ).symm ⁻¹' (chartN.symm.trans chartS).source ∩ Set.range 𝓘(ℂ)) := by
-  -- The model is the identity; its `coe` and `symm` are `id`, range is `univ`.
+  -- The model is the identity; its `coe` and `symm` are `id`, `range id = univ`.
   simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
-    Function.id_comp, Function.comp_id, Set.preimage_id, ModelWithCorners.range_eq_univ,
-    Set.inter_univ]
+    Function.id_comp, Function.comp_id, Set.preimage_id, Set.range_id, Set.inter_univ]
   -- It suffices to show the transition is analytic on its source.
   refine ContDiffOn.congr ?_ chartN_symm_trans_chartS_eqOn
   rw [chartN_symm_trans_chartS_source]
@@ -481,8 +480,7 @@ lemma contDiffOn_chartS_symm_trans_chartN :
     ContDiffOn ℂ ω (𝓘(ℂ) ∘ (chartS.symm.trans chartN) ∘ 𝓘(ℂ).symm)
       (𝓘(ℂ).symm ⁻¹' (chartS.symm.trans chartN).source ∩ Set.range 𝓘(ℂ)) := by
   simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
-    Function.id_comp, Function.comp_id, Set.preimage_id, ModelWithCorners.range_eq_univ,
-    Set.inter_univ]
+    Function.id_comp, Function.comp_id, Set.preimage_id, Set.range_id, Set.inter_univ]
   refine ContDiffOn.congr ?_ chartS_symm_trans_chartN_eqOn
   rw [chartS_symm_trans_chartN_source]
   exact analyticOnNhd_inv.contDiffOn_of_completeSpace
