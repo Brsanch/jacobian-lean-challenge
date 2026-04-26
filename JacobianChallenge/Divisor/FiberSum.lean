@@ -196,7 +196,7 @@ lemma fiberSum_id_apply (D : Div X) :
     intro y
     have htf : (Set.finite_singleton y).toFinset = ({y} : Finset X) := by
       ext x
-      simp [Set.Finite.mem_toFinset]
+      simp
     rw [htf, Finset.sum_singleton]
   -- Rewrite the inner sums using `hfiber`.
   have hLHS_eq : (fiberSumFun (id : X → X) (fun _ => Set.finite_singleton _) D : Div X)
@@ -204,7 +204,9 @@ lemma fiberSum_id_apply (D : Div X) :
     unfold fiberSumFun
     refine Finset.sum_congr rfl ?_
     intro y _
-    rw [hfiber y]
+    -- `hfiber y : ∑ x ∈ (Set.finite_singleton y).toFinset, Div.single x = Div.single y`.
+    -- Wrap with `congr_arg (D y • ·)` to lift through the smul.
+    exact congrArg (D y • ·) (hfiber y)
   rw [hLHS_eq]
   -- Now prove `(∑ y ∈ supp D, D y • Div.single y) z = D z` pointwise.
   -- Use `coe_sum` to push the FunLike app through the sum.
