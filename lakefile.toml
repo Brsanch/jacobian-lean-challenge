@@ -8,15 +8,15 @@ pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 relaxedAutoImplicit = false
 weak.linter.mathlibStandardSet = true
 maxSynthPendingDepth = 3
-# Diagnostics on by default. `diagnostics = true` + a threshold of 100
-# surfaces high-count unfolds in CI logs the moment they appear, so
-# whnf / isDefEq loops are caught before they manifest as heartbeat
-# timeouts. Empty output for files with no real proofs (e.g. the
-# verbatim signature in `Basic.lean`); becomes useful immediately as
-# soon as a sorry is replaced with content. See `DEVELOPMENT.md`
-# "Diagnostic workflow for Lean timeouts and loops".
+# Diagnostics on by default. Only `diagnostics` is settable as a
+# lake-level `-D` flag at this Lean version — `diagnostics.threshold`
+# is registered by mathlib at runtime and rejected as a `-D` option
+# (`error: invalid -D parameter, unknown configuration option
+# '«diagnostics.threshold»'`). For tighter thresholds when chasing a
+# whnf / isDefEq loop, add a per-file `set_option diagnostics.threshold
+# 100` *after* `import Mathlib`. See `DEVELOPMENT.md` "Diagnostic
+# workflow for Lean timeouts and loops".
 diagnostics = true
-"diagnostics.threshold" = 100
 
 # Pinned to the exact mathlib commit Buzzard specified in the challenge gist
 # (https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9, v0.3,
