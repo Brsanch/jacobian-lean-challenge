@@ -624,106 +624,69 @@ lemma pushforward_comp_apply (f : X → Y) (g : Y → Z) (P : Jacobian X) :
       = Pic0.pushforward g (Pic0.pushforward f P)
   exact Pic0.pushforward_comp f g P
 
-/-! ### Pullback — currently aliased to `pushforward` (mathematically wrong)
+/-! ### Pullback (zero stub, with honest functoriality on composition only)
 
-⚠️ **MATHEMATICAL HEALTH WARNING — READ THIS FIRST** ⚠️
+The mathematically correct pullback `f^* : Jacobian Y →ₜ+ Jacobian X` for
+`f : X → Y` between compact Riemann surfaces is the descent of the
+divisor-level map `Div Y → Div X` sending `single y ↦ ∑_{x ∈ f⁻¹(y)} single x`
+(a finite sum, by compactness of the fiber and properness of `f`). Building
+this map honestly requires:
 
-At this pin we **define `pullback f := pushforward f`** — *literally the
-same map as the pushforward*. This is **mathematically wrong**. The true
-pullback `f^* : Jacobian Y →ₜ+ Jacobian X` for `f : X → Y` between compact
-Riemann surfaces is the descent of the divisor-level *fiber-sum* map
-`Div Y → Div X` sending `single y ↦ ∑_{x ∈ f⁻¹(y)} single x`. In
-particular:
-
-* the **direction** is opposite to pushforward (`Y → X`, not `X → Y`),
-* the **values** differ — pullback aggregates over fibers, while
-  pushforward sums over the source.
-
-We adopt the alias purely as a coarser stub than the previous
-zero-stub. Concretely, this stub:
-
-* discharges `pullback_id_apply` (`Basic.lean` item 21) honestly — for
-  `f = id`, the true pullback agrees with the identity, which is also
-  what `pushforward id` is (`pushforward_id_apply`). The current
-  alias matches the truth on this one input.
-* discharges `pullback_comp_apply` (`Basic.lean` item 22 / item 23)
-  honestly — covariant composition `pushforward (g ∘ f) P =
-  pushforward g (pushforward f P)` (`pushforward_comp_apply`)
-  carries through. The true contravariant composition
-  `pullback (g ∘ f) = pullback f ∘ pullback g` would require a separate
-  argument; under the alias the two sides happen to coincide because
-  pushforward composition is symmetric in name to (the misnamed)
-  pullback composition here.
-
-Building the honest pullback requires:
-
-1. A general "fiber sum" construction `Div.fiberSum f : Div Y →+ Div X`
-   whose well-definedness uses finiteness of `f⁻¹(y)` for every
-   `y ∈ supp D`. With `[CompactSpace X]` and `[T2Space Y]`, each `f⁻¹(y)`
-   is closed in a compact space, hence compact — but compactness alone
-   does **not** give finiteness; one needs either `f`
-   proper-and-discrete-fibered (the holomorphy hypothesis does this for
-   non-constant maps via the local degree) or a separate handle.
-2. Degree preservation under fiber sum (so the map descends to `Div0`),
-   which is exactly the statement `degree (f^* D) = (deg f) · degree D`
-   and requires the honest `ContMDiff.degree` (currently the `degreeStub`
+1. A general "fiber sum" construction `Div.fiberSum f : Div Y →+ Div X` whose
+   well-definedness uses finiteness of `f⁻¹(y)` for every `y ∈ supp D`. With
+   `[CompactSpace X]` and `[T2Space Y]`, each `f⁻¹(y)` is closed in a compact
+   space, hence compact — but compactness alone does **not** give finiteness;
+   one needs either `f` proper-and-discrete-fibered (the holomorphy hypothesis
+   does this for non-constant maps via the local degree) or a separate
+   handle.
+2. Degree preservation under fiber sum (so the map descends to `Div0`), which
+   is exactly the statement `degree (f^* D) = (deg f) · degree D` and
+   requires the honest `ContMDiff.degree` (currently the `degreeStub`
    placeholder).
 
-Neither (1) nor (2) is in scope at this pin.
+Neither (1) nor (2) is in scope at this pin. We therefore continue to ship
+the zero `ContinuousAddMonoidHom` for `pullback`. **This is mathematically
+wrong** (the true pullback differs from `0` whenever `f` is non-constant),
+and in particular it does **not** satisfy `pullback id = id`
+(`Basic.lean` item 21 / `pullback_id_apply`). The contravariant-composition
+functoriality lemma (`Basic.lean` item 22 / `pullback_comp_apply`) is,
+however, vacuously true for the zero stub — `0 ∘ 0 = 0` — and we discharge
+it here so the strict-reader can rely on it as a typechecked sanity check
+(albeit one that the honest pullback will need to re-prove from scratch
+against fiber sums).
 
-`Basic.lean` item 24 (`pushforward_pullback`) — i.e.,
-`pushforward f (pullback f P) = (degree f) • P` — does **not** follow
-from this aliasing. With `pullback = pushforward`, the LHS becomes
-`pushforward f (pushforward f P) = pushforward (f ∘ f) P` (by
-`pushforward_comp_apply`), but `f ∘ f` is not even type-correct when
-`X ≠ Y`, and even when it is, equality with `degree f • P` requires
-specific arithmetic properties of `degree` that do not hold for the
-current `degreeStub`. That lemma stays `sorry` in `Basic.lean`.
+`Basic.lean` item 21 (`pullback_id_apply`) is left as `sorry` because it is
+genuinely false for the zero stub; the load-bearing equality `pullback id P
+= P` requires `pullback` to be the identity on `Jacobian X`, which our zero
+definition is not. The stub also makes `pushforward_pullback` (item 24)
+collapse to `pushforward f 0 = (degree f) • P`, i.e., `0 = (degree f) • P`,
+which is false in general — that lemma stays `sorry` in `Basic.lean` for
+the same reason. -/
 
-Note on variance: to make `pullback f := pushforward f` typecheck the
-inner `pullback` is now **covariant** (`Jacobian X →ₜ+ Jacobian Y`),
-matching `pushforward` exactly. `Basic.lean`'s outer `pullback` signature
-is correspondingly adjusted (it is no longer the verbatim Buzzard gist
-contravariant signature) — see the file-level docstring of
-`Basic.lean` and the section above its `pullback` def for the explicit
-caveat. -/
+/-- The pullback map between Jacobians associated to a map of the underlying
+curves. **Stub at this pin** — defined as the zero `ContinuousAddMonoidHom`.
+This satisfies the `Basic.lean` *signature* of challenge item 13 and the
+contravariant-composition lemma (item 22, vacuous for `0`) but does **not**
+satisfy the identity-functoriality lemma (item 21, which is false for the
+zero stub when `Jacobian X` is non-trivial). See the section docstring above
+for what an honest pullback would need. -/
+noncomputable def pullback (_f : X → Y) :
+    Jacobian Y →ₜ+ Jacobian X :=
+  0
 
-/-- The pullback map between Jacobians associated to a map of the
-underlying curves.
-
-⚠️ **Mathematically wrong at this pin** ⚠️ — defined here as
-`JacobianChallenge.Jacobian.pushforward f`, i.e., **literally the same
-map as the pushforward**, only repackaged under the `pullback` name.
-The true pullback is the descent of the divisor-level fiber-sum
-`single y ↦ ∑_{x ∈ f⁻¹(y)} single x`, which differs from the pushforward
-in general (and goes in the opposite direction `Y → X`). The aliasing is
-preserved only so that the identity- and composition-functoriality lemmas
-can be discharged from the corresponding `pushforward_*` lemmas without
-a separate `sorry`; once an honest fiber-sum construction lands, this
-definition must be replaced (and `Basic.lean`'s outer `pullback`
-signature should be flipped back to the gist's contravariant form
-`Jacobian Y →ₜ+ Jacobian X`). -/
-noncomputable def pullback (f : X → Y) :
-    Jacobian X →ₜ+ Jacobian Y :=
-  pushforward f
-
-/-- Identity functoriality for the (alias) `pullback`. Holds because the
-alias `pullback id = pushforward id`, and `pushforward_id_apply` is the
-true identity-functoriality on the `Pic0`-level pushforward. -/
-lemma pullback_id_apply (P : Jacobian X) :
-    pullback (id : X → X) P = P :=
-  pushforward_id_apply P
-
-/-- Covariant composition for the (alias) `pullback`. Holds because the
-alias `pullback h = pushforward h` for every `h`, and
-`pushforward_comp_apply` is the true composition-functoriality on the
-`Pic0`-level pushforward. **Note**: the *honest* pullback is
-contravariant, so this statement is **not** the contravariant
-functoriality the strict reader wants — it is the covariant pushforward
-identity wearing a `pullback` hat. -/
-lemma pullback_comp_apply (f : X → Y) (g : Y → Z) (P : Jacobian X) :
-    pullback (g ∘ f) P = pullback g (pullback f P) :=
-  pushforward_comp_apply f g P
+/-- Contravariant composition for the (zero-stub) `pullback`. Both sides
+reduce to `0` because the stub is the zero hom. This is *not* a real
+functoriality statement — when `pullback` becomes honest (via fiber sums on
+`Div`), this lemma will need a real proof, but its statement is exactly the
+strict-reader check, so we keep it. -/
+lemma pullback_comp_apply (f : X → Y) (g : Y → Z) (P : Jacobian Z) :
+    pullback (g ∘ f) P = pullback f (pullback g P) := by
+  -- Both sides are `0` because the stub is the zero `ContinuousAddMonoidHom`.
+  show (0 : Jacobian Z →ₜ+ Jacobian X) P
+      = (0 : Jacobian Y →ₜ+ Jacobian X) ((0 : Jacobian Z →ₜ+ Jacobian Y) P)
+  -- `coe_zero` (additivized from `ContinuousMonoidHom.coe_one`) gives
+  -- `⇑(0 : A →ₜ+ B) = 0`, so applying it to any element returns `0`.
+  simp
 
 end Jacobian
 
