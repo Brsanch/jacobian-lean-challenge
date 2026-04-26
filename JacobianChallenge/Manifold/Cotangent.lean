@@ -33,6 +33,15 @@ inherit the topology / fibre / vector bundle structure on its total space.
   with `tangentBundleCore.coordChange j i x`. Equivalently, it is the
   fibrewise *transpose* of the tangent transition.
 
+## Smoothness
+
+When `M` is `C^{n+1}`, the cotangent bundle is a `C^n` vector bundle (see
+`cotangentBundleCore.isContMDiff` and `CotangentBundle.contMDiffVectorBundle`
+below). The proof composes the tangent version
+(`tangentBundleCore.isContMDiff`) with smoothness of the continuous linear
+map `(compL 𝕜 E E 𝕜).flip`, which encodes the precomposition operation
+`T ↦ ξ ↦ ξ ∘L T`.
+
 ## Design notes
 
 For the change-of-coordinates derivation, recall that a covector at a point
@@ -215,5 +224,64 @@ instance CotangentSpace.vectorBundle :
   inferInstanceAs <| VectorBundle 𝕜 (E →L[𝕜] 𝕜) (cotangentBundleCore I M).Fiber
 
 end CotangentBundleInstances
+
+section CotangentBundleSmoothness
+
+/-! ### Smooth structure on the cotangent bundle
+
+When `M` is a `C^{n+1}` manifold, the cotangent bundle is a `C^n` vector
+bundle. The proof reduces to two facts:
+
+* tangent bundle smoothness: `tangentBundleCore.isContMDiff` says the tangent
+  transition `x ↦ T_{ji}(x) : E →L[𝕜] E` is `ContMDiffOn` for `C^{n+1}` `M`.
+* the precomposition map `(compL 𝕜 E E 𝕜).flip : (E →L[𝕜] E) →L[𝕜]
+  ((E →L[𝕜] 𝕜) →L[𝕜] (E →L[𝕜] 𝕜))` is itself a continuous linear map, hence
+  smooth in the manifold sense.
+
+The cotangent transition is exactly the composition of these two, so the
+`IsContMDiff` predicate transports across; the upstream
+`VectorBundleCore.instContMDiffVectorBundle` then gives the
+`ContMDiffVectorBundle` instance for free.
+-/
+
+/-- For a `C^{n+1}` manifold, the cotangent bundle core has `C^n` smooth
+coordinate changes. Proof: the tangent transition `x ↦ T_{ji}(x)` is
+`ContMDiffOn` (`tangentBundleCore.isContMDiff`); post-composing with the
+continuous linear map `(compL 𝕜 E E 𝕜).flip : (E →L[𝕜] E) →L[𝕜]
+((E →L[𝕜] 𝕜) →L[𝕜] (E →L[𝕜] 𝕜))` preserves `ContMDiffOn`. -/
+lemma cotangentBundleCore.isContMDiff
+    {n : WithTop ℕ∞} [IsManifold I (n + 1) M] :
+    haveI : IsManifold I 1 M := .of_le (n := n + 1) le_add_self
+    (cotangentBundleCore I M).IsContMDiff I n := by
+  haveI : IsManifold I 1 M := .of_le (n := n + 1) le_add_self
+  refine ⟨fun i j => ?_⟩
+  -- The tangent core is `C^n`, so its `(j, i)`-coordinate change is `ContMDiffOn`.
+  have htang :
+      ContMDiffOn I 𝓘(𝕜, E →L[𝕜] E) n
+        (fun x => (tangentBundleCore I M).coordChange j i x)
+        ((tangentBundleCore I M).baseSet i ∩ (tangentBundleCore I M).baseSet j) := by
+    have h := (tangentBundleCore.isContMDiff (I := I) (M := M) (n := n)
+      ).contMDiffOn_coordChange j i
+    -- `tangent`'s base set is `i.1.source`, identical to ours; reorder the intersection.
+    simpa [Set.inter_comm] using h
+  -- The CLM `(compL 𝕜 E E 𝕜).flip` is smooth in the manifold sense.
+  have hflip :
+      ContMDiff 𝓘(𝕜, E →L[𝕜] E) 𝓘(𝕜, (E →L[𝕜] 𝕜) →L[𝕜] (E →L[𝕜] 𝕜)) n
+        (fun T : E →L[𝕜] E => (ContinuousLinearMap.compL 𝕜 E E 𝕜).flip T) :=
+    ((ContinuousLinearMap.compL 𝕜 E E 𝕜).flip).contMDiff
+  -- Compose to get smoothness of the cotangent transition.
+  exact hflip.comp_contMDiffOn htang
+
+/-- The cotangent bundle of a `C^{n+1}` manifold is a `C^n` vector bundle. -/
+instance CotangentBundle.contMDiffVectorBundle
+    {n : WithTop ℕ∞} [IsManifold I (n + 1) M] :
+    haveI : IsManifold I 1 M := .of_le (n := n + 1) le_add_self
+    ContMDiffVectorBundle n (E →L[𝕜] 𝕜) (CotangentSpace I : M → Type _) I := by
+  haveI : IsManifold I 1 M := .of_le (n := n + 1) le_add_self
+  haveI : (cotangentBundleCore I M).IsContMDiff I n :=
+    cotangentBundleCore.isContMDiff
+  exact (cotangentBundleCore I M).instContMDiffVectorBundle
+
+end CotangentBundleSmoothness
 
 end
