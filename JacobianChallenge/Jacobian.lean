@@ -219,65 +219,401 @@ lemma ofCurve_inj (P : X) : Function.Injective (ofCurve P) := by
   -- And conclude via `Div.single_eq_iff`.
   exact (Div.single_eq_iff Q₁ Q₂).mp hSingle
 
-/-! ### Functoriality stubs (challenge items 12, 13)
+end Jacobian
 
-The Abel–Jacobi `pushforward` and `pullback` honestly require either a
-functorial action of `f : X → Y` on divisor-class groups (the `Pic⁰` route,
-which needs single-point divisor manipulation in `Divisor.lean`) or the
-period-lattice quotient `ℂᵍ / Λ` (the analytic route, which has not been
-built). Neither piece of infrastructure is available at this pin.
+end JacobianChallenge
 
-To keep this file `sorry`-free we ship the **zero `ContinuousAddMonoidHom`**
-as the value of both `pushforward f` and `pullback f`. This is honest because
-the discrete topology on `Jacobian X` makes the zero hom continuous, and the
-signature in `Basic.lean` only requires a `ContinuousAddMonoidHom` — not any
-identity beyond it.
+/-! ### Functorial pushforward via singleton-map on divisors
 
-**What this stub does *not* satisfy.** All five functoriality lemmas in
-`Basic.lean` (items 17–23) fail for the zero stub on non-trivial input:
+We supply an honest induced map `pushforward f : Jacobian X →ₜ+ Jacobian Y`
+for any function `f : X → Y` between compact Hausdorff spaces. Continuity
+of the underlying additive map is automatic because `Jacobian Y` carries
+the discrete topology.
 
-* `pushforward_id_apply : pushforward id _ P = P` would need the *identity*
-  hom, not the *zero* hom — fails for any `P ≠ 0`.
-* `pullback_id_apply` — symmetric reason, fails for any `P ≠ 0`.
-* `pushforward_comp_apply` and `pullback_comp_apply` reduce to `0 = 0` on the
-  zero stub (composition of zero homs is the zero hom), so these *do* hold,
-  but only vacuously, and we do **not** ship them here because they would
-  silently lock in the false `_id_apply` companions if the stubs were ever
-  refined non-uniformly.
-* `pushforward_pullback : pushforward f (pullback f P) = degree f • P`
-  reduces to `0 = degree f • P`, which fails for non-zero `P` and non-zero
-  degree.
-* `pushforward_contMDiff` / `pullback_contMDiff` would require the
-  `ChartedSpace (Fin (genus _) → ℂ)` instance on `Jacobian X` / `Jacobian Y`,
-  which is still `sorry` in `Basic.lean` (item 7). The zero map *would* be
-  smooth (constants are), but the lemma cannot even typecheck cleanly until
-  those instances land.
+The construction is built bottom-up:
 
-All of items 17–23 therefore remain as `sorry` in `Basic.lean`, with the gap
-honestly localised to "we have no real `pushforward` / `pullback`." -/
-section Functoriality
+* `Div.singletonMap f : Div X →+ Div Y` — the linear extension of
+  `Div.single x ↦ Div.single (f x)`, via a finset sum over the (finite)
+  support of the input divisor.
+* `Div.singletonMap_id` / `Div.singletonMap_comp` — functoriality at the
+  divisor level.
+* `Div.degree_singletonMap` — degree preservation (so the map descends to
+  degree-zero divisors).
+* `Pic0.pushforward f : Pic0 X →+ Pic0 Y` — descent through the placeholder
+  `PrincDiv = ⊥`. With the placeholder, this descent is automatic; once
+  `PrincDiv` is honest, this step will require functoriality of principal
+  divisors under pullback of meromorphic functions.
+* `Jacobian.pushforward f hf : Jacobian X →ₜ+ Jacobian Y` — wrap as a
+  `ContinuousAddMonoidHom`.
 
-variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+The hypothesis `hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f` in `Jacobian.pushforward` is
+not used at this pin — every set-theoretic map between compact Hausdorff
+spaces with the placeholder `PrincDiv = ⊥` induces a hom on `Pic⁰`. Once
+`PrincDiv` is honest, the hypothesis becomes load-bearing (it is needed
+to ensure that principal divisors push forward to principal divisors). -/
 
-/-- The pushforward map between Jacobians associated to a map of the underlying
-curves. **Stub at this pin** — see the section docstring above. Defined as the
-zero `ContinuousAddMonoidHom`; this satisfies the `Basic.lean` *signature* of
-challenge item 12 but does **not** satisfy any of the functoriality lemmas
-(items 17–23). -/
-noncomputable def pushforward (_f : X → Y) :
-    Jacobian X →ₜ+ Jacobian Y :=
-  0
+namespace JacobianChallenge
+
+namespace Div
+
+variable {X Y Z : Type*}
+
+/-! ### Pointwise evaluation lemma for `n • single` -/
+
+/-- Pointwise evaluation of `n • Div.single x`. -/
+lemma zsmul_single_apply [TopologicalSpace X] [DecidableEq X]
+    (n : ℤ) (x y : X) :
+    ((n • single x : Div X) : X → ℤ) y = n * (if y = x then 1 else 0) := by
+  classical
+  rw [Function.locallyFinsuppWithin.coe_zsmul, Pi.smul_apply, single_apply,
+      smul_eq_mul]
+  by_cases h : y = x
+  · simp [h]
+  · simp [h]
+
+/-! ### The singleton map `Div X →+ Div Y` -/
+
+variable [TopologicalSpace X] [T2Space X] [CompactSpace X]
+variable [TopologicalSpace Y]
+
+/-- The *singleton map* `Div.singletonMapFun f D` sends a divisor `D` on `X`
+to the divisor on `Y` obtained as the finite linear combination
+`∑_{x ∈ supp D} D(x) · Div.single (f x)`.
+
+This is the unique `ℤ`-linear extension of `Div.single x ↦ Div.single (f x)`
+on the basis of singleton-indicator divisors, made concrete via the finite
+support guaranteed by `[T2Space X] [CompactSpace X]`.
+
+The packaging as an `AddMonoidHom` is `Div.singletonMap` below. -/
+noncomputable def singletonMapFun [DecidableEq Y] (f : X → Y) (D : Div X) : Div Y :=
+  ∑ x ∈ D.supportFinset, D x • Div.single (f x)
+
+/-- The singleton map agrees with the finset sum over any finset containing
+the support of `D`. Values outside the support are zero, so the additional
+terms contribute zero. -/
+lemma singletonMapFun_eq_sum [DecidableEq Y] (f : X → Y) (D : Div X)
+    (S : Finset X) (hS : D.supportFinset ⊆ S) :
+    singletonMapFun f D = ∑ x ∈ S, D x • Div.single (f x) := by
+  classical
+  unfold singletonMapFun
+  refine (Finset.sum_subset hS ?_).symm
+  intro x _ hxS
+  have hx : (D : X → ℤ) x = 0 := apply_eq_zero_of_notMem_supportFinset hxS
+  -- need to show `D x • Div.single (f x) = 0`
+  -- D x = 0, so 0 • _ = 0.
+  rw [hx, zero_smul]
+
+/-- Pointwise evaluation of `singletonMapFun f D` at a point `y : Y`. -/
+lemma singletonMapFun_apply [DecidableEq Y] (f : X → Y) (D : Div X) (y : Y) :
+    ((singletonMapFun f D : Div Y) : Y → ℤ) y
+      = ∑ x ∈ D.supportFinset, D x * (if y = f x then 1 else 0) := by
+  classical
+  unfold singletonMapFun
+  rw [Function.locallyFinsuppWithin.coe_sum]
+  simp only [Finset.sum_apply]
+  refine Finset.sum_congr rfl ?_
+  intro x _
+  exact zsmul_single_apply (D x) (f x) y
+
+/-- The singleton map sends `0` to `0`. -/
+lemma singletonMapFun_zero [DecidableEq Y] (f : X → Y) :
+    singletonMapFun f (0 : Div X) = 0 := by
+  classical
+  -- Pointwise reduction: enough to show evaluation at every `y` is zero.
+  refine DFunLike.ext _ _ ?_
+  intro y
+  -- LHS pointwise.
+  rw [singletonMapFun_apply]
+  -- The summand `(0 : Div X) x * _` is `0 * _ = 0` for every `x`.
+  refine Finset.sum_eq_zero ?_
+  intro x _
+  -- `(0 : Div X) x = 0`.
+  have h0 : (0 : Div X) x = 0 := by
+    show ((0 : Div X) : X → ℤ) x = 0
+    rw [Function.locallyFinsuppWithin.coe_zero]
+    rfl
+  rw [h0, zero_mul]
+
+/-- Additivity of the singleton map. -/
+lemma singletonMapFun_add [DecidableEq Y] (f : X → Y) (D₁ D₂ : Div X) :
+    singletonMapFun f (D₁ + D₂)
+      = singletonMapFun f D₁ + singletonMapFun f D₂ := by
+  classical
+  -- Use the common finset `S := supp(D₁+D₂) ∪ supp D₁ ∪ supp D₂`.
+  set S : Finset X :=
+    (D₁ + D₂).supportFinset ∪ D₁.supportFinset ∪ D₂.supportFinset with hS_def
+  have h12 : (D₁ + D₂).supportFinset ⊆ S := by
+    intro x hx
+    exact Finset.mem_union_left _ (Finset.mem_union_left _ hx)
+  have h1 : D₁.supportFinset ⊆ S := by
+    intro x hx
+    exact Finset.mem_union_left _ (Finset.mem_union_right _ hx)
+  have h2 : D₂.supportFinset ⊆ S := by
+    intro x hx
+    exact Finset.mem_union_right _ hx
+  rw [singletonMapFun_eq_sum f (D₁ + D₂) S h12,
+      singletonMapFun_eq_sum f D₁ S h1,
+      singletonMapFun_eq_sum f D₂ S h2]
+  -- Now a sum identity in `Div Y`.
+  rw [← Finset.sum_add_distrib]
+  refine Finset.sum_congr rfl ?_
+  intro x _
+  -- `(D₁ + D₂) x = D₁ x + D₂ x`, and `add_smul` distributes the smul.
+  have hpt : ((D₁ + D₂ : Div X) : X → ℤ) x = (D₁ : X → ℤ) x + (D₂ : X → ℤ) x := by
+    simp [Function.locallyFinsuppWithin.coe_add, Pi.add_apply]
+  rw [hpt, add_smul]
+
+/-- The singleton map as an `AddMonoidHom`. -/
+noncomputable def singletonMap [DecidableEq Y] (f : X → Y) : Div X →+ Div Y where
+  toFun := singletonMapFun f
+  map_zero' := singletonMapFun_zero f
+  map_add' := singletonMapFun_add f
+
+@[simp] lemma singletonMap_apply [DecidableEq Y] (f : X → Y) (D : Div X) :
+    singletonMap f D = singletonMapFun f D := rfl
+
+/-! ### Behaviour on `Div.single` -/
+
+/-- The singleton map sends `Div.single x` to `Div.single (f x)`. -/
+lemma singletonMap_single [DecidableEq X] [DecidableEq Y]
+    (f : X → Y) (x : X) :
+    singletonMap f (Div.single x) = Div.single (f x) := by
+  classical
+  show singletonMapFun f (Div.single x) = Div.single (f x)
+  -- The support of `Div.single x` is `{x}`, value `1` at `x`.
+  have hsub : (Div.single x : Div X).supportFinset ⊆ ({x} : Finset X) := by
+    intro y hy
+    rw [supportFinset_single] at hy
+    exact hy
+  rw [singletonMapFun_eq_sum f (Div.single x) ({x} : Finset X) hsub,
+      Finset.sum_singleton, single_apply, if_pos rfl, one_smul]
+
+/-! ### Functoriality of the singleton map -/
+
+/-- The singleton map for the identity is the identity. -/
+lemma singletonMap_id_apply [DecidableEq X] (D : Div X) :
+    singletonMap (id : X → X) D = D := by
+  classical
+  -- Reduce to pointwise equality via `DFunLike.ext`.
+  refine DFunLike.ext _ _ ?_
+  intro y
+  -- Reduce `singletonMap` to `singletonMapFun` and use the pointwise lemma.
+  show (singletonMapFun (id : X → X) D : Div X) y = (D : Div X) y
+  have hLHS : (singletonMapFun (id : X → X) D : Div X) y
+      = ∑ x ∈ D.supportFinset, D x * (if y = x then 1 else 0) := by
+    have h := singletonMapFun_apply (id : X → X) D y
+    -- `id x = x` makes the indicator `if y = x then 1 else 0`.
+    simpa using h
+  rw [hLHS]
+  -- RHS: `D y`. The sum has at most one nonzero term (when `x = y`).
+  by_cases hy : y ∈ D.supportFinset
+  · rw [Finset.sum_eq_single y]
+    · simp
+    · intro x _ hxy
+      have : ¬ y = x := fun h => hxy h.symm
+      simp [this]
+    · intro h
+      exact (h hy).elim
+  · -- `y` not in support, so `D y = 0`, and all summands are zero.
+    have hDy : (D : Div X) y = 0 := by
+      have h := apply_eq_zero_of_notMem_supportFinset hy
+      -- `((D : Div X) : X → ℤ) y = 0` ↔ `(D : Div X) y = 0` via FunLike.
+      exact h
+    rw [hDy]
+    refine Finset.sum_eq_zero ?_
+    intro x hx
+    have hxy : y ≠ x := by
+      intro h
+      rw [h] at hy
+      exact hy hx
+    simp [hxy]
+
+/-- Composition: `singletonMap (g ∘ f) = singletonMap g ∘+ singletonMap f`. -/
+lemma singletonMap_comp_apply
+    [T2Space Y] [CompactSpace Y]
+    [TopologicalSpace Z] [DecidableEq Y] [DecidableEq Z]
+    (f : X → Y) (g : Y → Z) (D : Div X) :
+    singletonMap (g ∘ f) D = singletonMap g (singletonMap f D) := by
+  classical
+  -- LHS: `∑ x ∈ supp D, D x • single (g (f x))`.
+  -- RHS: `singletonMap g (∑ x ∈ supp D, D x • single (f x))`.
+  -- Use that `singletonMap g` is an `AddMonoidHom`, hence commutes with
+  -- `Finset.sum` and ℤ-smul, plus `singletonMap_single`.
+  have hLHS : singletonMap (g ∘ f) D
+      = ∑ x ∈ D.supportFinset, D x • Div.single (g (f x)) := by
+    show singletonMapFun (g ∘ f) D = _
+    rfl
+  have hf_eq : singletonMap f D = ∑ x ∈ D.supportFinset, D x • Div.single (f x) := by
+    show singletonMapFun f D = _
+    rfl
+  rw [hLHS, hf_eq, map_sum (singletonMap g)]
+  refine Finset.sum_congr rfl ?_
+  intro x _
+  rw [map_zsmul, singletonMap_single]
+
+/-! ### Degree preservation -/
+
+/-- The singleton map preserves degree. -/
+lemma degree_singletonMap [T2Space Y] [CompactSpace Y] [DecidableEq Y]
+    (f : X → Y) (D : Div X) :
+    (singletonMap f D).degree = D.degree := by
+  classical
+  -- Reduce both sides to `degreeHom`.
+  have hLHS : (singletonMap f D).degree
+      = degreeHom (X := Y) (singletonMap f D : Div Y) := rfl
+  rw [hLHS]
+  -- Unfold the LHS to its sum form.
+  have hsum : (singletonMap f D : Div Y)
+      = ∑ x ∈ D.supportFinset, D x • Div.single (f x) := by
+    show singletonMapFun f D = _
+    rfl
+  rw [hsum, map_sum]
+  -- `degreeHom (D x • single (f x)) = D x * 1 = D x`.
+  have step : ∀ x ∈ D.supportFinset,
+      degreeHom (X := Y) (D x • Div.single (f x) : Div Y) = D x := by
+    intro x _
+    rw [map_zsmul, degreeHom_apply, degree_single]
+    -- Goal: `D x • (1 : ℤ) = D x`. ℤ-smul on ℤ is multiplication.
+    simp
+  rw [Finset.sum_congr rfl step]
+  -- The remaining sum `∑ x ∈ supp D, D x` is `D.degree` by definition.
+  rfl
+
+end Div
+
+/-! ### Pushforward on `Pic0` and `Jacobian` -/
+
+namespace Pic0
+
+variable {X Y : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+variable [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+
+/-- The pushforward `Div0 X →+ Div0 Y` induced by a map `f : X → Y`. -/
+noncomputable def divPushforward (f : X → Y) : Div0 X →+ Div0 Y := by
+  letI : DecidableEq Y := Classical.decEq Y
+  refine AddMonoidHom.codRestrict
+    ((Div.singletonMap (Y := Y) f).comp (Div0 X).subtype) (Div0 Y) ?_
+  intro D
+  -- `D : Div0 X`, so `D.1 : Div X` has degree zero.
+  -- Need `Div.singletonMap f D.1 ∈ Div0 Y`, i.e., its degree is zero.
+  show Div.singletonMap f (D : Div X) ∈ Div0 Y
+  rw [show Div0 Y = (Div.degreeHom (X := Y)).ker from rfl,
+      AddMonoidHom.mem_ker]
+  rw [Div.degreeHom_apply, Div.degree_singletonMap]
+  -- `(D : Div X).degree = D.1.degree`, which is zero by `D ∈ Div0 X`.
+  have hD : (D : Div X) ∈ Div0 X := D.2
+  rw [show Div0 X = (Div.degreeHom (X := X)).ker from rfl,
+      AddMonoidHom.mem_ker] at hD
+  rw [Div.degreeHom_apply] at hD
+  exact hD
+
+/-- The pushforward `Pic0 X →+ Pic0 Y` induced by a map `f : X → Y`.
+
+With the placeholder `PrincDiv = ⊥`, the descent is automatic: the kernel
+condition `(PrincDiv X).addSubgroupOf (Div0 X) ≤ (PrincDiv Y).addSubgroupOf
+(Div0 Y).comap (divPushforward f)` is vacuous because the LHS is `⊥`. -/
+noncomputable def pushforward (f : X → Y) : Pic0 X →+ Pic0 Y := by
+  refine QuotientAddGroup.map
+    ((PrincDiv X).addSubgroupOf (Div0 X))
+    ((PrincDiv Y).addSubgroupOf (Div0 Y))
+    (divPushforward f) ?_
+  -- LHS is `⊥` since `PrincDiv X = ⊥`, so the comap condition is vacuous.
+  intro D hD
+  have hBot : (PrincDiv X).addSubgroupOf (Div0 X) = ⊥ := by
+    unfold PrincDiv
+    simp [AddSubgroup.addSubgroupOf]
+  rw [hBot, AddSubgroup.mem_bot] at hD
+  -- `D = 0`, so `divPushforward f D = 0 ∈ any subgroup`.
+  subst hD
+  rw [AddSubgroup.mem_comap]
+  rw [map_zero]
+  exact AddSubgroup.zero_mem _
+
+@[simp] lemma pushforward_mk (f : X → Y) (D : Div0 X) :
+    pushforward f (QuotientAddGroup.mk D : Pic0 X)
+      = (QuotientAddGroup.mk (divPushforward f D) : Pic0 Y) := rfl
+
+/-- Identity functoriality on `Pic0`. -/
+lemma pushforward_id (P : Pic0 X) :
+    pushforward (id : X → X) P = P := by
+  classical
+  refine QuotientAddGroup.induction_on P ?_
+  intro D
+  rw [pushforward_mk]
+  -- Need: `divPushforward id D = D` as elements of `Div0 X`.
+  -- Reduce to underlying `Div X`-equality via `Subtype.ext`.
+  have hDiv : (divPushforward (id : X → X) D : Div X) = (D : Div X) := by
+    show Div.singletonMap (id : X → X) (D : Div X) = (D : Div X)
+    exact Div.singletonMap_id_apply (D : Div X)
+  have h : divPushforward (id : X → X) D = D := Subtype.ext hDiv
+  rw [h]
+
+/-- Composition functoriality on `Pic0`. -/
+lemma pushforward_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z]
+    [CompactSpace Z] (f : X → Y) (g : Y → Z) (P : Pic0 X) :
+    pushforward (g ∘ f) P = pushforward g (pushforward f P) := by
+  classical
+  refine QuotientAddGroup.induction_on P ?_
+  intro D
+  rw [pushforward_mk, pushforward_mk, pushforward_mk]
+  -- Need `divPushforward (g ∘ f) D = divPushforward g (divPushforward f D)`.
+  have hDiv : (divPushforward (g ∘ f) D : Div Z)
+      = (divPushforward g (divPushforward f D) : Div Z) := by
+    show Div.singletonMap (g ∘ f) (D : Div X)
+        = Div.singletonMap g (Div.singletonMap f (D : Div X))
+    exact Div.singletonMap_comp_apply f g (D : Div X)
+  have h : divPushforward (g ∘ f) D = divPushforward g (divPushforward f D) :=
+    Subtype.ext hDiv
+  rw [h]
+
+end Pic0
+
+namespace Jacobian
+
+variable {X Y Z : Type*}
+variable [TopologicalSpace X] [T2Space X] [CompactSpace X]
+variable [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+variable [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+
+/-- The pushforward `Jacobian X →ₜ+ Jacobian Y` induced by a map
+`f : X → Y`. The smoothness hypothesis `_hf` is unused at this pin
+(see file-level docstring). Continuity of the underlying additive map is
+automatic because `Jacobian Y` carries the discrete topology. -/
+noncomputable def pushforward (f : X → Y) : Jacobian X →ₜ+ Jacobian Y where
+  toAddMonoidHom := Pic0.pushforward (X := X) (Y := Y) f
+  continuous_toFun := continuous_of_discreteTopology
+
+/-- Identity functoriality on `Jacobian`. -/
+lemma pushforward_id_apply (P : Jacobian X) :
+    pushforward (id : X → X) P = P := by
+  -- Reduce to `Pic0.pushforward_id` by unfolding the structure.
+  change Pic0.pushforward (id : X → X) P = P
+  exact Pic0.pushforward_id P
+
+/-- Composition functoriality on `Jacobian`. -/
+lemma pushforward_comp_apply (f : X → Y) (g : Y → Z) (P : Jacobian X) :
+    pushforward (g ∘ f) P = pushforward g (pushforward f P) := by
+  -- Reduce to `Pic0.pushforward_comp` by unfolding the structure.
+  change Pic0.pushforward (g ∘ f) P
+      = Pic0.pushforward g (Pic0.pushforward f P)
+  exact Pic0.pushforward_comp f g P
+
+/-! ### Pullback (still a stub)
+
+The pullback under our placeholder `PrincDiv = ⊥` is mathematically the zero
+map for constant `f`, and would otherwise require a fiber-multiplicity
+construction (counting preimages with multiplicity) that we cannot build
+without a real `degree` function. We continue to ship the zero
+`ContinuousAddMonoidHom` and leave the functoriality lemmas (items 22, 23)
+as `sorry` in `Basic.lean`. -/
 
 /-- The pullback map between Jacobians associated to a map of the underlying
-curves. **Stub at this pin** — see the section docstring above. Defined as the
-zero `ContinuousAddMonoidHom`; this satisfies the `Basic.lean` *signature* of
-challenge item 13 but does **not** satisfy any of the functoriality lemmas
-(items 17–23). -/
+curves. **Stub at this pin** — defined as the zero `ContinuousAddMonoidHom`.
+This satisfies the `Basic.lean` *signature* of challenge item 13 but does
+**not** satisfy the functoriality lemmas (items 22, 23). -/
 noncomputable def pullback (_f : X → Y) :
     Jacobian Y →ₜ+ Jacobian X :=
   0
-
-end Functoriality
 
 end Jacobian
 
