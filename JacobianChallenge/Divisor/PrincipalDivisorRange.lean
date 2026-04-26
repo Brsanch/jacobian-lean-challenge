@@ -5,6 +5,7 @@ Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.PrincipalDivisor
+import Mathlib.Algebra.Group.TypeTags.Basic
 
 set_option diagnostics.threshold 100
 
@@ -40,16 +41,30 @@ with the two compatibility lemmas into one type-class
 `PrincipalDivisorMultiplicative X`. Given an instance, this file then
 delivers:
 
-* `principalDivisorAddHom : Multiplicative (MeromorphicNonzero X) →+ Div X`
+* `principalDivisorAddHom : Additive (MeromorphicNonzero X) →+ Div X`
   — the multiplicative principal-divisor map repackaged as an additive
-  group homomorphism, with `map_zero'` exactly the bundle's
-  `principalDivisorMap_one` and `map_add'` exactly the bundle's
-  `principalDivisorMap_mul` (load-bearing).
+  group homomorphism via the `Additive` `TypeTag` (which transports any
+  `CommGroup G` to an `AddCommGroup (Additive G)`), with `map_zero'`
+  exactly the bundle's `principalDivisorMap_one` and `map_add'` exactly
+  the bundle's `principalDivisorMap_mul` (load-bearing).
 * `PrincDivHonestCandidate X : AddSubgroup (Div X)` — the *eventual* honest
   `PrincDiv X`, defined as `principalDivisorAddHom.range`.
 * `ResidueTheorem X : Prop` — the named (statement-only) classical input.
 * `residueTheorem_iff_range_le_Div0` — the residue theorem is equivalent
   to `PrincDivHonestCandidate X ≤ Div0 X`. **Real proof, not `Iff.rfl`.**
+
+A note on the wrapper choice. The task spec sketch wrote
+`Multiplicative (MeromorphicNonzero X) →+ Div X`. That is the wrong
+direction: `Multiplicative G` *adds* a multiplicative structure on top of
+an additive one (so `Multiplicative G` carries `CommGroup (Multiplicative G)`
+when `G` is `AddCommGroup`). What we need is the opposite — to view the
+already-multiplicative `MeromorphicNonzero X` *as* an additive group —
+which is exactly what `Additive` does (`[CommGroup G] ⇒
+AddCommGroup (Additive G)`, see `Mathlib.Algebra.Group.TypeTags.Basic`).
+The spec explicitly anticipated this: "the exact `Multiplicative`
+boilerplate may need tweaking — the structural point is to wrap
+`MeromorphicNonzero X`'s commutative monoid into an additive
+`AddMonoidHom` target." We use `Additive`.
 
 ## What this file does **not** do
 
@@ -61,7 +76,7 @@ delivers:
   in scope, `principalDivisorAddHom` and `PrincDivHonestCandidate` are
   noncomputable definitions parametrised by the (currently absent)
   instance, and the rest of the file consumes only their definitions —
-  nothing here uses sorry or axiom.
+  nothing here uses `sorry` or `axiom`.
 * It does **not** prove `ResidueTheorem X`. That is the deep classical
   input. The point of this file is to *name* the statement so that
   downstream code can take it as a hypothesis.
@@ -167,40 +182,56 @@ variable {X : Type u}
 
 /-- The **principal divisor map as an `AddMonoidHom`**, sending a
 non-vanishing-germ meromorphic function `f` (viewed *additively* via the
-`Multiplicative` wrapper) to its order divisor `(f) ∈ Div X`.
+`Additive` `TypeTag` wrapper) to its order divisor `(f) ∈ Div X`.
 
-* `toFun` is `principalDivisorMap` composed with `Multiplicative.toAdd`'s
-  underlying carrier identification (the carrier of `Multiplicative G` is
-  literally `G`; we use `Multiplicative.toAdd` only to get the additive
-  `0` and `+` to line up with `principalDivisorMap_one` /
+* `toFun` is `principalDivisorMap` composed with `Additive.toMul`'s
+  underlying carrier identification (the carrier of `Additive G` is
+  literally `G`; we use `Additive.toMul` only to get the multiplicative
+  `1` and `*` to line up with `principalDivisorMap_one` /
   `principalDivisorMap_mul`).
-* `map_zero'` is exactly `principalDivisorMap_one`.
-* `map_add'` is exactly `principalDivisorMap_mul`.
+* `map_zero'` is exactly `principalDivisorMap_one` (after rewriting
+  `Additive.toMul (0 : Additive G) = (1 : G)`).
+* `map_add'` is exactly `principalDivisorMap_mul` (after rewriting
+  `Additive.toMul (a + b) = Additive.toMul a * Additive.toMul b`).
 
 Both compatibility fields are **load-bearing**: they are the typeclass
 `PrincipalDivisorMultiplicative X` fields, not duplicated proofs. -/
 def principalDivisorAddHom [PrincipalDivisorMultiplicative X] :
-    Multiplicative (MeromorphicNonzero X) →+ Div X where
-  toFun f := principalDivisorMap (Multiplicative.toAdd f)
-  map_zero' := PrincipalDivisorMultiplicative.principalDivisorMap_one
-  map_add' f g :=
-    PrincipalDivisorMultiplicative.principalDivisorMap_mul
-      (Multiplicative.toAdd f) (Multiplicative.toAdd g)
+    Additive (MeromorphicNonzero X) →+ Div X where
+  toFun f := principalDivisorMap (Additive.toMul f)
+  map_zero' := by
+    -- `Additive.toMul (0 : Additive G) = (1 : G)` definitionally; the
+    -- underlying content is `principalDivisorMap_one`.
+    show principalDivisorMap (Additive.toMul (0 : Additive (MeromorphicNonzero X)))
+        = 0
+    rw [show (Additive.toMul (0 : Additive (MeromorphicNonzero X)))
+            = (1 : MeromorphicNonzero X) from rfl]
+    exact PrincipalDivisorMultiplicative.principalDivisorMap_one
+  map_add' f g := by
+    -- `Additive.toMul (a + b) = Additive.toMul a * Additive.toMul b`
+    -- definitionally; the underlying content is `principalDivisorMap_mul`.
+    show principalDivisorMap (Additive.toMul (f + g))
+        = principalDivisorMap (Additive.toMul f)
+          + principalDivisorMap (Additive.toMul g)
+    rw [show Additive.toMul (f + g)
+            = Additive.toMul f * Additive.toMul g from rfl]
+    exact PrincipalDivisorMultiplicative.principalDivisorMap_mul
+      (Additive.toMul f) (Additive.toMul g)
 
 /-- Apply lemma for `principalDivisorAddHom`: it agrees with
-`principalDivisorMap` on the `Multiplicative.toAdd` image. -/
+`principalDivisorMap` on the `Additive.toMul` image. -/
 @[simp] lemma principalDivisorAddHom_apply
     [PrincipalDivisorMultiplicative X]
-    (f : Multiplicative (MeromorphicNonzero X)) :
-    principalDivisorAddHom f = principalDivisorMap (Multiplicative.toAdd f) :=
+    (f : Additive (MeromorphicNonzero X)) :
+    principalDivisorAddHom f = principalDivisorMap (Additive.toMul f) :=
   rfl
 
 /-- Apply lemma for `principalDivisorAddHom` on the canonical
-`Multiplicative.ofAdd` lift of a bare `MeromorphicNonzero X`: it agrees
+`Additive.ofMul` lift of a bare `MeromorphicNonzero X`: it agrees
 with `principalDivisorMap`. -/
-@[simp] lemma principalDivisorAddHom_ofAdd
+@[simp] lemma principalDivisorAddHom_ofMul
     [PrincipalDivisorMultiplicative X] (f : MeromorphicNonzero X) :
-    principalDivisorAddHom (Multiplicative.ofAdd f) = principalDivisorMap f :=
+    principalDivisorAddHom (Additive.ofMul f) = principalDivisorMap f :=
   rfl
 
 /-! ## The eventual honest `PrincDiv X` -/
@@ -235,9 +266,9 @@ lemma mem_PrincDivHonestCandidate
   unfold PrincDivHonestCandidate
   constructor
   · rintro ⟨g, hg⟩
-    exact ⟨Multiplicative.toAdd g, by simpa using hg⟩
+    exact ⟨Additive.toMul g, by simpa using hg⟩
   · rintro ⟨f, hf⟩
-    exact ⟨Multiplicative.ofAdd f, by simpa using hf⟩
+    exact ⟨Additive.ofMul f, by simpa using hf⟩
 
 /-! ## The residue theorem (statement only) and the equivalence -/
 
