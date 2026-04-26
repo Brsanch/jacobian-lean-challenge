@@ -6,3 +6,4 @@ import JacobianChallenge.Manifold.MeromorphicAt
 import JacobianChallenge.Manifold.LocalMultiplicity
 import JacobianChallenge.Divisor
 import JacobianChallenge.Jacobian
+import JacobianChallenge.Topology.SurfaceGenus
