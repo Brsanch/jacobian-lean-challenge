@@ -118,8 +118,10 @@ lemma continuous_antipode : Continuous antipode := by
       have h_neg_inv : Filter.Tendsto (fun w : ℂ => -w⁻¹)
           (Filter.cocompact ℂ) (𝓝 (0 : ℂ)) := by
         simpa using h_inv_cocomp.neg
-      have h_to_sphere :=
-        (OnePoint.continuous_coe (X := ℂ)).continuousAt.comp h_neg_inv
+      have h_coe_at0 : Filter.Tendsto ((↑) : ℂ → RiemannSphere) (𝓝 (0 : ℂ))
+          (𝓝 (((0 : ℂ) : RiemannSphere))) :=
+        (OnePoint.continuous_coe (X := ℂ)).tendsto (0 : ℂ)
+      have h_to_sphere := h_coe_at0.comp h_neg_inv
       refine Filter.Tendsto.congr' ?_ h_to_sphere
       have hmem : {z : ℂ | z ≠ 0} ∈ Filter.cocompact ℂ := by
         rw [Filter.mem_cocompact]
@@ -160,9 +162,9 @@ lemma continuous_antipode : Continuous antipode := by
         apply Filter.Tendsto.mono_right _ le_sup_left
         -- Compose: `Tendsto (·⁻¹) (𝓝[≠] 0) (cobounded ℂ)` then negation.
         have h_inv_cob : Filter.Tendsto (fun z : ℂ => z⁻¹) (𝓝[≠] (0 : ℂ))
-            (Filter.cobounded ℂ) := Filter.tendsto_inv₀_nhdsNE_zero
+            (Bornology.cobounded ℂ) := Filter.tendsto_inv₀_nhdsNE_zero
         have h_neg_inv_cob : Filter.Tendsto (fun z : ℂ => -z⁻¹) (𝓝[≠] (0 : ℂ))
-            (Filter.cobounded ℂ) := Filter.tendsto_neg_cobounded.comp h_inv_cob
+            (Bornology.cobounded ℂ) := Filter.tendsto_neg_cobounded.comp h_inv_cob
         have h_neg_inv_cocomp : Filter.Tendsto (fun z : ℂ => -z⁻¹) (𝓝[≠] (0 : ℂ))
             (Filter.cocompact ℂ) := by
           rw [Metric.cobounded_eq_cocompact] at h_neg_inv_cob
@@ -174,8 +176,8 @@ lemma continuous_antipode : Continuous antipode := by
         exact h_push.comp h_neg_inv_cocomp
       · -- pure 0 side: `(antipode ∘ ↑) 0 = antipode (some 0) = ∞ ∈ 𝓝 ∞`.
         intro s hs
-        rw [Filter.mem_pure]
-        show (0 : ℂ) ∈ (fun z : ℂ => antipode ((z : RiemannSphere))) ⁻¹' s
+        rw [Filter.mem_map, Filter.mem_pure]
+        show (0 : ℂ) ∈ (antipode ∘ ((↑) : ℂ → RiemannSphere)) ⁻¹' s
         show antipode (((0 : ℂ) : RiemannSphere)) ∈ s
         rw [antipode_coe_zero]
         exact mem_of_mem_nhds hs
@@ -190,9 +192,12 @@ lemma continuous_antipode : Continuous antipode := by
         filter_upwards [isOpen_compl_singleton.mem_nhds hw] with z hz
         exact antipode_coe_of_ne hz
       refine Filter.Tendsto.congr' hloc.symm ?_
-      -- `ContinuousAt f x ≡ Tendsto f (𝓝 x) (𝓝 (f x))` definitionally.
-      exact (OnePoint.continuous_coe (X := ℂ)).continuousAt.comp
-        ((continuousAt_inv₀ hw).neg)
+      have h_inv_neg_at_w : Filter.Tendsto (fun z : ℂ => -z⁻¹) (𝓝 w) (𝓝 (-w⁻¹)) :=
+        ((continuousAt_inv₀ hw).neg).tendsto
+      have h_coe_at_neg_inv : Filter.Tendsto ((↑) : ℂ → RiemannSphere)
+          (𝓝 (-w⁻¹)) (𝓝 (((-w⁻¹ : ℂ) : RiemannSphere))) :=
+        (OnePoint.continuous_coe (X := ℂ)).tendsto (-w⁻¹)
+      exact h_coe_at_neg_inv.comp h_inv_neg_at_w
 
 end RiemannSphere
 
