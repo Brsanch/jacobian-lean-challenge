@@ -67,7 +67,7 @@ noncomputable def single [DecidableEq X] (x : X) : Div X :=
     ((single x : Div X) : X → ℤ) = fun y => if y = x then 1 else 0 := by
   classical
   funext y
-  simpa using single_apply (X := X) x y
+  exact single_apply (X := X) x y
 
 /-- The function-support of `Div.single x` is exactly the set `{x}`. -/
 lemma support_single [DecidableEq X] (x : X) :
@@ -88,8 +88,7 @@ lemma supportFinset_single [DecidableEq X] [T2Space X] [CompactSpace X]
   apply Finset.coe_injective
   -- `↑supportFinset = function-support` via `mem_supportFinset`.
   ext y
-  simp only [Finset.coe_insert, Finset.coe_singleton, Set.mem_singleton_iff,
-    Finset.mem_coe]
+  simp only [Finset.coe_singleton, Set.mem_singleton_iff, Finset.mem_coe]
   rw [mem_supportFinset]
   -- `D y ≠ 0 ↔ y ∈ {x}` from `support_single`.
   have hsupp := support_single (X := X) x
@@ -131,7 +130,7 @@ lemma single_sub_single_mem_Div0 [DecidableEq X] [T2Space X] [CompactSpace X]
   -- `Div0 X = degreeHom.ker`, so membership = `degreeHom _ = 0`.
   have h : degreeHom (X := X) ((single Q : Div X) - single P) = 0 := by
     rw [map_sub]; simp [degreeHom_apply]
-  exact (AddMonoidHom.mem_ker _).2 h
+  exact AddMonoidHom.mem_ker.mpr h
 
 /-! ### Bonus: injectivity of `single` -/
 
