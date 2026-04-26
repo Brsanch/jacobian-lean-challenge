@@ -266,7 +266,7 @@ noncomputable def chartS : OpenPartialHomeomorph RiemannSphere ℂ where
       -- ContinuousAt at ∞.
       rw [OnePoint.continuousAt_infty]
       intro s hs
-      rw [show (chartSToFun ∞ : ℂ) = 0 from rfl] at hs
+      -- `chartSToFun ∞ = 0` reduces by rfl, so `hs : s ∈ 𝓝 0`.
       rcases Metric.mem_nhds_iff.mp hs with ⟨r, hr_pos, hball⟩
       refine ⟨Metric.closedBall (0 : ℂ) r⁻¹, Metric.isClosed_closedBall,
               isCompact_closedBall 0 r⁻¹, ?_⟩
@@ -291,7 +291,7 @@ noncomputable def chartS : OpenPartialHomeomorph RiemannSphere ℂ where
         show ((z : ℂ) : RiemannSphere) = ((0 : ℂ) : RiemannSphere)
         rw [h]
       rw [OnePoint.continuousAt_coe]
-      exact (continuous_inv₀.continuousAt (x := z) hz).congr (by intro w; rfl)
+      exact (continuousAt_inv₀ hz).congr (by intro w; rfl)
   continuousOn_invFun := continuous_chartSInvFun.continuousOn
 
 end RiemannSphere
