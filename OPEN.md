@@ -114,7 +114,7 @@ items 1, 2, 5, 8, 9 will need infrastructure not in mathlib at the pin.
 - **STUB**: 11.
 - **OPEN**: 10.
 
-Reaching even the first **CLOSED** requires landing one of: the residue
-theorem on compact Riemann surfaces, an honest period lattice, the
+Reaching the first **CLOSED** requires landing one of: the residue theorem
+on compact Riemann surfaces, an honest period lattice, the
 closed-orientable-surface classification, or honest fibre-cardinality
-for proper holomorphic maps. Each is a multi-week-to-multi-month effort.
+for proper holomorphic maps.
