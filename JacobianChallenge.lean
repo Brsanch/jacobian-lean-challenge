@@ -5,4 +5,5 @@ import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.MeromorphicAt
 import JacobianChallenge.Manifold.LocalMultiplicity
 import JacobianChallenge.Divisor
+import JacobianChallenge.Divisor.Single
 import JacobianChallenge.Jacobian
