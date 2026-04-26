@@ -282,8 +282,11 @@ noncomputable def chartS : OpenPartialHomeomorph RiemannSphere ℂ where
       -- Goal: `(chartSToFun ∘ ↑) z ∈ s`, which reduces to `z⁻¹ ∈ s`.
       apply hball
       simp only [Metric.mem_ball, dist_zero_right, norm_inv]
-      rw [inv_lt_comm₀ (by positivity) hr_pos] at hz'
-      exact hz'
+      -- Goal: `‖z‖⁻¹ < r`. Have `hz' : r⁻¹ < ‖z‖`, both sides positive.
+      -- Use the one-over decreasing-monotonicity: `0 < a → a < b → 1/b < 1/a`.
+      have h := one_div_lt_one_div_of_lt (inv_pos.mpr hr_pos) hz'
+      -- `h : 1/‖z‖ < 1/r⁻¹`. Normalise: `1/x = x⁻¹` and `(r⁻¹)⁻¹ = r`.
+      simpa [one_div, inv_inv] using h
     | coe z =>
       -- ContinuousAt at `(some z)` with `some z ≠ some 0`, hence `z ≠ 0`.
       have hz : z ≠ 0 := by
