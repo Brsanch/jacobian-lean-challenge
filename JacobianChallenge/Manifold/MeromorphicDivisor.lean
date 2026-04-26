@@ -269,13 +269,8 @@ lemma orderFun_support_finite
   -- Compactness of `Set.univ` upgrades local finiteness of the support to global.
   have h_finite : (Function.support fun x => (D : X → ℤ) x).Finite :=
     D.finiteSupport isCompact_univ
-  -- Pointwise, `D x = orderFun I f x` by definition of `divisor`.
-  have h_apply : ∀ x : X, (D : X → ℤ) x = orderFun I f x := by
-    intro x; rfl
-  -- Convert the support into the order-function form.
-  convert h_finite using 1
-  ext x
-  simp [Function.mem_support, h_apply x]
+  -- The two sets are pointwise equal by `D x = orderFun I f x` (rfl from `divisor.toFun`).
+  exact h_finite
 
 /-- The set of points where `f` has **strictly positive order** ("zeros" in the
 order-divisor sense) is **finite** on a compact Hausdorff complex 1-manifold.
