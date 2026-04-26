@@ -8,6 +8,7 @@ import JacobianChallenge.Manifold.HolomorphicOneForm
 import Mathlib.Topology.Constructions
 import Mathlib.Topology.Separation.Basic
 import Mathlib.Topology.Algebra.ConstMulAction
+import Mathlib.Topology.Algebra.ContinuousMonoidHom
 
 /-! # The Jacobian of a compact Riemann surface
 
@@ -151,6 +152,66 @@ This `simp` lemma exposes the stub status to any downstream proof attempt
 that tries to use `ofCurve` for non-trivial reasoning, so that such an
 attempt fails *immediately* rather than silently relying on the stub. -/
 @[simp] lemma ofCurve_eq_zero (P Q : X) : ofCurve P Q = 0 := rfl
+
+/-! ### Functoriality stubs (challenge items 12, 13)
+
+The Abel–Jacobi `pushforward` and `pullback` honestly require either a
+functorial action of `f : X → Y` on divisor-class groups (the `Pic⁰` route,
+which needs single-point divisor manipulation in `Divisor.lean`) or the
+period-lattice quotient `ℂᵍ / Λ` (the analytic route, which has not been
+built). Neither piece of infrastructure is available at this pin.
+
+To keep this file `sorry`-free we ship the **zero `ContinuousAddMonoidHom`**
+as the value of both `pushforward f` and `pullback f`. This is honest because
+the discrete topology on `Jacobian X` makes the zero hom continuous, and the
+signature in `Basic.lean` only requires a `ContinuousAddMonoidHom` — not any
+identity beyond it.
+
+**What this stub does *not* satisfy.** All five functoriality lemmas in
+`Basic.lean` (items 17–23) fail for the zero stub on non-trivial input:
+
+* `pushforward_id_apply : pushforward id _ P = P` would need the *identity*
+  hom, not the *zero* hom — fails for any `P ≠ 0`.
+* `pullback_id_apply` — symmetric reason, fails for any `P ≠ 0`.
+* `pushforward_comp_apply` and `pullback_comp_apply` reduce to `0 = 0` on the
+  zero stub (composition of zero homs is the zero hom), so these *do* hold,
+  but only vacuously, and we do **not** ship them here because they would
+  silently lock in the false `_id_apply` companions if the stubs were ever
+  refined non-uniformly.
+* `pushforward_pullback : pushforward f (pullback f P) = degree f • P`
+  reduces to `0 = degree f • P`, which fails for non-zero `P` and non-zero
+  degree.
+* `pushforward_contMDiff` / `pullback_contMDiff` would require the
+  `ChartedSpace (Fin (genus _) → ℂ)` instance on `Jacobian X` / `Jacobian Y`,
+  which is still `sorry` in `Basic.lean` (item 7). The zero map *would* be
+  smooth (constants are), but the lemma cannot even typecheck cleanly until
+  those instances land.
+
+All of items 17–23 therefore remain as `sorry` in `Basic.lean`, with the gap
+honestly localised to "we have no real `pushforward` / `pullback`." -/
+section Functoriality
+
+variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+
+/-- The pushforward map between Jacobians associated to a map of the underlying
+curves. **Stub at this pin** — see the section docstring above. Defined as the
+zero `ContinuousAddMonoidHom`; this satisfies the `Basic.lean` *signature* of
+challenge item 12 but does **not** satisfy any of the functoriality lemmas
+(items 17–23). -/
+noncomputable def pushforward (_f : X → Y) :
+    Jacobian X →ₜ+ Jacobian Y :=
+  0
+
+/-- The pullback map between Jacobians associated to a map of the underlying
+curves. **Stub at this pin** — see the section docstring above. Defined as the
+zero `ContinuousAddMonoidHom`; this satisfies the `Basic.lean` *signature* of
+challenge item 13 but does **not** satisfy any of the functoriality lemmas
+(items 17–23). -/
+noncomputable def pullback (_f : X → Y) :
+    Jacobian Y →ₜ+ Jacobian X :=
+  0
+
+end Functoriality
 
 end Jacobian
 
