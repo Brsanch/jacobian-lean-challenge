@@ -60,11 +60,13 @@ giving a `ChartedSpace ℂ RiemannSphere` instance.
     `Mathlib/Analysis/Analytic/Constructions.lean`. The model with corners
     is `modelWithCornersSelf ℂ ℂ`, so the conjugation `I ∘ · ∘ I.symm`
     collapses through `modelWithCornersSelf_coe[_symm]` and
-    `ModelWithCorners.range_self`, leaving a pure analyticity check on
+    `ModelWithCorners.range_eq_univ`, leaving a pure analyticity check on
     `{z | z ≠ 0}`. The `ContDiffOn ℂ ω` upgrade uses
     `AnalyticOnNhd.contDiffOn_of_completeSpace` (since `ℂ` is complete). -/
 
 open OnePoint Set Topology
+
+open scoped Manifold
 
 namespace JacobianChallenge
 
@@ -329,8 +331,12 @@ lemma chartS_symm_apply_of_ne {z : ℂ} (hz : z ≠ 0) :
 
 lemma chartN_apply_coe (z : ℂ) :
     chartN ((z : RiemannSphere)) = z := by
+  -- `chartN := (IsOpenEmbedding.toOpenPartialHomeomorph (↑) h).symm`, so the
+  -- forward action `chartN (some z)` is recovered by the embedding's
+  -- `toOpenPartialHomeomorph_left_inv`.
   unfold chartN
-  rfl
+  exact OnePoint.isOpenEmbedding_coe.toOpenPartialHomeomorph_left_inv
+    ((↑) : ℂ → OnePoint ℂ)
 
 lemma chartN_symm_apply (z : ℂ) :
     chartN.symm z = ((z : ℂ) : RiemannSphere) := by
@@ -353,7 +359,7 @@ noncomputable def chartAt' : RiemannSphere → OpenPartialHomeomorph RiemannSphe
 
 @[simp] lemma chartAt'_coe (z : ℂ) : chartAt' ((z : RiemannSphere)) = chartN := rfl
 
-instance : ChartedSpace ℂ RiemannSphere where
+noncomputable instance : ChartedSpace ℂ RiemannSphere where
   atlas := {chartN, chartS}
   chartAt := chartAt'
   mem_chart_source := by
@@ -462,7 +468,7 @@ lemma contDiffOn_chartN_symm_trans_chartS :
       (𝓘(ℂ).symm ⁻¹' (chartN.symm.trans chartS).source ∩ Set.range 𝓘(ℂ)) := by
   -- The model is the identity; its `coe` and `symm` are `id`, range is `univ`.
   simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
-    Function.id_comp, Function.comp_id, Set.preimage_id, ModelWithCorners.range_self,
+    Function.id_comp, Function.comp_id, Set.preimage_id, ModelWithCorners.range_eq_univ,
     Set.inter_univ]
   -- It suffices to show the transition is analytic on its source.
   refine ContDiffOn.congr ?_ chartN_symm_trans_chartS_eqOn
@@ -475,7 +481,7 @@ lemma contDiffOn_chartS_symm_trans_chartN :
     ContDiffOn ℂ ω (𝓘(ℂ) ∘ (chartS.symm.trans chartN) ∘ 𝓘(ℂ).symm)
       (𝓘(ℂ).symm ⁻¹' (chartS.symm.trans chartN).source ∩ Set.range 𝓘(ℂ)) := by
   simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
-    Function.id_comp, Function.comp_id, Set.preimage_id, ModelWithCorners.range_self,
+    Function.id_comp, Function.comp_id, Set.preimage_id, ModelWithCorners.range_eq_univ,
     Set.inter_univ]
   refine ContDiffOn.congr ?_ chartS_symm_trans_chartN_eqOn
   rw [chartS_symm_trans_chartN_source]
