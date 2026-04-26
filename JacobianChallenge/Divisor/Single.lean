@@ -144,12 +144,12 @@ lemma single_eq_iff [DecidableEq X] (x y : X) :
   refine ⟨fun h => ?_, fun h => by cases h; rfl⟩
   -- Evaluate both sides at `x`. LHS gives `1`; RHS gives `if x = y then 1 else 0`.
   have hx : (single x : Div X) x = (single y : Div X) x := by rw [h]
-  rw [single_apply, single_apply] at hx
-  -- `hx : (if x = x then 1 else 0) = if x = y then 1 else 0`
-  simp only [if_true] at hx
+  rw [single_apply, single_apply, if_pos rfl] at hx
+  -- `hx : 1 = if x = y then 1 else 0`
   by_cases hxy : x = y
   · exact hxy
-  · simp [hxy] at hx
+  · rw [if_neg hxy] at hx
+    exact absurd hx one_ne_zero
 
 end Div
 
