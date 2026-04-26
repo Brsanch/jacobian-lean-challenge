@@ -265,6 +265,8 @@ lemma const_smul (c : ℂ) (hf : MMeromorphicOn I f s) :
     MMeromorphicOn I (c • f) s :=
   fun x hx => (hf x hx).const_smul c
 
+end MMeromorphicOn
+
 /-! ## Chart independence
 
 The chart-pullback definition `MMeromorphicAt I f x` uses the *canonical* chart
