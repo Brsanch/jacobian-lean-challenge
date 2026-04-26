@@ -4,5 +4,6 @@ import JacobianChallenge.Manifold.Cotangent
 import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.MeromorphicAt
 import JacobianChallenge.Manifold.LocalMultiplicity
+import JacobianChallenge.Manifold.RiemannSphere
 import JacobianChallenge.Divisor
 import JacobianChallenge.Jacobian
