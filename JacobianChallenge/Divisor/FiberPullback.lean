@@ -321,18 +321,21 @@ lemma pushforward_pullback
   -- Quotient-induction on `P` to a representative `D : Div0 Y`.
   refine QuotientAddGroup.induction_on P ?_
   intro D
-  -- Step through `pullback_mk` and `pushforward_mk`.
+  -- Use `Quotient.sound` (via `QuotientAddGroup.eq`) on the underlying
+  -- equation: it suffices to show the representatives are equal in
+  -- `Div0 Y` (which they will be — the difference is `0`, and `0 ∈` any
+  -- subgroup, so the quotient classes are equal regardless of `PrincDiv`).
+  -- Actually a cleaner route: package the LHS and RHS into a representative
+  -- equality and lift via `congrArg mk`.
+  -- Step 1: rewrite LHS through `pullback_mk` and `pushforward_mk`.
   rw [Pic0.pullback_mk, Pic0.pushforward_mk]
-  -- Both sides are now `mk` classes in `Pic0 Y`; reduce to representative
-  -- equality. The RHS `(N : ℤ) • mk D` equals `mk ((N : ℤ) • D)` because the
-  -- ℤ-action on the quotient is the pointwise lift of the ℤ-action on
-  -- `Div0 Y`. We prove the general fact `∀ n : ℕ, ∀ d : Div0 Y, ...` by
-  -- induction, then specialise.
-  have hRHS : ((N : ℤ) • (QuotientAddGroup.mk D : Pic0 Y))
-      = (QuotientAddGroup.mk ((N : ℤ) • D) : Pic0 Y) :=
-    ((QuotientAddGroup.mk' ((PrincDiv Y).addSubgroupOf (Div0 Y))).map_zsmul
-      D (N : ℤ)).symm
-  rw [hRHS]
+  -- Step 2: `change` the RHS to `mk ((N:ℤ) • D)`. This is true by `rfl`
+  -- because the ℤ-smul on `Pic0 Y` (a quotient `AddCommGroup`) is defined
+  -- pointwise as `mk (n • d)` (via `QuotientAddGroup.smul`).
+  change (QuotientAddGroup.mk
+            (Pic0.divPushforward f (Pic0.divPullback f hf N hN D))
+              : Pic0 Y)
+      = (QuotientAddGroup.mk ((N : ℤ) • D) : Pic0 Y)
   -- Equality of quotient classes: it suffices to show the representatives
   -- are equal.
   refine congrArg (QuotientAddGroup.mk (s := (PrincDiv Y).addSubgroupOf (Div0 Y))) ?_
