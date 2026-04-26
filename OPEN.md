@@ -107,14 +107,16 @@ items 1, 2, 5, 8, 9 will need infrastructure not in mathlib at the pin.
 - `Manifold/Degree.lean` (~247 LOC, 2026-04-26) — `degreeFiber` + `RegularValueWitness` + named owed classical statements.
 - `Manifold/MeromorphicDivisor.lean` (~224 LOC, 2026-04-26) — `MMeromorphicOn.orderFun` + `divisor` packaging as `Function.locallyFinsuppWithin`.
 - `Divisor/FiberSum.lean` (~361 LOC, 2026-04-26) — `Div.fiberSum f hf` (divisor pullback under finite-fibres) + `fiberSum_id_apply` + `fiberSum_comp_apply` (full contravariant functoriality).
-- `Divisor/FiberPullback.lean` (~190 LOC, 2026-04-26) — `Pic0.pullback (f, hf, N, hN)` via `divPullback` descent under constant-fibre-cardinality.
-- `Divisor/PrincipalDivisor.lean` (~115 LOC, 2026-04-26) — `MeromorphicNonzero X` + `principalDivisorMap : MeromorphicNonzero X → Div X` (the future honest input to `PrincDiv X`).
+- `Divisor/FiberPullback.lean` (~456 LOC after H1+H2+H3, 2026-04-26) — `Pic0.pullback (f, hf, N, hN)` via `divPullback` descent under constant-fibre-cardinality, plus full contravariant functoriality (`pullback_id`, `pullback_comp_apply`) and the divisor-side of item 24 (`Pic0.pushforward_pullback = N • id`, with `Div.singletonMap_fiberSum` as the divisor-level identity).
+- `Divisor/PrincipalDivisor.lean` (~350 LOC after I1, 2026-04-26) — `MeromorphicNonzero X` + `principalDivisorMap : MeromorphicNonzero X → Div X` + `CommMonoid (MeromorphicNonzero X)` + `principalDivisorMap_one` + `principalDivisorMap_mul` (multiplicativity).
+- `Divisor/PrincipalDivisorRange.lean` (~331 LOC, 2026-04-26) — `class PrincipalDivisorMultiplicative` (the `CommGroup`+lemmas typeclass) + `principalDivisorAddHom : Additive (MeromorphicNonzero X) →+ Div X` + `PrincDivHonestCandidate := principalDivisorAddHom.range` + `ResidueTheorem X : Prop` + `residueTheorem_iff_range_le_Div0` equivalence.
+- `Manifold/ResidueTheorem.lean` (~338 LOC, 2026-04-26) — `residue_theorem` skeleton with one named gap (R5) + Route A breakdown (R1+R2+R3+R4) + sorry-free `residue_theorem_of_routeA` conditional discharge. **The only file in the repo where `sorry` is allowed.**
 - `Topology/SurfaceGenus.lean` (~108 LOC) — `TopologicalGenus = finrank ℚ H₁` + invariance.
 - `Divisor.lean` (~225 LOC) — `Div X`, `Div.degree`, `degreeHom`, `Div0`, `Pic0` modulo `PrincDiv := ⊥` placeholder.
 - `Divisor/Single.lean` (~150 LOC) — `Div.single`, `degree_single = 1`, `single_sub_single_mem_Div0`.
 - `Jacobian.lean` (~470 LOC) — honest `ofCurve`, honest `Pic⁰` pushforward via `Div.singletonMap`, zero-stub pullback.
 
-**Roughly ~4,890 LOC of real local infrastructure**, none of which strict-closes any item by itself.
+**Roughly ~6,200 LOC of real local infrastructure**, none of which strict-closes any item by itself. The path to first STRICT-CLOSED runs through `Manifold/ResidueTheorem.lean`'s named R5 gap: discharging R5 makes `PrincipalDivisorMultiplicative X` constructible (via the I1 lemmas + a `CommGroup` upgrade) and `ResidueTheorem X` true, after which the one-line swap in `Divisor.lean` (`PrincDiv := principalDivisorAddHom.range`) flips items 15, 19, 20 from STUB *(PROOF-HONEST)* to STRICT-CLOSED simultaneously.
 
 ## Honest scoring
 
