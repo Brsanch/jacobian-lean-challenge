@@ -57,14 +57,8 @@ The following are **not** proved here and are tracked in `OPEN.md`:
    `𝓘(ℂ, ℂ)` since the model is the identity), but the unfold through the
    `OpenPartialHomeomorph` API is API-heavy and is left to follow-up.
 
-2. **Operations dropped at this pin.** `.inv`, `.pow`, `.zpow`,
-   `.const_smul`, `.div`, `MMeromorphicOn.iUnion`, and a `@[simp]`
-   `mMeromorphicOn_empty` are not provided here. The chart-pullback proofs
-   for `.inv`/`.pow`/`.zpow`/`.const_smul`/`.div` follow the same pattern
-   as `.add`/`.mul` and can be reinstated when the elaboration cost of the
-   `Function.comp`-based `funext`+`simp` step is acceptable; they are
-   omitted now to keep the file compiling cleanly under
-   `relaxedAutoImplicit = false` + `diagnostics = true`.
+2. **Operations dropped at this pin.** `MMeromorphicOn.iUnion` and a
+   `@[simp]` `mMeromorphicOn_empty` are not provided here.
 -/
 
 noncomputable section
@@ -182,6 +176,49 @@ lemma sub (hf : MMeromorphicAt I f x) (hg : MMeromorphicAt I g x) :
   rw [sub_eq_add_neg]
   exact hf.add hg.neg
 
+/-- Pointwise inverse of a meromorphic function is meromorphic. Mathlib's
+`MeromorphicAt.inv` is unconditional (poles are absorbed into the meromorphic
+class); the chart pullback transports this directly. -/
+lemma inv (hf : MMeromorphicAt I f x) : MMeromorphicAt I f⁻¹ x := by
+  have hf' : MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hf
+  show MeromorphicAt (f⁻¹ ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+  have h : f⁻¹ ∘ (chartAt ℂ x).symm = (f ∘ (chartAt ℂ x).symm)⁻¹ := rfl
+  rw [h]
+  exact hf'.inv
+
+/-- Pointwise quotient of two meromorphic functions is meromorphic. -/
+lemma div (hf : MMeromorphicAt I f x) (hg : MMeromorphicAt I g x) :
+    MMeromorphicAt I (f / g) x := by
+  rw [div_eq_mul_inv]
+  exact hf.mul hg.inv
+
+/-- A natural-number power of a meromorphic function is meromorphic. -/
+lemma pow (hf : MMeromorphicAt I f x) (n : ℕ) : MMeromorphicAt I (f ^ n) x := by
+  induction n with
+  | zero =>
+    have h : (f ^ 0 : M → ℂ) = (fun _ : M => (1 : ℂ)) := by funext y; simp
+    rw [h]
+    exact MMeromorphicAt.const 1
+  | succ m hm => simpa only [pow_succ] using hm.mul hf
+
+/-- An integer power of a meromorphic function is meromorphic. -/
+lemma zpow (hf : MMeromorphicAt I f x) (n : ℤ) : MMeromorphicAt I (f ^ n) x := by
+  cases n with
+  | ofNat m => simpa only [Int.ofNat_eq_natCast, zpow_natCast] using hf.pow m
+  | negSucc m =>
+    have h := (hf.pow (m + 1)).inv
+    simpa only [zpow_negSucc] using h
+
+/-- Multiplication of a meromorphic function by a complex scalar is meromorphic.
+Implemented via the constant-meromorphic factor and pointwise multiplication. -/
+lemma const_smul (c : ℂ) (hf : MMeromorphicAt I f x) :
+    MMeromorphicAt I (c • f) x := by
+  -- `c • f = (fun _ => c) * f` pointwise on `M → ℂ`.
+  have h_eq : (c • f) = (fun _ : M => c) * f := by
+    funext y; simp [Pi.smul_apply, Pi.mul_apply, smul_eq_mul]
+  rw [h_eq]
+  exact (MMeromorphicAt.const c).mul hf
+
 end MMeromorphicAt
 
 /-! ## Set-level closure under operations -/
@@ -210,6 +247,23 @@ lemma neg (hf : MMeromorphicOn I f s) : MMeromorphicOn I (-f) s :=
 lemma sub (hf : MMeromorphicOn I f s) (hg : MMeromorphicOn I g s) :
     MMeromorphicOn I (f - g) s :=
   fun x hx => (hf x hx).sub (hg x hx)
+
+lemma inv (hf : MMeromorphicOn I f s) : MMeromorphicOn I f⁻¹ s :=
+  fun x hx => (hf x hx).inv
+
+lemma div (hf : MMeromorphicOn I f s) (hg : MMeromorphicOn I g s) :
+    MMeromorphicOn I (f / g) s :=
+  fun x hx => (hf x hx).div (hg x hx)
+
+lemma pow (hf : MMeromorphicOn I f s) (n : ℕ) : MMeromorphicOn I (f ^ n) s :=
+  fun x hx => (hf x hx).pow n
+
+lemma zpow (hf : MMeromorphicOn I f s) (n : ℤ) : MMeromorphicOn I (f ^ n) s :=
+  fun x hx => (hf x hx).zpow n
+
+lemma const_smul (c : ℂ) (hf : MMeromorphicOn I f s) :
+    MMeromorphicOn I (c • f) s :=
+  fun x hx => (hf x hx).const_smul c
 
 end MMeromorphicOn
 
