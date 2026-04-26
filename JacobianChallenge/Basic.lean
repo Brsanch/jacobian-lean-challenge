@@ -124,7 +124,13 @@ lemma ofCurve_self (P : X) : ofCurve P P = 0 :=
   JacobianChallenge.Jacobian.ofCurve_self P
 
 -- this is the lemma which stops the hack answer "J(X)=0 for all X"
-lemma ofCurve_inj (P : X) (h : 0 < genus X) : Function.Injective (ofCurve P) := sorry
+-- At this pin the hypothesis `h : 0 < genus X` is unused: the placeholder
+-- `PrincDiv X = ⊥` makes `Pic0 X` faithful over `Div0 X`, so injectivity of
+-- `Q ↦ [δ Q − δ P]` reduces to `Div.single_eq_iff`. When `PrincDiv` becomes
+-- honest, this delegation must be revisited and the hypothesis becomes
+-- load-bearing (Abel–Jacobi theorem).
+lemma ofCurve_inj (P : X) (_h : 0 < genus X) : Function.Injective (ofCurve P) :=
+  JacobianChallenge.Jacobian.ofCurve_inj P
 
 variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
   [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
