@@ -193,8 +193,10 @@ noncomputable instance : Mul (MeromorphicNonzero X) where
       meromorphic := f.meromorphic.mul g.meromorphic
       nonvanishing_germ := by
         intro x
-        -- `(f * g) x = f x * g x` is `rfl`; we need
-        -- `mmeromorphicOrderAt I (f.toFun * g.toFun) x ≠ ⊤`.
+        -- The lambda `fun x => f.toFun x * g.toFun x` is definitionally equal
+        -- to `f.toFun * g.toFun` (Pi.mul_apply is `rfl`); we restate the goal
+        -- in product form via `change` to match `mmeromorphicOrderAt_mul`.
+        change mmeromorphicOrderAt 𝓘(ℂ, ℂ) (f.toFun * g.toFun) x ≠ ⊤
         have hf_at : MMeromorphicAt 𝓘(ℂ, ℂ) f.toFun x := f.meromorphic x trivial
         have hg_at : MMeromorphicAt 𝓘(ℂ, ℂ) g.toFun x := g.meromorphic x trivial
         have h_sum : mmeromorphicOrderAt 𝓘(ℂ, ℂ)
