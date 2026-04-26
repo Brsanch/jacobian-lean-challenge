@@ -150,6 +150,7 @@ subgroup of `Fin (genus X) → ℂ`.
 See the file-level docstring for the full set of instances supplied
 *modulo this placeholder*, and which instances on the resulting quotient
 are deliberately left as future work. -/
+@[reducible]
 def PeriodLattice : AddSubgroup (Fin (JacobianChallenge.genus X) → ℂ) := ⊥
 
 /-- The **analytic torus** of a compact Riemann surface, defined as the
@@ -289,12 +290,17 @@ noncomputable def toModelHomeomorph :
         (QuotientAddGroup.quotientBot
           (G := Fin (JacobianChallenge.genus X) → ℂ)).right_inv x }
   continuous_toFun := by
-    -- After elaboration of the `toEquiv` field, the goal sees the type
-    -- `(ℂ^g) ⧸ ⊥` (because `PeriodLattice X` reduces to `⊥`), with
-    -- topology `QuotientAddGroup.instTopologicalSpace ⊥` rather than
-    -- `instTopologicalSpace (PeriodLattice X)`. We must produce
-    -- `hmk : IsOpenQuotientMap mk` matching the *same* `⊥` so the
-    -- subsequent `rw [← hmk.continuous_comp_iff]` unifies.
+    -- Continuity of `quotientBot` via the open-quotient-map property
+    -- of `mk`. Both `hmk` and the goal must be at the *same* topology
+    -- instance: we use `change` to explicitly retype the goal as
+    -- `Continuous (quotientBot : (G ⧸ ⊥) → G)`, which is *defeq* to
+    -- the elaborated goal (because `instTopologicalSpace X` reduces
+    -- through `PeriodLattice X = ⊥` to `instTopologicalSpace ⊥`),
+    -- and against this explicit form `hmk.continuous_comp_iff`
+    -- unifies cleanly.
+    change Continuous
+      (QuotientAddGroup.quotientBot
+          (G := Fin (JacobianChallenge.genus X) → ℂ))
     have hmk : IsOpenQuotientMap
         (QuotientAddGroup.mk (s := (⊥ : AddSubgroup
             (Fin (JacobianChallenge.genus X) → ℂ))) :
