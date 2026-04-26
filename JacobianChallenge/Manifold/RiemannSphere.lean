@@ -261,8 +261,9 @@ noncomputable def chartS : OpenPartialHomeomorph RiemannSphere ℂ where
     -- continuity of `chartSToFun` on `{x ≠ some 0}`
     apply continuousOn_of_forall_continuousAt
     intro x hx
-    rcases x with _ | z
-    · -- ContinuousAt at ∞.
+    induction x using OnePoint.rec with
+    | infty =>
+      -- ContinuousAt at ∞.
       rw [OnePoint.continuousAt_infty]
       intro s hs
       rw [show (chartSToFun ∞ : ℂ) = 0 from rfl] at hs
@@ -282,7 +283,8 @@ noncomputable def chartS : OpenPartialHomeomorph RiemannSphere ℂ where
       simp only [Metric.mem_ball, dist_zero_right, norm_inv]
       rw [inv_lt_comm₀ (by positivity) hr_pos] at hz
       · exact hz
-    · -- ContinuousAt at `(some z)` with `some z ≠ some 0`, hence `z ≠ 0`.
+    | coe z =>
+      -- ContinuousAt at `(some z)` with `some z ≠ some 0`, hence `z ≠ 0`.
       have hz : z ≠ 0 := by
         intro h
         apply hx
