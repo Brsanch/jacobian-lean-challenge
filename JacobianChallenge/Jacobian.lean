@@ -4,11 +4,13 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Divisor
+import JacobianChallenge.Divisor.Single
 import JacobianChallenge.Manifold.HolomorphicOneForm
 import Mathlib.Topology.Constructions
 import Mathlib.Topology.Separation.Basic
 import Mathlib.Topology.Algebra.ConstMulAction
 import Mathlib.Topology.Algebra.ContinuousMonoidHom
+import Mathlib.GroupTheory.QuotientGroup.Basic
 
 /-! # The Jacobian of a compact Riemann surface
 
@@ -122,36 +124,100 @@ instance instDiscreteTopology : DiscreteTopology (Jacobian X) :=
 instance instT2Space : T2Space (Jacobian X) :=
   inferInstance
 
-/-! ### The (placeholder) Abel–Jacobi map -/
+/-! ### The Abel–Jacobi map (honest, against the `PrincDiv = ⊥` placeholder) -/
 
-/-- The Abel–Jacobi map from a compact Riemann surface to its Jacobian.
+/-- The Abel–Jacobi map from a compact Riemann surface to its Jacobian,
+sending `Q ↦ [δ Q − δ P]` in `Pic0 X = Div0 X ⧸ (PrincDiv X).addSubgroupOf
+(Div0 X)`.
 
-**Stub at this pin.** The honest Abel–Jacobi map sends `Q ↦ [Q] - [P]` in
-`Pic0 X`, but constructing the divisor `δ Q - δ P : Div X` and proving it
-lies in `Div0 X` requires a single-point-divisor constructor and a one-point
-degree lemma in `JacobianChallenge.Divisor` that have not yet been written.
-To keep this file `sorry`-free we define `ofCurve P` as the constant zero
-map. This satisfies `ofCurve_self` (challenge item 15) on the nose, but it
-**does not satisfy** `ofCurve_inj` when `genus X > 0` (challenge item 16),
-which therefore remains as the existing `sorry` in `Basic.lean`.
+This is the honest Abel–Jacobi *map* against the current placeholder
+`PrincDiv X = ⊥`. The honest *target* `Pic0 X` is, at this pin, only
+canonically isomorphic to `Div0 X` (not to the analytic Jacobian
+`ℂᵍ / Λ`); see the docstring of `JacobianChallenge.PrincDiv` for the
+analytic inputs that are owed before `PrincDiv` itself is honest. The map
+itself, however, is genuinely `Q ↦ [δ Q − δ P]`, and in particular it
+satisfies both `ofCurve_self` and `ofCurve_inj` below — the latter
+unconditionally on `genus X` (the placeholder `PrincDiv = ⊥` makes the
+quotient faithful, so injectivity reduces to `Div.single_eq_iff`).
 
-Replace this with the honest `Q ↦ Quotient.mk' ⟨δ Q - δ P, _⟩` once
-`Divisor.lean` exposes the relevant point-divisor API. -/
-noncomputable def ofCurve (_P : X) : X → Jacobian X := fun _ => 0
+The `[DecidableEq X]` requirement of `Div.single` is discharged via
+`Classical.decEq X`. -/
+noncomputable def ofCurve (P : X) : X → Jacobian X :=
+  letI : DecidableEq X := Classical.decEq X
+  fun Q => (QuotientAddGroup.mk
+    (⟨Div.single Q - Div.single P, Div.single_sub_single_mem_Div0 P Q⟩ : Div0 X) :
+      Jacobian X)
 
-/-- The Abel–Jacobi map sends the base point to the identity of the group.
-This is challenge item 15 from `Basic.lean`. With the constant-zero stub for
-`ofCurve` above, the equality is definitional. The proof would also go
-through verbatim for the honest `Q ↦ [Q] - [P]` construction (since
-`[P] - [P] = 0` in any abelian group), so this lemma is robust against
-swapping the stub for the real map. -/
-@[simp] lemma ofCurve_self (P : X) : ofCurve P P = 0 := rfl
+/-- The Abel–Jacobi map sends the base point to the identity of the group
+(challenge item 15 from `Basic.lean`). For `Q = P` the underlying divisor
+`Div.single P − Div.single P` is `0` in `Div X`, so the corresponding
+element of `Div0 X` is `0`, and `QuotientAddGroup.mk 0 = 0`. -/
+@[simp] lemma ofCurve_self (P : X) : ofCurve P P = 0 := by
+  classical
+  -- Unfold `ofCurve P P` to a quotient class of a `Div0 X`-element whose
+  -- underlying divisor is `single P − single P = 0`.
+  show (QuotientAddGroup.mk
+    (⟨Div.single P - Div.single P,
+        Div.single_sub_single_mem_Div0 P P⟩ : Div0 X) : Jacobian X) = 0
+  -- The `Div0 X`-element above equals `0`, since its underlying divisor is `0`.
+  have h0 : (⟨Div.single P - Div.single P,
+      Div.single_sub_single_mem_Div0 P P⟩ : Div0 X) = 0 := by
+    apply Subtype.ext
+    simp
+  rw [h0]
+  -- `QuotientAddGroup.mk 0 = 0` in any quotient group.
+  exact QuotientAddGroup.mk_zero _
 
-/-- The Abel–Jacobi map (in the current stub form) is the constant zero map.
-This `simp` lemma exposes the stub status to any downstream proof attempt
-that tries to use `ofCurve` for non-trivial reasoning, so that such an
-attempt fails *immediately* rather than silently relying on the stub. -/
-@[simp] lemma ofCurve_eq_zero (P Q : X) : ofCurve P Q = 0 := rfl
+/-- The Abel–Jacobi map is injective.
+
+The challenge signature in `Basic.lean` carries the hypothesis
+`0 < genus X`, but at the current pin that hypothesis is *not needed*:
+the placeholder `PrincDiv X = ⊥` makes the quotient `Pic0 X` faithful, so
+two divisors are equal in `Pic0 X` iff they are equal in `Div0 X`, and
+hence iff their underlying `Div X`-divisors are equal. The conclusion then
+reduces to `Div.single_eq_iff`.
+
+When the honest `PrincDiv` lands and the quotient is no longer faithful,
+this proof will need the full Abel–Jacobi theorem (and the
+`0 < genus X` hypothesis becomes load-bearing); at that point this lemma
+should be replaced rather than refined. -/
+lemma ofCurve_inj (P : X) : Function.Injective (ofCurve P) := by
+  classical
+  intro Q₁ Q₂ hQ
+  -- Two `QuotientAddGroup.mk` classes are equal iff their difference lies in
+  -- the quotienting subgroup `(PrincDiv X).addSubgroupOf (Div0 X)`, which at
+  -- this pin equals `⊥` (since `PrincDiv X = ⊥`), so equality in `Pic0 X`
+  -- forces equality in `Div0 X`.
+  have hSub : (⟨Div.single Q₁ - Div.single P,
+                 Div.single_sub_single_mem_Div0 P Q₁⟩ : Div0 X)
+            = (⟨Div.single Q₂ - Div.single P,
+                 Div.single_sub_single_mem_Div0 P Q₂⟩ : Div0 X) := by
+    -- Translate `hQ : ofCurve P Q₁ = ofCurve P Q₂` (a quotient equality) into
+    -- a `Quotient.eq` statement, and use that the quotienting subgroup is `⊥`.
+    have hQ' : (QuotientAddGroup.mk
+        (⟨Div.single Q₁ - Div.single P,
+            Div.single_sub_single_mem_Div0 P Q₁⟩ : Div0 X) : Jacobian X)
+      = QuotientAddGroup.mk
+        (⟨Div.single Q₂ - Div.single P,
+            Div.single_sub_single_mem_Div0 P Q₂⟩ : Div0 X) := hQ
+    rw [QuotientAddGroup.eq] at hQ'
+    -- `hQ'` says the difference lies in `(PrincDiv X).addSubgroupOf (Div0 X)`,
+    -- which is `⊥` because `PrincDiv X = ⊥`.
+    have hBot : (PrincDiv X).addSubgroupOf (Div0 X) = ⊥ := by
+      unfold PrincDiv
+      simp [AddSubgroup.addSubgroupOf]
+    rw [hBot, AddSubgroup.mem_bot] at hQ'
+    -- Now `hQ' : -x + y = 0`; rearrange to `x = y` via `neg_add_eq_zero`.
+    exact neg_add_eq_zero.mp hQ'
+  -- Project the equality of `Div0 X`-elements to an equality of underlying
+  -- `Div X`-divisors via `Subtype.ext_iff`.
+  have hDiv : Div.single Q₁ - Div.single P = Div.single Q₂ - Div.single P :=
+    congrArg Subtype.val hSub
+  -- Cancel `Div.single P` on both sides to extract `single Q₁ = single Q₂`.
+  have hSingle : (Div.single Q₁ : Div X) = Div.single Q₂ :=
+    sub_left_inj.mp hDiv
+  -- And conclude via `Div.single_eq_iff`.
+  exact (Div.single_eq_iff Q₁ Q₂).mp hSingle
 
 /-! ### Functoriality stubs (challenge items 12, 13)
 
