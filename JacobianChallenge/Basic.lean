@@ -172,7 +172,7 @@ fiber-sum `single y ↦ ∑_{x ∈ f⁻¹(y)} single x`. See the section docstri
 of `JacobianChallenge.Jacobian.pullback` for what is owed before this can
 become honest (a `Div.fiberSum` construction with finite-fiber hypotheses,
 plus degree preservation). -/
-def pullback (f : X → Y)
+noncomputable def pullback (f : X → Y)
     (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     Jacobian Y →ₜ+ Jacobian X :=
   JacobianChallenge.Jacobian.pullback f
