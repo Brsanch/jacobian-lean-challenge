@@ -281,7 +281,13 @@ noncomputable def chartS : OpenPartialHomeomorph RiemannSphere ℂ where
         exact absurd hz' (not_lt.mpr (by positivity))
       -- Goal: `(chartSToFun ∘ ↑) z ∈ s`, which reduces to `z⁻¹ ∈ s`.
       apply hball
-      simp only [Metric.mem_ball, dist_zero_right, norm_inv]
+      -- The goal after `apply hball` is `dist (chartSPartialEquiv ↑z)
+      -- (chartSPartialEquiv ∞) < r`. The two chart applications reduce
+      -- definitionally: `chartSPartialEquiv (some z) = z⁻¹` and
+      -- `chartSPartialEquiv ∞ = 0`. Restate the goal explicitly so that
+      -- `dist_zero_right` and `norm_inv` then take it to `‖z‖⁻¹ < r`.
+      show dist (z⁻¹ : ℂ) (0 : ℂ) < r
+      rw [dist_zero_right, norm_inv]
       -- Goal: `‖z‖⁻¹ < r`. Have `hz' : r⁻¹ < ‖z‖`, both sides positive.
       -- Use the one-over decreasing-monotonicity: `0 < a → a < b → 1/b < 1/a`.
       have h := one_div_lt_one_div_of_lt (inv_pos.mpr hr_pos) hz'
