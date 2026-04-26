@@ -108,25 +108,25 @@ lemma continuous_antipode : Continuous antipode := by
     refine ⟨?_, ?_⟩
     · -- Image of `map ↑ (coclosedCompact ℂ)`. Compose with antipode and rewrite
       -- `antipode ∘ ↑` to `↑ ∘ (-·⁻¹)` on the cofinal set `{z ≠ 0}`.
+      -- ℂ is T2, so `coclosedCompact = cocompact` (`Filter.coclosedCompact_eq_cocompact`).
       rw [Filter.tendsto_map'_iff]
+      simp only [Filter.coclosedCompact_eq_cocompact]
       have h_inv_cocomp : Filter.Tendsto (fun w : ℂ => w⁻¹)
           (Filter.cocompact ℂ) (𝓝 (0 : ℂ)) := by
         rw [← Metric.cobounded_eq_cocompact]
         exact Filter.tendsto_inv₀_cobounded
-      have h_inv : Filter.Tendsto (fun w : ℂ => w⁻¹)
-          (Filter.coclosedCompact ℂ) (𝓝 (0 : ℂ)) :=
-        h_inv_cocomp.mono_left Filter.cocompact_le_coclosedCompact
       have h_neg_inv : Filter.Tendsto (fun w : ℂ => -w⁻¹)
-          (Filter.coclosedCompact ℂ) (𝓝 (0 : ℂ)) := by
-        simpa using h_inv.neg
+          (Filter.cocompact ℂ) (𝓝 (0 : ℂ)) := by
+        simpa using h_inv_cocomp.neg
       have h_to_sphere :=
-        (OnePoint.continuous_coe (X := ℂ)).continuousAt.tendsto.comp h_neg_inv
+        (OnePoint.continuous_coe (X := ℂ)).continuousAt.comp h_neg_inv
       refine Filter.Tendsto.congr' ?_ h_to_sphere
-      have hmem : {z : ℂ | z ≠ 0} ∈ Filter.coclosedCompact ℂ := by
-        rw [Filter.mem_coclosedCompact]
-        refine ⟨{(0 : ℂ)}, isClosed_singleton, isCompact_singleton, ?_⟩
+      have hmem : {z : ℂ | z ≠ 0} ∈ Filter.cocompact ℂ := by
+        rw [Filter.mem_cocompact]
+        refine ⟨{(0 : ℂ)}, isCompact_singleton, ?_⟩
         intro z hz; simp at hz; exact hz
       filter_upwards [hmem] with z hz
+      -- Goal: ((↑) ∘ (-·⁻¹)) z = (antipode ∘ ↑) z, i.e., ↑(-z⁻¹) = antipode ↑z
       exact (antipode_coe_of_ne hz).symm
     · have h := Filter.tendsto_pure_pure antipode (∞ : RiemannSphere)
       rw [antipode_infty] at h
@@ -146,9 +146,11 @@ lemma continuous_antipode : Continuous antipode := by
       refine ⟨?_, ?_⟩
       · rw [OnePoint.nhds_infty_eq]
         -- Replace `antipode (some z)` with `(-z⁻¹ : ℂ) : RiemannSphere` on 𝓝[≠] 0,
-        -- then compose with `(↑) : ℂ → RiemannSphere` and the divergence statement
-        -- `Tendsto (-·⁻¹) (𝓝[≠] 0) (cobounded ℂ)`, which holds because
-        -- `‖-z⁻¹‖ = ‖z⁻¹‖ → ∞`.
+        -- then compose with `(↑) : ℂ → RiemannSphere`. Use that
+        -- `(·⁻¹) : 𝓝[≠] 0 → cobounded ℂ` (`Filter.tendsto_inv₀_nhdsNE_zero`) and
+        -- `(- ·) : cobounded ℂ → cobounded ℂ` (`Filter.tendsto_neg_cobounded`).
+        -- ℂ is T2, so `cobounded = cocompact = coclosedCompact`.
+        simp only [Filter.coclosedCompact_eq_cocompact]
         have hcongr : (fun z : ℂ => antipode ((z : RiemannSphere)))
             =ᶠ[𝓝[≠] (0 : ℂ)] (fun z => (((-z⁻¹) : ℂ) : RiemannSphere)) := by
           refine Filter.eventually_of_mem
@@ -156,60 +158,40 @@ lemma continuous_antipode : Continuous antipode := by
           intro z hz; exact antipode_coe_of_ne hz
         refine Filter.Tendsto.congr' hcongr.symm ?_
         apply Filter.Tendsto.mono_right _ le_sup_left
-        -- We use that on `𝓝[≠] 0`, `-z⁻¹` and `z⁻¹` agree up to negation, which
-        -- is an isometry in `ℂ` and hence preserves the cocompact filter via a
-        -- direct preimage-of-compact argument.
-        have h_inv_cocomp : Filter.Tendsto (fun z : ℂ => z⁻¹) (𝓝[≠] (0 : ℂ))
-            (Filter.cocompact ℂ) := by
-          rw [← Metric.cobounded_eq_cocompact]
-          exact Filter.tendsto_inv₀_nhdsNE_zero
-        -- Negation preserves cocompact: since `(- ·)` is continuous, the preimage
-        -- of any compact set is compact (`-K` itself), so `(- ·)⁻¹ Kᶜ = (-K)ᶜ`
-        -- belongs to the cocompact filter.
-        have h_neg_cocomp :
-            Filter.Tendsto (fun w : ℂ => -w) (Filter.cocompact ℂ) (Filter.cocompact ℂ) := by
-          intro s hs
-          rw [Filter.mem_cocompact] at hs ⊢
-          rcases hs with ⟨t, ht_compact, ht_sub⟩
-          refine ⟨((- ·) ⁻¹' t : Set ℂ), ?_, ?_⟩
-          · -- `(- ·)⁻¹ t` is compact since `(- ·)` is continuous and the preimage of a
-            -- compact set under a homeomorphism is compact. Use the homeomorphism
-            -- property via `IsCompact.image (continuous_neg)`.
-            have : ((- ·) ⁻¹' t : Set ℂ) = (- ·) '' t := by
-              ext z
-              constructor
-              · intro hz
-                refine ⟨-z, hz, by ring⟩
-              · rintro ⟨y, hy, rfl⟩
-                show -(-y) ∈ t
-                rwa [neg_neg]
-            rw [this]
-            exact ht_compact.image continuous_neg
-          · intro z hz
-            apply ht_sub
-            simp only [Set.mem_preimage] at hz
-            exact hz
+        -- Compose: `Tendsto (·⁻¹) (𝓝[≠] 0) (cobounded ℂ)` then negation.
+        have h_inv_cob : Filter.Tendsto (fun z : ℂ => z⁻¹) (𝓝[≠] (0 : ℂ))
+            (Filter.cobounded ℂ) := Filter.tendsto_inv₀_nhdsNE_zero
+        have h_neg_inv_cob : Filter.Tendsto (fun z : ℂ => -z⁻¹) (𝓝[≠] (0 : ℂ))
+            (Filter.cobounded ℂ) := Filter.tendsto_neg_cobounded.comp h_inv_cob
         have h_neg_inv_cocomp : Filter.Tendsto (fun z : ℂ => -z⁻¹) (𝓝[≠] (0 : ℂ))
-            (Filter.cocompact ℂ) := h_neg_cocomp.comp h_inv_cocomp
-        have h_to_cocomp : Filter.Tendsto (fun z : ℂ => -z⁻¹) (𝓝[≠] (0 : ℂ))
-            (Filter.coclosedCompact ℂ) :=
-          h_neg_inv_cocomp.mono_right Filter.cocompact_le_coclosedCompact
-        exact (Filter.tendsto_map (m := (↑) : ℂ → RiemannSphere)
-          (f := Filter.coclosedCompact ℂ)).comp h_to_cocomp
-      · have h := Filter.tendsto_pure_pure
-          (fun z : ℂ => antipode ((z : RiemannSphere))) (0 : ℂ)
-        simp only [antipode_coe_zero] at h
-        exact h.mono_right (pure_le_nhds _)
+            (Filter.cocompact ℂ) := by
+          rw [Metric.cobounded_eq_cocompact] at h_neg_inv_cob
+          exact h_neg_inv_cob
+        -- Push through the coercion (↑) : ℂ → RiemannSphere via `Filter.tendsto_map`.
+        have h_push : Filter.Tendsto ((↑) : ℂ → RiemannSphere)
+            (Filter.cocompact ℂ) (Filter.map ((↑) : ℂ → RiemannSphere) (Filter.cocompact ℂ)) :=
+          Filter.tendsto_map
+        exact h_push.comp h_neg_inv_cocomp
+      · -- pure 0 side: `(antipode ∘ ↑) 0 = antipode (some 0) = ∞ ∈ 𝓝 ∞`.
+        intro s hs
+        rw [Filter.mem_pure]
+        show (0 : ℂ) ∈ (fun z : ℂ => antipode ((z : RiemannSphere))) ⁻¹' s
+        show antipode (((0 : ℂ) : RiemannSphere)) ∈ s
+        rw [antipode_coe_zero]
+        exact mem_of_mem_nhds hs
     · -- `antipode (some w) = some (-w⁻¹)`, `w ≠ 0`.
-      rw [ContinuousAt]
-      rw [(OnePoint.isOpenEmbedding_coe (X := ℂ)).map_nhds_eq w |>.symm,
-        Filter.tendsto_map'_iff, antipode_coe_of_ne hw]
+      rw [ContinuousAt, antipode_coe_of_ne hw]
+      have h_open_eq : 𝓝 ((w : ℂ) : RiemannSphere)
+          = Filter.map ((↑) : ℂ → RiemannSphere) (𝓝 w) :=
+        ((OnePoint.isOpenEmbedding_coe (X := ℂ)).map_nhds_eq w).symm
+      rw [h_open_eq, Filter.tendsto_map'_iff]
       have hloc : (antipode : RiemannSphere → RiemannSphere) ∘ ((↑) : ℂ → RiemannSphere)
           =ᶠ[𝓝 w] (fun z => (((-z⁻¹) : ℂ) : RiemannSphere)) := by
         filter_upwards [isOpen_compl_singleton.mem_nhds hw] with z hz
         exact antipode_coe_of_ne hz
       refine Filter.Tendsto.congr' hloc.symm ?_
-      exact (OnePoint.continuous_coe (X := ℂ)).continuousAt.tendsto.comp
+      -- `ContinuousAt f x ≡ Tendsto f (𝓝 x) (𝓝 (f x))` definitionally.
+      exact (OnePoint.continuous_coe (X := ℂ)).continuousAt.comp
         ((continuousAt_inv₀ hw).neg)
 
 end RiemannSphere
