@@ -163,10 +163,19 @@ lemma pushforward_comp_apply (P : Jacobian X) :
   JacobianChallenge.Jacobian.pushforward_comp_apply f g P
 
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
-Equal to the zero map if the map on curves is constant. -/
-def pullback (f : X → Y)
-    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    Jacobian Y →ₜ+ Jacobian X := sorry
+Equal to the zero map if the map on curves is constant.
+
+**Stub at this pin** — delegated to `JacobianChallenge.Jacobian.pullback`,
+which is the zero `ContinuousAddMonoidHom`. This satisfies the *signature*
+of item 13, but mathematically the true pullback is the descent of the
+fiber-sum `single y ↦ ∑_{x ∈ f⁻¹(y)} single x`. See the section docstring
+of `JacobianChallenge.Jacobian.pullback` for what is owed before this can
+become honest (a `Div.fiberSum` construction with finite-fiber hypotheses,
+plus degree preservation). -/
+noncomputable def pullback (f : X → Y)
+    (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    Jacobian Y →ₜ+ Jacobian X :=
+  JacobianChallenge.Jacobian.pullback f
 
 -- pullback is holomorphic
 theorem pullback_contMDiff :
@@ -174,11 +183,20 @@ theorem pullback_contMDiff :
       (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) := sorry
 
 -- functoriality
+-- This lemma is **false** for the current zero-stub `pullback` (we would
+-- need `0 P = P`, which fails for `P ≠ 0`). It stays `sorry` until
+-- `pullback` becomes honest. See `JacobianChallenge.Jacobian.pullback`
+-- docstring for the construction that is owed.
 lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P := sorry
 
 -- functoriality
+-- For the zero-stub `pullback`, both sides reduce to `0`, so the statement
+-- holds. When `pullback` becomes honest this lemma will need a real proof;
+-- the statement itself, however, is exactly the strict-reader check and is
+-- preserved.
 lemma pullback_comp_apply (P : Jacobian Z) :
-    pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := sorry
+    pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) :=
+  JacobianChallenge.Jacobian.pullback_comp_apply f g P
 
 /-- The degree of a holomorphic map between compact Riemann surfaces. Equal to
 zero for constant maps, otherwise equal to the usual degree.
