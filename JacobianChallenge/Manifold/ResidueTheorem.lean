@@ -120,7 +120,7 @@ the only remaining work.
 noncomputable section
 
 open scoped Manifold Topology ContDiff
-open Filter Set
+open Filter Set OnePoint
 
 namespace JacobianChallenge
 
@@ -153,7 +153,7 @@ def R1_poleExtension_statement : Prop :=
   ∀ (f : MeromorphicNonzero X),
     ∃ fTilde : X → RiemannSphere,
       ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ) ω fTilde ∧
-      (∀ x : X, fTilde x = (∞ : RiemannSphere) ↔
+      (∀ x : X, fTilde x = (OnePoint.infty : RiemannSphere) ↔
         (mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x).untop₀ < 0) ∧
       (∀ x : X, (mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x).untop₀ ≥ 0 →
         fTilde x = ((f.toFun x : ℂ) : RiemannSphere))
