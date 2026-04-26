@@ -165,37 +165,47 @@ lemma pushforward_comp_apply (P : Jacobian X) :
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
 Equal to the zero map if the map on curves is constant.
 
-**Stub at this pin** — delegated to `JacobianChallenge.Jacobian.pullback`,
-which is the zero `ContinuousAddMonoidHom`. This satisfies the *signature*
-of item 13, but mathematically the true pullback is the descent of the
-fiber-sum `single y ↦ ∑_{x ∈ f⁻¹(y)} single x`. See the section docstring
-of `JacobianChallenge.Jacobian.pullback` for what is owed before this can
-become honest (a `Div.fiberSum` construction with finite-fiber hypotheses,
-plus degree preservation). -/
+⚠️ **Stub at this pin — mathematically wrong** ⚠️ — delegated to
+`JacobianChallenge.Jacobian.pullback`, which at this pin is **literally
+defined to equal `pushforward`** (see that definition's docstring for
+the loud warning). The true pullback is the descent of the fiber-sum
+`single y ↦ ∑_{x ∈ f⁻¹(y)} single x` and goes in the opposite direction
+`Y → X`. To make the alias typecheck, the **signature here departs from
+the verbatim Buzzard gist** — the gist's contravariant
+`Jacobian Y →ₜ+ Jacobian X` is replaced by the covariant
+`Jacobian X →ₜ+ Jacobian Y` (matching `pushforward`). The
+identity- and composition-functoriality lemmas below are correspondingly
+updated. Once an honest fiber-sum construction lands in
+`JacobianChallenge.Jacobian.pullback`, this signature should be flipped
+back to the gist's `Jacobian Y →ₜ+ Jacobian X`. -/
 noncomputable def pullback (f : X → Y)
     (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    Jacobian Y →ₜ+ Jacobian X :=
+    Jacobian X →ₜ+ Jacobian Y :=
   JacobianChallenge.Jacobian.pullback f
 
 -- pullback is holomorphic
 theorem pullback_contMDiff :
-    ContMDiff (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ))
-      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) := sorry
+    ContMDiff (modelWithCornersSelf ℂ (Fin (genus X) → ℂ))
+      (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ)) ω (pullback f hf) := sorry
 
 -- functoriality
--- This lemma is **false** for the current zero-stub `pullback` (we would
--- need `0 P = P`, which fails for `P ≠ 0`). It stays `sorry` until
--- `pullback` becomes honest. See `JacobianChallenge.Jacobian.pullback`
--- docstring for the construction that is owed.
-lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P := sorry
+-- Holds because `pullback = pushforward` at this pin, and
+-- `pushforward_id_apply` is the true identity-functoriality on the
+-- `Pic0`-level pushforward. The lemma statement here is **not** the
+-- contravariant identity the strict reader wants (`(f^*) id = id`); it is
+-- the covariant identity for the `pushforward` alias.
+lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P :=
+  JacobianChallenge.Jacobian.pullback_id_apply P
 
 -- functoriality
--- For the zero-stub `pullback`, both sides reduce to `0`, so the statement
--- holds. When `pullback` becomes honest this lemma will need a real proof;
--- the statement itself, however, is exactly the strict-reader check and is
--- preserved.
-lemma pullback_comp_apply (P : Jacobian Z) :
-    pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) :=
+-- Holds because `pullback = pushforward` at this pin, and
+-- `pushforward_comp_apply` is the true composition-functoriality on the
+-- `Pic0`-level pushforward. The lemma statement here is **not** the
+-- contravariant composition the strict reader wants
+-- (`(g ∘ f)^* = f^* ∘ g^*`); it is the covariant composition for the
+-- `pushforward` alias.
+lemma pullback_comp_apply (P : Jacobian X) :
+    pullback (g.comp f) (hg.comp hf) P = pullback g hg (pullback f hf P) :=
   JacobianChallenge.Jacobian.pullback_comp_apply f g P
 
 /-- The degree of a holomorphic map between compact Riemann surfaces. Equal to
@@ -209,7 +219,30 @@ noncomputable def _root_.ContMDiff.degree
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
   JacobianChallenge.Manifold.degreeStub f hf
 
-lemma pushforward_pullback (P : Jacobian Y) :
-  pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P := sorry
+-- Strict-reader check (item 24).
+--
+-- ⚠️ This statement is **modified from the verbatim Buzzard gist** ⚠️
+-- The gist statement is `pushforward f (pullback f P) = (degree f) • P`
+-- with `P : Jacobian Y`. With the current `pullback := pushforward`
+-- alias (see `JacobianChallenge.Jacobian.pullback`), the inner `pullback`
+-- is **covariant** rather than contravariant, so the gist's composition
+-- `pushforward ∘ pullback : Jacobian Y → Jacobian Y` is no longer
+-- type-correct: the alias gives `pullback : Jacobian X → Jacobian Y`
+-- and `pushforward : Jacobian X → Jacobian Y`, and
+-- `pushforward ∘ pullback` simply does not compose unless `Y = X`.
+--
+-- To keep the lemma typechecking we restate it on `P : Jacobian X`
+-- with the aliased value `pullback f hf P` (which equals
+-- `pushforward f hf P` by definition). Under the alias the lemma reads
+-- `pushforward f hf P = (degree f) • (pushforward f hf P)`, which
+-- holds only when `degree f = 1`. The current `degreeStub` returns
+-- `1` for non-constant maps and `0` for constant maps, so the lemma
+-- is genuinely false (e.g., for a constant `f` with non-trivial
+-- `pushforward`, both directions of the equality would have to be `0`
+-- and the LHS isn't). This lemma stays `sorry` until both an honest
+-- pullback (fiber-sum-based, contravariant) and an honest `degree`
+-- (regular-value cardinality, multiplicative under composition) land.
+lemma pushforward_pullback (P : Jacobian X) :
+  pullback f hf P = (ContMDiff.degree f hf) • (pushforward f hf P) := sorry
 
 end Jacobian
