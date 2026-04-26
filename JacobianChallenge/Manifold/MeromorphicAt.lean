@@ -69,7 +69,7 @@ The following are **not** proved here and are tracked in `OPEN.md`:
 
 noncomputable section
 
-open scoped Manifold Topology
+open scoped Manifold Topology ContDiff
 open Filter Set
 
 namespace JacobianChallenge
@@ -370,10 +370,10 @@ lemma analyticAt_chart_transition_of_isManifold
   obtain ⟨h_fwd, _⟩ := h_compat
   -- `h_fwd : ContDiffOn ℂ ω (𝓘(ℂ,ℂ) ∘ (e.symm ≫ₕ e') ∘ 𝓘(ℂ,ℂ).symm)
   --                          (𝓘(ℂ,ℂ).symm ⁻¹' (e.symm ≫ₕ e').source ∩ range 𝓘(ℂ,ℂ))`.
-  -- Simplify the model: `𝓘(ℂ,ℂ)` and `𝓘(ℂ,ℂ).symm` are `id`; `range = univ`.
+  -- Simplify the model: `𝓘(ℂ,ℂ)` and `𝓘(ℂ,ℂ).symm` reduce to `id`; `range id = univ`.
   simp only [contDiffPregroupoid, modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
     Function.id_comp, Function.comp_id, preimage_id_eq, id_eq,
-    ModelWithCorners.range_eq_univ, inter_univ] at h_fwd
+    Set.range_id, inter_univ] at h_fwd
   -- `h_fwd : ContDiffOn ℂ ω (e.symm ≫ₕ e') (e.symm ≫ₕ e').source`.
   have h_an_on : AnalyticOn ℂ (e.symm ≫ₕ e') (e.symm ≫ₕ e').source :=
     h_fwd.analyticOn
