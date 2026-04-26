@@ -7,6 +7,8 @@ import JacobianChallenge.Manifold.HolomorphicOneForm
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 import Mathlib.Topology.Connected.PathConnected
 
+set_option diagnostics.threshold 100
+
 /-! # Period integral of a holomorphic 1-form along a path
 
 This file lays the *first honest piece* of the period-integral definition for

@@ -6,6 +6,8 @@ Authors: Bryan Sanchez
 import Mathlib.Topology.Compactification.OnePoint.Basic
 import Mathlib.Topology.Compactification.OnePoint.Sphere
 
+set_option diagnostics.threshold 100
+
 /-! # The Riemann sphere — carrier and inherited topology
 
 This file declares the **Riemann sphere** as the type abbreviation

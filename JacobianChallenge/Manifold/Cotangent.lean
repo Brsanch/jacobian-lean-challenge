@@ -7,6 +7,8 @@ import Mathlib.Geometry.Manifold.VectorBundle.Tangent
 import Mathlib.Topology.VectorBundle.Basic
 import Mathlib.Analysis.Normed.Module.Dual
 
+set_option diagnostics.threshold 100
+
 /-! # Cotangent bundle of a `C^1` manifold
 
 This file defines the cotangent bundle as a topological vector bundle over a

@@ -9,6 +9,8 @@ import Mathlib.Algebra.Category.ModuleCat.Colimits
 import Mathlib.Algebra.Module.ULift
 import Mathlib.LinearAlgebra.Dimension.Finrank
 
+set_option diagnostics.threshold 100
+
 /-! # Topological genus of a topological space
 
 Towards challenge item 14 (`genus_eq_zero_iff_homeo`) from `Basic.lean`,
