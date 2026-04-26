@@ -173,7 +173,8 @@ noncomputable def chartSPartialEquiv : PartialEquiv RiemannSphere ℂ where
       have hz : z ≠ 0 := by
         intro h
         apply hx
-        simp [h]
+        show ((z : ℂ) : RiemannSphere) = ((0 : ℂ) : RiemannSphere)
+        rw [h]
       have hzinv : z⁻¹ ≠ 0 := inv_ne_zero hz
       show chartSInvFun (chartSToFun ((z : RiemannSphere))) = (z : RiemannSphere)
       rw [chartSToFun_coe, chartSInvFun_of_ne hzinv, inv_inv]
@@ -282,7 +283,11 @@ noncomputable def chartS : OpenPartialHomeomorph RiemannSphere ℂ where
       rw [inv_lt_comm₀ (by positivity) hr_pos] at hz
       · exact hz
     · -- ContinuousAt at `(some z)` with `some z ≠ some 0`, hence `z ≠ 0`.
-      have hz : z ≠ 0 := fun h => hx (by simp [h])
+      have hz : z ≠ 0 := by
+        intro h
+        apply hx
+        show ((z : ℂ) : RiemannSphere) = ((0 : ℂ) : RiemannSphere)
+        rw [h]
       rw [OnePoint.continuousAt_coe]
       exact (continuous_inv₀.continuousAt (x := z) hz).congr (by intro w; rfl)
   continuousOn_invFun := continuous_chartSInvFun.continuousOn
