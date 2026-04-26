@@ -59,6 +59,55 @@ Restart the machine. Any unsaved Lean work is gone.
 Local compile is rare, only for tiny surgical checks, and only on files
 under ~5k lines. Do not run `lake build` on your workstation.
 
+### Multi-agent work: every agent owns its CI cycle
+
+When work is parallelised across multiple agents (worktrees / feature
+branches), **each agent must own the full commit → push → CI-watch →
+fix → repeat loop on its own branch, and may not return until that
+branch is CI-green** (lean-action step `conclusion == "success"`).
+
+This is a **hard rule**, not a suggestion. The reason:
+
+- The `apfsd`-panic policy bans local `lake build` / `lake env lean` /
+  `lake exe cache get`, so agents have *no other way* to know whether
+  their work compiles.
+- An agent that returns un-verified work pushes the verification cost
+  onto the merge step, which is the wrong place to discover errors —
+  by then other agents have piled fixes on top.
+- "Compiles when I push it" is the only honest definition of "done"
+  for any agent in this repo.
+
+The mechanics each agent must follow:
+
+1. Work in a worktree on its own feature branch.
+2. Commit the work (no `Co-Authored-By: Claude` trailer; see project
+   `CLAUDE.md`'s "no AI attribution" rule).
+3. `git push -u origin <branch>` (first push) or `git push` (later).
+4. Get the run id:
+   ```sh
+   gh run list --repo Brsanch/jacobian-lean-challenge --limit 1 \
+     --json databaseId,headSha,status
+   ```
+5. Poll the lean-action step (NOT docgen — docgen is non-blocking and
+   can hang) every ~30s:
+   ```sh
+   gh run view <RUN_ID> --repo Brsanch/jacobian-lean-challenge --json jobs \
+     --jq '[.jobs[].steps[] | select(.name | contains("lean-action")) |
+            {name, status, conclusion}]'
+   ```
+6. On `conclusion == "success"`: branch is green, return.
+7. On `conclusion == "failure"`: pull the failed log, diagnose, fix,
+   commit, push, return to step 4. Cap at ~6 fix cycles before
+   returning a "stuck" report.
+
+The merge into `main` is the parent session's job, *after* the
+agent's branch is green. The merge itself triggers a new CI run on
+`main`; the parent verifies that as well.
+
+**What the parent session must do when dispatching multi-agent work:**
+state this rule in every agent prompt verbatim or by reference, so
+the agent doesn't omit the CI loop.
+
 ### Why CI over local
 
 - CI runs on remote Linux runners with no shared filesystem to saturate.
