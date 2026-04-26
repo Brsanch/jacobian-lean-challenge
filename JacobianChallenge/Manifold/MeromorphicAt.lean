@@ -112,7 +112,7 @@ def mmeromorphicOrderAt (_I : ModelWithCorners ℂ ℂ ℂ) (f : M → ℂ) (x :
 variable {I : ModelWithCorners ℂ ℂ ℂ}
 
 lemma mMeromorphicOn_empty (f : M → ℂ) : MMeromorphicOn I f ∅ := by
-  intro x hx; exact absurd hx (Set.not_mem_empty x)
+  intro x hx; exact absurd hx hx.elim
 
 lemma MMeromorphicOn.mono {f : M → ℂ} {s t : Set M}
     (h : MMeromorphicOn I f t) (hst : s ⊆ t) : MMeromorphicOn I f s :=
