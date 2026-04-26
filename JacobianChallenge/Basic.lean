@@ -1,5 +1,7 @@
 import Mathlib -- compiles with commit 8e3c989104daaa052921bf43de9eef0e1ac9fbf5 (15th April 2026)
 import JacobianChallenge.Manifold.HolomorphicOneForm
+import JacobianChallenge.Manifold.LocalMultiplicity
+import JacobianChallenge.Jacobian
 
 /-!
 
@@ -68,22 +70,30 @@ lemma genus_eq_zero_iff_homeo :
 
 universe u in
 -- data
-/-- The Jacobian of a compact Riemann surface. -/
-def Jacobian (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-  [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type u := sorry
+/-- The Jacobian of a compact Riemann surface, defined as the (placeholder)
+Picard group of degree-zero divisor classes from `JacobianChallenge.Divisor`.
+
+`abbrev` so the `AddCommGroup` / `TopologicalSpace` / `T2Space` instances on
+`JacobianChallenge.Jacobian X` flow through automatically. See the docstring
+of `JacobianChallenge.Jacobian` for the placeholder caveats — at this pin the
+principal-divisor subgroup is `⊥`, so this is canonically isomorphic to
+`Div0 X` rather than the analytic Jacobian `ℂᵍ / Λ`. -/
+abbrev Jacobian (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+  [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Type u :=
+  JacobianChallenge.Jacobian X
 
 namespace Jacobian
 
 -- data
 /-- The Jacobian of a compact Riemann surface is naturally an additive commutative group. -/
-instance : AddCommGroup (Jacobian X) := sorry
+noncomputable instance : AddCommGroup (Jacobian X) := inferInstance
 
 -- data
 /-- The Jacobian of a compact Riemann surface is naturally a topological space. -/
-instance : TopologicalSpace (Jacobian X) := sorry
+instance : TopologicalSpace (Jacobian X) := inferInstance
 
 -- Prop
-instance : T2Space (Jacobian X) := sorry
+instance : T2Space (Jacobian X) := inferInstance
 
 -- Prop
 instance : CompactSpace (Jacobian X) := sorry
@@ -99,13 +109,19 @@ instance : IsManifold (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jac
 -- Prop
 instance : LieAddGroup (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) := sorry
 
-/-- The Abel-Jacobi map from a compact Riemann surface to its Jacobian. -/
-def ofCurve (P : X) : X → Jacobian X := sorry
+/-- The Abel-Jacobi map from a compact Riemann surface to its Jacobian. **Stub
+at this pin** — see `JacobianChallenge.Jacobian.ofCurve` for the constant-zero
+placeholder; honest `Q ↦ [Q] - [P]` is owed once the single-point-divisor
+constructor lands in `Divisor.lean`. The `ofCurve_inj` lemma (item 16) is
+*false* for this stub when `genus X > 0` and is therefore left `sorry`. -/
+noncomputable def ofCurve (P : X) : X → Jacobian X :=
+  JacobianChallenge.Jacobian.ofCurve P
 
 lemma ofCurve_contMDiff (P : X) : ContMDiff 𝓘(ℂ)
     (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) := sorry
 
-lemma ofCurve_self (P : X) : ofCurve P P = 0 := sorry
+lemma ofCurve_self (P : X) : ofCurve P P = 0 :=
+  JacobianChallenge.Jacobian.ofCurve_self P
 
 -- this is the lemma which stops the hack answer "J(X)=0 for all X"
 lemma ofCurve_inj (P : X) (h : 0 < genus X) : Function.Injective (ofCurve P) := sorry
@@ -156,11 +172,16 @@ lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P := sor
 lemma pullback_comp_apply (P : Jacobian Z) :
     pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := sorry
 
-/-- The degree of a holomorphic map between compact Riemann surfaces. Equal to zero
-for constant maps, otherwise equal to the usual degree. -/
-def _root_.ContMDiff.degree
+/-- The degree of a holomorphic map between compact Riemann surfaces. Equal to
+zero for constant maps, otherwise equal to the usual degree.
+
+**Stub at this pin** — see `JacobianChallenge.Manifold.degreeStub` for the
+constant-vs-non-constant indicator. Returns `1` for any non-constant map
+regardless of actual sheet count; the honest regular-value-cardinality
+definition is owed once chart-independence of `mmeromorphicOrderAt` lands. -/
+noncomputable def _root_.ContMDiff.degree
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
-  sorry
+  JacobianChallenge.Manifold.degreeStub f hf
 
 lemma pushforward_pullback (P : Jacobian Y) :
   pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P := sorry
