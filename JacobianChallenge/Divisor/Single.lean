@@ -30,6 +30,13 @@ that need a real `ofCurve : X → Pic0 X` rather than a placeholder).
   `X`).
 * `Div.degree_single_sub_single` — `degree (Div.single Q - Div.single P) = 0`.
 * `Div.single_sub_single_mem_Div0` — that difference lies in `Div0 X`.
+* `Div.single_sub_single_apply` / `Div.coe_single_sub_single_apply` —
+  pointwise evaluation of `Div.single Q - Div.single P` (FunLike-direct
+  and function-coercion forms).
+* `Div.support_single_sub_single` — when `P ≠ Q`, the function-support is
+  the two-point set `{P, Q}`.
+* `Div.supportFinset_single_sub_single` — Finset-form of the above on
+  compact Hausdorff `X`.
 * `Div.single_eq_iff` — `Div.single x = Div.single y ↔ x = y` (bonus,
   needed for injectivity of any `ofCurve P` against the placeholder
   `PrincDiv = ⊥`).
@@ -131,6 +138,75 @@ lemma single_sub_single_mem_Div0 [DecidableEq X] [T2Space X] [CompactSpace X]
   have h : degreeHom (X := X) ((single Q : Div X) - single P) = 0 := by
     rw [map_sub]; simp [degreeHom_apply]
   exact AddMonoidHom.mem_ker.mpr h
+
+/-! ### Support of singleton-difference divisors -/
+
+/-- Pointwise evaluation of `Div.single Q - Div.single P`. -/
+lemma single_sub_single_apply [DecidableEq X] (P Q y : X) :
+    ((single Q : Div X) - single P) y
+      = (if y = Q then 1 else 0) - (if y = P then 1 else 0) := by
+  classical
+  -- `coe_sub` (= rfl) makes FunLike application of `D₁ - D₂` definitionally
+  -- equal to the pointwise difference; `single_apply` handles each summand.
+  have h : ((single Q : Div X) - single P) y
+      = (single Q : Div X) y - (single P : Div X) y := rfl
+  rw [h, single_apply, single_apply]
+
+/-- Coercion-form variant of `single_sub_single_apply`, useful for
+support-related rewrites. -/
+lemma coe_single_sub_single_apply [DecidableEq X] (P Q y : X) :
+    (((single Q : Div X) - single P) : X → ℤ) y
+      = (if y = Q then 1 else 0) - (if y = P then 1 else 0) :=
+  single_sub_single_apply P Q y
+
+/-- When `P ≠ Q`, the function-support of `Div.single Q - Div.single P`
+is exactly the two-point set `{P, Q}`. -/
+lemma support_single_sub_single [DecidableEq X] {P Q : X} (hPQ : P ≠ Q) :
+    (((single Q : Div X) - single P) : X → ℤ).support = {P, Q} := by
+  classical
+  ext y
+  simp only [Function.mem_support, coe_single_sub_single_apply,
+    Set.mem_insert_iff, Set.mem_singleton_iff]
+  constructor
+  · intro hy
+    -- `(if y=Q then 1 else 0) - (if y=P then 1 else 0) ≠ 0`
+    by_cases hyQ : y = Q
+    · exact Or.inr hyQ
+    · by_cases hyP : y = P
+      · exact Or.inl hyP
+      · -- both branches are 0, so the difference is 0, contradicting `hy`.
+        rw [if_neg hyQ, if_neg hyP, sub_zero] at hy
+        exact absurd rfl hy
+  · intro hy
+    rcases hy with hyP | hyQ
+    · -- y = P, so y ≠ Q (since P ≠ Q)
+      have hyQne : y ≠ Q := by rw [hyP]; exact hPQ
+      rw [if_neg hyQne, if_pos hyP, zero_sub]
+      exact neg_ne_zero.mpr one_ne_zero
+    · -- y = Q, so y ≠ P
+      have hyPne : y ≠ P := by rw [hyQ]; exact hPQ.symm
+      rw [if_pos hyQ, if_neg hyPne, sub_zero]
+      exact one_ne_zero
+
+/-- When `P ≠ Q`, the `supportFinset` of `Div.single Q - Div.single P`
+is the two-point finset `{P, Q}`. -/
+lemma supportFinset_single_sub_single [DecidableEq X] [T2Space X]
+    [CompactSpace X] {P Q : X} (hPQ : P ≠ Q) :
+    ((single Q : Div X) - single P).supportFinset = {P, Q} := by
+  classical
+  -- Two finsets are equal iff equal as sets; reduce both sides to sets.
+  apply Finset.coe_injective
+  ext y
+  simp only [Finset.coe_insert, Finset.coe_singleton, Finset.mem_coe]
+  rw [mem_supportFinset]
+  -- Goal: `((single Q - single P : Div X) : X → ℤ) y ≠ 0 ↔ y ∈ insert P {Q}`.
+  have hsupp := support_single_sub_single (X := X) hPQ
+  -- `y ∈ support ↔ y ∈ insert P {Q}` after rewriting support.
+  have : y ∈ (((single Q : Div X) - single P) : X → ℤ).support
+      ↔ y ∈ ({P, Q} : Set X) := by rw [hsupp]
+  -- `Function.mem_support` translates LHS to `D y ≠ 0`.
+  rw [Function.mem_support] at this
+  exact this
 
 /-! ### Bonus: injectivity of `single` -/
 
