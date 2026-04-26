@@ -123,7 +123,7 @@ We build it directly via `OpenPartialHomeomorph.ofContinuousOpen` from a
 hand-written `PartialEquiv`. -/
 
 /-- The underlying set function of `chartS`: `(some z) ↦ z⁻¹`, `∞ ↦ 0`. -/
-def chartSToFun : RiemannSphere → ℂ :=
+noncomputable def chartSToFun : RiemannSphere → ℂ :=
   fun x => OnePoint.rec 0 (fun z => z⁻¹) x
 
 /-- The set function inverse for `chartS`: `0 ↦ ∞`, `z ≠ 0 ↦ some z⁻¹`.
@@ -153,27 +153,38 @@ noncomputable def chartSPartialEquiv : PartialEquiv RiemannSphere ℂ where
   map_source' := by intro _ _; trivial
   map_target' := by
     intro z _
+    show chartSInvFun z ≠ ((0 : ℂ) : RiemannSphere)
     by_cases hz : z = 0
-    · simp [chartSInvFun, hz]
-    · simp [chartSInvFun, hz, OnePoint.coe_ne_infty]
+    · subst hz
+      rw [chartSInvFun_zero]
+      exact OnePoint.infty_ne_coe (0 : ℂ)
+    · rw [chartSInvFun_of_ne hz]
+      have hzinv : z⁻¹ ≠ 0 := inv_ne_zero hz
+      intro h
+      exact hzinv (OnePoint.coe_injective h)
   left_inv' := by
     intro x hx
     -- `x ≠ some 0`. Cases on `x : OnePoint ℂ`.
     rcases x with _ | z
     · -- x = ∞: chartSToFun ∞ = 0; chartSInvFun 0 = ∞.
-      simp [chartSToFun, chartSInvFun]
+      show chartSInvFun (chartSToFun ∞) = ∞
+      rw [chartSToFun_infty, chartSInvFun_zero]
     · -- x = some z. Membership says `some z ≠ some 0`, hence `z ≠ 0`.
       have hz : z ≠ 0 := by
         intro h
         apply hx
         simp [h]
       have hzinv : z⁻¹ ≠ 0 := inv_ne_zero hz
-      simp [chartSToFun, chartSInvFun, hzinv, inv_inv]
+      show chartSInvFun (chartSToFun ((z : RiemannSphere))) = (z : RiemannSphere)
+      rw [chartSToFun_coe, chartSInvFun_of_ne hzinv, inv_inv]
   right_inv' := by
     intro z _
     by_cases hz : z = 0
-    · subst hz; simp [chartSToFun, chartSInvFun]
-    · simp [chartSToFun, chartSInvFun, hz]
+    · subst hz
+      show chartSToFun (chartSInvFun (0 : ℂ)) = 0
+      rw [chartSInvFun_zero, chartSToFun_infty]
+    · show chartSToFun (chartSInvFun z) = z
+      rw [chartSInvFun_of_ne hz, chartSToFun_coe, inv_inv]
 
 /-- Continuity of `chartSInvFun : ℂ → RiemannSphere`. The map is `0 ↦ ∞` and
 `z ≠ 0 ↦ some z⁻¹`. We check continuity at every point: at `0` we use
@@ -207,7 +218,7 @@ lemma continuous_chartSInvFun : Continuous chartSInvFun := by
       -- Tendsto Inv.inv (𝓝[≠] 0) (cobounded ℂ) = (cocompact ℂ) ≤ coclosedCompact ℂ.
       have hinv : Filter.Tendsto (fun w : ℂ => w⁻¹) (𝓝[≠] (0 : ℂ))
           (Filter.coclosedCompact ℂ) := by
-        refine (tendsto_inv₀_nhdsNE_zero (G₀ := ℂ)).mono_right ?_
+        refine (Filter.tendsto_inv₀_nhdsNE_zero (α := ℂ)).mono_right ?_
         rw [Metric.cobounded_eq_cocompact]
         exact Filter.cocompact_le_coclosedCompact
       -- Push forward through `(↑) : ℂ → RiemannSphere`.
@@ -220,13 +231,14 @@ lemma continuous_chartSInvFun : Continuous chartSInvFun := by
       rw [chartSInvFun_zero] at h
       exact h.mono_right le_sup_right
   · -- ContinuousAt at z ≠ 0.
-    have hloc : ∀ᶠ w in 𝓝 z, chartSInvFun w = ((w⁻¹ : ℂ) : RiemannSphere) := by
+    have hloc : (chartSInvFun : ℂ → RiemannSphere)
+        =ᶠ[𝓝 z] (fun w => ((w⁻¹ : ℂ) : RiemannSphere)) := by
       filter_upwards [isOpen_compl_singleton.mem_nhds hz] with w hw
       exact chartSInvFun_of_ne hw
     rw [ContinuousAt]
     have hzval : chartSInvFun z = ((z⁻¹ : ℂ) : RiemannSphere) := chartSInvFun_of_ne hz
     rw [hzval]
-    apply Filter.Tendsto.congr' hloc.symm
+    refine Filter.Tendsto.congr' (hloc.symm) ?_
     -- `(↑) ∘ (·⁻¹)` is continuous at z (since z ≠ 0).
     exact (OnePoint.continuous_coe.continuousAt).comp (continuousAt_inv₀ hz)
 
@@ -246,7 +258,7 @@ noncomputable def chartS : OpenPartialHomeomorph RiemannSphere ℂ where
   open_target := isOpen_univ
   continuousOn_toFun := by
     -- continuity of `chartSToFun` on `{x ≠ some 0}`
-    apply ContinuousAt.continuousOn
+    apply continuousOn_of_forall_continuousAt
     intro x hx
     rcases x with _ | z
     · -- ContinuousAt at ∞.
