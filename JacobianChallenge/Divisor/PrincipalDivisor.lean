@@ -195,6 +195,22 @@ lemma mmeromorphicOrderAt_one
   rw [meromorphicOrderAt_const ((chartAt ℂ x) x) (1 : ℂ)]
   simp
 
+/-- **The chart-pulled-back order of any nonzero constant `c` is zero.**
+Generalizes `mmeromorphicOrderAt_one`. The chart pullback of `fun _ : X => c`
+is the literal constant `fun _ : ℂ => c` on the codomain side, whose
+mathlib `meromorphicOrderAt` is `0` whenever `c ≠ 0`. -/
+lemma mmeromorphicOrderAt_const_ne_zero
+    {I : ModelWithCorners ℂ ℂ ℂ} {x : X} {c : ℂ} (hc : c ≠ 0) :
+    mmeromorphicOrderAt I (fun _ : X => c) x = 0 := by
+  -- Unfold to mathlib `meromorphicOrderAt` after the trivial chart pullback.
+  show meromorphicOrderAt ((fun _ : X => c) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = 0
+  have h_comp : ((fun _ : X => c) ∘ (chartAt ℂ x).symm) = (fun _ : ℂ => c) := rfl
+  rw [h_comp]
+  classical
+  rw [meromorphicOrderAt_const ((chartAt ℂ x) x) c]
+  -- After the `_const` rewrite the goal becomes `(if c = 0 then ⊤ else 0) = 0`.
+  simp [hc]
+
 end JacobianChallenge
 
 
@@ -616,6 +632,30 @@ noncomputable def one (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace
 
 noncomputable instance : One (MeromorphicNonzero X) := ⟨one X⟩
 
+/-- The non-zero complex constant `c : ℂ` (with `hc : c ≠ 0`), packaged as
+a `MeromorphicNonzero X`.
+
+* `meromorphic`: every constant function is meromorphic at every point
+  (`MMeromorphicOn.const c`, lifted from mathlib's
+  `analyticAt_const.meromorphicAt` via the chart pullback).
+* `nonvanishing_germ`: a non-zero constant has chart-pulled-back order
+  `0 ≠ ⊤` everywhere (`mmeromorphicOrderAt_const_ne_zero hc`).
+* `regular_continuousAt`: constants are continuous (`continuousAt_const`),
+  so the regular-point hypothesis is irrelevant. -/
+noncomputable def const (c : ℂ) (hc : c ≠ 0) : MeromorphicNonzero X :=
+  { toFun := fun _ => c
+    meromorphic := MMeromorphicOn.const c
+    nonvanishing_germ := by
+      intro x
+      rw [mmeromorphicOrderAt_const_ne_zero hc]
+      exact WithTop.zero_ne_top
+    regular_continuousAt := by
+      intro _ _
+      exact continuousAt_const }
+
+@[simp] lemma const_toFun (c : ℂ) (hc : c ≠ 0) (x : X) :
+    (const (X := X) c hc).toFun x = c := rfl
+
 /-- `(1 : MeromorphicNonzero X).toFun x = 1`. Definitional. -/
 @[simp] lemma one_toFun (x : X) :
     ((1 : MeromorphicNonzero X)).toFun x = (1 : ℂ) := rfl
@@ -722,5 +762,41 @@ lemma principalDivisorMap_mul (f g : MeromorphicNonzero X) :
     mmeromorphicOrderAt_mul hf_at hg_at
   rw [h_order]
   exact WithTop.untop₀_add (f.nonvanishing_germ x) (g.nonvanishing_germ x)
+
+/-! ### The trivial case of the residue theorem: non-zero constants
+
+The principal divisor of a non-zero constant function is the zero divisor:
+`mmeromorphicOrderAt 𝓘(ℂ,ℂ) (fun _ => c) x = 0` everywhere (by
+`mmeromorphicOrderAt_const_ne_zero hc`), so `orderFun ... x = 0`
+everywhere, and the divisor is pointwise zero. The degree is then `0` by
+`Div.degree_zero`. This is the trivially-true case of the residue
+theorem on a compact Riemann surface — the "constants are degree-zero"
+sub-claim — and is the unique `MeromorphicNonzero` representative with
+`mmeromorphicOrderAt I f x = 0` at every point. -/
+
+/-- The principal divisor of a non-zero constant function is the zero
+divisor. The chart-pulled-back order of `fun _ => c` is `0` everywhere
+(by `mmeromorphicOrderAt_const_ne_zero hc`), so the order divisor is
+pointwise zero. -/
+@[simp] lemma principalDivisorMap_const (c : ℂ) (hc : c ≠ 0) :
+    principalDivisorMap (MeromorphicNonzero.const (X := X) c hc) = (0 : Div X) := by
+  classical
+  ext x
+  show JacobianChallenge.MMeromorphicOn.orderFun 𝓘(ℂ, ℂ)
+      ((MeromorphicNonzero.const (X := X) c hc).toFun) x = (0 : Div X) x
+  -- Unfold `(const c hc).toFun` to the literal constant function `fun _ => c`.
+  have h_const : (MeromorphicNonzero.const (X := X) c hc).toFun = (fun _ : X => c) := rfl
+  rw [h_const]
+  unfold MMeromorphicOn.orderFun
+  rw [mmeromorphicOrderAt_const_ne_zero hc]
+  rfl
+
+/-- The **trivial case of the residue theorem** for non-zero constant
+functions: the principal divisor of `MeromorphicNonzero.const c hc` has
+degree `0`. Direct corollary of `principalDivisorMap_const` and
+`Div.degree_zero`. -/
+lemma residueTheorem_const (c : ℂ) (hc : c ≠ 0) :
+    (principalDivisorMap (MeromorphicNonzero.const (X := X) c hc)).degree = 0 := by
+  rw [principalDivisorMap_const c hc, Div.degree_zero]
 
 end JacobianChallenge
