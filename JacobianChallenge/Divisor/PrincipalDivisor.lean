@@ -245,38 +245,67 @@ variable {X : Type u}
 /-! ### Punctured-nhd nontriviality on a complex 1-manifold -/
 
 /-- The punctured neighborhood of any point on a complex 1-manifold is
-non-trivial. Proof: the chart sends `𝓝[≠] x` continuously into
-`𝓝[≠] (chart x)`, and `ℂ` is non-trivial as a topological `ℝ`-module
-(so `𝓝[≠] (z : ℂ)` is `NeBot`). -/
+non-trivial. Proof: the chart `e := chartAt ℂ x` is an
+`OpenPartialHomeomorph`; `e.map_nhdsWithin_eq` gives `map e (𝓝[{x}ᶜ] x)
+= 𝓝[e '' (e.source ∩ {x}ᶜ)] (e x)`. The image set is contained in
+`(e x)ᶜ` by injectivity of `e` on its source, so the RHS is `≤ 𝓝[≠] (e x)`,
+which is `NeBot` because `ℂ` has no isolated points. The map being `NeBot`
+forces `𝓝[≠] x` to be `NeBot` as well (`map_eq_bot_iff`). -/
 lemma nhdsNE_neBot (x : X) : (𝓝[≠] x).NeBot := by
-  have h_continuousAt : ContinuousAt (chartAt ℂ x) x := by
-    have h_co : ContinuousOn (chartAt ℂ x) (chartAt ℂ x).source :=
-      (chartAt ℂ x).continuousOn_toFun
-    exact h_co.continuousAt
-      ((chartAt ℂ x).open_source.mem_nhds (mem_chart_source ℂ x))
-  have h_chart_to_chart : Filter.Tendsto (chartAt ℂ x) (𝓝[≠] x)
-      (𝓝[≠] ((chartAt ℂ x) x)) := by
-    rw [Filter.tendsto_nhdsWithin_iff]
-    refine ⟨h_continuousAt.mono_left nhdsWithin_le_nhds, ?_⟩
-    rw [Filter.eventually_iff_exists_mem]
-    refine ⟨{y | y ∈ (chartAt ℂ x).source ∧ y ≠ x}, ?_, ?_⟩
-    · rw [mem_nhdsWithin]
-      refine ⟨(chartAt ℂ x).source, (chartAt ℂ x).open_source,
-              mem_chart_source ℂ x, ?_⟩
-      intro y hy
-      refine ⟨hy.1, ?_⟩
-      intro hyx
-      exact hy.2 hyx
-    · intro y hy
-      show (chartAt ℂ x) y ∈ ({(chartAt ℂ x) x}ᶜ)
-      simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
-      intro hch
-      apply hy.2
-      exact (chartAt ℂ x).injOn hy.1 (mem_chart_source ℂ x) hch
-  haveI : (𝓝[≠] ((chartAt ℂ x) x)).NeBot := inferInstance
-  exact Filter.neBot_of_le (f := 𝓝[≠] x)
-    (g := Filter.comap (chartAt ℂ x) (𝓝[≠] ((chartAt ℂ x) x)))
-    (by rw [← Filter.tendsto_iff_comap]; exact h_chart_to_chart)
+  set e := chartAt ℂ x
+  have hxe : x ∈ e.source := mem_chart_source ℂ x
+  -- `map e (𝓝[≠] x) = 𝓝[e '' (e.source ∩ {x}ᶜ)] (e x)`.
+  have h_map : Filter.map e (𝓝[≠] x) = 𝓝[e '' (e.source ∩ {x}ᶜ)] (e x) :=
+    e.map_nhdsWithin_eq hxe {x}ᶜ
+  -- `e '' (e.source ∩ {x}ᶜ) ⊆ {e x}ᶜ` by injectivity of `e` on source.
+  have h_subset : e '' (e.source ∩ {x}ᶜ) ⊆ {e x}ᶜ := by
+    rintro p ⟨y, ⟨hy_src, hy_ne⟩, hpy⟩
+    intro hp_eq
+    apply hy_ne
+    rw [Set.mem_singleton_iff] at hp_eq
+    rw [Set.mem_singleton_iff]
+    exact e.injOn hy_src hxe (hpy.trans hp_eq)
+  -- Hence `𝓝[image] (e x) ≤ 𝓝[≠] (e x)`.
+  have h_le : (𝓝[e '' (e.source ∩ {x}ᶜ)] (e x)) ≤ 𝓝[≠] (e x) :=
+    nhdsWithin_mono _ h_subset
+  -- `𝓝[≠] (e x)` is `NeBot` (ℂ has no isolated points).
+  haveI : (𝓝[≠] (e x)).NeBot := inferInstance
+  -- Therefore `𝓝[image] (e x)` is `NeBot` iff... actually we need the other direction.
+  -- We have `h_le` going the wrong way for direct NeBot transfer.
+  -- Use: image set is a nhd of e x in e.target, so 𝓝[image] (e x) is NeBot.
+  -- Specifically: e '' (e.source \ {x}) = e.target \ {e x}, which is open punctured nhd.
+  have h_image_eq : e '' (e.source ∩ {x}ᶜ) = e.target ∩ {e x}ᶜ := by
+    ext p
+    constructor
+    · rintro ⟨y, ⟨hy_src, hy_ne⟩, hpy⟩
+      refine ⟨?_, ?_⟩
+      · rw [← hpy]; exact e.map_source hy_src
+      · intro hp_eq
+        rw [Set.mem_singleton_iff] at hp_eq
+        apply hy_ne
+        rw [Set.mem_singleton_iff]
+        exact e.injOn hy_src hxe (hpy.trans hp_eq)
+    · rintro ⟨hp_target, hp_ne⟩
+      refine ⟨e.symm p, ⟨e.map_target hp_target, ?_⟩, e.right_inv hp_target⟩
+      intro hsymm_eq
+      rw [Set.mem_singleton_iff] at hsymm_eq hp_ne
+      apply hp_ne
+      have := e.right_inv hp_target
+      rw [hsymm_eq] at this
+      rw [← this]
+  -- After substitution: `Filter.map e (𝓝[≠] x) = 𝓝[e.target ∩ {e x}ᶜ] (e x)`.
+  rw [h_image_eq] at h_map
+  -- `e.target ∩ {e x}ᶜ` is an open nhd of points within `(e x)ᶜ`. Specifically,
+  -- `𝓝[e.target ∩ {e x}ᶜ] (e x) = 𝓝[≠] (e x)` since `e.target` is a nhd of `e x`.
+  have h_target_nhd : e.target ∈ 𝓝 (e x) :=
+    e.open_target.mem_nhds (e.map_source hxe)
+  have h_eq_nhdsNE : (𝓝[e.target ∩ {e x}ᶜ] (e x)) = 𝓝[≠] (e x) := by
+    rw [Set.inter_comm, ← nhdsWithin_inter_of_mem' (mem_nhdsWithin_of_mem_nhds h_target_nhd)]
+  rw [h_eq_nhdsNE] at h_map
+  -- Now `Filter.map e (𝓝[≠] x) = 𝓝[≠] (e x)`. Since RHS is `NeBot`, so is LHS,
+  -- and `Filter.map e l` is `NeBot` iff `l` is `NeBot` (`map_neBot_iff`).
+  haveI : (Filter.map e (𝓝[≠] x)).NeBot := h_map ▸ inferInstance
+  exact Filter.map_neBot_iff.mp this
 
 /-- Chart-symm carries `𝓝[≠] (chart x)` into `𝓝[≠] x`. -/
 lemma chartSymm_tendsto_nhdsNE (x : X) :
@@ -291,12 +320,12 @@ lemma chartSymm_tendsto_nhdsNE (x : X) :
         ((chartAt ℂ x).map_source (mem_chart_source ℂ x)))
   have h_pt : (chartAt ℂ x).symm ((chartAt ℂ x) x) = x :=
     (chartAt ℂ x).left_inv (mem_chart_source ℂ x)
-  rw [Filter.tendsto_nhdsWithin_iff]
+  rw [tendsto_nhdsWithin_iff]
   refine ⟨?_, ?_⟩
   · have := h_continuousAt
     rw [ContinuousAt, h_pt] at this
     exact this.mono_left nhdsWithin_le_nhds
-  · rw [Filter.eventually_iff_exists_mem]
+  · rw [eventually_iff_exists_mem]
     refine ⟨{z | z ∈ (chartAt ℂ x).target ∧ z ≠ (chartAt ℂ x) x}, ?_, ?_⟩
     · rw [mem_nhdsWithin]
       refine ⟨(chartAt ℂ x).target, (chartAt ℂ x).open_target,
@@ -323,9 +352,9 @@ lemma chart_tendsto_nhdsNE (x : X) :
       (chartAt ℂ x).continuousOn_toFun
     exact h_co.continuousAt
       ((chartAt ℂ x).open_source.mem_nhds (mem_chart_source ℂ x))
-  rw [Filter.tendsto_nhdsWithin_iff]
+  rw [tendsto_nhdsWithin_iff]
   refine ⟨h_continuousAt.mono_left nhdsWithin_le_nhds, ?_⟩
-  rw [Filter.eventually_iff_exists_mem]
+  rw [eventually_iff_exists_mem]
   refine ⟨{y | y ∈ (chartAt ℂ x).source ∧ y ≠ x}, ?_, ?_⟩
   · rw [mem_nhdsWithin]
     refine ⟨(chartAt ℂ x).source, (chartAt ℂ x).open_source,
@@ -408,10 +437,28 @@ lemma germLimit_manifold_eventuallyEq_punctured
   have hx_compl : x ∈ BadSetᶜ := hx_not_bad
   rw [Filter.EventuallyEq, eventually_nhdsWithin_iff]
   filter_upwards [h_compl_open.mem_nhds hx_compl] with y hy_compl hy_ne
-  simp only [Set.mem_compl_iff, hBadSet_def, Set.mem_diff, Set.mem_singleton_iff,
-    Set.mem_union, Set.mem_setOf_eq, not_and, not_or, not_lt] at hy_compl
+  -- `hy_compl : y ∈ BadSetᶜ`, `hy_ne : y ∈ {x}ᶜ`.
+  -- Unfold both: we want `0 ≤ order_f y` and `0 ≤ order_g y`.
   simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hy_ne
-  obtain ⟨hf_reg, hg_reg⟩ := hy_compl hy_ne
+  -- `hy_ne : y ≠ x`.
+  have hy_not_pole : ¬ y ∈ ({y' | mmeromorphicOrderAt 𝓘(ℂ, ℂ) f.toFun y' < (0 : WithTop ℤ)}
+        ∪ {y' | mmeromorphicOrderAt 𝓘(ℂ, ℂ) g.toFun y' < (0 : WithTop ℤ)}) := by
+    intro hyP
+    apply hy_compl
+    show y ∈ BadSet
+    refine ⟨hyP, ?_⟩
+    intro hyx
+    exact hy_ne hyx
+  have hf_reg : 0 ≤ mmeromorphicOrderAt 𝓘(ℂ, ℂ) f.toFun y := by
+    by_contra h
+    push_neg at h
+    apply hy_not_pole
+    exact Or.inl h
+  have hg_reg : 0 ≤ mmeromorphicOrderAt 𝓘(ℂ, ℂ) g.toFun y := by
+    by_contra h
+    push_neg at h
+    apply hy_not_pole
+    exact Or.inr h
   have hf_cont : ContinuousAt f.toFun y := f.regular_continuousAt y hf_reg
   have hg_cont : ContinuousAt g.toFun y := g.regular_continuousAt y hg_reg
   have h_prod_cont : ContinuousAt (fun z => f.toFun z * g.toFun z) y :=
