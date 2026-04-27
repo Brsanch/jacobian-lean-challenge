@@ -631,14 +631,14 @@ private lemma meromorphicOrderAt_inv_chartPullback_pos
   cases h_eq : meromorphicOrderAt (f.toFun ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) with
   | top => exact absurd h_eq h_ne_top
   | coe n =>
-    rw [h_eq] at hx
-    rw [h_eq]
-    -- Goal: `0 < -↑n` in `WithTop ℤ`. Cast: `-↑n = ↑(-n)`, `0 = ↑0`.
-    -- `hx : ↑n < 0` ⇒ `n < 0` ⇒ `0 < -n` ⇒ `↑0 < ↑(-n)`.
+    -- `cases h_eq:` substitutes `meromorphicOrderAt ...` ↦ `↑n` in both `hx` and the
+    -- goal. So `hx : ↑n < 0` and goal: `0 < -↑n`.
+    -- Cast: `-↑n = ↑(-n)`, `0 = ↑0`.
     show (0 : WithTop ℤ) < -(↑n : WithTop ℤ)
     have h_n_neg : n < 0 := by exact_mod_cast hx
-    have : (0 : WithTop ℤ) < ((-n : ℤ) : WithTop ℤ) := by exact_mod_cast (neg_pos.mpr h_n_neg)
-    convert this using 1
+    have h_neg_pos : (0 : WithTop ℤ) < ((-n : ℤ) : WithTop ℤ) := by
+      exact_mod_cast (neg_pos.mpr h_n_neg)
+    convert h_neg_pos using 1
     -- `-↑n = ↑(-n)` in `WithTop ℤ`.
     rfl
 
