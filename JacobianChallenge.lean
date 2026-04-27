@@ -20,6 +20,7 @@ import JacobianChallenge.Manifold.ResidueTheorem
 import JacobianChallenge.Manifold.ResidueTheoremStokes
 import JacobianChallenge.Manifold.MeromorphicExtension
 import JacobianChallenge.Manifold.FibreBalance
+import JacobianChallenge.Manifold.TopologicalDegree
 import JacobianChallenge.Divisor.StrictClosurePath
 import JacobianChallenge.Jacobian
 import JacobianChallenge.Divisor.FiberPullback
