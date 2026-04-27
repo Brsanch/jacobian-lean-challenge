@@ -633,11 +633,14 @@ private lemma meromorphicOrderAt_inv_chartPullback_pos
   | coe n =>
     rw [h_eq] at hx
     rw [h_eq]
-    -- `hx : ↑n < 0` ⇒ `n < 0`. Goal: `0 < -↑n`. Cast lemma.
-    rw [show ((0 : WithTop ℤ)) = ((0 : ℤ) : WithTop ℤ) from rfl] at hx ⊢
-    rw [show -(((n : ℤ)) : WithTop ℤ) = (((-n : ℤ)) : WithTop ℤ) from rfl]
-    rw [WithTop.coe_lt_coe] at hx ⊢
-    omega
+    -- Goal: `0 < -↑n` in `WithTop ℤ`. Cast: `-↑n = ↑(-n)`, `0 = ↑0`.
+    -- `hx : ↑n < 0` ⇒ `n < 0` ⇒ `0 < -n` ⇒ `↑0 < ↑(-n)`.
+    show (0 : WithTop ℤ) < -(↑n : WithTop ℤ)
+    have h_n_neg : n < 0 := by exact_mod_cast hx
+    have : (0 : WithTop ℤ) < ((-n : ℤ) : WithTop ℤ) := by exact_mod_cast (neg_pos.mpr h_n_neg)
+    convert this using 1
+    -- `-↑n = ↑(-n)` in `WithTop ℤ`.
+    rfl
 
 /-- At a pole `x`, the chart-pulled-back form `(f.toFun ∘ chart.symm)` tends
 to `cobounded ℂ` on the punctured nhd of `(chartAt ℂ x) x`. -/
@@ -792,7 +795,7 @@ private lemma meromorphicAt_chartS_chartPullback_of_pole
   have h_local' :
       (RiemannSphere.chartS ∘ f.toRiemannSphere ∘ (chartAt ℂ x).symm)
         =ᶠ[𝓝[≠] ((chartAt ℂ x) x)] (f.toFun ∘ (chartAt ℂ x).symm)⁻¹ := h_local
-  exact (MeromorphicAt.meromorphicAt_congr h_local'.symm).mpr h_inv_mero
+  exact (MeromorphicAt.meromorphicAt_congr h_local').mpr h_inv_mero
 
 /-- At a pole `x`, the chart-coordinate composition
 `chartS ∘ f.toRiemannSphere ∘ chart.symm` is **analytic at** `(chartAt ℂ x) x`.
