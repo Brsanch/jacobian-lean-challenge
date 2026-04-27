@@ -8,6 +8,7 @@ import JacobianChallenge.Divisor.PrincipalDivisor
 import JacobianChallenge.Divisor.PrincipalDivisorRange
 import JacobianChallenge.Divisor.FiberPullback
 import JacobianChallenge.Manifold.MeromorphicExtension
+import JacobianChallenge.Manifold.ResidueTheorem
 import JacobianChallenge.Manifold.RiemannSphere
 
 set_option diagnostics true
