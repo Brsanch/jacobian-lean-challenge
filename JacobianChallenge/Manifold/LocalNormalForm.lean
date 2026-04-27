@@ -6,7 +6,10 @@ Authors: Bryan Sanchez
 import JacobianChallenge.Manifold.MeromorphicAt
 import JacobianChallenge.Manifold.MeromorphicDivisor
 import JacobianChallenge.Manifold.LocalMultiplicity
+import Mathlib.Analysis.Analytic.IsolatedZeros
 import Mathlib.Analysis.Analytic.Order
+import Mathlib.Analysis.Calculus.FDeriv.Analytic
+import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Deriv
 import Mathlib.Analysis.Meromorphic.Order
 
 set_option diagnostics true
@@ -274,6 +277,73 @@ theorem exists_local_normal_form_of_nonneg
   -- Step 2: Apply `analyticOrderAt_eq_natCast` to extract the local form.
   exact (hf_an.analyticOrderAt_eq_natCast).mp h_an_order
 
+/-! ### Topological-multiplicity content for the analytic case
+
+The `R3` Rouché-style topological-multiplicity statement asks for an exact
+preimage count `Set.ncard {z ∈ V \ {0} | g z = w} = k` near a zero of order
+`k`. The full Rouché theorem (with `k > 1`) is **not** available at the pin —
+mathlib has neither a general "preimage count = winding number" theorem nor an
+"argument principle" giving exact-equality counts in the form needed.
+
+The `k = 1` slice however **is** available: it is precisely the inverse
+function theorem for one-variable analytic maps (i.e. local injectivity from
+nonvanishing derivative). We discharge that slice honestly here. The general
+`k ≥ 2` content remains the named gap — captured in
+`localMultiplicity_eq_order_punctured_statement` below as a `Prop`-valued
+`def` (not an `axiom`). -/
+
+/-- **The order-1 case of the topological-multiplicity bridge.**
+
+For an analytic function `g : ℂ → ℂ` with `g 0 = 0` and `deriv g 0 ≠ 0`, the
+function `g` is locally injective on some neighborhood of `0`. (No use is
+made of `g 0 = 0` in the proof — local injectivity follows from the
+nonvanishing-derivative hypothesis alone via the inverse function theorem —
+but the hypothesis is kept to match the calling shape from
+`exists_local_normal_form_of_nonneg` with `k = 1`.)
+
+This is the order-`k = 1` slice of the Rouché-style statement
+`localMultiplicity_eq_order_punctured_statement`: when `k = 1`, the equation
+`g z = w` has a *unique* solution near `0` for every `w` close enough to `0`,
+so in particular the cardinality is `1`.
+
+Proof: `AnalyticAt.hasStrictDerivAt` (from `Mathlib.Analysis.Calculus.FDeriv
+.Analytic`) lifts `AnalyticAt` to `HasStrictDerivAt`. Since the strict
+derivative `deriv g 0` is nonzero, `HasStrictDerivAt.hasStrictFDerivAt_equiv`
+(from `Mathlib.Analysis.Calculus.Deriv.Inverse`) repackages the strict
+derivative as a `ContinuousLinearEquiv`, and the inverse function theorem
+(`HasStrictFDerivAt.toOpenPartialHomeomorph` in
+`Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv`) gives an
+`OpenPartialHomeomorph` whose source is an open neighborhood of `0` on which
+`g` is injective. -/
+lemma localMultiplicity_one_locally_injective
+    {g : ℂ → ℂ} (h : AnalyticAt ℂ g 0) (_h0 : g 0 = 0) (hd : deriv g 0 ≠ 0) :
+    ∃ U ∈ nhds (0 : ℂ), Set.InjOn g U := by
+  -- 1. Lift `AnalyticAt` to `HasStrictDerivAt` via the analytic-derivative bridge.
+  have hsd : HasStrictDerivAt g (deriv g 0) 0 := h.hasStrictDerivAt
+  -- 2. Repackage `HasStrictDerivAt` with nonvanishing derivative as
+  --    `HasStrictFDerivAt` with a continuous-linear-equiv `f'`.
+  have hsfd :
+      HasStrictFDerivAt g
+        (ContinuousLinearEquiv.unitsEquivAut ℂ (Units.mk0 (deriv g 0) hd) :
+          ℂ →L[ℂ] ℂ) 0 :=
+    hsd.hasStrictFDerivAt_equiv hd
+  -- 3. The inverse function theorem yields an `OpenPartialHomeomorph` whose
+  --    `toFun` is `g`, with `0 ∈ source` and `source` open.
+  let φ : OpenPartialHomeomorph ℂ ℂ := hsfd.toOpenPartialHomeomorph g
+  have h0_src : (0 : ℂ) ∈ φ.source := hsfd.mem_toOpenPartialHomeomorph_source
+  -- The source of an `OpenPartialHomeomorph` is open, so it is a neighborhood
+  -- of any point it contains.
+  have h_src_nhds : φ.source ∈ nhds (0 : ℂ) :=
+    φ.open_source.mem_nhds h0_src
+  -- And `φ` is injective on its source (the partial-equiv left-inverse property).
+  have h_inj_φ : Set.InjOn (φ : ℂ → ℂ) φ.source := φ.injOn
+  -- The coercion `(φ : ℂ → ℂ)` is definitionally `g` (`toOpenPartialHomeomorph_coe`).
+  have h_coe : (φ : ℂ → ℂ) = g := hsfd.toOpenPartialHomeomorph_coe
+  refine ⟨φ.source, h_src_nhds, ?_⟩
+  -- Transport injectivity along the definitional equality.
+  rw [← h_coe]
+  exact h_inj_φ
+
 end MMeromorphicAt
 
 /-! ## The headline R3 statement (Prop-valued, not axiom)
@@ -350,6 +420,69 @@ theorem r3_natAbs_ge_one_of_ne_zero
     (k : ℤ) (hk : k ≠ 0) : k.natAbs ≥ 1 := by
   rcases Int.natAbs_pos.mpr hk with h
   exact h
+
+/-! ## The general-`k` Rouché-style statement (Prop-only)
+
+The general `k ≥ 1` case asserts that an analytic `g : ℂ → ℂ` with order
+`k` at `0` has *exactly* `k` preimages of every nonzero value `w` close to
+`0`, in some punctured neighborhood of `0`. This is the Rouché theorem
+applied to `f(z) - w = (z - z₀)^k u(z) - w`.
+
+At the mathlib pin (`8e3c989`, 15 April 2026) the precise gating input is
+**not present**. The relevant pieces that *are* present:
+
+* `Mathlib.Analysis.Analytic.IsolatedZeros.exists_eventuallyEq_pow_smul_nonzero_iff`
+  — the local form `g z = (z - z₀)^n • h z` with `h(z₀) ≠ 0` (analytic case).
+* `Mathlib.Analysis.Analytic.Order.AnalyticAt.analyticOrderAt_eq_natCast`
+  — the same local form expressed via the order.
+* `Mathlib.Analysis.Calculus.FDeriv.Analytic.AnalyticAt.hasStrictDerivAt`
+  — analytic ⟹ strict derivative at the point.
+* `Mathlib.Analysis.Calculus.Deriv.Inverse.HasStrictDerivAt.hasStrictFDerivAt_equiv`
+  — strict derivative + nonzero ⟹ strict Fréchet derivative as an equiv.
+* `Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv.HasStrictFDerivAt.toOpenPartialHomeomorph`
+  — the inverse function theorem packaged as an `OpenPartialHomeomorph`.
+
+What is **owed** for the general `k ≥ 2` case:
+
+> A theorem of the form: for `g` analytic at `z₀` with `analyticOrderAt g z₀ = (k : ℕ∞)`
+> and `k ≥ 1`, there exist neighborhoods `V` of `z₀` and `W` of `0` such that
+> for every `w ∈ W \ {0}`,
+> `Set.ncard {z ∈ V \ {z₀} | g z = w} = k`.
+
+Mathlib does not name this. Candidate name in a future PR:
+`AnalyticAt.exists_count_preimage_of_analyticOrderAt`. Existence in some form
+would route via Rouché's theorem applied to `g - w` versus `(z - z₀)^k`,
+combined with the open-mapping / strict-derivative-of-the-inverse argument.
+The `k = 1` special case is `localMultiplicity_one_locally_injective` above
+(the inverse function theorem suffices); `k ≥ 2` requires winding-number /
+argument-principle content not in mathlib at the pin.
+
+We therefore state the general case as a `Prop`-valued `def` (NOT an
+`axiom`) so future filling does not contaminate the kernel. -/
+
+/-- **The general-`k` Rouché-style statement, in `Prop`-only form.**
+
+For `g : ℂ → ℂ` analytic at `0` with `analyticOrderAt g 0 = k` and `k ≥ 1`,
+there exists `ε > 0` and a neighborhood `V` of `0` such that for every
+non-zero `w` in the open ball of radius `ε`, the equation `g z = w` has
+exactly `k` solutions in `V \ {0}`.
+
+The hypotheses are packaged as the `→` body so the type-shape of the
+statement is `Prop`-valued (not a function-type), matching the structural
+convention used elsewhere in this repo for owed-but-stated content
+(`R3_localMultiplicity_statement` in `ResidueTheorem.lean`,
+`R5_principal_degree_zero_statement`, etc.).
+
+**Status:** stated, not proven. The `k = 1` slice is honest content in
+`MMeromorphicAt.localMultiplicity_one_locally_injective`. The `k ≥ 2` slice
+requires Rouché / argument-principle content not in mathlib at the pin
+`8e3c989` (15 April 2026). -/
+def localMultiplicity_eq_order_punctured_statement
+    (k : ℕ) (g : ℂ → ℂ) : Prop :=
+  AnalyticAt ℂ g 0 → analyticOrderAt g 0 = (k : ℕ∞) → 1 ≤ k →
+    ∃ ε > (0 : ℝ), ∃ V ∈ nhds (0 : ℂ),
+      ∀ w ∈ Metric.ball (0 : ℂ) ε \ {0},
+        ({z ∈ V \ {0} | g z = w} : Set ℂ).ncard = k
 
 end JacobianChallenge
 
