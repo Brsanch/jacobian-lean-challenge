@@ -359,7 +359,7 @@ noncomputable def invMer (f : MeromorphicNonzero X) : MeromorphicNonzero X where
     apply f.nonvanishing_germ x
     show meromorphicOrderAt (f.toFun ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = ⊤
     cases h_eq : meromorphicOrderAt (f.toFun ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) with
-    | top => exact h_eq
+    | top => rfl
     | coe n =>
       rw [h_eq] at h_neg_top
       have : ((-n : ℤ) : WithTop ℤ) = (⊤ : WithTop ℤ) := h_neg_top
