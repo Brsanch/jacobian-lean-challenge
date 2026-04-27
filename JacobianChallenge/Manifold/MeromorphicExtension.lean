@@ -422,9 +422,15 @@ lemma toRiemannSphere_chartS_localForm_punctured
   have h_pt : (chartAt ℂ x).symm ((chartAt ℂ x) x) = x :=
     (chartAt ℂ x).left_inv (mem_chart_source ℂ x)
   -- Pull back to a nhd of `(chartAt ℂ x) x` via `Tendsto.eventually`.
-  -- After the `eventually_nhdsWithin_iff` rewrite, `h_evEq` has the form
-  -- `∀ᶠ y in 𝓝 x, y ∈ ({x} : Set X)ᶜ → f.toRiemannSphere y = some (f.toFun y)`.
-  have h_pulled := h_chart_continuousAt.eventually h_evEq
+  -- We use the explicit form `Tendsto (chart.symm) (𝓝 (chart x)) (𝓝 x)` (after
+  -- collapsing `chart.symm (chart x) = x` via `h_pt`). The cleanest path is to
+  -- first compose: produce `Tendsto chart.symm (𝓝 (chart x)) (𝓝 x)` directly.
+  have h_chart_tendsto :
+      Filter.Tendsto (chartAt ℂ x).symm (𝓝 ((chartAt ℂ x) x)) (𝓝 x) := by
+    have := h_chart_continuousAt
+    rw [ContinuousAt, h_pt] at this
+    exact this
+  have h_pulled := h_chart_tendsto.eventually h_evEq
   -- We also need `(chartAt ℂ x).symm z ≠ x` whenever `z ≠ (chartAt ℂ x) x` and `z ∈ chart target`,
   -- by injectivity of `(chartAt ℂ x).symm` on its target.
   -- Promote the implication-eventually to a punctured-nhd EqOn:
