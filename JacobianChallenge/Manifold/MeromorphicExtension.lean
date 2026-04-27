@@ -590,7 +590,12 @@ private lemma continuousAt_chartPullback_of_nonneg
   have h_pt : (chartAt ℂ x).symm ((chartAt ℂ x) x) = x :=
     (chartAt ℂ x).left_inv (mem_chart_source ℂ x)
   have h_f_continuousAt : ContinuousAt f.toFun x := f.regular_continuousAt x hx
-  exact h_f_continuousAt.comp (h_pt ▸ h_chart_continuousAt)
+  -- `ContinuousAt.comp` expects `ContinuousAt g (f x₀)`; we need to align the
+  -- inner point via `h_pt` (rewriting `x` as `chart.symm (chart x)`).
+  have h_f_at_pt :
+      ContinuousAt f.toFun ((chartAt ℂ x).symm ((chartAt ℂ x) x)) := by
+    rw [h_pt]; exact h_f_continuousAt
+  exact h_f_at_pt.comp h_chart_continuousAt
 
 /-- At a non-pole `x`, the chart-pulled-back representative
 `(f.toFun ∘ chart.symm)` is **analytic** at `(chartAt ℂ x) x`. This is the
@@ -616,7 +621,23 @@ private lemma meromorphicOrderAt_inv_chartPullback_pos
         = meromorphicOrderAt (f.toFun ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := rfl
   rw [h_orderEq] at hx
   rw [meromorphicOrderAt_inv]
-  exact neg_pos.mpr hx
+  -- Direct manipulation in `WithTop ℤ`: from `hx : a < 0`, extract `a = (n : ℤ)` with
+  -- `n < 0`, then `-a = (-n : ℤ)` with `-n > 0`.
+  -- Since `a < 0` we have `a ≠ ⊤` (top isn't `< 0`).
+  have h_ne_top : meromorphicOrderAt (f.toFun ∘ (chartAt ℂ x).symm)
+      ((chartAt ℂ x) x) ≠ ⊤ := fun h => by
+    rw [h] at hx; exact absurd hx (not_lt.mpr le_top)
+  -- Lift to `ℤ` and conclude.
+  cases h_eq : meromorphicOrderAt (f.toFun ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) with
+  | top => exact absurd h_eq h_ne_top
+  | coe n =>
+    rw [h_eq] at hx
+    rw [h_eq]
+    -- `hx : ↑n < 0` ⇒ `n < 0`. Goal: `0 < -↑n`. Cast lemma.
+    rw [show ((0 : WithTop ℤ)) = ((0 : ℤ) : WithTop ℤ) from rfl] at hx ⊢
+    rw [show -(((n : ℤ)) : WithTop ℤ) = (((-n : ℤ)) : WithTop ℤ) from rfl]
+    rw [WithTop.coe_lt_coe] at hx ⊢
+    omega
 
 /-- At a pole `x`, the chart-pulled-back form `(f.toFun ∘ chart.symm)` tends
 to `cobounded ℂ` on the punctured nhd of `(chartAt ℂ x) x`. -/
@@ -771,7 +792,7 @@ private lemma meromorphicAt_chartS_chartPullback_of_pole
   have h_local' :
       (RiemannSphere.chartS ∘ f.toRiemannSphere ∘ (chartAt ℂ x).symm)
         =ᶠ[𝓝[≠] ((chartAt ℂ x) x)] (f.toFun ∘ (chartAt ℂ x).symm)⁻¹ := h_local
-  exact (meromorphicAt_congr h_local'.symm).mpr h_inv_mero
+  exact (MeromorphicAt.meromorphicAt_congr h_local'.symm).mpr h_inv_mero
 
 /-- At a pole `x`, the chart-coordinate composition
 `chartS ∘ f.toRiemannSphere ∘ chart.symm` is **analytic at** `(chartAt ℂ x) x`.
@@ -883,8 +904,10 @@ theorem toRiemannSphere_contMDiff (f : MeromorphicNonzero X) :
           = RiemannSphere.chartN (f.toRiemannSphere ((chartAt ℂ x).symm z)) := by
       simp [extChartAt, OpenPartialHomeomorph.extend, modelWithCornersSelf_coe,
             h_chartTarget]
-    rw [h_extApply, hz]
-    rfl
+    rw [h_extApply]
+    -- Goal: `chartN (f.toRiemannSphere (chart.symm z)) = (f.toFun ∘ chart.symm) z`.
+    -- `hz` provides the same equation up to `Function.comp_apply` unfolding.
+    simpa [Function.comp_apply] using hz
   · -- Pole branch.
     push_neg at hx
     refine ⟨f.continuousAt_toRiemannSphere_of_pole hx, ?_⟩
