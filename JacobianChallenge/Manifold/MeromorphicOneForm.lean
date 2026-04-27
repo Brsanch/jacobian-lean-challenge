@@ -7,6 +7,7 @@ import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.MeromorphicAt
 import JacobianChallenge.Manifold.MeromorphicDivisor
 import JacobianChallenge.Manifold.Cotangent
+import JacobianChallenge.Manifold.ResidueTheoremStokes
 import JacobianChallenge.Divisor.PrincipalDivisor
 import Mathlib.Analysis.Meromorphic.Basic
 import Mathlib.Analysis.Meromorphic.Order
