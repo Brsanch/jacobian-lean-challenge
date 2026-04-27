@@ -399,7 +399,8 @@ lemma residueAt_logDiff_eq_stokes_residueAt_of_order_eq
     (x : X)
     (h_ord_eq : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (logDiffCoeff f) x =
                   mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x) :
-    (logDiff f h).residueAt x = ((Stokes.residueAt f x : ℤ) : ℂ) := by
+    (logDiff f h).residueAt x =
+      ((JacobianChallenge.Stokes.residueAt f x : ℤ) : ℂ) := by
   -- LHS = ((mmeromorphicOrderAt 𝓘(ℂ,ℂ) (logDiff f h).coeff x).untop₀ : ℤ → ℂ)
   -- and `(logDiff f h).coeff = logDiffCoeff f` (by `logDiff_coeff_apply`).
   have h_coeff : (logDiff f h).coeff = logDiffCoeff f := by
