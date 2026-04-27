@@ -281,31 +281,35 @@ lemma nhdsNE_neBot (x : X) : (𝓝[≠] x).NeBot := by
       refine ⟨?_, ?_⟩
       · rw [← hpy]; exact e.map_source hy_src
       · intro hp_eq
-        rw [Set.mem_singleton_iff] at hp_eq
+        simp only [Set.mem_singleton_iff] at hp_eq
         apply hy_ne
-        rw [Set.mem_singleton_iff]
+        simp only [Set.mem_singleton_iff]
         exact e.injOn hy_src hxe (hpy.trans hp_eq)
     · rintro ⟨hp_target, hp_ne⟩
       refine ⟨e.symm p, ⟨e.map_target hp_target, ?_⟩, e.right_inv hp_target⟩
       intro hsymm_eq
-      rw [Set.mem_singleton_iff] at hsymm_eq hp_ne
+      simp only [Set.mem_singleton_iff] at hsymm_eq hp_ne
       apply hp_ne
-      have := e.right_inv hp_target
-      rw [hsymm_eq] at this
-      rw [← this]
+      have hr := e.right_inv hp_target
+      rw [hsymm_eq] at hr
+      exact hr.symm
   -- After substitution: `Filter.map e (𝓝[≠] x) = 𝓝[e.target ∩ {e x}ᶜ] (e x)`.
   rw [h_image_eq] at h_map
   -- `e.target ∩ {e x}ᶜ` is an open nhd of points within `(e x)ᶜ`. Specifically,
   -- `𝓝[e.target ∩ {e x}ᶜ] (e x) = 𝓝[≠] (e x)` since `e.target` is a nhd of `e x`.
   have h_target_nhd : e.target ∈ 𝓝 (e x) :=
     e.open_target.mem_nhds (e.map_source hxe)
+  have h_target_nhdsNE : e.target ∈ 𝓝[{e x}ᶜ] (e x) :=
+    mem_nhdsWithin_of_mem_nhds h_target_nhd
   have h_eq_nhdsNE : (𝓝[e.target ∩ {e x}ᶜ] (e x)) = 𝓝[≠] (e x) := by
-    rw [Set.inter_comm, ← nhdsWithin_inter_of_mem' (mem_nhdsWithin_of_mem_nhds h_target_nhd)]
+    rw [Set.inter_comm]
+    -- nhdsWithin_inter_of_mem' : t ∈ 𝓝[s] a → 𝓝[s ∩ t] a = 𝓝[s] a.
+    exact nhdsWithin_inter_of_mem' h_target_nhdsNE
   rw [h_eq_nhdsNE] at h_map
   -- Now `Filter.map e (𝓝[≠] x) = 𝓝[≠] (e x)`. Since RHS is `NeBot`, so is LHS,
   -- and `Filter.map e l` is `NeBot` iff `l` is `NeBot` (`map_neBot_iff`).
   haveI : (Filter.map e (𝓝[≠] x)).NeBot := h_map ▸ inferInstance
-  exact Filter.map_neBot_iff.mp this
+  exact (Filter.map_neBot_iff e).mp this
 
 /-- Chart-symm carries `𝓝[≠] (chart x)` into `𝓝[≠] x`. -/
 lemma chartSymm_tendsto_nhdsNE (x : X) :
