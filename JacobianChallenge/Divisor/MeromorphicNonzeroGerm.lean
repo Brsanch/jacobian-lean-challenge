@@ -272,19 +272,37 @@ lemma germLimit_inv_manifold_eventuallyEq_punctured
     rw [h_order_zero]
   have hf_cont : ContinuousAt f.toFun y := f.regular_continuousAt y h_order_nonneg
   have h_f_y_ne : f.toFun y ≠ 0 := by
+    -- mathlib: at order 0, the chart pullback tends to a nonzero limit on `𝓝[≠]`.
     have h_chart_mero : MeromorphicAt (f.toFun ∘ (chartAt ℂ y).symm) ((chartAt ℂ y) y) :=
       f.meromorphic y trivial
     have h_chart_order :
         meromorphicOrderAt (f.toFun ∘ (chartAt ℂ y).symm) ((chartAt ℂ y) y) = 0 := by
       show mmeromorphicOrderAt 𝓘(ℂ, ℂ) f.toFun y = 0
       exact h_order_zero
-    rw [meromorphicOrderAt_eq_zero_iff h_chart_mero] at h_chart_order
-    obtain ⟨_, h_ne⟩ := h_chart_order
-    have h_pt : (f.toFun ∘ (chartAt ℂ y).symm) ((chartAt ℂ y) y) = f.toFun y := by
-      show f.toFun ((chartAt ℂ y).symm ((chartAt ℂ y) y)) = f.toFun y
-      rw [(chartAt ℂ y).left_inv (mem_chart_source ℂ y)]
-    rw [h_pt] at h_ne
-    exact h_ne
+    obtain ⟨c, hc_ne, hc_tend⟩ :=
+      tendsto_ne_zero_of_meromorphicOrderAt_eq_zero h_chart_mero h_chart_order
+    -- Transport the chart-side Tendsto to the manifold side.
+    have h_compose : Filter.Tendsto
+        ((f.toFun ∘ (chartAt ℂ y).symm) ∘ (chartAt ℂ y))
+        (𝓝[≠] y) (𝓝 c) :=
+      hc_tend.comp (chart_tendsto_nhdsNE y)
+    have h_src_mem : (chartAt ℂ y).source ∈ 𝓝[≠] y :=
+      nhdsWithin_le_nhds
+        ((chartAt ℂ y).open_source.mem_nhds (mem_chart_source ℂ y))
+    have h_evEq :
+        ((f.toFun ∘ (chartAt ℂ y).symm) ∘ (chartAt ℂ y)) =ᶠ[𝓝[≠] y] f.toFun := by
+      filter_upwards [h_src_mem] with z hz
+      show f.toFun ((chartAt ℂ y).symm ((chartAt ℂ y) z)) = f.toFun z
+      rw [(chartAt ℂ y).left_inv hz]
+    have h_mfd_tend : Filter.Tendsto f.toFun (𝓝[≠] y) (𝓝 c) :=
+      h_compose.congr' h_evEq
+    -- Continuity at `y` ⇒ `f.toFun y = c` (limit on punctured nhd matches continuous limit).
+    have h_cont_tend : Filter.Tendsto f.toFun (𝓝[≠] y) (𝓝 (f.toFun y)) :=
+      (hf_cont.tendsto).mono_left nhdsWithin_le_nhds
+    haveI := nhdsNE_neBot y
+    have h_eq : f.toFun y = c := tendsto_nhds_unique h_cont_tend h_mfd_tend
+    rw [h_eq]
+    exact hc_ne
   have h_inv_cont : ContinuousAt (fun z => (f.toFun z)⁻¹) y := hf_cont.inv₀ h_f_y_ne
   have h_inv_punct_tend : Filter.Tendsto (fun z => (f.toFun z)⁻¹) (𝓝[≠] y)
       (𝓝 ((f.toFun y)⁻¹)) :=
@@ -470,7 +488,7 @@ lemma mul_one_germ (f : MeromorphicNonzero X) :
               (fun w => f.toFun w * (1 : MeromorphicNonzero X).toFun w) :=
     germLimit_manifold_eventuallyEq_punctured f (1 : MeromorphicNonzero X) y
   refine h1.trans ?_
-  apply Filter.eventually_of_forall
+  apply Filter.Eventually.of_forall
   intro w
   show f.toFun w * (1 : MeromorphicNonzero X).toFun w = f.toFun w
   rw [one_toFun]
@@ -484,7 +502,7 @@ lemma one_mul_germ (f : MeromorphicNonzero X) :
               (fun w => (1 : MeromorphicNonzero X).toFun w * f.toFun w) :=
     germLimit_manifold_eventuallyEq_punctured (1 : MeromorphicNonzero X) f y
   refine h1.trans ?_
-  apply Filter.eventually_of_forall
+  apply Filter.Eventually.of_forall
   intro w
   show (1 : MeromorphicNonzero X).toFun w * f.toFun w = f.toFun w
   rw [one_toFun]
@@ -499,7 +517,7 @@ lemma mul_comm_germ (f g : MeromorphicNonzero X) :
   have h2 : (g * f).toFun =ᶠ[𝓝[≠] y] (fun w => g.toFun w * f.toFun w) :=
     germLimit_manifold_eventuallyEq_punctured g f y
   refine (h1.trans ?_).trans h2.symm
-  apply Filter.eventually_of_forall
+  apply Filter.Eventually.of_forall
   intro w
   exact mul_comm _ _
 
@@ -535,7 +553,7 @@ lemma mul_assoc_germ (f g h : MeromorphicNonzero X) :
   have h_assoc : (fun w : X => f.toFun w * g.toFun w * h.toFun w)
                   =ᶠ[𝓝[≠] y]
                 (fun w => f.toFun w * (g.toFun w * h.toFun w)) := by
-    apply Filter.eventually_of_forall
+    apply Filter.Eventually.of_forall
     intro w
     exact mul_assoc _ _ _
   exact (h3.trans h_assoc).trans h6.symm
@@ -610,18 +628,37 @@ lemma mul_invMer_one_germ (f : MeromorphicNonzero X) :
         meromorphicOrderAt (f.toFun ∘ (chartAt ℂ z).symm) ((chartAt ℂ z) z) = 0 := by
       show mmeromorphicOrderAt 𝓘(ℂ, ℂ) f.toFun z = 0
       exact h_order_zero
-    rw [meromorphicOrderAt_eq_zero_iff h_chart_mero] at h_chart_order
-    obtain ⟨_, h_ne⟩ := h_chart_order
-    have h_pt : (f.toFun ∘ (chartAt ℂ z).symm) ((chartAt ℂ z) z) = f.toFun z := by
-      show f.toFun ((chartAt ℂ z).symm ((chartAt ℂ z) z)) = f.toFun z
-      rw [(chartAt ℂ z).left_inv (mem_chart_source ℂ z)]
-    rw [h_pt] at h_ne
+    -- `f.toFun z ≠ 0` from `regular_continuousAt` + nonzero punctured-nhd limit at order 0.
+    have h_order_nonneg : 0 ≤ mmeromorphicOrderAt 𝓘(ℂ, ℂ) f.toFun z := by
+      rw [h_order_zero]
+    have hf_cont : ContinuousAt f.toFun z := f.regular_continuousAt z h_order_nonneg
+    obtain ⟨c, hc_ne, hc_tend⟩ :=
+      tendsto_ne_zero_of_meromorphicOrderAt_eq_zero h_chart_mero h_chart_order
+    have h_compose : Filter.Tendsto
+        ((f.toFun ∘ (chartAt ℂ z).symm) ∘ (chartAt ℂ z))
+        (𝓝[≠] z) (𝓝 c) :=
+      hc_tend.comp (chart_tendsto_nhdsNE z)
+    have h_src_mem : (chartAt ℂ z).source ∈ 𝓝[≠] z :=
+      nhdsWithin_le_nhds
+        ((chartAt ℂ z).open_source.mem_nhds (mem_chart_source ℂ z))
+    have h_evEq :
+        ((f.toFun ∘ (chartAt ℂ z).symm) ∘ (chartAt ℂ z)) =ᶠ[𝓝[≠] z] f.toFun := by
+      filter_upwards [h_src_mem] with w hw
+      show f.toFun ((chartAt ℂ z).symm ((chartAt ℂ z) w)) = f.toFun w
+      rw [(chartAt ℂ z).left_inv hw]
+    have h_mfd_tend : Filter.Tendsto f.toFun (𝓝[≠] z) (𝓝 c) :=
+      h_compose.congr' h_evEq
+    have h_cont_tend : Filter.Tendsto f.toFun (𝓝[≠] z) (𝓝 (f.toFun z)) :=
+      (hf_cont.tendsto).mono_left nhdsWithin_le_nhds
+    haveI := nhdsNE_neBot z
+    have h_eq : f.toFun z = c := tendsto_nhds_unique h_cont_tend h_mfd_tend
+    have h_ne : f.toFun z ≠ 0 := by rw [h_eq]; exact hc_ne
     show f.toFun z * (f.toFun z)⁻¹ = 1
     field_simp
   -- Step 6: combine and conclude with `(1 : MeromorphicNonzero X).toFun = 1`.
   have h_one : (fun _ : X => (1 : ℂ)) =ᶠ[𝓝[≠] y]
                  (1 : MeromorphicNonzero X).toFun := by
-    apply Filter.eventually_of_forall
+    apply Filter.Eventually.of_forall
     intro w
     show (1 : ℂ) = (1 : MeromorphicNonzero X).toFun w
     rw [one_toFun]
