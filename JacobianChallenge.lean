@@ -16,6 +16,7 @@ import JacobianChallenge.Divisor.Single
 import JacobianChallenge.Divisor.FiberSum
 import JacobianChallenge.Divisor.PrincipalDivisor
 import JacobianChallenge.Divisor.PrincipalDivisorRange
+import JacobianChallenge.Divisor.MeromorphicNonzeroGerm
 import JacobianChallenge.Manifold.ResidueTheorem
 import JacobianChallenge.Manifold.ResidueTheoremStokes
 import JacobianChallenge.Manifold.MeromorphicOneForm
