@@ -61,6 +61,21 @@ def logDiffCoeffAt (f : MeromorphicNonzero X) (x y : X) : ℂ :=
     logDiffCoeffAt f x y =
       deriv (f.toFun ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) y) / f.toFun y := rfl
 
+/-- **Chart-source identity.** On the chart source at the residue basepoint
+`x`, the chart-anchored coefficient `logDiffCoeffAt f x y` equals the planar
+log-derivative of `f.toFun ∘ (chartAt ℂ x).symm` at `(chartAt ℂ x) y`.
+
+This is `rfl` from the definition; it is recorded as a named lemma so that
+downstream files can reference the identity directly without unfolding the
+definition. The `y ∈ (chartAt ℂ x).source` premise is the `PartialHomeomorph`-
+hygiene witness — the chart symm is only well-behaved on `target`, and
+`(chartAt ℂ x) y ∈ target` follows from `y ∈ source`. -/
+lemma logDiffCoeffAt_eq_planar_logDeriv (f : MeromorphicNonzero X) (x : X) :
+    ∀ y ∈ (chartAt ℂ x).source,
+      logDiffCoeffAt f x y =
+        deriv (f.toFun ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) y) / f.toFun y := by
+  intro y _; rfl
+
 end MeromorphicNonzero
 
 end JacobianChallenge
