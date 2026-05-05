@@ -180,19 +180,24 @@ lemma chartCircleIntegral_eq_circleIntegral_of_coeff_eq
     α.chartCircleIntegral x r =
       (2 * Real.pi * Complex.I)⁻¹ *
         (∮ z in C((chartAt ℂ x) x, r), f z) := by
-  unfold chartCircleIntegral
-  congr 1
+  -- Both sides are `(2πi)⁻¹ * <interval integral>`. Show pointwise equality
+  -- of integrands, then invoke `intervalIntegral.integral_congr`.
+  rw [chartCircleIntegral_def]
+  show _ = (2 * Real.pi * Complex.I)⁻¹ * circleIntegral f ((chartAt ℂ x) x) r
   unfold circleIntegral
-  refine intervalIntegral.integral_congr ?_
-  intro θ _
-  rw [deriv_circleMap, h θ]
-  -- circleMap 0 r θ = r * exp(θ * I), and `I * θ = θ * I` for ℂ.
-  have hθ : Complex.exp (Complex.I * (θ : ℂ)) = Complex.exp ((θ : ℂ) * Complex.I) := by
+  congr 1
+  refine intervalIntegral.integral_congr (fun θ _ => ?_)
+  -- LHS integrand: α.coeff(symm(z₀ + r·exp(I·θ))) * (r · I · exp(I·θ))
+  -- RHS integrand (mathlib): deriv (circleMap z₀ r) θ • f (circleMap z₀ r θ)
+  --                       = (r · exp(θ·I) · I) * f (z₀ + r · exp(θ·I))
+  rw [h θ, deriv_circleMap]
+  -- circleMap 0 r θ = r * exp(θ * I); also θ*I = I*θ in ℂ.
+  have hθcomm : Complex.exp (Complex.I * (θ : ℂ)) = Complex.exp ((θ : ℂ) * Complex.I) := by
     rw [mul_comm]
-  simp only [circleMap, zero_add, hθ, smul_eq_mul]
+  rw [circleMap_zero, smul_eq_mul, ← hθcomm]
   ring
 
-namespace MeromorphicOneForm
+/-! ### Laurent monomial closed form -/
 
 /-- **Laurent monomial residue (closed-form, simplest case).**
 
@@ -233,10 +238,10 @@ theorem chartCircleIntegral_of_coeff_eq_laurent_monomial
     intro θ
     rw [h θ]
     -- Need: c * (r * exp(I θ))^n = c * (circleMap z₀ r θ - z₀)^n.
-    congr 2
     -- circleMap z₀ r θ - z₀ = r * exp(θ I); rewrite to match user's `I * θ`.
-    rw [circleMap_sub_center, circleMap_zero]
-    rw [show ((θ : ℂ) * Complex.I) = (Complex.I * (θ : ℂ)) from mul_comm _ _]
+    have hsub : circleMap z₀ r θ - z₀ = (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ)) := by
+      rw [circleMap_sub_center, circleMap_zero, mul_comm (Complex.I) ((θ : ℂ))]
+    rw [hsub]
   rw [hbridge, circleIntegral.integral_const_mul]
   by_cases hn : n = -1
   · -- n = -1: ∮ (z - z₀)⁻¹ = 2πi by `integral_sub_inv_of_mem_ball` (z₀ ∈ ball z₀ r).
