@@ -31,3 +31,4 @@ import JacobianChallenge.Divisor.FiberPullback
 import JacobianChallenge.Topology.SurfaceGenus
 import JacobianChallenge.Manifold.StokesDisk
 import JacobianChallenge.Manifold.StokesCompactSurface
+import JacobianChallenge.Manifold.ResidueTheoremAssembly
