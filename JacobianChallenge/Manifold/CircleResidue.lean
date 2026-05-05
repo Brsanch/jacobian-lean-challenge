@@ -5,7 +5,7 @@ Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.MeromorphicOneForm
 import JacobianChallenge.Manifold.LocalNormalForm
-import Mathlib.MeasureTheory.Integral.IntervalIntegral
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 
 set_option diagnostics true
