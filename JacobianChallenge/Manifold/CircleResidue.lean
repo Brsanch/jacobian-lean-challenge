@@ -236,12 +236,11 @@ theorem chartCircleIntegral_of_coeff_eq_laurent_monomial
     refine chartCircleIntegral_eq_circleIntegral_of_coeff_eq α x r
       (fun z => c * (z - z₀) ^ n) ?_
     intro θ
-    rw [h θ]
-    -- Need: c * (r * exp(I θ))^n = c * (circleMap z₀ r θ - z₀)^n.
     -- circleMap z₀ r θ - z₀ = r * exp(θ I); rewrite to match user's `I * θ`.
     have hsub : circleMap z₀ r θ - z₀ = (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ)) := by
       rw [circleMap_sub_center, circleMap_zero, mul_comm (Complex.I) ((θ : ℂ))]
-    rw [hsub]
+    show α.coeff _ = c * (circleMap z₀ r θ - z₀) ^ n
+    rw [h θ, hsub]
   rw [hbridge, circleIntegral.integral_const_mul]
   by_cases hn : n = -1
   · -- n = -1: ∮ (z - z₀)⁻¹ = 2πi by `integral_sub_inv_of_mem_ball` (z₀ ∈ ball z₀ r).
@@ -259,8 +258,9 @@ theorem chartCircleIntegral_of_coeff_eq_laurent_monomial
       have hπ : (Real.pi : ℂ) ≠ 0 := by
         exact_mod_cast Real.pi_ne_zero
       exact mul_ne_zero (mul_ne_zero h2 hπ) Complex.I_ne_zero
-    simp [if_pos rfl]
-    field_simp
+    rw [if_pos rfl]
+    rw [show (c * (2 * Real.pi * Complex.I) : ℂ) = (2 * Real.pi * Complex.I) * c from by ring,
+        ← mul_assoc, inv_mul_cancel₀ hpi, one_mul]
   · -- n ≠ -1: ∮ (z - z₀)^n = 0 by `integral_sub_zpow_of_ne`.
     have hint :
         (∮ z in C(z₀, r), (z - z₀) ^ n) = 0 :=
