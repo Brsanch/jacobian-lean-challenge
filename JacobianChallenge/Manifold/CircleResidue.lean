@@ -306,7 +306,7 @@ distance `0 < r` from itself, so `z₀ ∉ sphere z₀ |r|`. This handles all
 lemma circleIntegrable_const_mul_zpow_sub_center
     (z₀ : ℂ) (r : ℝ) (hr : 0 < r) (k : ℤ) (c : ℂ) :
     CircleIntegrable (fun z => c * (z - z₀) ^ k) z₀ r := by
-  have hmem : z₀ ∉ sphere z₀ |r| := by
+  have hmem : z₀ ∉ Metric.sphere z₀ |r| := by
     intro hz
     have hdist : dist z₀ z₀ = |r| := hz
     have hpos : (0 : ℝ) < |r| := abs_pos.mpr hr.ne'
