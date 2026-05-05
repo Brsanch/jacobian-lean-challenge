@@ -484,6 +484,99 @@ def localMultiplicity_eq_order_punctured_statement
       ∀ w ∈ Metric.ball (0 : ℂ) ε \ {0},
         ({z ∈ V \ {0} | g z = w} : Set ℂ).ncard = k
 
+/-! ## The argument-principle chip (P3, 2026-05-05)
+
+The discharge of `localMultiplicity_eq_order_punctured_statement` for `k ≥ 2`
+classically routes through the **argument principle**: for `g` analytic at `0`
+with `g(0) = 0` of order `k`, the contour integral
+
+  `(1 / (2πi)) · ∮_{|z|=ε} g'(z) / (g(z) - w) dz = k`
+
+for every `w` close to but not equal to `0`. This is the Rouché-style winding-
+number count: the integrand is the logarithmic derivative of `g - w`, which has
+`k` simple zeros (by the open-mapping / Rouché shift) in the disk and no poles,
+so the integral counts those zeros.
+
+At the mathlib pin `8e3c989` the argument principle in the form needed is not
+named. The nearest mathlib content is `Complex.integral_circle_div_eq` and the
+Cauchy integral formula for analytic functions, but the statement
+"`(1 / 2πi) ∫ g'/g = (zero count − pole count)`" is not packaged generally.
+
+We therefore name the precise gap as two `Prop`-valued statements:
+
+1. `argumentPrinciple_disk_statement k g` — the disk-centred argument-principle
+   integral identity itself. This is the mathlib gap.
+2. `argumentPrinciple_implies_rouche_statement k g` — once (1) is available,
+   it implies the Rouché-style preimage count
+   `localMultiplicity_eq_order_punctured_statement`.
+
+Both are stated as `def : Prop`, not `axiom`, so they are inert until
+discharged. -/
+
+namespace MMeromorphicAt
+
+/-- **Argument-principle integral identity on a disk centred at `0`.**
+
+For `g : ℂ → ℂ` analytic at `0` with `analyticOrderAt g 0 = k`, there exists
+`ε₀ > 0` such that for every `ε ∈ (0, ε₀)` the contour integral
+
+  `(1 / (2πi)) · ∮_{|z|=ε} (g'(z) / (g(z) - w)) dz = k`  (here `w := 0`)
+
+equivalently (parametrising the circle by `θ ↦ ε e^{iθ}`),
+
+  `(2πi)⁻¹ · ∫_{0}^{2π} (g'(εe^{iθ}) / g(εe^{iθ})) · (iε e^{iθ}) dθ = k`.
+
+This is the classical argument principle specialised to `w = 0`. The general
+"`w` close to `0`, `w ≠ 0`" version is the Rouché count, which follows by
+applying this to `g - w` and using the open-mapping theorem.
+
+**Status:** `Prop`-valued statement, not proven. The mathlib pin does not
+package this identity at the level of generality required (although the
+ingredients — `Complex.integral_circle_div_eq`, `MeromorphicAt.exists_eq_pow_smul`,
+and Cauchy's theorem on a disk for analytic functions — are present in
+adjacent files). The statement is named here so that the dependency surface
+between the (R3) Rouché count and the mathlib gap is explicit.
+
+The hypotheses are packaged as the `→` body so the type-shape is `Prop`-valued
+(matching `R3_localMultiplicity_statement` and
+`localMultiplicity_eq_order_punctured_statement` above). -/
+def argumentPrinciple_disk_statement (k : ℕ) (g : ℂ → ℂ) : Prop :=
+  AnalyticAt ℂ g 0 ∧ analyticOrderAt g 0 = k →
+    ∃ ε₀ > (0 : ℝ),
+      ∀ ε ∈ Set.Ioo (0 : ℝ) ε₀,
+        (2 * Real.pi * Complex.I)⁻¹ *
+          ∫ θ in (0 : ℝ)..(2 * Real.pi),
+            (deriv g (ε * Complex.exp (Complex.I * θ)) /
+             g (ε * Complex.exp (Complex.I * θ))) *
+            (ε * Complex.I * Complex.exp (Complex.I * θ))
+          = k
+
+/-- **The argument-principle integral on a disk implies the Rouché count.**
+
+If the argument-principle identity (`argumentPrinciple_disk_statement`) holds
+for `g`, then so does the Rouché-style preimage count statement
+(`localMultiplicity_eq_order_punctured_statement`).
+
+The bridge is classical: applying the argument principle to `g - w` for `w`
+close to but not equal to `0`, the integral
+`(1/2πi) ∮ (g - w)'/(g - w) dz` equals the number of zeros of `g - w` in the
+disk, counted with multiplicity. By the open-mapping theorem (and continuity
+of the integrand in `w`), this equals `k` for all sufficiently small nonzero
+`w`. The simple-zero structure (each zero has multiplicity `1` for nonzero
+`w`, since `(g - w)'(z₀) = g'(z₀) ≠ 0` away from the order-`k` zero of `g`)
+turns the multiplicity-counted count into a set-cardinality count.
+
+**Status:** `Prop`-valued statement, not proven. Discharging requires both
+the argument-principle integral (above) and the Hurwitz / open-mapping
+content for the simple-zero passage. Stated here to make the chain explicit:
+once `argumentPrinciple_disk_statement` is filled, this implication closes
+`localMultiplicity_eq_order_punctured_statement` for `k ≥ 2`, completing R3. -/
+def argumentPrinciple_implies_rouche_statement (k : ℕ) (g : ℂ → ℂ) : Prop :=
+  argumentPrinciple_disk_statement k g →
+    localMultiplicity_eq_order_punctured_statement k g
+
+end MMeromorphicAt
+
 end JacobianChallenge
 
 end
