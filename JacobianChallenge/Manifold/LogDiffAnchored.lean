@@ -111,6 +111,61 @@ lemma logDiffCoeffAt_circleParameter
   unfold logDiffCoeffAt circleParameter
   rw [(chartAt ℂ x).right_inv htgt]
 
+/-! ## Right-shape Laurent hypothesis (anchored variant)
+
+The existing `LogDerivLaurent.LogDerivResiduePlusAnalytic` (in
+`LogDerivLaurentDischarge.lean`) is the right-shape simple-pole +
+analytic-remainder hypothesis for the *per-point chart* `logDiffCoeff`.
+Producing a witness for that predicate from mathlib's planar
+`meromorphicOrderAt_eq_int_iff` requires bridging between
+`(chartAt ℂ y) y` (varying chart at each `y` on the chart-circle) and
+`(chartAt ℂ x) y` (fixed chart at the residue basepoint). This bridge
+is a separate manifold-hygiene chip.
+
+`LogDerivResiduePlusAnalyticAnchored` below is the *anchored* variant:
+it is stated against the chart-anchored coefficient `logDiffCoeffAt f x`
+directly. It is exactly the shape that mathlib's planar Laurent
+factorization delivers — no manifold-hygiene bridging is required. -/
+
+/-- **Anchored simple-pole + analytic-remainder Laurent hypothesis.**
+
+Anchored variant of `LogDerivLaurent.LogDerivResiduePlusAnalytic`: there
+exists a small radius `r > 0` and a function `h : ℂ → ℂ`, continuous on
+the closed disk of radius `r` around `z₀ := (chartAt ℂ x) x` and
+differentiable on the open disk, such that on the chart-circle of radius
+`r`,
+
+  `logDiffCoeffAt f x (circleParameter x r θ)
+     = (k : ℂ) * (r·exp(Iθ))⁻¹ + h (z₀ + r·exp(Iθ))`,
+
+where `k` is the integer order
+`(MMeromorphicOn.orderFun 𝓘(ℂ,ℂ) f.toFun x : ℤ)` cast to `ℂ`.
+
+This is the **right** Laurent shape: at a meromorphic point of order
+`k : ℤ`, the planar factorization `f̃(z) = (z - z₀)^k · g(z)` of
+`f̃ := f.toFun ∘ (chartAt ℂ x).symm` (delivered by mathlib's
+`meromorphicOrderAt_eq_int_iff` once `f̃` is shown meromorphic at `z₀`)
+yields `f̃' / f̃ = k/(z - z₀) + g'/g` with `g'/g` analytic on a small
+disk. The chart-anchored coefficient `logDiffCoeffAt f x y` is, by
+definition, `(f̃)' (chart y) / f y`, so on the chart-circle it has
+*exactly* this Laurent shape — no double-pullback bridging is needed.
+
+Stated as a `Prop`-valued `def` (NOT `axiom`). Producing a witness from
+mathlib is the next chip; this file ships the precise statement. -/
+def LogDerivResiduePlusAnalyticAnchored
+    (f : MeromorphicNonzero X) (x : X) : Prop :=
+  ∃ (r : ℝ) (_hr : 0 < r) (h : ℂ → ℂ),
+    ContinuousOn h (Metric.closedBall ((chartAt ℂ x) x) r) ∧
+    DifferentiableOn ℂ h (Metric.ball ((chartAt ℂ x) x) r) ∧
+    (∀ θ : ℝ,
+      (chartAt ℂ x) x + (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ)) ∈
+        (chartAt ℂ x).target) ∧
+    ∀ θ : ℝ,
+      logDiffCoeffAt f x (circleParameter (X := X) x r θ) =
+        ((MMeromorphicOn.orderFun (𝓘(ℂ, ℂ)) f.toFun x : ℤ) : ℂ)
+            * ((r : ℂ) * Complex.exp (Complex.I * (θ : ℂ)))⁻¹
+          + h ((chartAt ℂ x) x + (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ)))
+
 end MeromorphicNonzero
 
 end JacobianChallenge
