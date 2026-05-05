@@ -35,3 +35,4 @@ import JacobianChallenge.Manifold.ResidueTheoremAssembly
 import JacobianChallenge.Manifold.GlobalResidueSum
 import JacobianChallenge.Manifold.ResidueViaTopologicalDegree
 import JacobianChallenge.Manifold.LogDerivLaurent
+import JacobianChallenge.Manifold.LogDerivLaurentDischarge
