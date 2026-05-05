@@ -11,6 +11,7 @@ import Mathlib.Analysis.Analytic.Order
 import Mathlib.Analysis.Calculus.FDeriv.Analytic
 import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Deriv
 import Mathlib.Analysis.Meromorphic.Order
+import Mathlib.Analysis.Complex.CauchyIntegral
 
 set_option diagnostics true
 set_option diagnostics.threshold 100
@@ -574,6 +575,61 @@ once `argumentPrinciple_disk_statement` is filled, this implication closes
 def argumentPrinciple_implies_rouche_statement (k : ℕ) (g : ℂ → ℂ) : Prop :=
   argumentPrinciple_disk_statement k g →
     localMultiplicity_eq_order_punctured_statement k g
+
+/-! ### k = 0 trivial case of the argument principle (zero-free disk)
+
+When `f : ℂ → ℂ` is holomorphic and **nonzero** everywhere on a closed disk
+`closedBall z₀ r` with `0 < r`, the logarithmic derivative `deriv f / f` is
+holomorphic on a neighborhood of the closed disk (no poles, since `f ≠ 0`).
+Cauchy's theorem (Cauchy–Goursat) applied to `deriv f / f` then gives
+
+  `∮_{|z - z₀| = r} (deriv f) z / f z dz = 0`.
+
+This is the `k = 0` (no-zero, no-pole) leg of the argument principle, and it
+is honestly proven below from `Complex.circleIntegral_eq_zero_of_differentiable_on_off_countable`.
+The general (k ≥ 1) case is owed; see `argumentPrinciple_disk_statement`. -/
+
+/-- **Argument principle, trivial (k = 0) case.**
+
+If `f : ℂ → ℂ` is holomorphic on a neighborhood of the closed disk
+`closedBall z₀ r` (with `0 ≤ r`) and is nonzero everywhere on that closed
+disk, then the contour integral of the logarithmic derivative `f' / f`
+around the boundary circle is zero:
+
+  `∮_{|z - z₀| = r} (deriv f z) / f z  dz = 0`.
+
+**Proof.** Where `f ≠ 0`, the function `deriv f / f` is differentiable
+(`deriv f` is analytic by `AnalyticOnNhd.deriv`, and division by a nonvanishing
+analytic function is analytic). Hence `deriv f / f` is differentiable on the
+open ball and continuous on the closed ball, so Cauchy–Goursat
+(`circleIntegral_eq_zero_of_differentiable_on_off_countable` with empty
+exceptional set) gives the integral is zero. -/
+theorem argumentPrinciple_disk_zero_case
+    {f : ℂ → ℂ} {z₀ : ℂ} {r : ℝ} (hr : 0 ≤ r)
+    (hf : AnalyticOnNhd ℂ f (Metric.closedBall z₀ r))
+    (hne : ∀ z ∈ Metric.closedBall z₀ r, f z ≠ 0) :
+    (∮ z in C(z₀, r), deriv f z / f z) = 0 := by
+  -- `deriv f` is analytic on a neighborhood of the closed ball.
+  have hf' : AnalyticOnNhd ℂ (deriv f) (Metric.closedBall z₀ r) := hf.deriv
+  -- `deriv f / f` is analytic on a neighborhood of the closed ball, since `f ≠ 0` there.
+  have hquot : AnalyticOnNhd ℂ (deriv f / f) (Metric.closedBall z₀ r) := by
+    intro z hz
+    exact (hf' z hz).div (hf z hz) (hne z hz)
+  -- Continuous on the closed ball.
+  have hcont : ContinuousOn (deriv f / f) (Metric.closedBall z₀ r) :=
+    hquot.continuousOn
+  -- Differentiable at every point of the open ball.
+  have hdiff : ∀ z ∈ Metric.ball z₀ r,
+      DifferentiableAt ℂ (deriv f / f) z := fun z hz =>
+    (hquot z (Metric.ball_subset_closedBall hz)).differentiableAt
+  -- Apply Cauchy–Goursat with empty exceptional set.
+  have hzero : (∮ z in C(z₀, r), (deriv f / f) z) = 0 :=
+    Complex.circleIntegral_eq_zero_of_differentiable_on_off_countable
+      (E := ℂ) (R := r) (c := z₀) (f := deriv f / f)
+      (s := (∅ : Set ℂ)) hr Set.countable_empty hcont
+      (fun z hz => hdiff z hz.1)
+  -- `(deriv f / f) z = deriv f z / f z` definitionally (Pi division).
+  simpa [Pi.div_apply] using hzero
 
 end MMeromorphicAt
 
