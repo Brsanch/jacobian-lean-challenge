@@ -34,6 +34,7 @@ This is a pure addition: no existing definition or signature is changed.
 noncomputable section
 
 open scoped Manifold ContDiff
+open Complex
 
 namespace JacobianChallenge
 
@@ -75,6 +76,40 @@ lemma logDiffCoeffAt_eq_planar_logDeriv (f : MeromorphicNonzero X) (x : X) :
       logDiffCoeffAt f x y =
         deriv (f.toFun ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) y) / f.toFun y := by
   intro y _; rfl
+
+/-- **Chart-circle parameterization** at the residue basepoint `x`. Sends a
+radius `r : ℝ` and an angle `θ : ℝ` to the manifold point obtained by
+moving in chart coordinates from the chart center `(chartAt ℂ x) x` along
+the circle of radius `r`, then pulling back via the chart inverse. -/
+def circleParameter (x : X) (r : ℝ) (θ : ℝ) : X :=
+  (chartAt ℂ x).symm ((chartAt ℂ x) x + (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ)))
+
+@[simp] lemma circleParameter_def (x : X) (r θ : ℝ) :
+    circleParameter (X := X) x r θ =
+      (chartAt ℂ x).symm
+        ((chartAt ℂ x) x + (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ))) := rfl
+
+/-- **Bridge from `circleParameter` to the planar log-derivative.** When the
+chart-circle point `(chartAt ℂ x) x + r·exp(iθ)` lies in the chart target,
+the chart-anchored coefficient at the corresponding manifold point unfolds
+to the planar log-derivative of `f.toFun ∘ (chartAt ℂ x).symm` evaluated
+*directly* at the planar point — no double-pullback hygiene cost.
+
+The hypothesis `htgt` is the small-`r` witness: for the radii of interest
+the chart-circle stays inside `(chartAt ℂ x).target`. This is automatic for
+sufficiently small `r > 0` because the chart target is open and contains
+the chart center. -/
+lemma logDiffCoeffAt_circleParameter
+    (f : MeromorphicNonzero X) (x : X) (r θ : ℝ)
+    (htgt :
+      (chartAt ℂ x) x + (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ)) ∈
+        (chartAt ℂ x).target) :
+    logDiffCoeffAt f x (circleParameter (X := X) x r θ) =
+      deriv (f.toFun ∘ (chartAt ℂ x).symm)
+          ((chartAt ℂ x) x + (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ))) /
+        f.toFun (circleParameter (X := X) x r θ) := by
+  unfold logDiffCoeffAt circleParameter
+  rw [(chartAt ℂ x).right_inv htgt]
 
 end MeromorphicNonzero
 
