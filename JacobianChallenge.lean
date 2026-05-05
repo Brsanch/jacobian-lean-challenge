@@ -21,6 +21,7 @@ import JacobianChallenge.Divisor.MeromorphicNonzeroGerm
 import JacobianChallenge.Manifold.ResidueTheorem
 import JacobianChallenge.Manifold.ResidueTheoremStokes
 import JacobianChallenge.Manifold.MeromorphicOneForm
+import JacobianChallenge.Manifold.CircleResidue
 import JacobianChallenge.Manifold.MeromorphicExtension
 import JacobianChallenge.Manifold.FibreBalance
 import JacobianChallenge.Manifold.TopologicalDegree
