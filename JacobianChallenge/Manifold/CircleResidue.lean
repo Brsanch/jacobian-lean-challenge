@@ -268,6 +268,152 @@ theorem chartCircleIntegral_of_coeff_eq_laurent_monomial
     rw [hint]
     simp [if_neg hn]
 
+/-! ### Finite Laurent sum closed form -/
+
+/-- **Helper:** for `r > 0`, the closed-form circle integral of a single
+Laurent monomial `c · (z - z₀)^k` around `C(z₀, r)`.
+
+* `k = -1` ⟹ `c · (2πi)`,
+* otherwise `0`.
+
+This is the `circleIntegral`-side analogue of
+`chartCircleIntegral_of_coeff_eq_laurent_monomial`, packaged for use
+under `circleIntegral.integral_fun_sum` when summing over a finite
+Laurent index set. -/
+lemma circleIntegral_const_mul_zpow_sub_center
+    (z₀ : ℂ) (r : ℝ) (hr : 0 < r) (k : ℤ) (c : ℂ) :
+    (∮ z in C(z₀, r), c * (z - z₀) ^ k) =
+      if k = -1 then c * (2 * Real.pi * Complex.I) else 0 := by
+  rw [circleIntegral.integral_const_mul]
+  by_cases hk : k = -1
+  · subst hk
+    have hmem : z₀ ∈ Metric.ball z₀ r := Metric.mem_ball_self hr
+    have hint :
+        (∮ z in C(z₀, r), (z - z₀) ^ (-1 : ℤ)) = 2 * Real.pi * Complex.I := by
+      have hbase : (∮ z in C(z₀, r), (z - z₀)⁻¹) = 2 * Real.pi * Complex.I :=
+        circleIntegral.integral_sub_inv_of_mem_ball hmem
+      simpa [zpow_neg_one] using hbase
+    rw [hint, if_pos rfl]
+  · have hint : (∮ z in C(z₀, r), (z - z₀) ^ k) = 0 :=
+      circleIntegral.integral_sub_zpow_of_ne hk z₀ z₀ r
+    rw [hint, if_neg hk, mul_zero]
+
+/-- **Each Laurent monomial term is circle-integrable on `r > 0`.**
+
+A direct application of `circleIntegrable_sub_zpow_iff`: the centre is
+distance `0 < r` from itself, so `z₀ ∉ sphere z₀ |r|`. This handles all
+`k : ℤ` (positive, zero, and negative). -/
+lemma circleIntegrable_const_mul_zpow_sub_center
+    (z₀ : ℂ) (r : ℝ) (hr : 0 < r) (k : ℤ) (c : ℂ) :
+    CircleIntegrable (fun z => c * (z - z₀) ^ k) z₀ r := by
+  have hmem : z₀ ∉ Metric.sphere z₀ |r| := by
+    intro hz
+    have hdist : dist z₀ z₀ = |r| := hz
+    have hpos : (0 : ℝ) < |r| := abs_pos.mpr hr.ne'
+    simp [dist_self] at hdist
+    linarith
+  have hbase : CircleIntegrable (fun z => (z - z₀) ^ k) z₀ r := by
+    rw [circleIntegrable_sub_zpow_iff]
+    exact Or.inr (Or.inr hmem)
+  -- `c * f z = c • f z` as ℂ-valued function; use `const_fun_smul`.
+  have := hbase.const_fun_smul (a := c)
+  simpa [smul_eq_mul] using this
+
+/-- **Finite Laurent sum residue (closed-form).**
+
+If on the integration circle the chart-pulled-back coefficient of `α`
+equals a finite Laurent sum `∑_{k ∈ Finset.Icc (-N) M} c k · (z - z₀)^k`
+(with `z₀ = (chartAt ℂ x) x`), and `r > 0`, then
+
+```
+α.chartCircleIntegral x r =
+    if (-1 : ℤ) ∈ Finset.Icc (-N) M then c (-1) else 0
+```
+
+i.e. the residue coefficient `c (-1)` whenever `-1` lies in the index
+range, and `0` otherwise.
+
+The proof is the standard linearity-of-the-circle-integral argument:
+* Bridge to `(2πi)⁻¹ · ∮ z in C(z₀, r), ∑_{k ∈ Icc} c k · (z - z₀)^k`
+  using `chartCircleIntegral_eq_circleIntegral_of_coeff_eq`.
+* Distribute the sum over the integral via
+  `circleIntegral.integral_fun_sum` (each summand is circle-integrable
+  by `circleIntegrable_sub_zpow_iff`, since `z₀ ∉ sphere z₀ r`).
+* Apply the per-term closed form `circleIntegral_const_mul_zpow_sub_center`,
+  which is `c k · (2πi)` on `k = -1` and `0` otherwise.
+* `Finset.sum_ite_eq'` collapses the resulting sum to the single
+  surviving `k = -1` term.
+* Finally `(2πi)⁻¹ · (c (-1) · (2πi)) = c (-1)`. -/
+theorem chartCircleIntegral_of_coeff_eq_finite_laurent
+    (α : MeromorphicOneForm X) (x : X) (r : ℝ) (hr : 0 < r)
+    (N M : ℤ) (c : ℤ → ℂ)
+    (h : ∀ θ : ℝ,
+      α.coeff ((chartAt ℂ x).symm
+                ((chartAt ℂ x) x + (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ))))
+        = ∑ k ∈ Finset.Icc (-N) M,
+            c k * ((r : ℂ) * Complex.exp (Complex.I * (θ : ℂ))) ^ k) :
+    α.chartCircleIntegral x r =
+      if (-1 : ℤ) ∈ Finset.Icc (-N) M then c (-1) else 0 := by
+  set z₀ : ℂ := (chartAt ℂ x) x with hz₀
+  -- Step 1: bridge to mathlib's `circleIntegral` of the Laurent sum in `(z - z₀)`.
+  have hbridge :
+      α.chartCircleIntegral x r =
+        (2 * Real.pi * Complex.I)⁻¹ *
+          (∮ z in C(z₀, r),
+            ∑ k ∈ Finset.Icc (-N) M, c k * (z - z₀) ^ k) := by
+    refine chartCircleIntegral_eq_circleIntegral_of_coeff_eq α x r
+      (fun z => ∑ k ∈ Finset.Icc (-N) M, c k * (z - z₀) ^ k) ?_
+    intro θ
+    have hsub :
+        circleMap z₀ r θ - z₀ = (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ)) := by
+      rw [circleMap_sub_center, circleMap_zero, mul_comm (Complex.I) ((θ : ℂ))]
+    show α.coeff _ =
+        ∑ k ∈ Finset.Icc (-N) M, c k * (circleMap z₀ r θ - z₀) ^ k
+    rw [h θ, hsub]
+  rw [hbridge]
+  -- Step 2: distribute the integral over the finite sum.
+  have hint :
+      ∀ k ∈ Finset.Icc (-N) M,
+        CircleIntegrable (fun z => c k * (z - z₀) ^ k) z₀ r := by
+    intro k _
+    exact circleIntegrable_const_mul_zpow_sub_center z₀ r hr k (c k)
+  rw [circleIntegral.integral_fun_sum hint]
+  -- Step 3: apply per-term closed form via `Finset.sum_congr`.
+  rw [Finset.sum_congr rfl (fun k _ =>
+        circleIntegral_const_mul_zpow_sub_center z₀ r hr k (c k))]
+  -- Step 4: collapse the sum via `Finset.sum_ite_eq'`.
+  have hpi : (2 * Real.pi * Complex.I : ℂ) ≠ 0 := by
+    have h2 : (2 : ℂ) ≠ 0 := two_ne_zero
+    have hπ : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+    exact mul_ne_zero (mul_ne_zero h2 hπ) Complex.I_ne_zero
+  by_cases hmem : (-1 : ℤ) ∈ Finset.Icc (-N) M
+  · -- The sum collapses to the `k = -1` term: `c (-1) * (2πi)`.
+    have hsum :
+        (∑ k ∈ Finset.Icc (-N) M,
+            (if k = -1 then c k * (2 * Real.pi * Complex.I) else 0))
+          = c (-1) * (2 * Real.pi * Complex.I) := by
+      rw [Finset.sum_eq_single (-1 : ℤ)]
+      · simp
+      · intro k _ hk
+        simp [hk]
+      · intro hk; exact (hk hmem).elim
+    rw [hsum, if_pos hmem]
+    -- (2πi)⁻¹ * (c (-1) * (2πi)) = c (-1).
+    rw [show (c (-1) * (2 * Real.pi * Complex.I) : ℂ)
+            = (2 * Real.pi * Complex.I) * c (-1) from by ring,
+        ← mul_assoc, inv_mul_cancel₀ hpi, one_mul]
+  · -- Every summand vanishes: the if-condition `k = -1` is false for `k ∈ Icc`.
+    have hsum :
+        (∑ k ∈ Finset.Icc (-N) M,
+            (if k = -1 then c k * (2 * Real.pi * Complex.I) else 0))
+          = 0 := by
+      apply Finset.sum_eq_zero
+      intro k hk
+      have hkne : k ≠ -1 := by
+        intro hkeq; rw [hkeq] at hk; exact hmem hk
+      simp [hkne]
+    rw [hsum, if_neg hmem, mul_zero]
+
 end MeromorphicOneForm
 
 end JacobianChallenge
