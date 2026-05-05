@@ -33,4 +33,5 @@ import JacobianChallenge.Manifold.StokesDisk
 import JacobianChallenge.Manifold.StokesCompactSurface
 import JacobianChallenge.Manifold.ResidueTheoremAssembly
 import JacobianChallenge.Manifold.GlobalResidueSum
+import JacobianChallenge.Manifold.ResidueViaTopologicalDegree
 import JacobianChallenge.Manifold.LogDerivLaurent
