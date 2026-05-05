@@ -5,8 +5,10 @@ Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.PrincipalDivisor
+import JacobianChallenge.Divisor.MeromorphicNonzeroGerm
 import Mathlib.Algebra.Group.TypeTags.Basic
 
+set_option diagnostics true
 set_option diagnostics.threshold 100
 
 /-! # The eventual honest `PrincDiv X`: range of `principalDivisorAddHom`
@@ -274,5 +276,144 @@ lemma residueTheorem_iff_range_le_Div0
     have hKer : principalDivisorMap f ∈ (Div.degreeHom (X := X)).ker := hLe hMem
     rw [AddMonoidHom.mem_ker, Div.degreeHom_apply] at hKer
     exact hKer
+
+/-! ## Germ-level `AddMonoidHom` packaging
+
+With `MeromorphicNonzero.Germ X` carrying a genuine `CommGroup` instance
+(from `Divisor/MeromorphicNonzeroGerm.lean`), we can repackage the germ-
+level principal-divisor map as a real `AddMonoidHom` from
+`Additive (Germ X)` to `Div X`. The `Additive` wrapper transports
+`CommGroup (Germ X)` to `AddCommGroup (Additive (Germ X))`, so the range
+of this `AddMonoidHom` lands in `AddSubgroup (Div X)` — i.e. an honest
+*subgroup*, no `AddSubgroup.closure` workaround needed.
+
+`PrincDivHonestCandidateGerm` is the cleaner, range-of-an-AddMonoidHom
+form of `PrincDivHonestCandidate`. The lemma
+`PrincDivHonestCandidateGerm_eq` asserts they coincide as additive
+subgroups of `Div X`. -/
+
+/-- Auxiliary: `Germ.principalDivisorMap (1 : Germ X) = 0`. Reduces to
+    the underlying `principalDivisorMap_one` via the definitional
+    `Germ.one_def` and the `Quotient.lift` computation rule
+    `Germ.principalDivisorMap_mk`. -/
+lemma Germ.principalDivisorMap_one :
+    MeromorphicNonzero.Germ.principalDivisorMap (1 : MeromorphicNonzero.Germ X) = 0 := by
+  show MeromorphicNonzero.Germ.principalDivisorMap
+        (MeromorphicNonzero.Germ.mk (1 : MeromorphicNonzero X)) = 0
+  rw [MeromorphicNonzero.Germ.principalDivisorMap_mk]
+  exact principalDivisorMap_one
+
+/-- Auxiliary: `Germ.principalDivisorMap` intertwines multiplication on
+    the germ quotient with addition on `Div X`. By induction on both
+    germ classes (`Quotient.inductionOn₂`), reduces to the underlying
+    `principalDivisorMap_mul`. -/
+lemma Germ.principalDivisorMap_mul
+    (g h : MeromorphicNonzero.Germ X) :
+    MeromorphicNonzero.Germ.principalDivisorMap (g * h)
+      = MeromorphicNonzero.Germ.principalDivisorMap g
+        + MeromorphicNonzero.Germ.principalDivisorMap h := by
+  refine Quotient.inductionOn₂ (motive := fun g h =>
+      MeromorphicNonzero.Germ.principalDivisorMap (g * h)
+        = MeromorphicNonzero.Germ.principalDivisorMap g
+          + MeromorphicNonzero.Germ.principalDivisorMap h) g h ?_
+  intro f f'
+  -- `Quotient.mk _ f` is `Germ.mk f`. Both `*` and `principalDivisorMap`
+  -- compute definitionally on representatives.
+  show MeromorphicNonzero.Germ.principalDivisorMap
+        ((MeromorphicNonzero.Germ.mk f) * (MeromorphicNonzero.Germ.mk f')) =
+      MeromorphicNonzero.Germ.principalDivisorMap (MeromorphicNonzero.Germ.mk f)
+        + MeromorphicNonzero.Germ.principalDivisorMap (MeromorphicNonzero.Germ.mk f')
+  rw [MeromorphicNonzero.Germ.mk_mul,
+      MeromorphicNonzero.Germ.principalDivisorMap_mk,
+      MeromorphicNonzero.Germ.principalDivisorMap_mk,
+      MeromorphicNonzero.Germ.principalDivisorMap_mk]
+  exact principalDivisorMap_mul f f'
+
+/-- The **germ-level principal divisor map**, packaged as an
+`AddMonoidHom` from `Additive (Germ X)` to `Div X`. The `Additive`
+wrapper transports `CommGroup (Germ X)` (proven in
+`Divisor/MeromorphicNonzeroGerm.lean`) to
+`AddCommGroup (Additive (Germ X))`, so this is an honest additive group
+homomorphism — `range` will land in `AddSubgroup (Div X)` rather than
+just `AddSubmonoid`. -/
+noncomputable def principalDivisorAddHom :
+    Additive (MeromorphicNonzero.Germ X) →+ Div X where
+  toFun g := MeromorphicNonzero.Germ.principalDivisorMap (Additive.toMul g)
+  map_zero' := by
+    -- `Additive.toMul (0 : Additive (Germ X)) = (1 : Germ X)` definitionally,
+    -- and `Germ.principalDivisorMap 1 = 0` is `Germ.principalDivisorMap_one`.
+    show MeromorphicNonzero.Germ.principalDivisorMap
+          (Additive.toMul (0 : Additive (MeromorphicNonzero.Germ X))) = 0
+    exact Germ.principalDivisorMap_one
+  map_add' g h := by
+    -- `Additive.toMul (g + h) = Additive.toMul g * Additive.toMul h`
+    -- definitionally; reduce to `Germ.principalDivisorMap_mul`.
+    show MeromorphicNonzero.Germ.principalDivisorMap
+          (Additive.toMul (g + h)) =
+        MeromorphicNonzero.Germ.principalDivisorMap (Additive.toMul g)
+          + MeromorphicNonzero.Germ.principalDivisorMap (Additive.toMul h)
+    exact Germ.principalDivisorMap_mul (Additive.toMul g) (Additive.toMul h)
+
+/-- The **germ-based** honest principal-divisor subgroup: the range of
+`principalDivisorAddHom`. Because the source `Additive (Germ X)` is an
+`AddCommGroup`, this range is an honest `AddSubgroup (Div X)`. This is
+the clean replacement for `PrincDivHonestCandidate`, which had to be
+defined as `AddSubgroup.closure (Set.range principalDivisorMap)` because
+`MeromorphicNonzero X` lacked a `CommGroup` instance. -/
+noncomputable def PrincDivHonestCandidateGerm (X : Type u)
+    [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X] :
+    AddSubgroup (Div X) :=
+  (principalDivisorAddHom (X := X)).range
+
+/-- The germ-based and the closure-based `PrincDivHonestCandidate`
+coincide as additive subgroups of `Div X`.
+
+Both are subgroups containing the same generators (the principal
+divisors `principalDivisorMap f` for `f : MeromorphicNonzero X`):
+
+* `PrincDivHonestCandidate X = AddSubgroup.closure (Set.range principalDivisorMap)`
+  is the smallest subgroup containing those generators.
+* `PrincDivHonestCandidateGerm X = (principalDivisorAddHom).range` is
+  also a subgroup containing those generators, since
+  `principalDivisorAddHom (Additive.ofMul (Germ.mk f)) = principalDivisorMap f`.
+
+Two-sided inclusion finishes the proof. The reverse direction —
+that every range element is in the closure — uses the fact that the
+range of an `AddMonoidHom` from an `AddCommGroup` is itself an
+`AddSubgroup`, and by `AddSubgroup.closure_le` the closure is the
+smallest such, so it must be contained in the range. Combined with the
+fact that the range is contained in the closure (each generator is
+trivially in the closure), the two coincide. -/
+lemma PrincDivHonestCandidateGerm_eq :
+    PrincDivHonestCandidateGerm X = PrincDivHonestCandidate X := by
+  apply le_antisymm
+  · -- `range principalDivisorAddHom ≤ closure (range principalDivisorMap)`.
+    rintro D ⟨g, rfl⟩
+    -- `D = principalDivisorAddHom g
+    --    = Germ.principalDivisorMap (Additive.toMul g)`.
+    -- Show this lies in the closure by induction on the germ.
+    refine Quotient.inductionOn (motive := fun (q : MeromorphicNonzero.Germ X) =>
+        MeromorphicNonzero.Germ.principalDivisorMap q
+          ∈ PrincDivHonestCandidate X) (Additive.toMul g) ?_
+    intro f
+    -- `Germ.principalDivisorMap (Germ.mk f) = principalDivisorMap f`
+    -- is in the closure by `principalDivisorMap_mem_PrincDivHonestCandidate`.
+    show MeromorphicNonzero.Germ.principalDivisorMap (MeromorphicNonzero.Germ.mk f)
+            ∈ PrincDivHonestCandidate X
+    rw [MeromorphicNonzero.Germ.principalDivisorMap_mk]
+    exact principalDivisorMap_mem_PrincDivHonestCandidate f
+  · -- `closure (range principalDivisorMap) ≤ range principalDivisorAddHom`.
+    -- `range principalDivisorAddHom` is a subgroup; by `closure_le` it
+    -- suffices to show every generator lies in the range.
+    unfold PrincDivHonestCandidate
+    rw [AddSubgroup.closure_le]
+    rintro D ⟨f, rfl⟩
+    -- `principalDivisorMap f = principalDivisorAddHom (Additive.ofMul (Germ.mk f))`.
+    refine ⟨Additive.ofMul (MeromorphicNonzero.Germ.mk f), ?_⟩
+    show MeromorphicNonzero.Germ.principalDivisorMap
+            (Additive.toMul (Additive.ofMul (MeromorphicNonzero.Germ.mk f)))
+          = principalDivisorMap f
+    exact MeromorphicNonzero.Germ.principalDivisorMap_mk f
 
 end JacobianChallenge
