@@ -38,3 +38,4 @@ import JacobianChallenge.Manifold.LogDerivLaurent
 import JacobianChallenge.Manifold.LogDerivLaurentDischarge
 import JacobianChallenge.Manifold.ZeroCountEqPoleCount
 import JacobianChallenge.Manifold.LogDiffAnchored
+import JacobianChallenge.Manifold.LogDiffAnchoredDischarge
