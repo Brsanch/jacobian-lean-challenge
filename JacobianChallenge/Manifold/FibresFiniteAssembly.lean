@@ -98,7 +98,9 @@ theorem fibres_finite_of_connectivity_hypothesis
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (H : ConnectivityGlobalizationHypothesis X Y) :
-    fibres_finite_statement X Y := by
+    ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
+      ¬ JacobianChallenge.IsConstantMap f →
+        ∀ y : Y, (f ⁻¹' {y}).Finite := by
   -- Build the per-fibre-point chart-pullback assignment from `H`.
   refine fibres_finite_of_chart_pullback ?_
   intro f hf hnc y x hx
@@ -127,7 +129,10 @@ theorem fibres_finite_statement_holds_of_connectivity
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] :
-    ConnectivityGlobalizationHypothesis X Y → fibres_finite_statement X Y :=
+    ConnectivityGlobalizationHypothesis X Y →
+      ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
+        ¬ JacobianChallenge.IsConstantMap f →
+          ∀ y : Y, (f ⁻¹' {y}).Finite :=
   fibres_finite_of_connectivity_hypothesis
 
 end Owed.degree
