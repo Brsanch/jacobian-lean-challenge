@@ -164,14 +164,15 @@ lemma R5_iff_zeroCount_eq_poleCount :
   constructor
   · intro hR5 f
     exact zeroCount_eq_poleCount_of_R5 hR5 f
-  · intro hZP f
+  · intro hZP
     -- Reverse: from `zeroCount = poleCount` per `f`, build the bundle
     -- and feed it into the proven `forall_tdfb_iff_residueTheorem` Iff.
     have hbundle :
         ∀ f : MeromorphicNonzero X,
           ResidueViaTopologicalDegree.TopologicalDegreeFibreBalance_hypothesis f :=
       fun f => ⟨hZP f⟩
-    -- The proven Iff converts `∀ f, bundle f` into `ResidueTheorem X`.
+    -- The proven Iff converts `∀ f, bundle f` into `ResidueTheorem X`,
+    -- which is definitionally `R5_principal_degree_zero_statement X`.
     exact ResidueViaTopologicalDegree.forall_tdfb_iff_residueTheorem.mp hbundle
 
 /-- **Global equivalence: `R5` ↔ per-`f` fibre-degree equality.**
