@@ -754,3 +754,78 @@ noncomputable def Germ.principalDivisorMap : Germ X → Div X :=
       = JacobianChallenge.principalDivisorMap f := rfl
 
 end JacobianChallenge.MeromorphicNonzero
+
+/-! ## Inverse-multiplicativity of `principalDivisorMap`
+
+`principalDivisorMap (invMer f) = -principalDivisorMap f`. This is the
+analogue of `principalDivisorMap_mul` for the representative-level
+inverse `invMer : MeromorphicNonzero X → MeromorphicNonzero X`. The proof
+runs via the chart-pullback identity `(f⁻¹ ∘ chart.symm) = (f ∘ chart.symm)⁻¹`,
+mathlib's `meromorphicOrderAt_inv`, and the punctured-nhd EventuallyEq
+that bridges `(invMer f).toFun = germLimit (f.toFun)⁻¹` to the literal
+pointwise inverse on the chart side. The integer-valued divisor identity
+is then `(-n).untop₀ = -(n.untop₀)` (`WithTop.untop₀_neg`). -/
+
+namespace JacobianChallenge
+
+open JacobianChallenge.MeromorphicNonzero
+  (germLimit invMer germLimit_inv_chart_eventuallyEq_punctured)
+
+variable {X : Type u}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
+
+/-- The order divisor of the representative-level inverse `invMer f` is
+the negation of the order divisor of `f`. Pointwise:
+`ord_x(invMer f) = -ord_x(f)`. -/
+lemma principalDivisorMap_invMer (f : MeromorphicNonzero X) :
+    principalDivisorMap (invMer f) = -principalDivisorMap f := by
+  classical
+  ext x
+  show JacobianChallenge.MMeromorphicOn.orderFun 𝓘(ℂ, ℂ)
+      ((invMer f).toFun) x = (-principalDivisorMap f : Div X) x
+  have h_neg_apply :
+      ((-principalDivisorMap f : Div X) : X → ℤ) x
+        = -JacobianChallenge.MMeromorphicOn.orderFun 𝓘(ℂ, ℂ) f.toFun x := by
+    simp [Function.locallyFinsuppWithin.coe_neg, Pi.neg_apply]
+  rw [h_neg_apply]
+  -- Reduce both sides to integer-valued `untop₀` of the underlying orders.
+  show (mmeromorphicOrderAt 𝓘(ℂ, ℂ) (germLimit (fun y => (f.toFun y)⁻¹)) x).untop₀
+      = -(mmeromorphicOrderAt 𝓘(ℂ, ℂ) f.toFun x).untop₀
+  -- Step 1: drop the `germLimit` wrapper (it agrees with the literal
+  -- pointwise inverse on punctured chart-side neighborhoods).
+  have h_chart_order :
+      mmeromorphicOrderAt 𝓘(ℂ, ℂ) (germLimit (fun y => (f.toFun y)⁻¹)) x
+        = mmeromorphicOrderAt 𝓘(ℂ, ℂ) (fun y => (f.toFun y)⁻¹) x := by
+    show meromorphicOrderAt
+        ((germLimit (fun y => (f.toFun y)⁻¹)) ∘ (chartAt ℂ x).symm)
+        ((chartAt ℂ x) x)
+        = meromorphicOrderAt
+          ((fun y => (f.toFun y)⁻¹) ∘ (chartAt ℂ x).symm)
+          ((chartAt ℂ x) x)
+    exact meromorphicOrderAt_congr
+      (germLimit_inv_chart_eventuallyEq_punctured f x)
+  rw [h_chart_order]
+  -- Step 2: chart-pull-back identity `(f⁻¹) ∘ chart.symm = (f ∘ chart.symm)⁻¹`,
+  -- then apply mathlib's `meromorphicOrderAt_inv`.
+  have h_chart_inv :
+      mmeromorphicOrderAt 𝓘(ℂ, ℂ) (fun y => (f.toFun y)⁻¹) x
+        = -mmeromorphicOrderAt 𝓘(ℂ, ℂ) f.toFun x := by
+    show meromorphicOrderAt
+        ((fun y => (f.toFun y)⁻¹) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+        = -meromorphicOrderAt (f.toFun ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+    have h_comp : ((fun y => (f.toFun y)⁻¹) ∘ (chartAt ℂ x).symm)
+        = (f.toFun ∘ (chartAt ℂ x).symm)⁻¹ := rfl
+    rw [h_comp, meromorphicOrderAt_inv]
+  rw [h_chart_inv, WithTop.untop₀_neg]
+
+/-- The representative-level inverse `invMer f` lies in the kernel of the
+`degree` map: its principal divisor has degree `-(deg (f))`. The trivial
+"degree of negation = -0 = 0" base case of the residue theorem on the
+inverse side. -/
+lemma residueTheorem_invMer_of_zero (f : MeromorphicNonzero X)
+    (hf : (principalDivisorMap f).degree = 0) :
+    (principalDivisorMap (invMer f)).degree = 0 := by
+  rw [principalDivisorMap_invMer, Div.degree_neg, hf, neg_zero]
+
+end JacobianChallenge
