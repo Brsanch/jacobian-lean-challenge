@@ -64,6 +64,17 @@ lemma principalDivisorMap_degree_invMer (f : MeromorphicNonzero X) :
       = -(principalDivisorMap f).degree := by
   rw [principalDivisorMap_invMer, Div.degree_neg]
 
+/-- Degree-zero is preserved under representative-level inversion: for
+`f : MeromorphicNonzero X`, the principal divisor of `f` has degree zero
+iff the principal divisor of `invMer f` has degree zero. Immediate from
+`principalDivisorMap_degree_invMer` and `neg_eq_zero`. Useful for the
+residue-theorem program: the degree-zero subgroup is closed under
+inversion. -/
+lemma principalDivisorMap_degree_eq_zero_iff_invMer (f : MeromorphicNonzero X) :
+    (principalDivisorMap (MeromorphicNonzero.invMer f)).degree = 0
+      ↔ (principalDivisorMap f).degree = 0 := by
+  rw [principalDivisorMap_degree_invMer, neg_eq_zero]
+
 /-- The constant `1` representative has degree-zero principal divisor.
 `principalDivisorMap_one` collapses to the zero divisor; `Div.degree_zero`
 finishes. -/
