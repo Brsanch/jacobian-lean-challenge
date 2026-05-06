@@ -149,8 +149,10 @@ private lemma simplePole_continuousOn_annulus
     linarith
   have hsub_ne : z - z₀ ≠ 0 := sub_ne_zero.mpr hz_ne
   refine ContinuousAt.continuousWithinAt ?_
-  exact (continuous_const.mul ((continuous_id.sub continuous_const).inv₀
-    (fun _ => hsub_ne))).continuousAt
+  have h1 : ContinuousAt (fun z : ℂ => z - z₀) z :=
+    (continuous_id.sub continuous_const).continuousAt
+  have h2 : ContinuousAt (fun z : ℂ => (z - z₀)⁻¹) z := h1.inv₀ hsub_ne
+  exact (continuousAt_const.mul h2)
 
 private lemma simplePole_differentiableOn_annulus
     (z₀ : ℂ) (k : ℂ) (r₁ r₂ : ℝ) (hr₁ : 0 < r₁) :
@@ -167,7 +169,9 @@ private lemma simplePole_differentiableOn_annulus
   have hsub_ne : z - z₀ ≠ 0 := sub_ne_zero.mpr hz_ne
   refine DifferentiableAt.differentiableWithinAt ?_
   refine DifferentiableAt.const_mul ?_ k
-  exact (differentiableAt_id'.sub_const z₀).inv hsub_ne
+  have h1 : DifferentiableAt ℂ (fun z : ℂ => z - z₀) z :=
+    differentiableAt_id.sub_const z₀
+  exact h1.inv hsub_ne
 
 /-- **General bridge.** A regular chart-disk of radius `r` supplies a
 regular annulus for every pair of radii `0 < r₁ ≤ r₂ ≤ r`. -/
