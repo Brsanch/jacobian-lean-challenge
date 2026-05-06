@@ -59,16 +59,15 @@ theorem regular_value_exists_statement_holds_unconditional
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] :
     regular_value_exists_statement X Y := by
-  -- Unfold the statement to expose the explicit ∀-shape.
-  unfold regular_value_exists_statement
   -- Unconditional fibres-finite from ZZ47 + ZZ43.
   have h_fib :
       ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
         ¬ JacobianChallenge.IsConstantMap f → ∀ y : Y, (f ⁻¹' {y}).Finite :=
     fibres_finite_statement_holds_of_clopennessOfLocallyConst
-      (X := X) (Y := Y) clopennessOfLocallyConst_holds
+      clopennessOfLocallyConst_holds
   -- Reduce regular-value-exists to fibres-finite (ZZ33).
-  exact regular_value_exists_of_fibres_finite (X := X) (Y := Y) h_fib
+  intro f hf hnc
+  exact regular_value_exists_of_fibres_finite h_fib f hf hnc
 
 end Owed.degree
 end ContMDiff
