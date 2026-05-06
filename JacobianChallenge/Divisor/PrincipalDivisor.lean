@@ -211,6 +211,56 @@ lemma mmeromorphicOrderAt_const_ne_zero
   -- After the `_const` rewrite the goal becomes `(if c = 0 then ⊤ else 0) = 0`.
   simp [hc]
 
+/-- **Inverse of the chart-pulled-back meromorphic order.**
+`mmeromorphicOrderAt I (f⁻¹) x = -mmeromorphicOrderAt I f x`.
+
+Proof: unfold both sides to `meromorphicOrderAt` of the chart pullbacks; observe
+`(fun y => (f y)⁻¹) ∘ (chartAt ℂ x).symm = (f ∘ (chartAt ℂ x).symm)⁻¹` definitionally;
+apply mathlib's unconditional `meromorphicOrderAt_inv`. -/
+lemma mmeromorphicOrderAt_inv
+    {I : ModelWithCorners ℂ ℂ ℂ} {f : X → ℂ} {x : X} :
+    mmeromorphicOrderAt I (fun y => (f y)⁻¹) x
+      = -mmeromorphicOrderAt I f x := by
+  -- LHS unfolds to mathlib's `meromorphicOrderAt` on the chart pullback.
+  show meromorphicOrderAt ((fun y => (f y)⁻¹) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+      = -meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+  -- The chart pullback of `y ↦ (f y)⁻¹` equals the pointwise inverse of the
+  -- chart pullback of `f`.
+  have h_comp : (fun y => (f y)⁻¹) ∘ (chartAt ℂ x).symm
+      = ((f ∘ (chartAt ℂ x).symm))⁻¹ := rfl
+  rw [h_comp]
+  exact meromorphicOrderAt_inv
+
+/-- **Order of natural powers.** `mmeromorphicOrderAt I (f^n) x = n * mmeromorphicOrderAt I f x`
+for natural `n`. -/
+lemma mmeromorphicOrderAt_pow
+    {I : ModelWithCorners ℂ ℂ ℂ} {f : X → ℂ} {x : X}
+    (hf : MMeromorphicAt I f x) {n : ℕ} :
+    mmeromorphicOrderAt I (fun y => (f y) ^ n) x
+      = n * mmeromorphicOrderAt I f x := by
+  have hf' : MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hf
+  show meromorphicOrderAt ((fun y => (f y) ^ n) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+      = n * meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+  have h_comp : (fun y => (f y) ^ n) ∘ (chartAt ℂ x).symm
+      = (f ∘ (chartAt ℂ x).symm) ^ n := rfl
+  rw [h_comp]
+  exact meromorphicOrderAt_pow hf'
+
+/-- **Order of integer powers.** `mmeromorphicOrderAt I (f^n) x = n * mmeromorphicOrderAt I f x`
+for integer `n`. -/
+lemma mmeromorphicOrderAt_zpow
+    {I : ModelWithCorners ℂ ℂ ℂ} {f : X → ℂ} {x : X}
+    (hf : MMeromorphicAt I f x) {n : ℤ} :
+    mmeromorphicOrderAt I (fun y => (f y) ^ n) x
+      = n * mmeromorphicOrderAt I f x := by
+  have hf' : MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hf
+  show meromorphicOrderAt ((fun y => (f y) ^ n) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+      = n * meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+  have h_comp : (fun y => (f y) ^ n) ∘ (chartAt ℂ x).symm
+      = (f ∘ (chartAt ℂ x).symm) ^ n := rfl
+  rw [h_comp]
+  exact meromorphicOrderAt_zpow hf'
+
 end JacobianChallenge
 
 
