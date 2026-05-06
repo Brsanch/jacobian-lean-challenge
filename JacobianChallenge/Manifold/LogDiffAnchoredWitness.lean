@@ -107,6 +107,73 @@ lemma planar_laurent_factorization
   -- `localOrder I f.toFun x = MMeromorphicOn.orderFun I f.toFun x` is `rfl`.
   exact h
 
+/-! ## Commit Z1.B — log-derivative of the planar factorisation
+
+For the analytic factor `g` with `g(z₀) ≠ 0` produced by Z1.A, the
+log-derivative of the product `z ↦ (z - z₀)^k · g(z)` decomposes as
+`k / (z - z₀) + g'(z) / g(z)` at any point `z ≠ z₀` where `g(z) ≠ 0`.
+
+This is the "differentiate the factorisation" step. The derivative product
+rule gives
+`deriv ((·-z₀)^k · g) z = k·(z-z₀)^(k-1)·g(z) + (z-z₀)^k·g'(z)`,
+and dividing by the value `(z-z₀)^k · g(z)` produces the simple-pole +
+analytic-quotient decomposition. -/
+
+/-- **Log-derivative of `(·-z₀)^k · g`, pointwise.** For `z ≠ z₀` with
+`g(z) ≠ 0` and `g` differentiable at `z`,
+`(d/dz)((·-z₀)^k · g) z / ((z-z₀)^k · g(z)) = k/(z-z₀) + g'(z)/g(z)`.
+
+This is the local pointwise log-derivative formula at the level of
+ordinary planar derivatives in `ℂ`. -/
+lemma logDeriv_zpow_smul_pointwise
+    (k : ℤ) (z₀ : ℂ) (g : ℂ → ℂ) {z : ℂ}
+    (hz : z ≠ z₀) (hg : DifferentiableAt ℂ g z) (hgz : g z ≠ 0) :
+    deriv (fun w => (w - z₀) ^ k * g w) z /
+        ((z - z₀) ^ k * g z) =
+      (k : ℂ) / (z - z₀) + deriv g z / g z := by
+  have hsub : z - z₀ ≠ 0 := sub_ne_zero.mpr hz
+  have hpow_val : (z - z₀) ^ k ≠ 0 := zpow_ne_zero k hsub
+  -- Derivative of `w ↦ w - z₀` at `z` is `1`.
+  have hsubid : HasDerivAt (fun w : ℂ => w - z₀) 1 z :=
+    (hasDerivAt_id z).sub_const z₀
+  -- Derivative of `w ↦ (w - z₀)^k` via `HasDerivAt.zpow`.
+  have hpowAt :
+      HasDerivAt (fun w : ℂ => (w - z₀) ^ k)
+        ((k : ℂ) * (z - z₀) ^ (k - 1) * 1) z :=
+    hsubid.zpow k (Or.inl hsub)
+  -- Simplify the trailing `* 1`.
+  have hpowAt' :
+      HasDerivAt (fun w : ℂ => (w - z₀) ^ k)
+        ((k : ℂ) * (z - z₀) ^ (k - 1)) z := by
+    simpa using hpowAt
+  have hpow_diff : DifferentiableAt ℂ (fun w : ℂ => (w - z₀) ^ k) z :=
+    hpowAt'.differentiableAt
+  -- Derivative of `g` at `z` packaged as `HasDerivAt`.
+  have hgAt : HasDerivAt g (deriv g z) z := hg.hasDerivAt
+  -- Product rule via `HasDerivAt.mul`.
+  have hprodAt :
+      HasDerivAt (fun w : ℂ => (w - z₀) ^ k * g w)
+        ((k : ℂ) * (z - z₀) ^ (k - 1) * g z + (z - z₀) ^ k * deriv g z) z :=
+    hpowAt'.mul hgAt
+  -- Extract the deriv.
+  have hprod : deriv (fun w : ℂ => (w - z₀) ^ k * g w) z
+      = (k : ℂ) * (z - z₀) ^ (k - 1) * g z + (z - z₀) ^ k * deriv g z :=
+    hprodAt.deriv
+  rw [hprod]
+  -- Split the division.
+  rw [add_div]
+  congr 1
+  · -- `(k * (z-z₀)^(k-1) * g z) / ((z-z₀)^k * g z) = k / (z-z₀)`.
+    rw [mul_div_mul_right _ _ hgz]
+    -- Goal: `(k : ℂ) * (z - z₀) ^ (k - 1) / (z - z₀) ^ k = (k : ℂ) / (z - z₀)`.
+    have hzpow_split : (z - z₀) ^ k = (z - z₀) ^ (k - 1) * (z - z₀) := by
+      have := zpow_add_one₀ hsub (k - 1)
+      simpa [sub_add_cancel] using this.symm
+    rw [hzpow_split, ← div_div, mul_div_assoc,
+      div_self (zpow_ne_zero (k - 1) hsub), mul_one]
+  · -- `((z-z₀)^k * g') / ((z-z₀)^k * g z) = g'/g`.
+    rw [mul_div_mul_left _ _ hpow_val]
+
 end MeromorphicNonzero
 
 end JacobianChallenge
