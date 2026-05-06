@@ -51,3 +51,5 @@ import JacobianChallenge.Manifold.ChartCircleHomotopyAnnulus
 import JacobianChallenge.Manifold.ChartCircleAnchoredAllRadii
 import JacobianChallenge.Manifold.LocalArgumentPrinciple
 import JacobianChallenge.Manifold.StokesDiskClosedForm
+import JacobianChallenge.Manifold.ChartDiskRegularity
+import JacobianChallenge.Manifold.ChartCircleSumOrders
