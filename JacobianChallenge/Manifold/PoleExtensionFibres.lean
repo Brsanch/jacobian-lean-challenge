@@ -93,10 +93,11 @@ lemma toRiemannSphere_preimage_some_subset_orderNonneg
   intro x hx
   simp only [Set.mem_preimage, Set.mem_singleton_iff] at hx
   -- If `f̃ x = some w`, in particular `f̃ x ≠ ∞`, so `x` cannot be a pole.
+  show 0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x
   by_contra hpole
-  push_neg at hpole
-  -- `hpole : mmeromorphicOrderAt _ f.toFun x < 0`
-  rw [f.toRiemannSphere_apply_of_neg hpole] at hx
+  -- `hpole : ¬ 0 ≤ mmeromorphicOrderAt _ f.toFun x`, hence order < 0.
+  have hneg : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x < 0 := not_le.mp hpole
+  rw [f.toRiemannSphere_apply_of_neg hneg] at hx
   exact (OnePoint.infty_ne_coe w) hx
 
 /-- **Pole-disjointness of finite-value fibres.** The preimage
@@ -110,8 +111,10 @@ lemma toRiemannSphere_preimage_some_disjoint_pole
   rw [Set.disjoint_left]
   intro x hx hpole
   have hsub := toRiemannSphere_preimage_some_subset_orderNonneg f w hx
-  -- `hsub : 0 ≤ order at x`, `hpole : order at x < 0` — contradiction.
-  exact (not_le.mpr hpole) hsub
+  -- Unwrap the setOf membership.
+  have hnonneg : 0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x := hsub
+  have hpole' : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x < 0 := hpole
+  exact (not_le.mpr hpole') hnonneg
 
 end MeromorphicNonzero
 
