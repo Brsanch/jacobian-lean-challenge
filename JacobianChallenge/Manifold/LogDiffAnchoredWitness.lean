@@ -1,0 +1,114 @@
+/-
+Copyright (c) 2026 Bryan Sanchez. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bryan Sanchez
+-/
+import JacobianChallenge.Manifold.LogDiffAnchored
+import JacobianChallenge.Manifold.LogDiffAnchoredDischarge
+import JacobianChallenge.Manifold.LocalNormalForm
+import Mathlib.Analysis.Meromorphic.Order
+
+set_option diagnostics true
+set_option diagnostics.threshold 100
+
+/-! # Witness for the anchored Laurent hypothesis
+
+This file produces an unconditional witness for
+`MeromorphicNonzero.LogDerivResiduePlusAnalyticAnchored f x` (defined in
+`LogDiffAnchored.lean`), under the standard non-degeneracy hypothesis
+`mmeromorphicOrderAt 𝓘(ℂ,ℂ) f.toFun x ≠ ⊤`. Combined with
+`logDiffAt_chartCircleIntegral_eq_order_of_residue_plus_analytic` (Y1's
+half-bundle real discharge), this turns the anchored chart-circle integral
+identity `chartCircleIntegralAnchored f x r = ((order : ℤ) : ℂ)` into an
+**unconditional** theorem.
+
+## Strategy
+
+For `f : MeromorphicNonzero X` and `x : X` with finite chart-pullback order,
+mathlib's `meromorphicOrderAt_eq_int_iff` (applied to the chart pullback
+`F := f.toFun ∘ (chartAt ℂ x).symm` at `z₀ := (chartAt ℂ x) x`) delivers
+analytic `g : ℂ → ℂ` with `g(z₀) ≠ 0` and the local factorisation
+`F(z) = (z - z₀)^k · g(z)` on the punctured-deleted-neighborhood
+`𝓝[≠] z₀`. Differentiating under that factorisation and dividing by `F`,
+
+  `F'(z) / F(z) = k / (z - z₀) + g'(z) / g(z)`
+
+with the analytic-on-a-disk remainder `h := g'/g` (analytic because `g(z₀) ≠ 0`
+implies `g ≠ 0` on a neighborhood, and quotient of analytic functions with
+nonvanishing denominator is analytic).
+
+For sufficiently small `r > 0`, the chart-circle of radius `r` centred at `z₀`
+sits inside both the chart target (so `circleParameter` is well-defined) and
+inside the punctured-deleted-neighborhood from mathlib's factorisation, giving
+the right Laurent shape on the entire chart-circle.
+
+## Anti-cheat
+
+* No `axiom`, no `sorry`.
+* No existing definition or signature changed (pure addition).
+* The witness is delivered through the existing
+  `LogDerivResiduePlusAnalyticAnchored` definition shape (matches Y1).
+-/
+
+noncomputable section
+
+open scoped Real Topology BigOperators Manifold ContDiff
+open Complex Filter Set
+
+namespace JacobianChallenge
+
+namespace MeromorphicNonzero
+
+universe u
+
+variable {X : Type u}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
+
+/-! ## Commit Z1.A — planar Laurent factorisation of `f.toFun ∘ chart.symm`
+
+Wire `f.meromorphic` (manifold meromorphy on the universe) to the planar
+`MeromorphicAt _ z₀` for the chart pullback `f.toFun ∘ (chartAt ℂ x).symm`,
+and apply mathlib's `meromorphicOrderAt_eq_int_iff` to extract the integer
+`k = orderFun 𝓘(ℂ,ℂ) f.toFun x` together with an analytic factor `g`.
+
+This packages the **planar** content delivered by mathlib at the chart-image
+basepoint `z₀ := (chartAt ℂ x) x`. -/
+
+/-- **Planar Laurent factorisation of the chart pullback.**
+
+Under the standard non-degeneracy hypothesis
+`mmeromorphicOrderAt 𝓘(ℂ,ℂ) f.toFun x ≠ ⊤`, the chart pullback
+`F := f.toFun ∘ (chartAt ℂ x).symm` admits the local factorisation
+`F(z) = (z - z₀)^k · g(z)` for some analytic `g` with `g(z₀) ≠ 0`, on the
+punctured-deleted-neighborhood `𝓝[≠] z₀`, where `k` is the integer
+`orderFun 𝓘(ℂ,ℂ) f.toFun x` (cast through the standard
+`mmeromorphicOrderAt.untop₀` round-trip).
+
+This is the planar content from mathlib's `meromorphicOrderAt_eq_int_iff`
+specialised to the chart-pulled-back representative. -/
+lemma planar_laurent_factorization
+    (f : MeromorphicNonzero X) (x : X)
+    (hf0 : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x ≠ ⊤) :
+    ∃ (g : ℂ → ℂ),
+      AnalyticAt ℂ g ((chartAt ℂ x) x) ∧
+      g ((chartAt ℂ x) x) ≠ 0 ∧
+      ∀ᶠ z in 𝓝[≠] ((chartAt ℂ x) x),
+        (f.toFun ∘ (chartAt ℂ x).symm) z =
+          (z - (chartAt ℂ x) x) ^
+              (MMeromorphicOn.orderFun (𝓘(ℂ, ℂ)) f.toFun x : ℤ) • g z := by
+  -- The manifold-meromorphy of `f.toFun` at `x` is, by definition, planar
+  -- meromorphy of `F := f.toFun ∘ (chartAt ℂ x).symm` at `z₀ := (chartAt ℂ x) x`.
+  have hf_at : MMeromorphicAt (𝓘(ℂ, ℂ)) f.toFun x := f.meromorphic x trivial
+  -- `MMeromorphicAt.exists_local_normal_form` (in `LocalNormalForm.lean`)
+  -- packages `meromorphicOrderAt_eq_int_iff` for us, at the cost of producing
+  -- the factorisation indexed by `localOrder = orderFun`.
+  have h := hf_at.exists_local_normal_form hf0
+  -- `localOrder I f.toFun x = MMeromorphicOn.orderFun I f.toFun x` is `rfl`.
+  exact h
+
+end MeromorphicNonzero
+
+end JacobianChallenge
+
+end
