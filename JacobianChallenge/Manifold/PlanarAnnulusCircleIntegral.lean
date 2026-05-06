@@ -67,7 +67,7 @@ theorem circleIntegral_eq_of_holomorphic_on_annulus
     exact hw.2 (Metric.ball_subset_closedBall hw')
   have hopen : IsOpen (ball z₀ r₂ \ closedBall z₀ r₁) :=
     Metric.isOpen_ball.sdiff Metric.isClosed_closedBall
-  exact (hg z (hsub hz')).differentiableAt (hopen.mem_nhds hz')
+  exact ((hg z (hsub hz')).mono hsub).differentiableAt (hopen.mem_nhds hz')
 
 /-- Continuous-on-closed + differentiable-on-open form of Cauchy's
 annulus theorem (no countable exceptional set), as a convenience
