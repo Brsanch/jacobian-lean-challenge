@@ -143,12 +143,15 @@ lemma logDeriv_zpow_smul_pointwise
     hasDerivAt_zpow k (z - z₀) (Or.inl hsub)
   -- Composition: `HasDerivAt (fun w => (w - z₀)^k) (k * (z-z₀)^(k-1) * 1) z`.
   have hpowAt0 :
-      HasDerivAt (fun w : ℂ => (w - z₀) ^ k)
+      HasDerivAt ((fun u : ℂ => u ^ k) ∘ (fun w : ℂ => w - z₀))
         ((k : ℂ) * (z - z₀) ^ (k - 1) * 1) z :=
     hzpowAt.comp z hsubAt
   have hpowAt :
       HasDerivAt (fun w : ℂ => (w - z₀) ^ k)
         ((k : ℂ) * (z - z₀) ^ (k - 1)) z := by
+    have h_eq_comp : (fun u : ℂ => u ^ k) ∘ (fun w : ℂ => w - z₀)
+        = (fun w : ℂ => (w - z₀) ^ k) := rfl
+    rw [h_eq_comp] at hpowAt0
     simpa using hpowAt0
   -- Now product rule via `HasDerivAt.mul`.
   have hgAt : HasDerivAt g (deriv g z) z := hg.hasDerivAt
