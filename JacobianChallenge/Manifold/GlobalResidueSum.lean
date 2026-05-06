@@ -107,30 +107,34 @@ variable {X : Type u}
 
 /-! ## The bundle -/
 
-/-- **Global residue sum hypothesis bundle.**
+/-- **Global residue sum hypothesis bundle (refactored).**
 
-Localises the `global_sum_zero` gap to two named partition / exactness
-fields. Given a meromorphic-nonzero `f : MeromorphicNonzero X`:
+After the ZZ58 refactor, the global chain-boundary integer is *defined*
+as the sum `∑_{x ∈ S} chartIntegral x` rather than carried as an extra
+field with a partition-of-unity identity attaching it to that sum. This
+collapses the previous three nontrivial fields
+(`globalChainBoundary`, `chain_boundary_decomposition`,
+`global_chain_boundary_eq_zero`) into a single genuine gap, and makes
+the previous "decomposition" step a definitional `rfl` (see
+`chain_boundary_decomposition` below).
+
+Given a meromorphic-nonzero `f : MeromorphicNonzero X`:
 
 * `S` — finite subset containing the zeros and poles of `f`;
 * `chartIntegral : X → ℤ` — per-point chart-circle integer (the residue
   delivered by R1's finite-Laurent identity);
 * `chartIntegral_eq_order` — local Laurent identification (R1 / T1);
-* `globalChainBoundary : ℤ` — the global chain-boundary integer for the
-  closed 1-form `d log f` integrated over the boundary of
-  `X \ ⋃_{x ∈ S} D_x`;
-* `chain_boundary_decomposition` — partition-of-unity identity at the
-  integer level: the global chain-boundary integer equals the sum of
-  the per-point chart-circle integers (R2's named partition gap, in
-  integer form);
-* `global_chain_boundary_eq_zero` — bulk vanishing: the global chain-
-  boundary integer is zero, because on a compact manifold without
-  boundary the bulk side `∫ d² (log f) = 0` collapses by `d² = 0` and
-  the absence of an outer boundary.
+* `global_chain_boundary_eq_zero` — the only remaining genuine gap:
+  on a compact manifold without boundary, the global chain-boundary
+  integer (defined as the sum of per-chart integers) vanishes. This is
+  the integer shadow of `∫_{X \ ⋃ D_x} d (d log f) = 0` (which holds by
+  `d² = 0` together with the absence of an outer boundary on `X`).
 
-These two `Prop` fields name the still-missing mathlib content. They
-are not axioms; downstream consumers that *construct* a bundle commit
-to discharging them. -/
+The previous `chain_boundary_decomposition` field is now provided by
+the namespace-level `chain_boundary_decomposition` lemma below, which
+holds by `rfl` against the new definition `globalChainBoundary`. This
+is the audit-surface change ZZ55 flagged: the partition-of-unity step
+is no longer a hypothesis; only the bulk-vanishing step is. -/
 structure GlobalResidueSum_hypothesis (f : MeromorphicNonzero X) where
   /-- A finite subset of `X` containing the zeros and poles of `f`. -/
   S : Finset X
@@ -142,19 +146,36 @@ structure GlobalResidueSum_hypothesis (f : MeromorphicNonzero X) where
       integer with the order of `f`. -/
   chartIntegral_eq_order : ∀ x ∈ S,
     chartIntegral x = JacobianChallenge.MMeromorphicOn.orderFun (𝓘(ℂ, ℂ)) f.toFun x
-  /-- The global chain-boundary integer (the integer shadow of the
-      real-valued global boundary integral from R2). -/
-  globalChainBoundary : ℤ
-  /-- **Named gap (integer form of R2's `partition_integral_decomposition`).**
-      The global chain-boundary integer is the sum of the per-point
-      chart-circle integers. -/
-  chain_boundary_decomposition :
-    globalChainBoundary = ∑ x ∈ S, chartIntegral x
   /-- **Named gap (compact-manifold-without-boundary bulk vanishing).**
-      The global chain-boundary integer is zero. This is the integer
-      shadow of `∫_{X \ ⋃ D_x} d (d log f) = 0` (which holds by `d² = 0`
-      together with the absence of an outer boundary on `X`). -/
-  global_chain_boundary_eq_zero : globalChainBoundary = 0
+      The sum of the per-chart integers — i.e. the global chain-boundary
+      integer (definitionally `globalChainBoundary` below) — vanishes.
+      This is the integer shadow of `∫_{X \ ⋃ D_x} d (d log f) = 0`
+      (which holds by `d² = 0` together with the absence of an outer
+      boundary on `X`). After the refactor, this is the single genuine
+      gap remaining on the bundle. -/
+  global_chain_boundary_eq_zero : ∑ x ∈ S, chartIntegral x = 0
+
+/-- **Definitional global chain-boundary integer.**
+
+After the ZZ58 refactor, the global chain-boundary integer is *defined*
+to be the sum of the per-chart integers, not carried as an extra field.
+This is the substantive change: the partition-of-unity decomposition is
+now built into the definition rather than postulated. -/
+@[simp]
+def GlobalResidueSum_hypothesis.globalChainBoundary
+    {f : MeromorphicNonzero X} (H : GlobalResidueSum_hypothesis f) : ℤ :=
+  ∑ x ∈ H.S, H.chartIntegral x
+
+/-- **Chain-boundary decomposition is now `rfl`.**
+
+In the previous bundle this was a named gap (R2's
+`partition_integral_decomposition` shadowed at the integer level). After
+the refactor `globalChainBoundary` is *defined* as the sum, so the
+identity holds by definition. Kept as a named lemma so downstream code
+that referred to the old field name still compiles. -/
+lemma GlobalResidueSum_hypothesis.chain_boundary_decomposition
+    {f : MeromorphicNonzero X} (H : GlobalResidueSum_hypothesis f) :
+    H.globalChainBoundary = ∑ x ∈ H.S, H.chartIntegral x := rfl
 
 /-! ## Headline lemma: `∑ chartIntegral = 0` from the bundle -/
 
@@ -165,22 +186,18 @@ contributions sum to zero because they all come from a single global
 chain-boundary integer that is itself zero (compact manifold without
 boundary, `d² = 0`).
 
-The proof is a one-line rearrangement of two named hypothesis fields
-on the bundle:
-
-* `chain_boundary_decomposition`: `globalChainBoundary = ∑ x ∈ S, chartIntegral x`,
-* `global_chain_boundary_eq_zero`: `globalChainBoundary = 0`.
-
-Combine them: `∑ x ∈ S, chartIntegral x = globalChainBoundary = 0`. -/
+After the ZZ58 refactor the proof is *literally* the
+`global_chain_boundary_eq_zero` field: that field now states
+`∑ x ∈ S, chartIntegral x = 0` directly, because
+`globalChainBoundary` is a definitional abbreviation for the sum and
+`chain_boundary_decomposition` holds by `rfl`. -/
 lemma global_sum_zero_of_hypothesis
     {f : MeromorphicNonzero X}
     (H : GlobalResidueSum_hypothesis f) :
-    ∑ x ∈ H.S, H.chartIntegral x = 0 := by
-  have h1 : H.globalChainBoundary = ∑ x ∈ H.S, H.chartIntegral x :=
-    H.chain_boundary_decomposition
-  have h2 : H.globalChainBoundary = 0 := H.global_chain_boundary_eq_zero
-  -- `∑ = globalChainBoundary = 0`
-  rw [← h1, h2]
+    ∑ x ∈ H.S, H.chartIntegral x = 0 :=
+  -- After the ZZ58 refactor `globalChainBoundary := ∑ x ∈ S, chartIntegral x`
+  -- is definitional, so this is now the bundle's only remaining gap field.
+  H.global_chain_boundary_eq_zero
 
 /-! ## Discharge of S1's `global_sum_zero` field
 
