@@ -120,18 +120,17 @@ theorem argumentPrincipleOnDisc_empty_diffOnNhd
   -- Continuity on the closed ball.
   have hquot_cont_closed : ContinuousOn (fun z => deriv f z / f z) (closedBall c R) :=
     (hquot_diff_V.continuousOn).mono hVsub
-  -- Split on `R = 0` vs `R > 0`.
-  by_cases hR0 : R = 0
-  · subst hR0
-    simp [circleIntegral, intervalIntegral.integral_zero]
-  · have hRpos : 0 < R := lt_of_le_of_ne hR (Ne.symm hR0)
-    have hclos_eq : closure (ball c R) = closedBall c R :=
-      Metric.closure_ball c (ne_of_gt hRpos)
-    have hquot_cont_clos : ContinuousOn (fun z => deriv f z / f z) (closure (ball c R)) := by
-      rw [hclos_eq]; exact hquot_cont_closed
-    have hquot_dcoc : DiffContOnCl ℂ (fun z => deriv f z / f z) (ball c R) :=
-      ⟨hquot_diff_open, hquot_cont_clos⟩
-    exact hquot_dcoc.circleIntegral_eq_zero hR
+  -- Continuity on `closure (ball c R)`. For `R > 0`,
+  -- `closure (ball c R) = closedBall c R`. For `R = 0`,
+  -- `ball c 0 = ∅`, so `closure (ball c 0) = ∅`, and the goal is
+  -- vacuously true.
+  have hquot_cont_clos : ContinuousOn (fun z => deriv f z / f z) (closure (ball c R)) := by
+    refine hquot_cont_closed.mono ?_
+    -- `closure (ball c R) ⊆ closedBall c R` always.
+    exact Metric.closure_ball_subset_closedBall
+  have hquot_dcoc : DiffContOnCl ℂ (fun z => deriv f z / f z) (ball c R) :=
+    ⟨hquot_diff_open, hquot_cont_clos⟩
+  exact hquot_dcoc.circleIntegral_eq_zero hR
 
 end ArgumentPrinciple
 
