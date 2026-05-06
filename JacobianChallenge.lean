@@ -47,3 +47,5 @@ import JacobianChallenge.Manifold.LogDiffAnchoredWitness
 import JacobianChallenge.Manifold.ChartCircleVanishingRegular
 import JacobianChallenge.Manifold.ChartCircleSumZero
 import JacobianChallenge.Manifold.ChartCircleSumZeroDischarge
+import JacobianChallenge.Manifold.ChartCircleHomotopyAnnulus
+import JacobianChallenge.Manifold.ChartCircleAnchoredAllRadii
