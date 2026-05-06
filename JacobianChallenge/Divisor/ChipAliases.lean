@@ -86,6 +86,20 @@ Specialization of `JacobianChallenge.principalDivisorMap_const`
       = (0 : Div X) :=
   JacobianChallenge.principalDivisorMap_const (X := X) (1 : ℂ) one_ne_zero
 
+/-- **Chip C — `const_zero_invalid` (auxiliary).** The pointwise value of
+`MeromorphicNonzero.const c hc` is non-zero everywhere.
+
+Although the constructor `MeromorphicNonzero.const` already requires
+`hc : c ≠ 0`, this auxiliary lemma exposes the consequence that **no
+value of the resulting function is zero**, packaging the fact under the
+chip-menu identifier.
+
+Chip-menu name for `MeromorphicNonzero.const_toFun_ne_zero`
+(`Divisor/PrincipalDivisor.lean`). -/
+lemma const_zero_invalid (c : ℂ) (hc : c ≠ 0) (x : X) :
+    (MeromorphicNonzero.const (X := X) c hc).toFun x ≠ 0 :=
+  MeromorphicNonzero.const_toFun_ne_zero (X := X) c hc x
+
 end MeromorphicNonzero
 
 namespace ResidueTheorem

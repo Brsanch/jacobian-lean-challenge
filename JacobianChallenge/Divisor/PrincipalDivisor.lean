@@ -706,6 +706,43 @@ noncomputable def const (c : ℂ) (hc : c ≠ 0) : MeromorphicNonzero X :=
 @[simp] lemma const_toFun (c : ℂ) (hc : c ≠ 0) (x : X) :
     (const (X := X) c hc).toFun x = c := rfl
 
+/-- The coercion form of `const_toFun`: viewed as a function `X → ℂ` via the
+`CoeFun` instance, `const c hc` evaluates to `c` everywhere. -/
+@[simp] lemma const_coe_apply (c : ℂ) (hc : c ≠ 0) (x : X) :
+    ((const (X := X) c hc) : X → ℂ) x = c := rfl
+
+/-- The pointwise value of `const c hc` is non-zero everywhere.
+
+This is the **`const_zero_invalid`** auxiliary lemma: although the
+constructor `MeromorphicNonzero.const` already requires `hc : c ≠ 0`, this
+lemma makes the consequence — non-vanishing of every value of the
+constant function — directly accessible at the `toFun` level. It is the
+witness any downstream `f.toFun x ≠ 0` rewrite needs when `f = const c hc`. -/
+lemma const_toFun_ne_zero (c : ℂ) (hc : c ≠ 0) (x : X) :
+    (const (X := X) c hc).toFun x ≠ 0 := by
+  rw [const_toFun]
+  exact hc
+
+/-- Coercion form of `const_toFun_ne_zero`. -/
+lemma const_coe_ne_zero (c : ℂ) (hc : c ≠ 0) (x : X) :
+    ((const (X := X) c hc) : X → ℂ) x ≠ 0 :=
+  const_toFun_ne_zero c hc x
+
+/-- The constant `MeromorphicNonzero` value is determined by its scalar
+**at any chosen point `x : X`**: two non-zero constants are equal as
+`MeromorphicNonzero X` iff their scalars agree. Stated point-relative so
+the lemma is usable on a possibly-empty `X` without an extra `[Nonempty X]`
+assumption. -/
+lemma const_eq_iff_of_point (c c' : ℂ) (hc : c ≠ 0) (hc' : c' ≠ 0)
+    (x : X) :
+    (const (X := X) c hc) = const c' hc' ↔ c = c' := by
+  refine ⟨fun h => ?_, fun h => ?_⟩
+  · have hfun : (const (X := X) c hc).toFun = (const c' hc').toFun :=
+      congrArg MeromorphicNonzero.toFun h
+    have := congrFun hfun x
+    simpa [const_toFun] using this
+  · subst h; rfl
+
 /-- `(1 : MeromorphicNonzero X).toFun x = 1`. Definitional. -/
 @[simp] lemma one_toFun (x : X) :
     ((1 : MeromorphicNonzero X)).toFun x = (1 : ℂ) := rfl
