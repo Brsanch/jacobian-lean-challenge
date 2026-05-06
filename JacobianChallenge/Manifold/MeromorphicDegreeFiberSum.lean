@@ -156,8 +156,8 @@ lemma degree_eq_meromorphicDegreeAtZero_sub_meromorphicDegreeAtInfty
       = meromorphicDegreeAtZero f - meromorphicDegreeAtInfty f := by
   simpa [meromorphicDegreeAtZero_eq_zeroCount,
          meromorphicDegreeAtInfty_eq_poleCount] using
-    JacobianChallenge.ResidueViaTopologicalDegree
-      .signedMult_eq_zeroCount_sub_poleCount (f := f)
+    (JacobianChallenge.ResidueViaTopologicalDegree.signedMult_eq_zeroCount_sub_poleCount
+      (f := f))
 
 /-- **Headline reformulation of the residue theorem.**
 
