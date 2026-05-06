@@ -112,7 +112,7 @@ distinct from `f.toFun x` and `f` has nonneg order at `x` (so `f̃ x` is
 avoids `f.toRiemannSphere x`. -/
 lemma chartCircleParam_avoids_basepoint_of_value_disagree
     (f : MeromorphicNonzero X) (x : X) (r : ℝ)
-    (hx : 0 ≤ MMeromorphicOn.orderFun (𝓘(ℂ, ℂ)) f.toFun x)
+    (hx : 0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x)
     (hcirc : ∀ θ : ℝ,
       f.toRiemannSphere (circleParameter (X := X) x r θ) =
         (OnePoint.some (f.toFun (circleParameter (X := X) x r θ)) :
@@ -134,17 +134,17 @@ lemma chartCircleParam_avoids_basepoint_of_value_disagree
 curve avoids `f̃ x = ∞`. -/
 lemma chartCircleParam_avoids_basepoint_of_pole
     (f : MeromorphicNonzero X) (x : X) (r : ℝ)
-    (hx : MMeromorphicOn.orderFun (𝓘(ℂ, ℂ)) f.toFun x < 0)
+    (hx : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x < 0)
     (hcirc : ∀ θ : ℝ,
       f.toRiemannSphere (circleParameter (X := X) x r θ) =
         (OnePoint.some (f.toFun (circleParameter (X := X) x r θ)) :
           RiemannSphere)) :
     ∀ θ : ℝ, chartCircleParam f x r θ ≠ f.toRiemannSphere x := by
   intro θ
-  have hbase : f.toRiemannSphere x = (∞ : RiemannSphere) :=
+  have hbase : f.toRiemannSphere x = (@OnePoint.infty ℂ) :=
     f.toRiemannSphere_apply_of_neg hx
   rw [chartCircleParam_def, hcirc θ, hbase]
-  -- `OnePoint.some _ ≠ ∞`, equivalently `(↑z) ≠ ∞`, i.e. `∞ ≠ ↑z` reversed.
+  -- `OnePoint.some _ ≠ OnePoint.infty`
   intro hEq
   exact (OnePoint.infty_ne_coe (f.toFun (circleParameter (X := X) x r θ))) hEq.symm
 
