@@ -66,3 +66,4 @@ import JacobianChallenge.Manifold.ChartDiskRegularity
 import JacobianChallenge.Manifold.ChartCircleSumOrders
 import JacobianChallenge.Divisor.ChipAliases
 import JacobianChallenge.Manifold.ChartNhdsHelpers
+import JacobianChallenge.Manifold.ConnectivityGlobalizationReduction
