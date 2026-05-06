@@ -118,7 +118,7 @@ def chartCircleSum
 
 /-- Insertion reduction: insert one new point and the sum splits as the
 new contribution plus the old sum. -/
-lemma chartCircleSum_insert_of_not_mem
+lemma chartCircleSum_insert_of_not_mem [DecidableEq X]
     (f : MeromorphicNonzero X) {S : Finset X} {x : X}
     (hx : x ∉ S) (r : X → ℝ) :
     chartCircleSum f (insert x S) r =
