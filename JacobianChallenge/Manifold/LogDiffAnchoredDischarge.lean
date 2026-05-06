@@ -251,6 +251,38 @@ theorem chartCircleIntegralOfFun_of_residue_plus_analytic
         = (2 * Real.pi * Complex.I) * c_neg from by ring,
       ← mul_assoc, inv_mul_cancel₀ hpi, one_mul]
 
+/-! ## Commit C — final wire-up
+
+Under the right-shape hypothesis `LogDerivResiduePlusAnalyticAnchored f x`,
+the anchored chart-circle integral of `logDiffCoeffAt f x` equals
+`((order f x : ℤ) : ℂ)`. This is the **half-bundle real discharge**:
+the integration + residue-extraction parts of the gap are proven
+unconditionally via Cauchy-Goursat and mathlib's residue identity.
+The remaining work — producing a witness for
+`LogDerivResiduePlusAnalyticAnchored f x` from `meromorphicOrderAt_eq_int_iff`
+— is a separate planar-Laurent-factorisation chip.
+-/
+
+/-- **Half-bundle real discharge** of the anchored chart-circle residue
+identity. Under `LogDerivResiduePlusAnalyticAnchored f x` (the right-shape
+simple-pole + analytic-remainder Laurent hypothesis stated against the
+chart-anchored coefficient), the anchored chart-circle integral of
+`logDiffCoeffAt f x` equals the integer order of `f` at `x`, cast to `ℂ`. -/
+theorem logDiffAt_chartCircleIntegral_eq_order_of_residue_plus_analytic
+    (f : MeromorphicNonzero X) (x : X)
+    (H : LogDerivResiduePlusAnalyticAnchored f x) :
+    ∃ r > (0 : ℝ),
+      chartCircleIntegralAnchored f x r =
+        ((MMeromorphicOn.orderFun (𝓘(ℂ, ℂ)) f.toFun x : ℤ) : ℂ) := by
+  obtain ⟨r, hr, h, h_cont, h_diff, _h_target, h_eq⟩ := H
+  refine ⟨r, hr, ?_⟩
+  unfold chartCircleIntegralAnchored
+  apply chartCircleIntegralOfFun_of_residue_plus_analytic
+    (logDiffCoeffAt f x) x r hr
+    ((MMeromorphicOn.orderFun (𝓘(ℂ, ℂ)) f.toFun x : ℤ) : ℂ) h h_cont h_diff
+  intro θ
+  simpa [circleParameter_def] using h_eq θ
+
 end MeromorphicNonzero
 
 end JacobianChallenge
