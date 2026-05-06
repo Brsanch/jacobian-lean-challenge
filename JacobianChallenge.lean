@@ -10,6 +10,7 @@ import JacobianChallenge.Manifold.LocalMultiplicity
 import JacobianChallenge.Manifold.LocalNormalForm
 import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Manifold.AnalyticFiberDiscrete
+import JacobianChallenge.Manifold.AnalyticContinuationGlobalization
 import JacobianChallenge.Manifold.RiemannSphere
 import JacobianChallenge.Manifold.RiemannSphereGenus
 import JacobianChallenge.Manifold.RiemannSphereMobius
