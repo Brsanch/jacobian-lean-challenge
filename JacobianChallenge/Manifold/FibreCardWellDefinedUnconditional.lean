@@ -104,9 +104,8 @@ private lemma toFinset_card_eq_of_set_eq
     {α : Type*} {S T : Set α} (hS : S.Finite) (hT : T.Finite) (hST : S = T) :
     hS.toFinset.card = hT.toFinset.card := by
   subst hST
-  -- Now `hS hT : S.Finite`; both `toFinset`s coerce to `S`, so cards agree.
-  congr 1
-  exact Set.Finite.toFinset_inj.mpr rfl
+  -- Now `hS hT : S.Finite`; by proof irrelevance the `toFinset.card`s agree.
+  rfl
 
 /-- **Step A.3 final reduction (with named residual).** The full
 `fibre_card_well_defined_statement X Y` follows from
@@ -153,9 +152,8 @@ theorem fibre_card_well_defined_statement_holds_of_levelSetClopen
   have h_conn_sub : IsPreconnected (Set.univ : Set R) := by
     -- `R = Set.univ`, so `↥R` is essentially `Y`. The universe of a
     -- preconnected space is preconnected.
-    haveI : PreconnectedSpace R := by
-      -- `Set.univ : Set Y` is preconnected as a subset, by `isPreconnected_univ`.
-      exact (isPreconnected_univ (α := Y)).preconnectedSpace
+    have hY_pre : IsPreconnected (Set.univ : Set Y) := isPreconnected_univ
+    haveI : PreconnectedSpace R := Subtype.preconnectedSpace hY_pre
     exact isPreconnected_univ
   -- Clopen-ness of the level set: the residual hypothesis.
   have h_clopen_set :
