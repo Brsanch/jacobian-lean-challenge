@@ -238,6 +238,69 @@ def fibre_card_well_defined_statement
   ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ JacobianChallenge.IsConstantMap f →
     ∀ (w₁ w₂ : RegularValueWitness f), w₁.card = w₂.card
 
+/-! ### Partial discharge of `fibres_finite_statement`
+
+The full statement requires the analytic identity theorem on charts to ensure
+fibres are discrete. We do not formalise the chart-level identity theorem at
+this pin. We do however reduce `fibres_finite_statement` to a single named
+topological hypothesis: **each fibre carries the discrete subspace topology**
+(`IsDiscrete (f ⁻¹' {y})`). The reduction itself is purely topological:
+continuity gives closedness, compactness of `X` upgrades closed to compact,
+and a compact discrete subspace is finite (`IsCompact.finite`).
+
+What is owed (and not formalised here) is the implication
+
+  analytic, non-constant ⇒ ∀ y, IsDiscrete (f ⁻¹' {y}).
+
+That is the chart-level identity theorem.
+-/
+
+/-- A fibre of a continuous map into a `T2` compact space is closed and hence
+compact; if additionally the fibre carries the discrete subspace topology, it
+is finite. This is the purely topological half of the identity-theorem
+argument. -/
+lemma fiber_finite_of_isDiscrete
+    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    {Y : Type v} [TopologicalSpace Y] [T2Space Y]
+    {f : X → Y} (hf_cont : Continuous f) (y : Y)
+    (h_disc : IsDiscrete (f ⁻¹' {y})) :
+    (f ⁻¹' {y}).Finite := by
+  have h_closed : IsClosed (f ⁻¹' {y}) :=
+    isClosed_singleton.preimage hf_cont
+  have h_cpct : IsCompact (f ⁻¹' {y}) := h_closed.isCompact
+  exact h_cpct.finite h_disc
+
+/-- **Partial discharge of `fibres_finite_statement`.** The full classical
+statement reduces to a single uniform hypothesis: every fibre of a non-constant
+analytic map carries the discrete subspace topology. This is what the chart-
+level identity theorem would supply. The remainder of the argument
+(closedness, compactness, finiteness from compact-discrete) is purely
+topological and is discharged here. -/
+lemma fibres_finite_of_all_fibers_isDiscrete
+    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    (h_disc : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
+      ¬ JacobianChallenge.IsConstantMap f → ∀ y : Y, IsDiscrete (f ⁻¹' {y})) :
+    ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ JacobianChallenge.IsConstantMap f →
+      ∀ y : Y, (f ⁻¹' {y}).Finite := by
+  intro f hf hnc y
+  exact fiber_finite_of_isDiscrete hf.continuous y (h_disc f hf hnc y)
+
+/-- A second, slightly more granular reduction: instead of a global
+"all fibers are discrete" hypothesis, accept a per-fiber hypothesis. Useful
+when downstream code knows discreteness only at specific values. -/
+lemma fiber_finite_of_pointwise_isolated
+    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    {Y : Type v} [TopologicalSpace Y] [T2Space Y]
+    {f : X → Y} (hf_cont : Continuous f) (y : Y)
+    (h_iso : ∀ x ∈ f ⁻¹' {y}, ∃ U : Set X, IsOpen U ∧ U ∩ f ⁻¹' {y} = {x}) :
+    (f ⁻¹' {y}).Finite := by
+  refine fiber_finite_of_isDiscrete hf_cont y ?_
+  rw [isDiscrete_iff_forall_exists_isOpen]
+  exact h_iso
+
 end Owed.degree
 
 end ContMDiff
