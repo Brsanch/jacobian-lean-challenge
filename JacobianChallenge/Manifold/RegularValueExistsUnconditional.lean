@@ -31,7 +31,7 @@ No `sorry`, no `axiom`. -/
 @[expose] public section
 
 open Set Filter Topology
-open scoped Manifold Topology
+open scoped Manifold Topology ContDiff
 
 namespace JacobianChallenge
 namespace ContMDiff
@@ -58,7 +58,8 @@ theorem regular_value_exists_statement_holds_unconditional
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] :
-    regular_value_exists_statement X Y := by
+    ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
+      ¬ JacobianChallenge.IsConstantMap f → Nonempty (RegularValueWitness f) := by
   -- Unconditional fibres-finite from ZZ47 + ZZ43.
   have h_fib :
       ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
@@ -66,8 +67,7 @@ theorem regular_value_exists_statement_holds_unconditional
     fibres_finite_statement_holds_of_clopennessOfLocallyConst
       clopennessOfLocallyConst_holds
   -- Reduce regular-value-exists to fibres-finite (ZZ33).
-  intro f hf hnc
-  exact regular_value_exists_of_fibres_finite h_fib f hf hnc
+  exact regular_value_exists_of_fibres_finite h_fib
 
 end Owed.degree
 end ContMDiff
