@@ -88,6 +88,37 @@ def IsRegularOn
             ((chartAt ℂ x) x + (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ))))
         = H ((chartAt ℂ x) x + (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ)))
 
+/-! ## Z2B.B — chart-circle vanishing at regular points
+
+Cauchy's theorem applied to the chart-anchored log-derivative coefficient:
+when `IsRegularOn f x r` holds (the chart-pulled-back values of
+`logDiffCoeffAt f x` on the chart-circle agree with a planar function `H`
+that is continuous on the closed disk and differentiable on the open
+disk), the chart-anchored circle integral vanishes.
+
+This is the **regular-point leg** of the global residue sum: at points
+where `f` is holomorphic and nonzero, the chart-circle integral is `0`,
+so only the finite zero/pole set contributes to the global sum.
+
+The proof is a mechanical specialisation of
+`chartCircleIntegralOfFun_of_residue_plus_analytic` with `c_neg = 0`:
+the simple-pole term `c_neg / (z - z₀)` vanishes identically and the
+analytic-remainder integrand `H` integrates to zero by Cauchy-Goursat
+(`DiffContOnCl.circleIntegral_eq_zero` inside the Y1 wrapper). -/
+
+theorem chartCircleIntegralAnchored_eq_zero_of_regular
+    (f : MeromorphicNonzero X) (x : X) (r : ℝ) (hr : 0 < r)
+    (hreg : IsRegularOn f x r) :
+    chartCircleIntegralAnchored f x r = 0 := by
+  obtain ⟨H, H_cont, H_diff, H_eq⟩ := hreg
+  unfold chartCircleIntegralAnchored
+  apply chartCircleIntegralOfFun_of_residue_plus_analytic
+    (logDiffCoeffAt f x) x r hr (0 : ℂ) H H_cont H_diff
+  intro θ
+  have heq := H_eq θ
+  rw [heq]
+  ring
+
 end MeromorphicNonzero
 
 end JacobianChallenge
