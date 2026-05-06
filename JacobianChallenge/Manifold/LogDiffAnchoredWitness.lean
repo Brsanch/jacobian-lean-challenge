@@ -133,37 +133,33 @@ lemma logDeriv_zpow_smul_pointwise
       (k : ℂ) / (z - z₀) + deriv g z / g z := by
   have hsub : z - z₀ ≠ 0 := sub_ne_zero.mpr hz
   have hpow_val : (z - z₀) ^ k ≠ 0 := zpow_ne_zero k hsub
-  -- `w ↦ w - z₀` is differentiable at `z`.
-  have hsub_diff : DifferentiableAt ℂ (fun w : ℂ => w - z₀) z :=
-    differentiableAt_id.sub_const z₀
-  -- `u ↦ u ^ k` is differentiable at `z - z₀` (since `z - z₀ ≠ 0`).
-  have hzpow_diff : DifferentiableAt ℂ (fun u : ℂ => u ^ k) (z - z₀) :=
-    differentiableAt_zpow.mpr (Or.inl hsub)
-  -- Hence `w ↦ (w - z₀) ^ k = (·^k) ∘ (·-z₀)` is differentiable at `z`.
-  have hpow_diff : DifferentiableAt ℂ (fun w : ℂ => (w - z₀) ^ k) z :=
-    hzpow_diff.comp z hsub_diff
-  -- Compute `deriv ((·-z₀)^k) z = k * (z - z₀)^(k-1)`.
-  have hpow_deriv :
-      deriv (fun w : ℂ => (w - z₀) ^ k) z = (k : ℂ) * (z - z₀) ^ (k - 1) := by
-    -- Inner derivative is 1.
-    have hd_inner : deriv (fun w : ℂ => w - z₀) z = 1 := by
-      rw [deriv_sub_const]; exact deriv_id'' z
-    -- Outer derivative: `deriv_zpow` gives `deriv (·^k) u = k * u^(k-1)`.
-    have h_outer : deriv (fun u : ℂ => u ^ k) (z - z₀)
-        = (k : ℂ) * (z - z₀) ^ (k - 1) := by
-      simpa using (deriv_zpow (n := k) (z - z₀))
-    -- Chain rule.
-    have h_chain : deriv ((fun u : ℂ => u ^ k) ∘ (fun w : ℂ => w - z₀)) z
-        = deriv (fun u : ℂ => u ^ k) (z - z₀) * deriv (fun w : ℂ => w - z₀) z :=
-      deriv_comp z hzpow_diff hsub_diff
-    have h_eq_comp : (fun w : ℂ => (w - z₀) ^ k)
-        = (fun u : ℂ => u ^ k) ∘ (fun w : ℂ => w - z₀) := rfl
-    rw [h_eq_comp, h_chain, h_outer, hd_inner, mul_one]
-  -- Product rule.
+  -- Use `HasDerivAt` machinery throughout.
+  -- `HasDerivAt (fun w => w - z₀) 1 z`.
+  have hsubAt : HasDerivAt (fun w : ℂ => w - z₀) 1 z :=
+    (hasDerivAt_id z).sub_const z₀
+  -- `HasDerivAt (fun u => u^k) (k * (z-z₀)^(k-1)) (z - z₀)` via mathlib lemma.
+  have hzpowAt : HasDerivAt (fun u : ℂ => u ^ k)
+      ((k : ℂ) * (z - z₀) ^ (k - 1)) (z - z₀) :=
+    hasDerivAt_zpow k (z - z₀) (Or.inl hsub)
+  -- Composition: `HasDerivAt (fun w => (w - z₀)^k) (k * (z-z₀)^(k-1) * 1) z`.
+  have hpowAt0 :
+      HasDerivAt (fun w : ℂ => (w - z₀) ^ k)
+        ((k : ℂ) * (z - z₀) ^ (k - 1) * 1) z :=
+    hzpowAt.comp z hsubAt
+  have hpowAt :
+      HasDerivAt (fun w : ℂ => (w - z₀) ^ k)
+        ((k : ℂ) * (z - z₀) ^ (k - 1)) z := by
+    simpa using hpowAt0
+  -- Now product rule via `HasDerivAt.mul`.
+  have hgAt : HasDerivAt g (deriv g z) z := hg.hasDerivAt
+  have hprodAt :
+      HasDerivAt (fun w : ℂ => (w - z₀) ^ k * g w)
+        ((k : ℂ) * (z - z₀) ^ (k - 1) * g z + (z - z₀) ^ k * deriv g z) z :=
+    hpowAt.mul hgAt
   have hprod :
       deriv (fun w : ℂ => (w - z₀) ^ k * g w) z
-        = (k : ℂ) * (z - z₀) ^ (k - 1) * g z + (z - z₀) ^ k * deriv g z := by
-    rw [deriv_mul hpow_diff hg, hpow_deriv]
+        = (k : ℂ) * (z - z₀) ^ (k - 1) * g z + (z - z₀) ^ k * deriv g z :=
+    hprodAt.deriv
   rw [hprod, add_div]
   congr 1
   · -- `(k * (z-z₀)^(k-1) * g z) / ((z-z₀)^k * g z) = k / (z-z₀)`.
