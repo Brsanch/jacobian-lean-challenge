@@ -68,7 +68,7 @@ No `sorry`. No `axiom`. -/
 
 noncomputable section
 
-open Set OnePoint Classical
+open Set OnePoint
 open scoped Manifold Topology ContDiff
 
 namespace JacobianChallenge
@@ -129,35 +129,39 @@ statement from `Manifold/Degree.lean`) as an explicit hypothesis. When ZZ51
 lands an unconditional discharge of A.3 for the case `Y = RiemannSphere`,
 these theorems become unconditional. -/
 
-/-- **Independence of witness choice (conditional on A.3).** Given the A.3
-statement and a `RegularValueWitness w` for the pole extension, the
-`branchedCoverDegree` equals `w.card`. -/
+/-- **Independence of witness choice (conditional on A.3).** Given the
+A.3-equivalent hypothesis (any two witnesses for `f.toRiemannSphere` have
+equal card), the `branchedCoverDegree` equals `w.card` for any
+`RegularValueWitness w`.
+
+The hypothesis here is the conclusion of
+`Owed.degree.fibre_card_well_defined_statement` specialised to
+`f.toRiemannSphere`, stated directly to keep typeclass synthesis local
+(the `Owed.degree` statement carries instance demands keyed on a different
+model notation `𝓘(ℂ)` vs the `𝓘(ℂ, ℂ)` shipped by `MeromorphicNonzero`). -/
 theorem branchedCoverDegree_eq_witness_card_of_wellDefined
     (f : MeromorphicNonzero X)
-    (h_wd : ContMDiff.Owed.degree.fibre_card_well_defined_statement X RiemannSphere)
-    (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere)
+    (h_wd : ∀ (w₁ w₂ : ContMDiff.RegularValueWitness f.toRiemannSphere),
+      w₁.card = w₂.card)
     (w : ContMDiff.RegularValueWitness f.toRiemannSphere) :
     branchedCoverDegree f = w.card := by
   rw [branchedCoverDegree_eq_choice_card]
-  -- A.3: any two witnesses have equal card.
-  exact h_wd f.toRiemannSphere f.toRiemannSphere_contMDiff hnc _ w
+  exact h_wd _ w
 
 /-- **Degree equals fibre cardinality at any regular value (conditional on A.3).**
-Given the A.3 statement and any value `y : RiemannSphere` whose fibre is
-finite, the `branchedCoverDegree` equals the `Set.ncard` of the fibre
-`f̃ ⁻¹' {y}`. -/
+Given A.3 (specialised to `f.toRiemannSphere`) and any value
+`y : RiemannSphere` whose fibre is finite, the `branchedCoverDegree`
+equals the `Set.ncard` of the fibre `f̃ ⁻¹' {y}`. -/
 theorem branchedCoverDegree_eq_fiberCount_of_regular
     (f : MeromorphicNonzero X)
-    (h_wd : ContMDiff.Owed.degree.fibre_card_well_defined_statement X RiemannSphere)
-    (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere)
+    (h_wd : ∀ (w₁ w₂ : ContMDiff.RegularValueWitness f.toRiemannSphere),
+      w₁.card = w₂.card)
     {y : RiemannSphere} (hfin : (f.toRiemannSphere ⁻¹' {y}).Finite) :
     branchedCoverDegree f = (f.toRiemannSphere ⁻¹' {y}).ncard := by
-  -- Package `(y, hfin)` as a witness.
   let w : ContMDiff.RegularValueWitness f.toRiemannSphere :=
     { value := y, fiber_finite := hfin }
   have h_eq : branchedCoverDegree f = w.card :=
-    branchedCoverDegree_eq_witness_card_of_wellDefined f h_wd hnc w
-  -- `w.card = (hfin.toFinset).card = fibre.ncard` via `Set.ncard_eq_toFinset_card`.
+    branchedCoverDegree_eq_witness_card_of_wellDefined f h_wd w
   rw [h_eq]
   show (hfin.toFinset).card = (f.toRiemannSphere ⁻¹' {y}).ncard
   exact (Set.ncard_eq_toFinset_card _ hfin).symm
@@ -165,46 +169,23 @@ theorem branchedCoverDegree_eq_fiberCount_of_regular
 /-- **Degree equals the pole-fibre `fiberCount` (conditional on A.3).** -/
 theorem branchedCoverDegree_eq_polFiber
     (f : MeromorphicNonzero X)
-    (h_wd : ContMDiff.Owed.degree.fibre_card_well_defined_statement X RiemannSphere)
-    (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere) :
+    (h_wd : ∀ (w₁ w₂ : ContMDiff.RegularValueWitness f.toRiemannSphere),
+      w₁.card = w₂.card) :
     branchedCoverDegree f = fiberCount f (∞ : RiemannSphere) := by
-  have h := branchedCoverDegree_eq_fiberCount_of_regular f h_wd hnc
+  have h := branchedCoverDegree_eq_fiberCount_of_regular f h_wd
     f.toRiemannSphere_preimage_infty_finite
-  -- Unfold `fiberCount`.
   simpa [fiberCount] using h
 
 /-- **Degree equals the `some 0`-fibre `fiberCount` whenever that fibre is
-finite (conditional on A.3).**
-
-If `0 : ℂ` is a regular value of `f̃` (i.e. `f̃ ⁻¹' {some 0}` is finite —
-equivalently every zero of `f` is simple, in the regular branch), then the
-degree equals `fiberCount f̃ (some 0)`. -/
+finite (conditional on A.3).** -/
 theorem branchedCoverDegree_eq_zeroFiber_of_regular_zero
     (f : MeromorphicNonzero X)
-    (h_wd : ContMDiff.Owed.degree.fibre_card_well_defined_statement X RiemannSphere)
-    (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere)
+    (h_wd : ∀ (w₁ w₂ : ContMDiff.RegularValueWitness f.toRiemannSphere),
+      w₁.card = w₂.card)
     (hfin : (f.toRiemannSphere ⁻¹' {(OnePoint.some (0 : ℂ) : RiemannSphere)}).Finite) :
     branchedCoverDegree f = fiberCount f (OnePoint.some (0 : ℂ) : RiemannSphere) := by
-  have h := branchedCoverDegree_eq_fiberCount_of_regular f h_wd hnc hfin
+  have h := branchedCoverDegree_eq_fiberCount_of_regular f h_wd hfin
   simpa [fiberCount] using h
-
-/-! ## Connection to the unconditional A.1+A.2 layer
-
-The non-constancy hypothesis `hnc` and witness existence are the inputs that
-ZZ48+ZZ49 already discharge unconditionally. We expose two helpers that show
-this: the witness *exists* unconditionally for any `f` (via `inftyWitness`),
-and for non-constant `f̃` `Owed.degree.regular_value_exists_statement`
-unconditionally provides one without using `inftyWitness`. -/
-
-/-- Witness existence for non-constant pole extension is **unconditional**
-through ZZ49. (We already have a witness via `inftyWitness` regardless;
-this version routes through the A.2 unconditional layer.) -/
-lemma nonempty_regularValueWitness_of_nonconstant_unconditional
-    (f : MeromorphicNonzero X)
-    (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere) :
-    Nonempty (ContMDiff.RegularValueWitness f.toRiemannSphere) :=
-  ContMDiff.Owed.degree.regular_value_exists_statement_holds_unconditional
-    f.toRiemannSphere f.toRiemannSphere_contMDiff hnc
 
 end MeromorphicNonzero
 
