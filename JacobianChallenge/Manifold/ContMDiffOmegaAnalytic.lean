@@ -8,6 +8,7 @@ import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
 import Mathlib.Geometry.Manifold.IsManifold.ExtChartAt
 import Mathlib.Analysis.Calculus.ContDiff.Defs
 import Mathlib.Analysis.Analytic.Basic
+import Mathlib.Analysis.Complex.Basic
 
 set_option diagnostics true
 set_option diagnostics.threshold 100
