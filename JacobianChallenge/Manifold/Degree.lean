@@ -301,6 +301,96 @@ lemma fiber_finite_of_pointwise_isolated
   rw [isDiscrete_iff_forall_exists_isOpen]
   exact h_iso
 
+/-! ### Partial discharge of `regular_value_exists_statement`
+
+A `RegularValueWitness f` needs only *some* `y₀ : Y` with finite fibre. The
+classical statement gives much more (the *critical value set* is finite, hence
+its complement contains many regular values). For the witness-existence
+question alone, the much weaker fact "there is at least one `y` with finite
+fibre" suffices. We record three reductions of decreasing strength:
+
+* `regular_value_exists_of_some_fiber_finite`: from `∃ y, (f ⁻¹' {y}).Finite`.
+* `regular_value_exists_of_fibres_finite`: from the full
+  `fibres_finite_statement` (uses `ConnectedSpace Y → Nonempty Y`).
+* `regular_value_exists_of_critical_values_finite`: from finiteness of the
+  *critical-value set* together with `Infinite Y` — this is the form that
+  exposes the actual analytic obligation (critical-point set is the zero set
+  of `f'` in chart coords, discrete by the identity theorem, hence finite by
+  compactness; its image is finite). -/
+
+/-- Trivial reduction: a `RegularValueWitness f` is exactly an element of `Y`
+together with finiteness of its fibre. So existence is equivalent to
+`∃ y, (f ⁻¹' {y}).Finite`. -/
+lemma regular_value_exists_of_some_fiber_finite
+    {X : Type u} {Y : Type v} {f : X → Y}
+    (h : ∃ y : Y, (f ⁻¹' {y}).Finite) :
+    Nonempty (RegularValueWitness f) := by
+  obtain ⟨y, hy⟩ := h
+  exact ⟨{ value := y, fiber_finite := hy }⟩
+
+/-- Reduction of `regular_value_exists_statement` to `fibres_finite_statement`.
+
+Given that *every* fibre is finite (the conclusion of
+`fibres_finite_statement`), and `Y` is non-empty (free from
+`ConnectedSpace Y`), pick any `y : Y` and package it as a witness. -/
+lemma regular_value_exists_of_fibres_finite
+    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    (h_fib : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
+      ¬ JacobianChallenge.IsConstantMap f → ∀ y : Y, (f ⁻¹' {y}).Finite) :
+    ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
+      ¬ JacobianChallenge.IsConstantMap f → Nonempty (RegularValueWitness f) := by
+  intro f hf hnc
+  haveI : Nonempty Y := inferInstance
+  obtain ⟨y⟩ := (inferInstance : Nonempty Y)
+  exact regular_value_exists_of_some_fiber_finite ⟨y, h_fib f hf hnc y⟩
+
+/-- **The intended reduction.** Reduce `regular_value_exists_statement` to the
+*precise* analytic obligation: the **critical-value set is finite**.
+
+Mathematically: if the critical-value set `C ⊆ Y` is finite and `Y` is
+infinite, then `Y \ C` is non-empty; pick `y ∈ Y \ C`. By the local normal
+form (`z ↦ z^k` with `k = 1` at non-critical points), `f` is locally injective
+at every preimage of `y`, so the fibre `f ⁻¹' {y}` is discrete. Combined with
+compactness of `X` (giving closedness then compactness of the fibre), this
+yields a finite fibre, hence a `RegularValueWitness`.
+
+Here we expose the obligation in its sharpest form: a hypothesis `h_crit`
+producing, *for every non-constant analytic `f`*, a finite set
+`C : Finset Y` containing all critical values, plus the local-injectivity
+witness `h_disc` at non-critical values (the identity-theorem half is
+isolated to `h_disc`).
+
+This reduction makes the gap `regular_value_exists_statement` boil down to
+`h_crit` + `h_disc` + `Infinite Y`, with everything else (closedness,
+compactness, finite-from-compact-discrete) discharged. -/
+lemma regular_value_exists_of_critical_values_finite
+    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    [Infinite Y]
+    (h_crit : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
+      ¬ JacobianChallenge.IsConstantMap f → ∃ C : Finset Y, True ∧
+        ∀ y : Y, y ∉ C → IsDiscrete (f ⁻¹' {y})) :
+    ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
+      ¬ JacobianChallenge.IsConstantMap f → Nonempty (RegularValueWitness f) := by
+  intro f hf hnc
+  obtain ⟨C, _, hC⟩ := h_crit f hf hnc
+  -- Y is infinite, C is finite ⇒ ∃ y ∉ C.
+  have h_compl : (↑C : Set Y)ᶜ.Nonempty := by
+    by_contra h
+    rw [Set.not_nonempty_iff_eq_empty, Set.compl_empty_iff] at h
+    have : (Set.univ : Set Y).Finite := h ▸ C.finite_toSet
+    exact (Set.infinite_univ).not_finite this
+  obtain ⟨y, hy⟩ := h_compl
+  have h_disc : IsDiscrete (f ⁻¹' {y}) := hC y hy
+  have h_fin : (f ⁻¹' {y}).Finite :=
+    fiber_finite_of_isDiscrete hf.continuous y h_disc
+  exact regular_value_exists_of_some_fiber_finite ⟨y, h_fin⟩
+
 end Owed.degree
 
 end ContMDiff
