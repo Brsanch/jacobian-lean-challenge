@@ -14,6 +14,7 @@ import JacobianChallenge.Manifold.AnalyticFiberDiscrete
 import JacobianChallenge.Manifold.AnalyticContinuationGlobalization
 import JacobianChallenge.Manifold.ContMDiffOmegaAnalytic
 import JacobianChallenge.Manifold.ChartPullbackDataConstruction
+import JacobianChallenge.Manifold.FibresFiniteAssembly
 import JacobianChallenge.Manifold.RiemannSphere
 import JacobianChallenge.Manifold.RiemannSphereGenus
 import JacobianChallenge.Manifold.RiemannSphereMobius
