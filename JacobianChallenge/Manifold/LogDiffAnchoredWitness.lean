@@ -133,30 +133,32 @@ lemma logDeriv_zpow_smul_pointwise
       (k : ℂ) / (z - z₀) + deriv g z / g z := by
   have hsub : z - z₀ ≠ 0 := sub_ne_zero.mpr hz
   have hpow_val : (z - z₀) ^ k ≠ 0 := zpow_ne_zero k hsub
-  -- `w ↦ w - z₀` is differentiable at `z` with deriv `1`.
+  -- `w ↦ w - z₀` is differentiable at `z`.
   have hsub_diff : DifferentiableAt ℂ (fun w : ℂ => w - z₀) z :=
     differentiableAt_id.sub_const z₀
-  -- Hence `w ↦ (w - z₀) ^ k` is differentiable at `z` (zpow needs nonzero base).
+  -- `u ↦ u ^ k` is differentiable at `z - z₀` (since `z - z₀ ≠ 0`).
+  have hzpow_diff : DifferentiableAt ℂ (fun u : ℂ => u ^ k) (z - z₀) :=
+    differentiableAt_zpow.mpr (Or.inl hsub)
+  -- Hence `w ↦ (w - z₀) ^ k = (·^k) ∘ (·-z₀)` is differentiable at `z`.
   have hpow_diff : DifferentiableAt ℂ (fun w : ℂ => (w - z₀) ^ k) z :=
-    hsub_diff.zpow k (Or.inl hsub)
-  -- Compute `deriv ((·-z₀)^k) z = k * (z - z₀)^(k-1)` via the chain rule on `zpow`.
+    hzpow_diff.comp z hsub_diff
+  -- Compute `deriv ((·-z₀)^k) z = k * (z - z₀)^(k-1)`.
   have hpow_deriv :
       deriv (fun w : ℂ => (w - z₀) ^ k) z = (k : ℂ) * (z - z₀) ^ (k - 1) := by
-    -- Build up via `HasDerivAt`-style reasoning. We use the
-    -- `deriv_zpow` mathlib lemma applied to the inner function `id - const`.
+    -- Inner derivative is 1.
     have hd_inner : deriv (fun w : ℂ => w - z₀) z = 1 := by
-      simp [deriv_sub, differentiableAt_id, deriv_id'']
-    -- Outer: `f^k`. We use `deriv_zpow'` which differentiates `(f w)^k`.
-    have h := deriv_comp (𝕜 := ℂ) (𝕜' := ℂ) z
-        (h := fun u : ℂ => u ^ k) (h₂ := fun w : ℂ => w - z₀)
-        ((differentiableAt_zpow.mpr (Or.inl hsub) : DifferentiableAt ℂ (fun u : ℂ => u ^ k) (z - z₀)))
-        hsub_diff
-    -- `deriv (fun u => u^k) (z - z₀) = k * (z - z₀)^(k-1)` via `deriv_zpow_const`.
+      rw [deriv_sub_const]; exact deriv_id'' z
+    -- Outer derivative: `deriv_zpow` gives `deriv (·^k) u = k * u^(k-1)`.
     have h_outer : deriv (fun u : ℂ => u ^ k) (z - z₀)
         = (k : ℂ) * (z - z₀) ^ (k - 1) := by
-      rw [deriv_zpow]
-    rw [show (fun w : ℂ => (w - z₀) ^ k) = (fun u : ℂ => u ^ k) ∘ (fun w => w - z₀)
-         from rfl, h, h_outer, hd_inner, mul_one]
+      simpa using (deriv_zpow (n := k) (z - z₀))
+    -- Chain rule.
+    have h_chain : deriv ((fun u : ℂ => u ^ k) ∘ (fun w : ℂ => w - z₀)) z
+        = deriv (fun u : ℂ => u ^ k) (z - z₀) * deriv (fun w : ℂ => w - z₀) z :=
+      deriv_comp z hzpow_diff hsub_diff
+    have h_eq_comp : (fun w : ℂ => (w - z₀) ^ k)
+        = (fun u : ℂ => u ^ k) ∘ (fun w : ℂ => w - z₀) := rfl
+    rw [h_eq_comp, h_chain, h_outer, hd_inner, mul_one]
   -- Product rule.
   have hprod :
       deriv (fun w : ℂ => (w - z₀) ^ k * g w) z
@@ -168,8 +170,11 @@ lemma logDeriv_zpow_smul_pointwise
     rw [mul_div_mul_right _ _ hgz]
     -- `(z - z₀)^k = (z - z₀)^(k-1) * (z - z₀)`.
     have hzpow_split : (z - z₀) ^ k = (z - z₀) ^ (k - 1) * (z - z₀) := by
-      have := (zpow_add_one₀ hsub (k - 1)).symm
-      simpa [sub_add_cancel] using this
+      have h := zpow_add_one₀ hsub (k - 1)
+      -- h : (z - z₀) ^ (k - 1 + 1) = (z - z₀) ^ (k - 1) * (z - z₀)
+      have : k - 1 + 1 = k := by ring
+      rw [this] at h
+      exact h
     rw [hzpow_split, ← div_div, mul_div_assoc,
       div_self (zpow_ne_zero (k - 1) hsub), mul_one]
   · rw [mul_div_mul_left _ _ hpow_val]
