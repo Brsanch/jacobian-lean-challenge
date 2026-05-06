@@ -391,6 +391,157 @@ lemma regular_value_exists_of_critical_values_finite
     fiber_finite_of_isDiscrete hf.continuous y h_disc
   exact regular_value_exists_of_some_fiber_finite ⟨y, h_fin⟩
 
+/-! ### Partial discharge of `fibre_card_well_defined_statement`
+
+Independence of the chosen `RegularValueWitness` — i.e. the topological-degree
+well-definedness — has the following classical structure. The set of regular
+values `R ⊆ Y` is the complement of the (finite) critical-value set. On `R`
+the map `f` is a covering map, so the fibre-cardinality function
+
+  `n : R → ℕ`,   `n y = |f ⁻¹' {y}|`
+
+is *locally constant*. Since `R = Y \ C` with `C` finite and `Y` a connected
+Riemann surface (real dimension `≥ 2`), `R` is connected. A locally constant
+function on a (pre)connected space is constant. Hence any two regular-value
+witnesses give the same fibre cardinality.
+
+We do **not** prove "covering map ⇒ locally constant fibre cardinality" or
+"connected minus finite is connected for real-dim ≥ 2 manifolds" at this pin:
+both are classical and both are heavy enough to deserve their own files. We
+instead reduce `fibre_card_well_defined_statement` to a single named
+hypothesis — the **fibre-cardinality function exists, extends every witness,
+and is constant on the regular-value support** — and discharge the rest. The
+shape of the hypothesis exactly mirrors the form items (1)–(2) take above:
+classical content is named, topological/structural plumbing is dispatched. -/
+
+/-- A **fibre-cardinality function** packaging the data classical
+covering-space theory provides. Recorded as a structure so downstream files
+have a single named target: discharging
+`fibre_card_well_defined_statement` reduces to producing one of these for
+every non-constant analytic `f`.
+
+Fields:
+* `card_of`: the fibre-cardinality function on `Y` (or any superset of the
+  regular-value set; we take all of `Y` for simplicity, since the value at a
+  critical point is irrelevant for the witness-comparison argument).
+* `card_of_witness`: every `RegularValueWitness w` has
+  `card_of w.value = w.card`. This is a definitional compatibility: it says
+  `card_of` agrees with the true fibre cardinality at every point that
+  *carries* a witness — exactly the points the well-definedness statement
+  ranges over.
+* `card_of_constant`: `card_of` is constant when restricted to the witness
+  values. This is the deep classical content (covering-space + connectedness
+  of `Y \ critical-values`). -/
+structure FibreCardData {X : Type u} {Y : Type v} (f : X → Y) where
+  /-- The fibre-cardinality function. -/
+  card_of : Y → ℕ
+  /-- `card_of` reads off any witness's cardinality. -/
+  card_of_witness : ∀ w : RegularValueWitness f, card_of w.value = w.card
+  /-- `card_of` agrees on any two witness values. (This is what the
+  covering-space + connected-regular-value-set argument supplies.) -/
+  card_of_constant : ∀ w₁ w₂ : RegularValueWitness f,
+    card_of w₁.value = card_of w₂.value
+
+/-- **Trivial reduction.** Given a `FibreCardData f`, the cardinalities of
+any two regular-value witnesses agree. This is purely structural composition
+of the fields of `FibreCardData`. -/
+lemma fibre_card_eq_of_fibreCardData
+    {X : Type u} {Y : Type v} {f : X → Y}
+    (D : FibreCardData f) (w₁ w₂ : RegularValueWitness f) :
+    w₁.card = w₂.card := by
+  have h₁ : D.card_of w₁.value = w₁.card := D.card_of_witness w₁
+  have h₂ : D.card_of w₂.value = w₂.card := D.card_of_witness w₂
+  have hc : D.card_of w₁.value = D.card_of w₂.value := D.card_of_constant w₁ w₂
+  -- w₁.card = card_of w₁.value = card_of w₂.value = w₂.card
+  calc w₁.card = D.card_of w₁.value := h₁.symm
+    _ = D.card_of w₂.value := hc
+    _ = w₂.card := h₂
+
+/-- **Partial discharge of `fibre_card_well_defined_statement`.** The full
+classical statement reduces to a single uniform hypothesis: every non-constant
+analytic `f` admits a `FibreCardData f` (the covering-space-supplied
+fibre-cardinality function with its constancy on witness values).
+
+Everything else — extracting `w₁.card = w₂.card` from the data — is
+discharged here by `fibre_card_eq_of_fibreCardData`. -/
+lemma fibre_card_well_defined_of_fibreCardData
+    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    (h_data : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
+      ¬ JacobianChallenge.IsConstantMap f → FibreCardData f) :
+    ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ JacobianChallenge.IsConstantMap f →
+      ∀ (w₁ w₂ : RegularValueWitness f), w₁.card = w₂.card := by
+  intro f hf hnc w₁ w₂
+  exact fibre_card_eq_of_fibreCardData (h_data f hf hnc) w₁ w₂
+
+/-- **Sharper reduction: locally-constant fibre-cardinality on a preconnected
+regular-value subtype.**
+
+This form exposes the analytic obligation in covering-space shape, using the
+subspace topology on the regular-value set `R ⊆ Y`.
+
+* `card_of : Y → ℕ`, the fibre-cardinality function on `Y` (its value off
+  regular values is irrelevant).
+* `h_witness`: `card_of` reads off any witness's card.
+* `h_supp`: every witness's value lies in `R`.
+* `h_lc_sub`: `card_of` restricted to the subtype `R` is locally constant —
+  this is exactly the covering-space content.
+* `h_conn_sub`: the subtype `R` is preconnected — the topological content
+  (a connected Riemann surface minus a finite set is preconnected, real
+  dimension `≥ 2`).
+
+The conclusion follows from
+`IsLocallyConstant.apply_eq_of_isPreconnected`. -/
+lemma fibre_card_eq_of_locallyConstant_subtype
+    {X : Type u} {Y : Type v} [TopologicalSpace Y]
+    {f : X → Y}
+    {R : Set Y}
+    (card_of : Y → ℕ)
+    (h_witness : ∀ w : RegularValueWitness f, card_of w.value = w.card)
+    (h_supp : ∀ w : RegularValueWitness f, w.value ∈ R)
+    (h_lc_sub : IsLocallyConstant (fun y : R => card_of y.val))
+    (h_conn_sub : IsPreconnected (Set.univ : Set R))
+    (w₁ w₂ : RegularValueWitness f) :
+    w₁.card = w₂.card := by
+  let r₁ : R := ⟨w₁.value, h_supp w₁⟩
+  let r₂ : R := ⟨w₂.value, h_supp w₂⟩
+  have hc : card_of r₁.val = card_of r₂.val :=
+    h_lc_sub.apply_eq_of_isPreconnected h_conn_sub
+      (Set.mem_univ r₁) (Set.mem_univ r₂)
+  -- `r₁.val = w₁.value`, `r₂.val = w₂.value` by `Subtype.coe_mk`.
+  calc w₁.card
+      = card_of w₁.value := (h_witness w₁).symm
+    _ = card_of w₂.value := hc
+    _ = w₂.card := h_witness w₂
+
+/-- **Top-level reduction**: well-definedness of the fibre cardinality (the
+shape of `fibre_card_well_defined_statement`) follows from the existence,
+for every non-constant analytic `f`, of a locally-constant fibre-cardinality
+function on a preconnected regular-value subtype covering all witness
+values. This is exactly the covering-space content (locally constant on the
+regular-value set, which is preconnected since `Y` is a connected Riemann
+surface and the critical-value set is finite). -/
+lemma fibre_card_well_defined_of_locallyConstant
+    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    (h_lc : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
+      ¬ JacobianChallenge.IsConstantMap f →
+      ∃ (R : Set Y) (card_of : Y → ℕ),
+        (∀ w : RegularValueWitness f, card_of w.value = w.card) ∧
+        (∀ w : RegularValueWitness f, w.value ∈ R) ∧
+        IsLocallyConstant (fun y : R => card_of y.val) ∧
+        IsPreconnected (Set.univ : Set R)) :
+    ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ JacobianChallenge.IsConstantMap f →
+      ∀ (w₁ w₂ : RegularValueWitness f), w₁.card = w₂.card := by
+  intro f hf hnc w₁ w₂
+  obtain ⟨R, card_of, h_w, h_supp, h_lcs, h_conn⟩ := h_lc f hf hnc
+  exact fibre_card_eq_of_locallyConstant_subtype
+    (R := R) card_of h_w h_supp h_lcs h_conn w₁ w₂
+
 end Owed.degree
 
 end ContMDiff
