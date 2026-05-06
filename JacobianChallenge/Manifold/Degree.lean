@@ -505,12 +505,12 @@ lemma fibre_card_eq_of_locallyConstant_subtype
     (h_conn_sub : IsPreconnected (Set.univ : Set R))
     (w₁ w₂ : RegularValueWitness f) :
     w₁.card = w₂.card := by
-  let r₁ : R := ⟨w₁.value, h_supp w₁⟩
-  let r₂ : R := ⟨w₂.value, h_supp w₂⟩
-  have hc : card_of r₁.val = card_of r₂.val :=
-    h_lc_sub.apply_eq_of_isPreconnected h_conn_sub
-      (Set.mem_univ r₁) (Set.mem_univ r₂)
-  -- `r₁.val = w₁.value`, `r₂.val = w₂.value` by `Subtype.coe_mk`.
+  have hc : card_of w₁.value = card_of w₂.value := by
+    have :=
+      h_lc_sub.apply_eq_of_isPreconnected h_conn_sub
+        (Set.mem_univ (⟨w₁.value, h_supp w₁⟩ : R))
+        (Set.mem_univ (⟨w₂.value, h_supp w₂⟩ : R))
+    simpa using this
   calc w₁.card
       = card_of w₁.value := (h_witness w₁).symm
     _ = card_of w₂.value := hc
