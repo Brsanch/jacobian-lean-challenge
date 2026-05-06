@@ -72,3 +72,4 @@ import JacobianChallenge.Manifold.WithinChartWitnessReduction
 import JacobianChallenge.Manifold.PerChartNonConstancyReduction
 import JacobianChallenge.Manifold.ChartBallOffCentreWitnessDischarge
 import JacobianChallenge.Manifold.CriticalSetDiscrete
+import JacobianChallenge.Manifold.ChartPullbackNotEventuallyConstDischarge
