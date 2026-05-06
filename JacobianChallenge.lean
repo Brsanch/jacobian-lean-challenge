@@ -7,6 +7,7 @@ import JacobianChallenge.Manifold.PeriodLattice
 import JacobianChallenge.Manifold.MeromorphicAt
 import JacobianChallenge.Manifold.MeromorphicDivisor
 import JacobianChallenge.Manifold.LocalMultiplicity
+import JacobianChallenge.Manifold.IsConstantMapAux
 import JacobianChallenge.Manifold.LocalNormalForm
 import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Manifold.AnalyticFiberDiscrete
