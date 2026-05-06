@@ -27,8 +27,6 @@ well-defined Brouwer degree.
   `Continuous f.toRiemannSphere`.
 -/
 
-namespace JacobianChallenge
-
 universe u
 
 variable {X : Type u}
@@ -50,5 +48,3 @@ theorem toRiemannSphere_continuous (f : MeromorphicNonzero X) :
   f.toRiemannSphere_contMDiff.continuous
 
 end MeromorphicNonzero
-
-end JacobianChallenge
