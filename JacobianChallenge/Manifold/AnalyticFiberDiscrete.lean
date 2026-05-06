@@ -73,6 +73,7 @@ unconditionally on the ℂ-analytic side.
 @[expose] public section
 
 open Set Filter Topology
+open scoped Manifold Topology
 
 namespace JacobianChallenge
 namespace ContMDiff
