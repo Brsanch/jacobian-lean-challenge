@@ -359,7 +359,9 @@ theorem logDerivResiduePlusAnalyticAnchored_holds
         dist (z₀ + (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ))) z₀ = r := by
       rw [dist_eq_norm]
       ring_nf
-      rw [norm_mul, Complex.norm_exp_ofReal_mul_I, mul_one]
+      have hcomm : Complex.exp (Complex.I * (θ : ℂ))
+          = Complex.exp ((θ : ℂ) * Complex.I) := by rw [mul_comm]
+      rw [hcomm, norm_mul, Complex.norm_exp_ofReal_mul_I, mul_one]
       simp [abs_of_pos hr_pos]
     rw [h_norm_eq]
   · -- The Laurent identity at every chart-circle point.
@@ -378,7 +380,9 @@ theorem logDerivResiduePlusAnalyticAnchored_holds
       exact hsub_ne this
     have hz_dist : dist z z₀ = r := by
       rw [dist_eq_norm, hz_sub]
-      rw [norm_mul, Complex.norm_exp_ofReal_mul_I, mul_one]
+      have hcomm : Complex.exp (Complex.I * (θ : ℂ))
+          = Complex.exp ((θ : ℂ) * Complex.I) := by rw [mul_comm]
+      rw [hcomm, norm_mul, Complex.norm_exp_ofReal_mul_I, mul_one]
       simp [abs_of_pos hr_pos]
     have hz_in_closed : z ∈ Metric.closedBall z₀ r := by
       rw [Metric.mem_closedBall]; exact le_of_eq hz_dist
