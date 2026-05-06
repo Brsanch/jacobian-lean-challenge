@@ -180,10 +180,10 @@ theorem chartOverlapPropagation_of_clopennessOfLocallyConst
   have hS_nonempty : S.Nonempty := ⟨x₀, hx₀_S⟩
   -- By connectedness of `X`, `S = univ`.
   have hS_univ : S = Set.univ := by
-    -- `IsClopen` + nonempty in a connected space ⇒ `univ`.
-    rcases hS_clopen.eq_univ_or_eq_empty with hU | hE
-    · exact hU
+    -- `IsClopen` in a connected space ⇒ `S = ∅ ∨ S = univ`.
+    rcases (isClopen_iff (s := S)).mp hS_clopen with hE | hU
     · exact absurd hE hS_nonempty.ne_empty
+    · exact hU
   -- For every `x : X`, `x ∈ S`, and therefore `f x = y₀`.
   intro x
   have hx_S : x ∈ S := by rw [hS_univ]; exact mem_univ x
