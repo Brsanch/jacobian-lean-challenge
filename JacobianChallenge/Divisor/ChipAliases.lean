@@ -40,6 +40,9 @@ No `axiom`, no `sorry`. Each body is one line.
 
 noncomputable section
 
+open scoped Manifold Topology ContDiff
+open Filter Set
+
 namespace JacobianChallenge
 
 universe u
