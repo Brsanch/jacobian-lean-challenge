@@ -87,31 +87,22 @@ variable {X : Type u}
   [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
 
 /-- Multiplicativity of `Germ.principalDivisorMap`. Reduces to
-`principalDivisorMap_mul` after `Quotient.inductionOn`. -/
+`principalDivisorMap_mul` by `rintro` pattern-matching on the quotient
+representatives. -/
 lemma Germ.principalDivisorMap_mul (g₁ g₂ : Germ X) :
     Germ.principalDivisorMap (g₁ * g₂)
       = Germ.principalDivisorMap g₁ + Germ.principalDivisorMap g₂ := by
-  refine Quotient.inductionOn₂ (motive := fun a b =>
-      Germ.principalDivisorMap (a * b)
-        = Germ.principalDivisorMap a + Germ.principalDivisorMap b) g₁ g₂ ?_
-  intro f₁ f₂
-  -- `Quotient.mk f * Quotient.mk g = Quotient.mk (f * g)` definitionally.
+  rcases g₁ with ⟨f₁⟩
+  rcases g₂ with ⟨f₂⟩
+  -- `Quotient.mk f * Quotient.mk g = Quotient.mk (f * g)` definitionally;
   -- `Germ.principalDivisorMap (Germ.mk f) = principalDivisorMap f` definitionally.
-  show JacobianChallenge.principalDivisorMap (f₁ * f₂)
-      = JacobianChallenge.principalDivisorMap f₁
-        + JacobianChallenge.principalDivisorMap f₂
   exact JacobianChallenge.principalDivisorMap_mul f₁ f₂
 
-/-- Inversion: `Germ.principalDivisorMap (g⁻¹) = -Germ.principalDivisorMap g`.
-By `Quotient.inductionOn` and the unfolding `(Germ.mk f)⁻¹ = Germ.mk (invMer f)`. -/
+/-- Inversion: `Germ.principalDivisorMap (g⁻¹) = -Germ.principalDivisorMap g`. -/
 lemma Germ.principalDivisorMap_inv (g : Germ X) :
     Germ.principalDivisorMap (g⁻¹)
       = -Germ.principalDivisorMap g := by
-  refine Quotient.inductionOn (motive := fun a =>
-      Germ.principalDivisorMap (a⁻¹) = -Germ.principalDivisorMap a) g ?_
-  intro f
-  show JacobianChallenge.principalDivisorMap (invMer f)
-      = -JacobianChallenge.principalDivisorMap f
+  rcases g with ⟨f⟩
   exact JacobianChallenge.principalDivisorMap_invMer f
 
 /-- The unit germ has the zero divisor: `Germ.principalDivisorMap 1 = 0`. -/
@@ -168,14 +159,13 @@ non-negative integers and `zpow_negSucc` (i.e. `g ^ (-(n+1) : ℤ) =
 lemma Germ.principalDivisorMap_degree_zpow (g : Germ X) (n : ℤ) :
     (Germ.principalDivisorMap (g ^ n)).degree
       = n * (Germ.principalDivisorMap g).degree := by
-  induction n with
-  | ofNat k =>
-    -- `g ^ (Int.ofNat k) = g ^ k` (the natural-number power).
+  match n with
+  | Int.ofNat k =>
     have h_zpow : (g ^ (Int.ofNat k : ℤ)) = g ^ k := by
       rw [Int.ofNat_eq_coe, zpow_natCast]
     rw [h_zpow, Germ.principalDivisorMap_degree_pow]
     simp
-  | negSucc k =>
+  | Int.negSucc k =>
     -- `g ^ (-(k+1)) = (g ^ (k+1))⁻¹` (mathlib `zpow_negSucc`).
     have h_zpow : g ^ (Int.negSucc k) = (g ^ (k + 1))⁻¹ := zpow_negSucc g k
     rw [h_zpow, Germ.principalDivisorMap_degree_inv,
