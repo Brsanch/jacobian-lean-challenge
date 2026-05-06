@@ -130,7 +130,7 @@ lemma infty_fiber_toFinset_eq_filter_neg (f : MeromorphicNonzero X)
   classical
   ext x
   rw [Set.Finite.mem_toFinset, Finset.mem_filter,
-      mem_supportFinset, toRiemannSphere_preimage_infty_eq f]
+      Div.mem_supportFinset, toRiemannSphere_preimage_infty_eq f]
   simp only [Set.mem_setOf_eq]
   constructor
   · intro hx
@@ -187,7 +187,7 @@ lemma some_zero_fiber_set_eq (f : MeromorphicNonzero X) :
     refine ⟨hnonneg, ?_⟩
     -- At a regular point `f̃ x = some (f x) = some 0`, so `f x = 0`.
     rw [f.toRiemannSphere_apply_of_nonneg hnonneg] at hx
-    exact OnePoint.some_injective ℂ hx
+    exact OnePoint.coe_injective hx
   · intro ⟨hnonneg, hzero⟩
     rw [f.toRiemannSphere_apply_of_nonneg hnonneg, hzero]
 
