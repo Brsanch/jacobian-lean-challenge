@@ -65,7 +65,7 @@ named, three-line consumer-facing lemma.
 
 noncomputable section
 
-open scoped Real Topology BigOperators
+open scoped Real Topology BigOperators Manifold ContDiff
 open Complex MeasureTheory
 
 namespace JacobianChallenge
