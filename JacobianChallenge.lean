@@ -23,6 +23,7 @@ import JacobianChallenge.Manifold.ResidueTheoremStokes
 import JacobianChallenge.Manifold.MeromorphicOneForm
 import JacobianChallenge.Manifold.CircleResidue
 import JacobianChallenge.Manifold.MeromorphicExtension
+import JacobianChallenge.Manifold.MeromorphicExtensionContinuous
 import JacobianChallenge.Manifold.PoleExtensionFibres
 import JacobianChallenge.Manifold.FibreBalance
 import JacobianChallenge.Manifold.TopologicalDegree
