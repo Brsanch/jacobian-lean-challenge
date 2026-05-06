@@ -220,15 +220,18 @@ lemma clopen_level_set_of_isLocallyConstant
     {β : Type*} {g : α → β} (hg : IsLocallyConstant g) (b : β) :
     IsClopen ({a : α | g a = b} : Set α) := by
   refine ⟨?_, ?_⟩
-  · -- closed: complement `{a | g a ≠ b}` is open by `IsLocallyConstant.isOpen_fiber`-style.
-    have h_open : IsOpen ({a | g a = b}ᶜ : Set α) := by
-      have := hg {b}ᶜ
-      -- `g ⁻¹' {b}ᶜ = {a | g a ∈ {b}ᶜ} = {a | g a ≠ b} = {a | g a = b}ᶜ`
-      simpa [Set.preimage, Set.mem_compl_iff, Set.mem_singleton_iff] using this
-    exact ⟨h_open⟩
-  · -- open: `{a | g a = b} = g ⁻¹' {b}`, open by `IsLocallyConstant.isOpen_preimage` (`hg {b}`).
-    have := hg {b}
-    simpa [Set.preimage, Set.mem_singleton_iff] using this
+  · -- closed: complement `{a | g a ≠ b}` is open via `hg {b}ᶜ`.
+    rw [← isOpen_compl_iff]
+    have h_open := hg ({b}ᶜ : Set β)
+    -- `g ⁻¹' {b}ᶜ = {a | g a = b}ᶜ`
+    convert h_open using 1
+    ext a
+    simp [Set.mem_compl_iff, Set.mem_setOf_eq, Set.preimage, Set.mem_singleton_iff]
+  · -- open: `{a | g a = b} = g ⁻¹' {b}`, open by `hg {b}`.
+    have h_open := hg ({b} : Set β)
+    convert h_open using 1
+    ext a
+    simp [Set.mem_setOf_eq, Set.preimage, Set.mem_singleton_iff]
 
 end Owed.degree
 end ContMDiff
