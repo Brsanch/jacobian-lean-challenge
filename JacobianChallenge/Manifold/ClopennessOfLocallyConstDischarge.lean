@@ -99,8 +99,8 @@ theorem clopennessOfLocallyConst_holds
       (closure_mono hS_sub hx_closure)
   have hfx : f x = y₀ := hx_preimage
   -- Step 2. Analyticity of the chart pullback on a preconnected open ball.
-  set c : PartialHomeomorph X ℂ := chartAt ℂ x with hc_def
-  set d : PartialHomeomorph Y ℂ := chartAt ℂ (f x) with hd_def
+  set c := chartAt ℂ x with hc_def
+  set d := chartAt ℂ (f x) with hd_def
   set F : ℂ → ℂ := d ∘ f ∘ c.symm with hF_def
   set z₀ : ℂ := c x with hz₀_def
   have hFA_at : AnalyticAt ℂ F z₀ :=
