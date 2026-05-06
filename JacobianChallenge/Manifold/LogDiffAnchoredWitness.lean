@@ -178,6 +178,129 @@ lemma logDeriv_zpow_smul_pointwise
       div_self (zpow_ne_zero (k - 1) hsub), mul_one]
   · rw [mul_div_mul_left _ _ hpow_val]
 
+/-! ## Commit Z1.C — radius extraction
+
+Combine the four small-`r` witnesses (chart-target containment,
+Z1.A factorisation on `𝓝[≠] z₀`, `g ≠ 0` on a closed disk, `g'/g` analytic
+on a neighborhood of the closed disk) into a single positive radius
+`r > 0` on which all four hold simultaneously. -/
+
+/-- **Radius extraction.** Given the analytic factor `g` from Z1.A
+(`g(z₀) ≠ 0`, factorisation on `𝓝[≠] z₀`) and the chart at `x`, there is a
+common positive radius `r > 0` such that:
+
+* the closed ball `closedBall z₀ r` is contained in the chart target,
+* `g ≠ 0` on the closed ball,
+* `g` is analytic on a neighborhood of the closed ball,
+* the factorisation holds on the punctured open ball.
+
+This is the "small enough `r`" packaging consumed by Z1.D. -/
+lemma extract_common_radius
+    (f : MeromorphicNonzero X) (x : X) (k : ℤ)
+    (g : ℂ → ℂ)
+    (hg_an : AnalyticAt ℂ g ((chartAt ℂ x) x))
+    (hg_ne : g ((chartAt ℂ x) x) ≠ 0)
+    (h_fact : ∀ᶠ z in 𝓝[≠] ((chartAt ℂ x) x),
+      (f.toFun ∘ (chartAt ℂ x).symm) z =
+        (z - (chartAt ℂ x) x) ^ k • g z) :
+    ∃ r : ℝ, 0 < r ∧
+      Metric.closedBall ((chartAt ℂ x) x) r ⊆ (chartAt ℂ x).target ∧
+      (∀ z ∈ Metric.closedBall ((chartAt ℂ x) x) r, g z ≠ 0) ∧
+      AnalyticOnNhd ℂ g (Metric.closedBall ((chartAt ℂ x) x) r) ∧
+      (∀ z ∈ Metric.ball ((chartAt ℂ x) x) r,
+        z ≠ (chartAt ℂ x) x →
+          (f.toFun ∘ (chartAt ℂ x).symm) z =
+            (z - (chartAt ℂ x) x) ^ k • g z) := by
+  set z₀ : ℂ := (chartAt ℂ x) x with hz₀
+  -- (1) Chart target is open and contains `z₀`.
+  have h_z0_target : z₀ ∈ (chartAt ℂ x).target :=
+    (chartAt ℂ x).map_source (mem_chart_source ℂ x)
+  obtain ⟨r₁, hr₁_pos, hr₁_sub⟩ :=
+    Metric.isOpen_iff.mp (chartAt ℂ x).open_target z₀ h_z0_target
+  -- (2) `g` analytic on a neighborhood of `z₀`: pick a radius `r₂` of analyticity.
+  obtain ⟨r₂_top, hr₂_an⟩ : ∃ s : Set ℂ, IsOpen s ∧ z₀ ∈ s ∧ AnalyticOn ℂ g s := by
+    obtain ⟨s, hs_mem, hs_an⟩ := hg_an.exists_mem_nhds_analyticOn
+    obtain ⟨V, hV_open, hVs, hzV⟩ := mem_nhds_iff.mp hs_mem
+    exact ⟨V, hV_open, hzV, hs_an.mono hVs⟩
+  obtain ⟨s_an, hs_an_open, hz0_s_an, hg_an_on⟩ := ⟨_, hr₂_an.1, hr₂_an.2.1, hr₂_an.2.2⟩
+  obtain ⟨r₂, hr₂_pos, hr₂_sub⟩ :=
+    Metric.isOpen_iff.mp hs_an_open z₀ hz0_s_an
+  -- (3) `g ≠ 0` on a neighborhood: continuity of `g` plus `g(z₀) ≠ 0`.
+  have hg_cont : ContinuousAt g z₀ := hg_an.continuousAt
+  have h_ne_nhds : ∀ᶠ z in 𝓝 z₀, g z ≠ 0 := hg_cont.eventually_ne hg_ne
+  obtain ⟨r₃, hr₃_pos, hr₃_sub⟩ := Metric.eventually_nhds_iff.mp h_ne_nhds
+  -- (4) Factorisation on a punctured neighborhood: extract a radius.
+  obtain ⟨r₄, hr₄_pos, hr₄_eq⟩ := Metric.eventually_nhdsWithin_iff.mp h_fact
+  -- Pick the minimum, scaled down to be a *closed* sub-radius.
+  set r : ℝ := min (r₁ / 2) (min (r₂ / 2) (min (r₃ / 2) (r₄ / 2))) with hr_def
+  have hr_pos : 0 < r := by
+    refine lt_min ?_ (lt_min ?_ (lt_min ?_ ?_))
+    · exact half_pos hr₁_pos
+    · exact half_pos hr₂_pos
+    · exact half_pos hr₃_pos
+    · exact half_pos hr₄_pos
+  have hr_le_1 : r ≤ r₁ / 2 := by exact min_le_left _ _
+  have hr_le_2 : r ≤ r₂ / 2 := le_trans (min_le_right _ _) (min_le_left _ _)
+  have hr_le_3 : r ≤ r₃ / 2 :=
+    le_trans (min_le_right _ _) (le_trans (min_le_right _ _) (min_le_left _ _))
+  have hr_le_4 : r ≤ r₄ / 2 :=
+    le_trans (min_le_right _ _) (le_trans (min_le_right _ _) (min_le_right _ _))
+  -- Bounds: closed ball of radius r ⊆ ball of radius (r + ε) ⊆ each rᵢ-ball.
+  have h1_closed : Metric.closedBall z₀ r ⊆ (chartAt ℂ x).target := by
+    intro z hz
+    apply hr₁_sub
+    rw [Metric.mem_closedBall] at hz
+    rw [Metric.mem_ball]
+    have : r < r₁ := by
+      calc r ≤ r₁ / 2 := hr_le_1
+        _ < r₁ := by linarith
+    exact lt_of_le_of_lt hz this
+  have h_closed_sub_r₂ : Metric.closedBall z₀ r ⊆ Metric.ball z₀ r₂ := by
+    intro z hz
+    rw [Metric.mem_closedBall] at hz
+    rw [Metric.mem_ball]
+    have : r < r₂ := by
+      calc r ≤ r₂ / 2 := hr_le_2
+        _ < r₂ := by linarith
+    exact lt_of_le_of_lt hz this
+  have h_closed_sub_r₃ : Metric.closedBall z₀ r ⊆ Metric.ball z₀ r₃ := by
+    intro z hz
+    rw [Metric.mem_closedBall] at hz
+    rw [Metric.mem_ball]
+    have : r < r₃ := by
+      calc r ≤ r₃ / 2 := hr_le_3
+        _ < r₃ := by linarith
+    exact lt_of_le_of_lt hz this
+  have h_open_sub_r₄ : Metric.ball z₀ r ⊆ Metric.ball z₀ r₄ := by
+    intro z hz
+    rw [Metric.mem_ball] at hz ⊢
+    have : r < r₄ := by
+      calc r ≤ r₄ / 2 := hr_le_4
+        _ < r₄ := by linarith
+    exact lt_trans hz this
+  refine ⟨r, hr_pos, h1_closed, ?_, ?_, ?_⟩
+  · -- `g ≠ 0` on closed ball.
+    intro z hz
+    exact hr₃_sub (h_closed_sub_r₃ hz)
+  · -- `g` analytic on neighborhood of closed ball.
+    intro z hz
+    have : z ∈ s_an := hr₂_sub (h_closed_sub_r₂ hz)
+    -- `g` is analytic at `z` since `s_an` is an open set on which `g` is analytic.
+    exact (hg_an_on z this).analyticAt (hs_an_open.mem_nhds this)
+  · -- factorisation on punctured open ball.
+    intro z hz hzne
+    -- `dist z z₀ < r₄`, so the eventually condition fires.
+    have hdist : dist z z₀ < r₄ := h_open_sub_r₄ hz
+    have hzne_ne : z ≠ z₀ := hzne
+    -- `Metric.eventually_nhdsWithin_iff` gives `∀ y ∈ ball ε \ {z₀}, P y`-style.
+    -- Apply `hr₄_eq` at `z` with `dist z z₀ < r₄` and `z ∈ ({z₀})ᶜ`.
+    have : z ∈ Metric.ball z₀ r₄ \ {z₀} := by
+      refine ⟨hdist, ?_⟩
+      simp [hzne_ne]
+    -- `hr₄_eq : ∀ y ∈ Metric.ball z₀ r₄, y ≠ z₀ → ...` — actually shape depends.
+    -- We use the specialised `hr₄_eq` which has shape `∀ ⦃y⦄, dist y z₀ < r₄ → y ≠ z₀ → P y`.
+    exact hr₄_eq hdist hzne_ne
+
 end MeromorphicNonzero
 
 end JacobianChallenge
