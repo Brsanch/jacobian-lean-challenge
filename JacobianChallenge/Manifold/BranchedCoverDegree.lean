@@ -103,6 +103,7 @@ kept for total-ness in the `Classical`-choice signature.
 **Conditional on A.3** for use as "the" topological degree: independence of
 the chosen witness is `fibre_card_well_defined_statement`. -/
 def branchedCoverDegree (f : MeromorphicNonzero X) : ℕ :=
+  open Classical in
   if h : Nonempty (ContMDiff.RegularValueWitness f.toRiemannSphere) then
     (Classical.choice h).card
   else 0
@@ -118,6 +119,7 @@ of *some* `Classical.choice`-selected witness. -/
 lemma branchedCoverDegree_eq_choice_card (f : MeromorphicNonzero X) :
     branchedCoverDegree f =
       (Classical.choice (f.nonempty_regularValueWitness)).card := by
+  classical
   unfold branchedCoverDegree
   simp [f.nonempty_regularValueWitness]
 
