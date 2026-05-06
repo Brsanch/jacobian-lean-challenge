@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.MeromorphicExtension
+import Mathlib.Geometry.Manifold.IsManifold.Basic
+import Mathlib.Geometry.Manifold.ContMDiff.Defs
 
 set_option diagnostics.threshold 100
 
@@ -26,6 +28,8 @@ well-defined Brouwer degree.
 * `MeromorphicNonzero.toRiemannSphere_continuous` —
   `Continuous f.toRiemannSphere`.
 -/
+
+open scoped Manifold Topology ContDiff
 
 universe u
 
