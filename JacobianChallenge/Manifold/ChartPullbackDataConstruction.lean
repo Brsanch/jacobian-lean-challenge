@@ -65,7 +65,15 @@ noncomputable def chartPullbackData_of_contMDiff
   have hYnhd : eY.source ∈ 𝓝 (f x) := eY.open_source.mem_nhds hfxS
   have hpreimage_nhd : f ⁻¹' eY.source ∈ 𝓝 x := hf_cont hYnhd
   -- Choose an open set `V₀ ⊆ f ⁻¹' eY.source` with `x ∈ V₀`.
-  obtain ⟨V₀, hV₀_sub, hV₀_open, hxV₀⟩ := mem_nhds_iff.mp hpreimage_nhd
+  -- Use `Classical.choose` because `obtain`/`cases` cannot eliminate
+  -- `Exists` into a non-Prop motive (the goal is `ChartPullbackData …`,
+  -- which is in `Type`).
+  let V₀ : Set X := Classical.choose (mem_nhds_iff.mp hpreimage_nhd)
+  have hV₀_spec := Classical.choose_spec (mem_nhds_iff.mp hpreimage_nhd)
+  -- `hV₀_spec : V₀ ⊆ f ⁻¹' eY.source ∧ IsOpen V₀ ∧ x ∈ V₀`.
+  have hV₀_sub : V₀ ⊆ f ⁻¹' eY.source := hV₀_spec.1
+  have hV₀_open : IsOpen V₀ := hV₀_spec.2.1
+  have hxV₀ : x ∈ V₀ := hV₀_spec.2.2
   -- `V := V₀ ∩ eX.source` is open, contains `x`, and is in both
   -- `eX.source` and `f ⁻¹' eY.source`.
   set V : Set X := V₀ ∩ eX.source with hVdef
