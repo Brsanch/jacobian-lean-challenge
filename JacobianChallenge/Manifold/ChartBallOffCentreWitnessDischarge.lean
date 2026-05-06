@@ -86,8 +86,8 @@ lemma AnalyticAt.exists_off_centre_value_ne
     intro hG_zero
     apply hne
     filter_upwards [hG_zero] with z hz
-    have : F z - F z₀ = 0 := hz
-    linarith [sub_eq_zero.mp this]
+    have hsub : F z - F z₀ = 0 := hz
+    exact sub_eq_zero.mp hsub
   -- Mathlib dichotomy: either eventually 0, or `≠ 0` on a punctured nbhd.
   have h_dich := hG.eventually_eq_zero_or_eventually_ne_zero
   rcases h_dich with h_ev0 | h_punc
@@ -129,12 +129,12 @@ lemma AnalyticAt.exists_off_centre_value_ne
         exact ht_lt_ρ
       have h_ne_z0 : z₀ + (t : ℂ) ≠ z₀ := by
         intro heq
-        have : (t : ℂ) = 0 := by
-          have := add_left_cancel (a := z₀) (b := (t : ℂ)) (c := 0) (by simpa using heq)
-          simpa using this
-        have ht0 : t = 0 := by
-          exact_mod_cast this
-        exact (ne_of_gt ht_pos) ht0.symm
+        have htC : (t : ℂ) = 0 := by
+          have h := heq
+          -- z₀ + t = z₀ → t = 0
+          linear_combination h - z₀
+        have ht0 : t = 0 := by exact_mod_cast htC
+        exact (ne_of_gt ht_pos) ht0
       have h_G_ne : G (z₀ + (t : ℂ)) ≠ 0 := hρ_imp h_dist h_ne_z0
       intro h_F_eq
       apply h_G_ne
@@ -208,7 +208,8 @@ theorem chartBallOffCentreWitness_of_chart_pullback_not_eventually_const
     intro hev
     apply h
     filter_upwards [hev] with z hz
-    rw [hz, hz₀_F]
+    show F z = (chartAt ℂ (f x)) (f x)
+    rw [hz]; exact hz₀_F
   -- Apply the ℂ-side extractor.
   obtain ⟨z, hz_mem, hz_ne⟩ :=
     AnalyticAt.exists_off_centre_value_ne hFA_at h_not_ev r hr_pos
