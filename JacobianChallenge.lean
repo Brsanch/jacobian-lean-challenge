@@ -50,3 +50,4 @@ import JacobianChallenge.Manifold.ChartCircleSumZeroDischarge
 import JacobianChallenge.Manifold.ChartCircleHomotopyAnnulus
 import JacobianChallenge.Manifold.ChartCircleAnchoredAllRadii
 import JacobianChallenge.Manifold.LocalArgumentPrinciple
+import JacobianChallenge.Manifold.StokesDiskClosedForm
