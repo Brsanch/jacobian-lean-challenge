@@ -301,19 +301,6 @@ lemma fiber_finite_of_pointwise_isolated
   rw [isDiscrete_iff_forall_exists_isOpen]
   exact h_iso
 
-/-- The named-statement form of `fibres_finite_of_all_fibers_isDiscrete`:
-the `Prop`-valued statement `fibres_finite_statement X Y` holds whenever
-every fibre of a non-constant analytic map is `IsDiscrete`. -/
-lemma fibres_finite_statement_of_all_fibers_isDiscrete
-    (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (Y : Type v) [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (h_disc : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
-      ¬ JacobianChallenge.IsConstantMap f → ∀ y : Y, IsDiscrete (f ⁻¹' {y})) :
-    fibres_finite_statement X Y :=
-  fibres_finite_of_all_fibers_isDiscrete h_disc
-
 end Owed.degree
 
 end ContMDiff
