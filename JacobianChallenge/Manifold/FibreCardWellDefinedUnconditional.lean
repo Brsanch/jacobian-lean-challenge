@@ -123,7 +123,8 @@ theorem fibre_card_well_defined_statement_holds_of_levelSetClopen
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (h_clopen : FibreCardLevelSetClopenHypothesis X Y) :
-    fibre_card_well_defined_statement X Y := by
+    ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ JacobianChallenge.IsConstantMap f →
+      ∀ (w₁ w₂ : RegularValueWitness f), w₁.card = w₂.card := by
   intro f hf hnc w₁ w₂
   -- Unconditional fibres-finite (ZZ48).
   have h_fib :
@@ -168,6 +169,19 @@ theorem fibre_card_well_defined_statement_holds_of_levelSetClopen
   -- Assemble via ZZ50's reduction.
   exact fibre_card_eq_of_clopen_level_set
     (R := R) card_of h_witness h_supp h_conn_sub w₀ h_clopen_set w₁ w₂
+
+/-- **Named-statement form.** Same content as
+`fibre_card_well_defined_statement_holds_of_levelSetClopen`, but with the
+conclusion stated through the canonical `fibre_card_well_defined_statement`
+def from `Manifold/Degree.lean`. -/
+theorem fibre_card_well_defined_statement_of_levelSetClopen
+    (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    (Y : Type v) [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+    (h_clopen : FibreCardLevelSetClopenHypothesis X Y) :
+    fibre_card_well_defined_statement X Y :=
+  fibre_card_well_defined_statement_holds_of_levelSetClopen h_clopen
 
 end Owed.degree
 end ContMDiff
