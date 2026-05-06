@@ -112,7 +112,9 @@ theorem argumentPrincipleOnDisc_empty_diffOnNhd
     have hzfne : f z ≠ 0 := by
       have : z ∈ f ⁻¹' ({0}ᶜ) := hz.2
       simpa [Set.mem_preimage, Set.mem_compl_iff, Set.mem_singleton_iff] using this
-    exact ((hderiv_diff z hzU).div (hf z hzU) hzfne)
+    have hd : DifferentiableWithinAt ℂ (fun w => deriv f w / f w) U z :=
+      (hderiv_diff z hzU).div (hf z hzU) hzfne
+    exact hd.mono hVsubU
   -- Restrict to the open ball.
   have hball_subset_closed : ball c R ⊆ closedBall c R := Metric.ball_subset_closedBall
   have hquot_diff_open : DifferentiableOn ℂ (fun z => deriv f z / f z) (ball c R) :=
