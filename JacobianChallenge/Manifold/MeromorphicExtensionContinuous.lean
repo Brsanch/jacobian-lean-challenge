@@ -33,6 +33,8 @@ open scoped Manifold Topology ContDiff
 
 universe u
 
+namespace JacobianChallenge
+
 variable {X : Type u}
   [TopologicalSpace X] [T2Space X] [CompactSpace X]
   [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
@@ -52,3 +54,5 @@ theorem toRiemannSphere_continuous (f : MeromorphicNonzero X) :
   f.toRiemannSphere_contMDiff.continuous
 
 end MeromorphicNonzero
+
+end JacobianChallenge
