@@ -170,6 +170,9 @@ lemma Germ.principalDivisorMap_degree_zpow (g : Germ X) (n : ℤ) :
     have h_zpow : g ^ (Int.negSucc k) = (g ^ (k + 1))⁻¹ := zpow_negSucc g k
     rw [h_zpow, Germ.principalDivisorMap_degree_inv,
         Germ.principalDivisorMap_degree_pow]
+    have h_neg : (Int.negSucc k : ℤ) = -((k : ℤ) + 1) := by
+      simp [Int.negSucc_eq]
+    rw [h_neg]
     push_cast
     ring
 
