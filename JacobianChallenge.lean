@@ -77,3 +77,4 @@ import JacobianChallenge.Manifold.ChartOverlapPropagationDischarge
 import JacobianChallenge.Manifold.ClopennessOfLocallyConstDischarge
 import JacobianChallenge.Manifold.FibresFiniteUnconditional
 import JacobianChallenge.Manifold.FibreCardClopenReduction
+import JacobianChallenge.Manifold.RegularValueExistsUnconditional
