@@ -240,8 +240,6 @@ theorem chartPullbackNotEventuallyConst_of_chartOverlapPropagation
     -- So `(chartAt ℂ (f x)) (f x') = (chartAt ℂ (f x)) (f x)`.
     have h_chart_eq : (chartAt ℂ (f x)) (f x') = (chartAt ℂ (f x)) (f x) := by
       rw [← h_F_unfold, hF_x']
-      -- `c = (chartAt ℂ (f x)) (f x)` definitionally.
-      rfl
     -- Inject via chart on the target chart's source: both `f x` and `f x'`
     -- lie in `(chartAt ℂ (f x)).source`, and the chart is injective there.
     have h_inj : Set.InjOn (chartAt ℂ (f x)) (chartAt ℂ (f x)).source :=
