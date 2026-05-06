@@ -203,11 +203,12 @@ lemma extract_common_radius
     (h_fact : ∀ᶠ z in 𝓝[≠] ((chartAt ℂ x) x),
       (f.toFun ∘ (chartAt ℂ x).symm) z =
         (z - (chartAt ℂ x) x) ^ k • g z) :
-    ∃ r : ℝ, 0 < r ∧
+    ∃ (r R : ℝ), 0 < r ∧ r < R ∧
       Metric.closedBall ((chartAt ℂ x) x) r ⊆ (chartAt ℂ x).target ∧
       (∀ z ∈ Metric.closedBall ((chartAt ℂ x) x) r, g z ≠ 0) ∧
       AnalyticOnNhd ℂ g (Metric.closedBall ((chartAt ℂ x) x) r) ∧
-      (∀ z ∈ Metric.ball ((chartAt ℂ x) x) r,
+      Metric.closedBall ((chartAt ℂ x) x) r ⊆ Metric.ball ((chartAt ℂ x) x) R ∧
+      (∀ z ∈ Metric.ball ((chartAt ℂ x) x) R,
         z ≠ (chartAt ℂ x) x →
           (f.toFun ∘ (chartAt ℂ x).symm) z =
             (z - (chartAt ℂ x) x) ^ k • g z) := by
@@ -282,7 +283,19 @@ lemma extract_common_radius
       calc r ≤ r₄ / 2 := hr_le_4
         _ < r₄ := by linarith
     exact lt_trans hz this
-  refine ⟨r, hr_pos, h1_closed, ?_, ?_, ?_⟩
+  -- Closed ball of radius `r` is contained in the open ball of radius `r₄`.
+  have h_closed_sub_r₄_open : Metric.closedBall z₀ r ⊆ Metric.ball z₀ r₄ := by
+    intro z hz
+    rw [Metric.mem_closedBall] at hz
+    rw [Metric.mem_ball]
+    have : r < r₄ := by
+      calc r ≤ r₄ / 2 := hr_le_4
+        _ < r₄ := by linarith
+    exact lt_of_le_of_lt hz this
+  refine ⟨r, r₄, hr_pos, ?_, h1_closed, ?_, ?_, h_closed_sub_r₄_open, ?_⟩
+  · -- `r < r₄` for the strict containment.
+    calc r ≤ r₄ / 2 := hr_le_4
+      _ < r₄ := by linarith
   · -- `g ≠ 0` on closed ball.
     intro z hz
     exact hr₃_sub (h_closed_sub_r₃ hz)
@@ -290,10 +303,144 @@ lemma extract_common_radius
     intro z hz
     have hz_in_r₂ : dist z z₀ < r₂ := h_closed_sub_r₂ hz
     exact hr₂_sub hz_in_r₂
-  · -- factorisation on punctured open ball.
+  · -- factorisation on punctured open ball of radius `r₄`.
     intro z hz hzne
-    have hdist : dist z z₀ < r₄ := h_open_sub_r₄ hz
-    exact hr₄_eq hdist hzne
+    rw [Metric.mem_ball] at hz
+    exact hr₄_eq hz hzne
+
+/-! ## Commit Z1.D + Z1.E — assemble and deliver the witness
+
+Final result: `LogDerivResiduePlusAnalyticAnchored f x` is unconditionally
+witnessed under `mmeromorphicOrderAt 𝓘(ℂ,ℂ) f.toFun x ≠ ⊤`. The witness
+combines Z1.A (planar Laurent factorisation) + Z1.B (log-derivative formula)
++ Z1.C (common-radius extraction). -/
+
+/-- **Final witness for the anchored Laurent hypothesis.**
+
+Under the standard non-degeneracy hypothesis
+`mmeromorphicOrderAt 𝓘(ℂ,ℂ) f.toFun x ≠ ⊤`, the right-shape
+simple-pole + analytic-remainder Laurent decomposition of the
+chart-anchored coefficient `logDiffCoeffAt f x` holds on a sufficiently
+small chart-circle around `x`.
+
+Combined with `logDiffAt_chartCircleIntegral_eq_order_of_residue_plus_analytic`
+(`LogDiffAnchoredDischarge.lean`, Y1's half-bundle real discharge), this
+makes `chartCircleIntegralAnchored f x r = ((order : ℤ) : ℂ)` an
+**unconditional** theorem (for some small `r > 0`). -/
+theorem logDerivResiduePlusAnalyticAnchored_holds
+    (f : MeromorphicNonzero X) (x : X)
+    (hf0 : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x ≠ ⊤) :
+    LogDerivResiduePlusAnalyticAnchored f x := by
+  -- Step 1: Z1.A — planar Laurent factorisation.
+  obtain ⟨g, hg_an, hg_ne, h_fact⟩ := planar_laurent_factorization f x hf0
+  set k : ℤ := (MMeromorphicOn.orderFun (𝓘(ℂ, ℂ)) f.toFun x : ℤ) with hk_def
+  -- Step 2: Z1.C — extract common radius `r` and outer ball radius `R`.
+  obtain ⟨r, R, hr_pos, hrR, h_target_sub, hg_ne_disk, hg_an_on,
+         h_closed_sub_R, h_fact_R⟩ :=
+    extract_common_radius f x k g hg_an hg_ne h_fact
+  set z₀ : ℂ := (chartAt ℂ x) x with hz₀
+  -- The analytic quotient `deriv g / g` on the closed ball.
+  have hg_deriv : AnalyticOnNhd ℂ (deriv g) (Metric.closedBall z₀ r) :=
+    hg_an_on.deriv
+  have hquot : AnalyticOnNhd ℂ (fun z => deriv g z / g z)
+      (Metric.closedBall z₀ r) := by
+    intro z hz
+    exact (hg_deriv z hz).div (hg_an_on z hz) (hg_ne_disk z hz)
+  -- Choose `h := deriv g / g`.
+  refine ⟨r, hr_pos, fun z => deriv g z / g z, hquot.continuousOn, ?_, ?_, ?_⟩
+  · -- DifferentiableOn h (ball z₀ r).
+    intro z hz
+    exact ((hquot z (Metric.ball_subset_closedBall hz)).differentiableAt).differentiableWithinAt
+  · -- Chart-target containment for every chart-circle point.
+    intro θ
+    apply h_target_sub
+    rw [Metric.mem_closedBall]
+    have h_norm_eq :
+        dist (z₀ + (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ))) z₀ = r := by
+      rw [dist_eq_norm]
+      ring_nf
+      rw [norm_mul, Complex.norm_exp_ofReal_mul_I, mul_one]
+      simp [abs_of_pos hr_pos]
+    rw [h_norm_eq]
+  · -- The Laurent identity at every chart-circle point.
+    intro θ
+    set z : ℂ := z₀ + (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ)) with hz_def
+    have hz_sub : z - z₀ = (r : ℂ) * Complex.exp (Complex.I * (θ : ℂ)) := by
+      rw [hz_def]; ring
+    have hexp_ne : Complex.exp (Complex.I * (θ : ℂ)) ≠ 0 := Complex.exp_ne_zero _
+    have hr_complex_ne : (r : ℂ) ≠ 0 := by
+      exact_mod_cast (ne_of_gt hr_pos)
+    have hsub_ne : z - z₀ ≠ 0 := by
+      rw [hz_sub]; exact mul_ne_zero hr_complex_ne hexp_ne
+    have hz_ne : z ≠ z₀ := by
+      intro hzeq
+      have : z - z₀ = 0 := by rw [hzeq, sub_self]
+      exact hsub_ne this
+    have hz_dist : dist z z₀ = r := by
+      rw [dist_eq_norm, hz_sub]
+      rw [norm_mul, Complex.norm_exp_ofReal_mul_I, mul_one]
+      simp [abs_of_pos hr_pos]
+    have hz_in_closed : z ∈ Metric.closedBall z₀ r := by
+      rw [Metric.mem_closedBall]; exact le_of_eq hz_dist
+    have hz_target : z ∈ (chartAt ℂ x).target := h_target_sub hz_in_closed
+    -- `g z ≠ 0` and `AnalyticAt g z` from Z1.C outputs.
+    have hgz_ne : g z ≠ 0 := hg_ne_disk z hz_in_closed
+    have hg_at_z : AnalyticAt ℂ g z := hg_an_on z hz_in_closed
+    have hg_diff_z : DifferentiableAt ℂ g z := hg_at_z.differentiableAt
+    -- `f.toFun ∘ chart.symm` agrees with `(·-z₀)^k * g(·)` on `Metric.ball z₀ R \ {z₀}`,
+    -- which is open and contains `z` (since `dist z z₀ = r < R` and `z ≠ z₀`).
+    have hz_in_R : z ∈ Metric.ball z₀ R := h_closed_sub_R hz_in_closed
+    -- Build a neighborhood `U` of `z` on which the factorisation holds.
+    have h_compl_open : IsOpen ({z₀}ᶜ : Set ℂ) := isOpen_compl_singleton
+    have hz_in_compl : z ∈ ({z₀}ᶜ : Set ℂ) := hz_ne
+    have hU_open : IsOpen (Metric.ball z₀ R ∩ ({z₀}ᶜ : Set ℂ)) :=
+      Metric.isOpen_ball.inter h_compl_open
+    have hz_in_U : z ∈ Metric.ball z₀ R ∩ ({z₀}ᶜ : Set ℂ) := ⟨hz_in_R, hz_in_compl⟩
+    -- `EventuallyEq` on `𝓝 z` between `f.toFun ∘ chart.symm` and the factorisation.
+    have h_eqOn :
+        Set.EqOn (f.toFun ∘ (chartAt ℂ x).symm)
+          (fun w : ℂ => (w - z₀) ^ k * g w)
+          (Metric.ball z₀ R ∩ ({z₀}ᶜ : Set ℂ)) := by
+      intro w hw
+      have hw_R : w ∈ Metric.ball z₀ R := hw.1
+      have hw_ne : w ≠ z₀ := hw.2
+      have := h_fact_R w hw_R hw_ne
+      -- `•` on `ℂ → ℂ` is `*`.
+      simpa [smul_eq_mul] using this
+    have h_evEq : (f.toFun ∘ (chartAt ℂ x).symm) =ᶠ[𝓝 z]
+        (fun w => (w - z₀) ^ k * g w) :=
+      Filter.eventuallyEq_iff_exists_mem.mpr ⟨_, hU_open.mem_nhds hz_in_U, h_eqOn⟩
+    -- Therefore the derivative of `f.toFun ∘ chart.symm` at `z` equals the derivative
+    -- of `(·-z₀)^k * g(·)` at `z`.
+    have h_deriv_eq :
+        deriv (f.toFun ∘ (chartAt ℂ x).symm) z =
+          deriv (fun w : ℂ => (w - z₀) ^ k * g w) z := by
+      exact h_evEq.deriv_eq
+    -- Compute `f.toFun y = (z - z₀)^k * g(z)` for `y = circleParameter x r θ`.
+    have h_chart_inv : (chartAt ℂ x) (circleParameter (X := X) x r θ) = z := by
+      unfold circleParameter
+      rw [(chartAt ℂ x).right_inv hz_target]
+    have h_F_at_z : (f.toFun ∘ (chartAt ℂ x).symm) z =
+        (z - z₀) ^ k * g z := by
+      have := h_fact_R z hz_in_R hz_ne
+      simpa [smul_eq_mul] using this
+    -- `f.toFun (circleParameter x r θ) = (f.toFun ∘ chart.symm) z`.
+    have h_f_eq : f.toFun (circleParameter (X := X) x r θ) =
+        (f.toFun ∘ (chartAt ℂ x).symm) z := by
+      unfold circleParameter
+      rfl
+    -- Now compute `logDiffCoeffAt f x (circleParameter x r θ)`.
+    rw [logDiffCoeffAt_circleParameter f x r θ hz_target]
+    -- Goal: `deriv (f.toFun ∘ chart.symm) z / f.toFun (circleParameter x r θ)
+    --        = k * (r·exp(Iθ))⁻¹ + (deriv g / g) z`.
+    rw [h_f_eq, h_F_at_z, h_deriv_eq]
+    -- LHS: `deriv ((·-z₀)^k * g(·)) z / ((z - z₀)^k * g z)`.
+    -- By Z1.B, this equals `k/(z-z₀) + deriv g z / g z`.
+    have hZB := logDeriv_zpow_smul_pointwise k z₀ g hz_ne hg_diff_z hgz_ne
+    rw [hZB]
+    -- Goal: `(k : ℂ)/(z - z₀) + deriv g z / g z
+    --       = (k : ℂ) * (r·exp(Iθ))⁻¹ + (deriv g / g) z`.
+    rw [hz_sub, div_eq_mul_inv]
 
 end MeromorphicNonzero
 
