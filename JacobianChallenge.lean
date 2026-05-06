@@ -24,6 +24,7 @@ import JacobianChallenge.Manifold.MeromorphicOneForm
 import JacobianChallenge.Manifold.CircleResidue
 import JacobianChallenge.Manifold.MeromorphicExtension
 import JacobianChallenge.Manifold.MeromorphicExtensionContinuous
+import JacobianChallenge.Manifold.MeromorphicExtensionProper
 import JacobianChallenge.Manifold.PoleExtensionFibres
 import JacobianChallenge.Manifold.FiberCountBridge
 import JacobianChallenge.Manifold.FibreBalance
