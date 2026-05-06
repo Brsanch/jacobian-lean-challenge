@@ -151,7 +151,7 @@ theorem chartCircleIntegralAnchored_eq_of_regular_annulus
     intro z hz
     have hz' : z ∈ Metric.ball z₀ r₂ \ Metric.closedBall z₀ r₁ := hz.1
     exact (H_diff z hz').differentiableAt
-      (IsOpen.mem_nhds (isOpen_ball.sdiff Metric.isClosed_closedBall) hz')
+      (IsOpen.mem_nhds (Metric.isOpen_ball.sdiff Metric.isClosed_closedBall) hz')
   rw [hbridge1, hbridge2, hannulus]
 
 end MeromorphicNonzero
