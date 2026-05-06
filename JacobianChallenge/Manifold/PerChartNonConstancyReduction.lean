@@ -125,7 +125,7 @@ def ChartBallOffCentreWitnessHypothesis
     ∀ (y₀ : Y), ∀ x : X, f x = y₀ →
       ∀ r : ℝ, 0 < r → ∃ z₁ ∈ Metric.ball ((chartAt ℂ x) x) r,
         ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) z₁
-          ≠ ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+          ≠ (chartAt ℂ (f x)) (f x)
 
 /-! ## Reduction: chart-ball off-centre witness ⇒ per-chart non-constancy -/
 
@@ -161,9 +161,27 @@ theorem perChartNonConstancy_of_chartBallOffCentreWitness
   -- (3) Pick the witness radius to be exactly `r₀`, so the witness lies
   -- inside the analyticity ball.
   obtain ⟨z₁, hz₁_mem₀, h_ne⟩ := H f hf hnc y₀ x hx r₀ hr₀_pos
-  -- (4) Apply the identity-theorem core.
-  exact exists_value_ne_in_nhds_of_witness hFA₀ hU₀_pc hz₀_mem₀ hz₁_mem₀
-    h_ne V hV
+  -- (4) Bridge `F z₀ = (chartAt ℂ (f x)) (f x)` using `chart.symm (chart x x) = x`
+  -- (chart left-inverse at the source).
+  have hz₀_F : F z₀ = (chartAt ℂ (f x)) (f x) := by
+    -- `chart.symm (chart x x) = x` from chart left-inverse at the source.
+    have hx_src : x ∈ (chartAt ℂ x).source := mem_chart_source ℂ x
+    have h_inv : (chartAt ℂ x).symm ((chartAt ℂ x) x) = x :=
+      (chartAt ℂ x).left_inv hx_src
+    show ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+        = (chartAt ℂ (f x)) (f x)
+    simp [Function.comp, h_inv]
+  -- Translate the hypothesis witness from "≠ chart(f x)(f x)" to "≠ F z₀".
+  have h_ne' : F z₁ ≠ F z₀ := by
+    rw [hz₀_F]; exact h_ne
+  -- (5) Apply the identity-theorem core.
+  -- The result has `F z₀` on the rhs; rewrite back to `chart(f x)(f x)`.
+  have h_lifted := exists_value_ne_in_nhds_of_witness hFA₀ hU₀_pc hz₀_mem₀
+    hz₁_mem₀ h_ne' V hV
+  obtain ⟨z, hz_mem, hz_ne⟩ := h_lifted
+  refine ⟨z, hz_mem, ?_⟩
+  rw [hz₀_F] at hz_ne
+  exact hz_ne
 
 /-! ## End-to-end composition through ZZ34 -/
 
