@@ -55,6 +55,7 @@ import JacobianChallenge.Manifold.MeromorphicDegreeFiberSumEquivalences
 import JacobianChallenge.Manifold.LogDiffAnchored
 import JacobianChallenge.Manifold.LogDiffAnchoredDischarge
 import JacobianChallenge.Manifold.LogDiffAnchoredWitness
+import JacobianChallenge.Manifold.ChartIntegralEqOrderDischarge
 import JacobianChallenge.Manifold.ChartCircleVanishingRegular
 import JacobianChallenge.Manifold.ChartCircleSumZero
 import JacobianChallenge.Manifold.ChartCircleSumZeroDischarge
