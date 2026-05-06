@@ -40,3 +40,4 @@ import JacobianChallenge.Manifold.ZeroCountEqPoleCount
 import JacobianChallenge.Manifold.LogDiffAnchored
 import JacobianChallenge.Manifold.LogDiffAnchoredDischarge
 import JacobianChallenge.Manifold.LogDiffAnchoredWitness
+import JacobianChallenge.Manifold.ChartCircleVanishingRegular
