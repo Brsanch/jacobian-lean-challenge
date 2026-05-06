@@ -191,6 +191,39 @@ lemma some_zero_fiber_set_eq (f : MeromorphicNonzero X) :
   · intro ⟨hnonneg, hzero⟩
     rw [f.toRiemannSphere_apply_of_nonneg hnonneg, hzero]
 
+/-! ## Lower bound on `fiberCount` -/
+
+/-- **Lower bound: a fibre in the image with finite preimage has cardinality
+at least `1`.**
+
+If `y : RiemannSphere` lies in the image of `f̃ = f.toRiemannSphere` and the
+preimage `f̃ ⁻¹' {y}` is finite, then `1 ≤ fiberCount f y`. The finiteness
+hypothesis is necessary because `Set.ncard` returns `0` on infinite sets;
+on the `∞`-fibre and on any explicitly-known finite fibre this is just
+`Set.Nonempty`. -/
+lemma one_le_fiberCount_of_mem_range_of_finite (f : MeromorphicNonzero X)
+    {y : RiemannSphere} (hy : y ∈ Set.range f.toRiemannSphere)
+    (hfin : (f.toRiemannSphere ⁻¹' {y}).Finite) :
+    1 ≤ fiberCount f y := by
+  unfold fiberCount
+  have hne : (f.toRiemannSphere ⁻¹' {y}).Nonempty := by
+    obtain ⟨x, hx⟩ := hy
+    exact ⟨x, by simpa using hx⟩
+  have hpos : 0 < (f.toRiemannSphere ⁻¹' {y}).ncard :=
+    (Set.ncard_pos hfin).mpr hne
+  exact hpos
+
+/-- **Specialisation to the `∞`-fibre.**
+
+If `∞` lies in the image of `f̃` (equivalently, `f` has at least one pole),
+then `1 ≤ fiberCount f ∞`. The finiteness hypothesis is automatic from the
+ZZ2 lemma `toRiemannSphere_preimage_infty_finite`. -/
+lemma one_le_fiberCount_infty_of_mem_range (f : MeromorphicNonzero X)
+    (hy : (∞ : RiemannSphere) ∈ Set.range f.toRiemannSphere) :
+    1 ≤ fiberCount f (∞ : RiemannSphere) :=
+  one_le_fiberCount_of_mem_range_of_finite f hy
+    f.toRiemannSphere_preimage_infty_finite
+
 /-! ## Summary headline -/
 
 /-- **Pole-fibre is finite, zero-fibre is set-described.**
