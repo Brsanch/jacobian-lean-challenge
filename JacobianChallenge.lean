@@ -69,3 +69,4 @@ import JacobianChallenge.Divisor.OrderFunSign
 import JacobianChallenge.Manifold.ChartNhdsHelpers
 import JacobianChallenge.Manifold.ConnectivityGlobalizationReduction
 import JacobianChallenge.Manifold.WithinChartWitnessReduction
+import JacobianChallenge.Manifold.PerChartNonConstancyReduction
