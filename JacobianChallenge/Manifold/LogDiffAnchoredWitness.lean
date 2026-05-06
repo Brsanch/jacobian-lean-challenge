@@ -217,20 +217,24 @@ lemma extract_common_radius
     (chartAt ℂ x).map_source (mem_chart_source ℂ x)
   obtain ⟨r₁, hr₁_pos, hr₁_sub⟩ :=
     Metric.isOpen_iff.mp (chartAt ℂ x).open_target z₀ h_z0_target
-  -- (2) `g` analytic on a neighborhood of `z₀`: pick a radius `r₂` of analyticity.
-  obtain ⟨r₂_top, hr₂_an⟩ : ∃ s : Set ℂ, IsOpen s ∧ z₀ ∈ s ∧ AnalyticOn ℂ g s := by
-    obtain ⟨s, hs_mem, hs_an⟩ := hg_an.exists_mem_nhds_analyticOn
-    obtain ⟨V, hV_open, hVs, hzV⟩ := mem_nhds_iff.mp hs_mem
-    exact ⟨V, hV_open, hzV, hs_an.mono hVs⟩
-  obtain ⟨s_an, hs_an_open, hz0_s_an, hg_an_on⟩ := ⟨_, hr₂_an.1, hr₂_an.2.1, hr₂_an.2.2⟩
-  obtain ⟨r₂, hr₂_pos, hr₂_sub⟩ :=
-    Metric.isOpen_iff.mp hs_an_open z₀ hz0_s_an
+  -- (2) `g` analytic on a neighborhood of `z₀`: extract a radius via
+  -- `AnalyticAt.eventually_analyticAt`.
+  have h_ev_an : ∀ᶠ z in 𝓝 z₀, AnalyticAt ℂ g z := hg_an.eventually_analyticAt
+  obtain ⟨r₂, hr₂_pos, hr₂_sub⟩ := Metric.eventually_nhds_iff.mp h_ev_an
   -- (3) `g ≠ 0` on a neighborhood: continuity of `g` plus `g(z₀) ≠ 0`.
   have hg_cont : ContinuousAt g z₀ := hg_an.continuousAt
   have h_ne_nhds : ∀ᶠ z in 𝓝 z₀, g z ≠ 0 := hg_cont.eventually_ne hg_ne
   obtain ⟨r₃, hr₃_pos, hr₃_sub⟩ := Metric.eventually_nhds_iff.mp h_ne_nhds
   -- (4) Factorisation on a punctured neighborhood: extract a radius.
-  obtain ⟨r₄, hr₄_pos, hr₄_eq⟩ := Metric.eventually_nhdsWithin_iff.mp h_fact
+  -- Convert `∀ᶠ z in 𝓝[≠] z₀, P z` to `∀ᶠ z in 𝓝 z₀, z ≠ z₀ → P z`.
+  have h_fact' : ∀ᶠ z in 𝓝 z₀, z ≠ z₀ →
+      (f.toFun ∘ (chartAt ℂ x).symm) z =
+        (z - z₀) ^ k • g z := by
+    rw [eventually_nhdsWithin_iff] at h_fact
+    -- `h_fact : ∀ᶠ z in 𝓝 z₀, z ∈ {z₀}ᶜ → P z`.
+    filter_upwards [h_fact] with z hz hzne
+    exact hz hzne
+  obtain ⟨r₄, hr₄_pos, hr₄_eq⟩ := Metric.eventually_nhds_iff.mp h_fact'
   -- Pick the minimum, scaled down to be a *closed* sub-radius.
   set r : ℝ := min (r₁ / 2) (min (r₂ / 2) (min (r₃ / 2) (r₄ / 2))) with hr_def
   have hr_pos : 0 < r := by
@@ -284,22 +288,12 @@ lemma extract_common_radius
     exact hr₃_sub (h_closed_sub_r₃ hz)
   · -- `g` analytic on neighborhood of closed ball.
     intro z hz
-    have : z ∈ s_an := hr₂_sub (h_closed_sub_r₂ hz)
-    -- `g` is analytic at `z` since `s_an` is an open set on which `g` is analytic.
-    exact (hg_an_on z this).analyticAt (hs_an_open.mem_nhds this)
+    have hz_in_r₂ : dist z z₀ < r₂ := h_closed_sub_r₂ hz
+    exact hr₂_sub hz_in_r₂
   · -- factorisation on punctured open ball.
     intro z hz hzne
-    -- `dist z z₀ < r₄`, so the eventually condition fires.
     have hdist : dist z z₀ < r₄ := h_open_sub_r₄ hz
-    have hzne_ne : z ≠ z₀ := hzne
-    -- `Metric.eventually_nhdsWithin_iff` gives `∀ y ∈ ball ε \ {z₀}, P y`-style.
-    -- Apply `hr₄_eq` at `z` with `dist z z₀ < r₄` and `z ∈ ({z₀})ᶜ`.
-    have : z ∈ Metric.ball z₀ r₄ \ {z₀} := by
-      refine ⟨hdist, ?_⟩
-      simp [hzne_ne]
-    -- `hr₄_eq : ∀ y ∈ Metric.ball z₀ r₄, y ≠ z₀ → ...` — actually shape depends.
-    -- We use the specialised `hr₄_eq` which has shape `∀ ⦃y⦄, dist y z₀ < r₄ → y ≠ z₀ → P y`.
-    exact hr₄_eq hdist hzne_ne
+    exact hr₄_eq hdist hzne
 
 end MeromorphicNonzero
 
