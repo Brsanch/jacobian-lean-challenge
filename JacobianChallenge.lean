@@ -81,4 +81,5 @@ import JacobianChallenge.Manifold.FibreCardClopenReduction
 import JacobianChallenge.Manifold.RegularValueExistsUnconditional
 import JacobianChallenge.Manifold.BranchedCoverDegree
 import JacobianChallenge.Manifold.FibreCardWellDefinedUnconditional
+import JacobianChallenge.Manifold.FibreCardLevelSetClopenDischarge
 import JacobianChallenge.Manifold.PrincipalDivisorDegreeZero
