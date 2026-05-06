@@ -63,3 +63,4 @@ import JacobianChallenge.Manifold.LocalArgumentPrinciple
 import JacobianChallenge.Manifold.StokesDiskClosedForm
 import JacobianChallenge.Manifold.ChartDiskRegularity
 import JacobianChallenge.Manifold.ChartCircleSumOrders
+import JacobianChallenge.Divisor.ChipAliases
