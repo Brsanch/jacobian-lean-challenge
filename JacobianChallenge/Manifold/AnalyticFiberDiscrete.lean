@@ -304,7 +304,8 @@ lemma fibres_finite_of_chart_pullback
     (h_chart : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
       ¬ JacobianChallenge.IsConstantMap f →
       ∀ y : Y, ∀ x ∈ f ⁻¹' {y}, ChartPullbackData f x y) :
-    fibres_finite_statement X Y := by
+    ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ JacobianChallenge.IsConstantMap f →
+      ∀ y : Y, (f ⁻¹' {y}).Finite := by
   intro f hf hnc y
   refine fiber_finite_of_isDiscrete hf.continuous y ?_
   exact isDiscrete_fiber_of_chart_pullback f y (h_chart f hf hnc y)
