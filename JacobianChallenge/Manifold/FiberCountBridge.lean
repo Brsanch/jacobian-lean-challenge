@@ -157,7 +157,7 @@ lemma fiberCount_infty_eq_filter_neg_card (f : MeromorphicNonzero X)
   classical
   unfold fiberCount
   rw [← infty_fiber_toFinset_eq_filter_neg f]
-  exact Set.ncard_eq_toFinset_card' _ (f.toRiemannSphere_preimage_infty_finite)
+  exact Set.ncard_eq_toFinset_card _ f.toRiemannSphere_preimage_infty_finite
 
 /-! ## `some 0` side bridge: set-equality with the regular zero set -/
 
