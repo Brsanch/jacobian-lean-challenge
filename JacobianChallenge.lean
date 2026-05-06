@@ -12,6 +12,7 @@ import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Manifold.RiemannSphere
 import JacobianChallenge.Manifold.RiemannSphereGenus
 import JacobianChallenge.Manifold.RiemannSphereMobius
+import JacobianChallenge.Manifold.PlanarAnnulusCircleIntegral
 import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.Single
 import JacobianChallenge.Divisor.FiberSum
