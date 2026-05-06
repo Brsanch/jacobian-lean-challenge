@@ -75,3 +75,4 @@ import JacobianChallenge.Manifold.CriticalSetDiscrete
 import JacobianChallenge.Manifold.ChartPullbackNotEventuallyConstDischarge
 import JacobianChallenge.Manifold.ChartOverlapPropagationDischarge
 import JacobianChallenge.Manifold.ClopennessOfLocallyConstDischarge
+import JacobianChallenge.Manifold.RegularValueExistsUnconditional
