@@ -31,7 +31,7 @@ No `sorry`, no `axiom`. -/
 @[expose] public section
 
 open Set Filter Topology
-open scoped Manifold Topology ContDiff
+open scoped Manifold Topology
 
 namespace JacobianChallenge
 namespace ContMDiff
