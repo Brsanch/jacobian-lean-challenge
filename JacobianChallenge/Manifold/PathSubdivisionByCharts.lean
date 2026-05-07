@@ -13,6 +13,7 @@ monotone partition `t : ℕ → I`) is already provided by mathlib as
 to the chart-source cover associated to the path.
 -/
 import Mathlib.Geometry.Manifold.ChartedSpace
+import Mathlib.Topology.PartialHomeomorph
 import Mathlib.Topology.UnitInterval
 import Mathlib.Topology.Path
 
