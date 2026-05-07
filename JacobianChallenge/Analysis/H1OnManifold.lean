@@ -3,10 +3,7 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
-import Mathlib.MeasureTheory.Function.LpSpace.Basic
-import Mathlib.MeasureTheory.Function.L2Space
-import Mathlib.Geometry.Manifold.IsManifold.Basic
-import Mathlib.Analysis.InnerProductSpace.EuclideanDist
+import Mathlib
 import JacobianChallenge.Analysis.L2OnManifold
 import JacobianChallenge.Analysis.CompactManifoldMeasureFromCharts
 
@@ -28,17 +25,29 @@ therefore supply our own *predicate-based* wrapper that:
 * requires the underlying `M → ℝ` to be `L²` against the unconditional
   compact-manifold measure, and
 * carries a chart-side predicate `ChartDerivativeL2 f` asserting that
-  the chart pullbacks have an `L²` weak derivative.
+  for every chart `φ` in the atlas, the chart pullback
+  `f ∘ φ.symm : EuclideanSpace ℝ (Fin n) → ℝ` is differentiable on
+  the chart target and its Fréchet derivative is in `L²` of the
+  Lebesgue measure restricted to that target.
 
-The predicate `ChartDerivativeL2` is kept *abstract* at this layer
-(packaged as the sentinel `True`-equivalent predicate
-`ChartDerivativeL2 := fun _ => True`) so the structure is non-empty
-unconditionally. Subsequent chips will refine it to the genuine
-chart-pullback Sobolev condition (via `Mathlib.Analysis.FunctionalSpaces.SobolevInequality`
-or `Mathlib.Analysis.Distribution.SchwartzSpace` plus the manifold's
-`mfderiv`). At that point this predicate becomes a `def` rather than
-a `True`-stub; downstream consumers depending only on the structure's
-*shape* are insulated from that refinement.
+This file *replaces* an earlier `True`-stub form of `ChartDerivativeL2`
+(ZZ146) with the genuine chart-pullback `MemLp` content (ZZ148).
+The shape (a `Prop` named `ChartDerivativeL2` plus the `Zero`/`Add`
+instances on `H1OnCompactManifold`) is preserved so downstream files
+binding only against the predicate's name keep building.
+
+## Implementation note: the predicate carries `MemLp` of the derivative
+
+We require `MemLp (fun x => fderiv ℝ (f ∘ φ.symm) x) 2 (volume.restrict φ.target)`,
+i.e. `L²`-membership of the *continuous-linear-map-valued* Fréchet
+derivative itself, not merely its norm. This is the form mathlib
+uses for `Lᵖ`-spaces of vector-valued functions, and crucially it
+gives us AE strong measurability of `fderiv ℝ (f ∘ φ.symm)` (rather
+than only of its norm), which is what makes the additivity proof for
+the chart-derivative predicate go through: `fderiv ℝ` of a sum on a
+domain where both summands are differentiable equals the sum of the
+two summand derivatives, and AE strong measurability is preserved
+by addition.
 
 ## Scope
 
@@ -59,39 +68,117 @@ namespace JacobianChallenge
 
 open MeasureTheory
 
-/-- **Predicate placeholder** for "every chart pullback of `f` has an
-`L²` weak first derivative on its chart codomain". This is stubbed to
-the trivial predicate at this layer; a downstream chip will refine
-it to the genuine condition `∀ x : M, MemLp (fderiv ℝ (f ∘ (extChartAt I x).symm)) 2 (volume.restrict (extChartAt I x).target)`.
+/-- Chart-pullback Sobolev predicate.
 
-Stubbing here lets downstream files commit against a stable name and
-shape (`Prop`) without those files needing to be rewritten when the
-predicate is refined. -/
+`ChartDerivativeL2 f` says: for every chart `φ` of the atlas of the
+charted-space structure on `M`,
+
+* the chart pullback `f ∘ φ.symm : EuclideanSpace ℝ (Fin n) → ℝ` is
+  differentiable on `φ.target`, and
+* the Fréchet derivative `x ↦ fderiv ℝ (f ∘ φ.symm) x` (a continuous
+  linear map valued function) is in `L²` of the Lebesgue volume
+  restricted to `φ.target`.
+
+Bundling differentiability into the predicate makes the chart-side
+Fréchet derivative additive on overlaps of differentiability
+domains. Bundling `MemLp` of the *map-valued* derivative (not just
+its norm) gives AE strong measurability of the derivative, which
+lets the additivity proof for `ChartDerivativeL2` go through. -/
 def ChartDerivativeL2 {n : ℕ} {M : Type}
     [TopologicalSpace M]
     [ChartedSpace (EuclideanSpace ℝ (Fin n)) M]
-    (_f : M → ℝ) : Prop := True
+    (f : M → ℝ) : Prop :=
+  ∀ φ ∈ atlas (EuclideanSpace ℝ (Fin n)) M,
+    DifferentiableOn ℝ (f ∘ φ.symm) φ.target ∧
+    MemLp (fun x => fderiv ℝ (f ∘ φ.symm) x)
+      2 (volume.restrict φ.target)
 
-/-- The chart-derivative predicate is satisfied by the zero function. -/
+/-- The chart-derivative predicate is satisfied by the zero function:
+its chart pullback is the zero function, which is differentiable
+everywhere with zero Fréchet derivative, and the zero function is
+trivially `L²`. -/
 lemma chartDerivativeL2_zero {n : ℕ} {M : Type}
     [TopologicalSpace M]
     [ChartedSpace (EuclideanSpace ℝ (Fin n)) M] :
     ChartDerivativeL2 (n := n) (M := M) (fun _ => (0 : ℝ)) := by
-  trivial
+  intro φ _hφ
+  -- The chart pullback of the zero function is the zero function on
+  -- `EuclideanSpace ℝ (Fin n)`.
+  have hcomp : ((fun _ : M => (0 : ℝ)) ∘ φ.symm)
+        = (fun _ : EuclideanSpace ℝ (Fin n) => (0 : ℝ)) := by
+    funext y; rfl
+  refine ⟨?_, ?_⟩
+  · rw [hcomp]
+    exact (differentiable_const (0 : ℝ)).differentiableOn
+  · -- `fderiv` of the zero function is the zero linear map; the
+    -- zero function is in `Lᵖ` for every measure.
+    have hderiv :
+        (fun x : EuclideanSpace ℝ (Fin n) =>
+            fderiv ℝ ((fun _ : M => (0 : ℝ)) ∘ φ.symm) x)
+          = (fun _ => (0 : EuclideanSpace ℝ (Fin n) →L[ℝ] ℝ)) := by
+      funext x
+      rw [hcomp]
+      simp [fderiv_const]
+    rw [hderiv]
+    exact MemLp.zero'
 
 /-- The chart-derivative predicate is closed under pointwise sums.
-At the stub layer this is trivial; once `ChartDerivativeL2` is
-refined to the genuine `MemLp`-on-charts condition, the proof of
-this lemma becomes nontrivial (it is the chart-side analogue of
-`MemLp.add`). -/
+Both summands being differentiable on each chart target lets `fderiv`
+distribute, after which `MemLp.add` of the two summand derivatives,
+combined with AE-equality of the sum-derivative with the sum of
+derivatives on the chart target, closes the `MemLp` goal. -/
 lemma chartDerivativeL2_add {n : ℕ} {M : Type}
     [TopologicalSpace M]
     [ChartedSpace (EuclideanSpace ℝ (Fin n)) M]
     {f g : M → ℝ}
-    (_hf : ChartDerivativeL2 (n := n) (M := M) f)
-    (_hg : ChartDerivativeL2 (n := n) (M := M) g) :
+    (hf : ChartDerivativeL2 (n := n) (M := M) f)
+    (hg : ChartDerivativeL2 (n := n) (M := M) g) :
     ChartDerivativeL2 (n := n) (M := M) (fun x => f x + g x) := by
-  trivial
+  intro φ hφ
+  obtain ⟨hf_diff, hf_L2⟩ := hf φ hφ
+  obtain ⟨hg_diff, hg_L2⟩ := hg φ hφ
+  have hcomp_eq :
+      (fun x => f x + g x) ∘ φ.symm
+        = (fun y => (f ∘ φ.symm) y + (g ∘ φ.symm) y) := by
+    funext y; rfl
+  refine ⟨?_, ?_⟩
+  · rw [hcomp_eq]
+    exact hf_diff.add hg_diff
+  · -- The sum's derivative agrees a.e. on `φ.target` with the
+    -- sum of summand derivatives, which is in `L²` by `MemLp.add`.
+    have hsum_L2 :
+        MemLp (fun x => fderiv ℝ (f ∘ φ.symm) x
+                          + fderiv ℝ (g ∘ φ.symm) x)
+          2 (volume.restrict φ.target) :=
+      MemLp.add hf_L2 hg_L2
+    have h_eq_ae :
+        (fun x => fderiv ℝ ((fun x => f x + g x) ∘ φ.symm) x)
+          =ᵐ[volume.restrict φ.target]
+        (fun x => fderiv ℝ (f ∘ φ.symm) x
+                  + fderiv ℝ (g ∘ φ.symm) x) := by
+      refine (ae_restrict_iff' (s := φ.target) ?_).mpr ?_
+      · exact φ.open_target.measurableSet
+      refine Filter.Eventually.of_forall (fun x hx => ?_)
+      have hfx : DifferentiableAt ℝ (f ∘ φ.symm) x :=
+        (hf_diff x hx).differentiableAt (φ.open_target.mem_nhds hx)
+      have hgx : DifferentiableAt ℝ (g ∘ φ.symm) x :=
+        (hg_diff x hx).differentiableAt (φ.open_target.mem_nhds hx)
+      rw [hcomp_eq]
+      exact fderiv_add hfx hgx
+    -- `MemLp` is preserved under a.e. equality: rebuild from
+    -- `aestronglyMeasurable` and `eLpNorm` finiteness, transferred
+    -- across `h_eq_ae`.
+    refine ⟨?_, ?_⟩
+    · exact hsum_L2.aestronglyMeasurable.congr h_eq_ae.symm
+    · have h_eLp : eLpNorm
+            (fun x => fderiv ℝ ((fun x => f x + g x) ∘ φ.symm) x) 2
+            (volume.restrict φ.target)
+          = eLpNorm
+            (fun x => fderiv ℝ (f ∘ φ.symm) x
+                      + fderiv ℝ (g ∘ φ.symm) x) 2
+            (volume.restrict φ.target) :=
+        eLpNorm_congr_ae h_eq_ae
+      rw [h_eLp]; exact hsum_L2.eLpNorm_lt_top
 
 /-- **`H¹` Sobolev space** on a compact charted manifold.
 
@@ -99,11 +186,8 @@ A real-valued function `M → ℝ` belongs to `H¹` iff:
 
 * it is `L²` against the unconditional compact-manifold finite measure
   `compactManifoldMeasureUnconditional n M`, and
-* every chart pullback has an `L²` weak first derivative
-  (carried by the predicate `ChartDerivativeL2`).
-
-The chart-derivative predicate is currently stubbed to `True`; see the
-file-level docstring for the refinement plan. -/
+* every chart pullback is differentiable on its chart target with
+  `L²` Fréchet derivative there (carried by `ChartDerivativeL2`). -/
 structure H1OnCompactManifold (n : ℕ) (M : Type)
     [TopologicalSpace M] [CompactSpace M]
     [ChartedSpace (EuclideanSpace ℝ (Fin n)) M]
@@ -136,8 +220,7 @@ instance : Zero (H1OnCompactManifold n M) := ⟨zero⟩
     (0 : H1OnCompactManifold n M).toFun = (fun _ => (0 : ℝ)) := rfl
 
 /-- Pointwise sum of two `H¹` functions. The `L²` part follows from
-`MemLp.add`; the chart-derivative part is the (currently stubbed)
-`chartDerivativeL2_add`. -/
+`MemLp.add`; the chart-derivative part is `chartDerivativeL2_add`. -/
 def add (f g : H1OnCompactManifold n M) : H1OnCompactManifold n M where
   toFun := fun x => f.toFun x + g.toFun x
   isL2 := by
