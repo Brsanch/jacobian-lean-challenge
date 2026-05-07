@@ -108,8 +108,6 @@ lemma surjOn (s : LocalSheetData f y₀ x) : SurjOn f s.U s.V := by
   intro y hy
   refine ⟨s.g y, s.g_mapsTo hy, s.rightInvOn hy⟩
 
-/-- `f x = y₀`. We do *not* assert this in the structure, since at a regular
-value it is automatic from `x ∈ f ⁻¹' {y₀}`. -/
 end LocalSheetData
 
 /-- **Pairwise-disjoint open neighbourhoods of a finite set in a T2 space.**
@@ -126,9 +124,10 @@ lemma exists_pairwiseDisjoint_open_of_finset
   classical
   induction s using Finset.induction_on with
   | empty =>
-      exact ⟨fun _ => Set.univ, by intros; exact isOpen_univ,
-        by intros _ hx; exact (Finset.not_mem_empty _ hx).elim,
-        by intros _ hx; exact (Finset.not_mem_empty _ hx).elim⟩
+      refine ⟨fun _ => Set.univ, ?_, ?_, ?_⟩
+      · intros; exact isOpen_univ
+      · intros _ hx; simp at hx
+      · intros _ hx; simp at hx
   | insert a s ha ih =>
       obtain ⟨W₀, hW₀_open, hW₀_mem, hW₀_disj⟩ := ih
       -- For each x ∈ s, separate a from x.
@@ -157,32 +156,36 @@ lemma exists_pairwiseDisjoint_open_of_finset
         else Set.univ
       refine ⟨W, ?_, ?_, ?_⟩
       · intro y hy
-        rcases Finset.mem_insert.mp hy with rfl | hy_in_s
-        · simp only [W, if_pos rfl]
+        rcases Finset.mem_insert.mp hy with heq | hy_in_s
+        · subst heq
+          simp only [W, if_pos rfl]
           exact isOpen_iInter_of_finite (fun p => hA_open p.1 p.2)
         · have hya : y ≠ a := fun heq => ha (heq ▸ hy_in_s)
           simp only [W, if_neg hya, dif_pos hy_in_s]
           exact (hW₀_open y hy_in_s).inter (hB_open y hy_in_s)
       · intro y hy
-        rcases Finset.mem_insert.mp hy with rfl | hy_in_s
-        · simp only [W, if_pos rfl]
+        rcases Finset.mem_insert.mp hy with heq | hy_in_s
+        · subst heq
+          simp only [W, if_pos rfl]
           rw [mem_iInter]; intro p; exact hA_mem p.1 p.2
         · have hya : y ≠ a := fun heq => ha (heq ▸ hy_in_s)
           simp only [W, if_neg hya, dif_pos hy_in_s]
           exact ⟨hW₀_mem y hy_in_s, hB_mem y hy_in_s⟩
       · intro y hy y' hy' hne
-        rcases Finset.mem_insert.mp hy with rfl | hy_s
-        · rcases Finset.mem_insert.mp hy' with rfl | hy'_s
-          · exact (hne rfl).elim
-          · have hy'a : y' ≠ a := fun heq => ha (heq ▸ hy'_s)
+        rcases Finset.mem_insert.mp hy with heq | hy_s
+        · subst heq
+          rcases Finset.mem_insert.mp hy' with heq' | hy'_s
+          · exact (hne heq'.symm).elim
+          · have hy'a : y' ≠ y := fun heq => ha (heq ▸ hy'_s)
             simp only [W, if_pos rfl, if_neg hy'a, dif_pos hy'_s]
             rw [Set.disjoint_left]
             intro z hzA hzWB
             have hzA_y' : z ∈ Afun y' hy'_s := mem_iInter.mp hzA ⟨y', hy'_s⟩
             have hzB : z ∈ Bfun y' hy'_s := hzWB.2
             exact Set.disjoint_left.mp (hAB_disj y' hy'_s) hzA_y' hzB
-        · rcases Finset.mem_insert.mp hy' with rfl | hy'_s
-          · have hya : y ≠ a := fun heq => ha (heq ▸ hy_s)
+        · rcases Finset.mem_insert.mp hy' with heq' | hy'_s
+          · subst heq'
+            have hya : y ≠ y' := fun heq => ha (heq ▸ hy_s)
             simp only [W, if_neg hya, if_pos rfl, dif_pos hy_s]
             rw [Set.disjoint_left]
             intro z hzWB hzA
