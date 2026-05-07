@@ -30,6 +30,7 @@ import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Manifold.AnalyticFiberDiscrete
 import JacobianChallenge.Manifold.AnalyticContinuationGlobalization
 import JacobianChallenge.Manifold.ContMDiffOmegaAnalytic
+import JacobianChallenge.Manifold.ContMDiffAnalyticBridge
 import JacobianChallenge.Manifold.ChartPullbackDataConstruction
 import JacobianChallenge.Manifold.FibresFiniteAssembly
 import JacobianChallenge.Manifold.RiemannSphere
