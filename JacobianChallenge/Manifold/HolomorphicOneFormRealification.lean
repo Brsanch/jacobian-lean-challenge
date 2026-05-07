@@ -78,10 +78,10 @@ Concretely this is just the `DFunLike` coercion of the underlying
 lemmas can talk about `om.eval x` without restating the full section
 signature each time. -/
 def eval (om : HolomorphicOneForm X) (x : X) : ℂ →L[ℂ] ℂ :=
-  (om :
-    ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
-      𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _))
-    x
+  let s :
+      ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
+        𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _) := om
+  s x
 
 /-- The real part of `om.eval x`, viewed as a continuous `ℝ`-linear
 functional `ℂ →L[ℝ] ℝ`. Concretely: `om.realPart x v = (om.eval x v).re`. -/
