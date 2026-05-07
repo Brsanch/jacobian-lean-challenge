@@ -17,7 +17,7 @@ namespace JacobianChallenge.Manifold
 
 /-- `ℂ`, viewed as an ℝ-normed space, is locally path-connected. -/
 instance instLocPathConnectedSpace_complex : LocPathConnectedSpace ℂ :=
-  LocallyConvexSpace.toLocPathConnectedSpace ℝ ℂ
+  inferInstance
 
 /-- Any topological space charted on `ℂ` is locally path-connected. -/
 theorem locPathConnectedSpace_of_chartedSpace_complex
