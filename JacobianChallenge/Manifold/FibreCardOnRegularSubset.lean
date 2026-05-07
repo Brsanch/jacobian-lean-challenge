@@ -149,6 +149,7 @@ lemma fibre_card_well_defined_at_regular_statement_holds_of_locallyConstant
           IsLocallyConstant (fun y : (Cᶜ : Set Y) => card_of y.val) ∧
           IsPreconnected (Set.univ : Set (Cᶜ : Set Y))) :
     fibre_card_well_defined_at_regular_statement X Y := by
+  unfold fibre_card_well_defined_at_regular_statement
   intro f hf hnc C w₁ w₂
   exact fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant
     h_lc f hf hnc C w₁ w₂
