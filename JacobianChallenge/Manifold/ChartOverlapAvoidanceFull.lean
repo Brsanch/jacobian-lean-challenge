@@ -102,7 +102,7 @@ theorem exists_avoidance_in_open_chartedSpace_complex
   -- of "bad" points in `ball c r` is finite, hence the punctured ball minus
   -- this finite set is nonempty (any nontrivial ball is uncountable).
   have hbad_fin : (φ' '' (φ'.source ∩ C)).Finite :=
-    (hC.inter_of_left φ'.source).image φ'
+    (hC.inter_of_right φ'.source).image φ'
   -- We want a nonzero `δ : ℝ` with `|δ| < r` and `c + δ ∉ φ' '' (φ'.source ∩ C)`.
   -- The set of "bad real shifts" is finite (one shift per bad chart-image point).
   -- `ball c r` contains uncountably many `c + δ` for `δ ∈ (-r, r) \ {0}`.
@@ -132,13 +132,13 @@ theorem exists_avoidance_in_open_chartedSpace_complex
   -- Define `c' := c + δ`. Then `c' ∈ ball c r`.
   set c' : ℂ := c + (δ : ℂ) with hc'_def
   have hc'_in_ball : c' ∈ Metric.ball c r := by
-    rw [Metric.mem_ball, dist_comm, hc'_def]
-    have : dist c (c + (δ : ℂ)) = ‖(δ : ℂ)‖ := by
-      rw [dist_eq_norm]; ring_nf
-    rw [this]
-    have habs : ‖(δ : ℂ)‖ = |δ| := by
+    rw [Metric.mem_ball, hc'_def]
+    have hdist : dist (c + (δ : ℂ)) c = |δ| := by
+      rw [dist_eq_norm]
+      have h1 : c + (δ : ℂ) - c = (δ : ℂ) := by ring
+      rw [h1]
       simp [Complex.norm_real]
-    rw [habs, abs_of_pos hδ_pos]; exact hδ_lt_r
+    rw [hdist, abs_of_pos hδ_pos]; exact hδ_lt_r
   -- `c'` is in `φ'.target`.
   have hc'_target : c' ∈ φ'.target := hr_sub_target hc'_in_ball
   -- (4) Define `z := φ'.symm c'`. It lies in `φ'.source ⊆ original chart source`,
@@ -174,22 +174,20 @@ theorem exists_avoidance_in_open_chartedSpace_complex
   -- Show `γ_chart t ∈ ball c r` for all `t ∈ I`.
   have hγ_chart_mem_ball : ∀ t : unitInterval, γ_chart t ∈ Metric.ball c r := by
     intro t
-    obtain ⟨t_val, ht0, ht1⟩ := t.2
+    have ht0 : 0 ≤ t.1 := t.2.1
+    have ht1 : t.1 ≤ 1 := t.2.2
     show c + ((t.1 * δ : ℝ) : ℂ) ∈ Metric.ball c r
-    rw [Metric.mem_ball, dist_comm]
-    have : dist c (c + ((t.1 * δ : ℝ) : ℂ)) = |t.1 * δ| := by
+    rw [Metric.mem_ball]
+    have hdist : dist (c + ((t.1 * δ : ℝ) : ℂ)) c = |t.1 * δ| := by
       rw [dist_eq_norm]
-      have : ‖c - (c + ((t.1 * δ : ℝ) : ℂ))‖ = ‖((t.1 * δ : ℝ) : ℂ)‖ := by
-        ring_nf
-      rw [this]
+      have h1 : c + ((t.1 * δ : ℝ) : ℂ) - c = ((t.1 * δ : ℝ) : ℂ) := by ring
+      rw [h1]
       simp [Complex.norm_real]
-    rw [this]
-    have ht_nn : 0 ≤ t.1 := ht0
-    have ht_le1 : t.1 ≤ 1 := ht1
-    have htδ_nn : 0 ≤ t.1 * δ := mul_nonneg ht_nn (le_of_lt hδ_pos)
+    rw [hdist]
+    have htδ_nn : 0 ≤ t.1 * δ := mul_nonneg ht0 (le_of_lt hδ_pos)
     rw [abs_of_nonneg htδ_nn]
     calc t.1 * δ ≤ 1 * δ := by
-            apply mul_le_mul_of_nonneg_right ht_le1 (le_of_lt hδ_pos)
+            exact mul_le_mul_of_nonneg_right ht1 (le_of_lt hδ_pos)
       _ = δ := one_mul δ
       _ < r := hδ_lt_r
   -- Continuity of `φ'.symm ∘ γ_chart`.
@@ -207,17 +205,16 @@ theorem exists_avoidance_in_open_chartedSpace_complex
   -- Endpoints.
   have hγ_zero : γ ⟨0, by simp [unitInterval]⟩ = y := by
     show φ'.symm (γ_chart ⟨0, _⟩) = y
-    have : γ_chart ⟨(0 : ℝ), by simp [unitInterval]⟩ = c := by
-      show c + (((0 : ℝ) * δ : ℝ) : ℂ) = c
+    have hch : γ_chart ⟨(0 : ℝ), by simp [unitInterval]⟩ = c := by
+      change c + (((0 : ℝ) * δ : ℝ) : ℂ) = c
       simp
-    rw [this]; exact hsymm_c
+    rw [hch]; exact hsymm_c
   have hγ_one : γ ⟨1, by simp [unitInterval]⟩ = z := by
     show φ'.symm (γ_chart ⟨1, _⟩) = z
-    have : γ_chart ⟨(1 : ℝ), by simp [unitInterval]⟩ = c' := by
-      show c + (((1 : ℝ) * δ : ℝ) : ℂ) = c + ((δ : ℝ) : ℂ)
-      simp
-    rw [this]
-    rfl
+    have hch : γ_chart ⟨(1 : ℝ), by simp [unitInterval]⟩ = c' := by
+      change c + (((1 : ℝ) * δ : ℝ) : ℂ) = c'
+      rw [hc'_def]; push_cast; ring
+    rw [hch]
   -- Wrap in `Path`.
   refine ⟨{ toContinuousMap := γ, source' := hγ_zero, target' := hγ_one }, ?_⟩
   intro t
