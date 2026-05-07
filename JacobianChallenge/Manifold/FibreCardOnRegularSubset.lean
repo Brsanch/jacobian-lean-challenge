@@ -53,6 +53,7 @@ No `sorry`. No `axiom`. No signature changes outside this file. -/
 @[expose] public section
 
 open Set
+open scoped Manifold ContDiff
 
 namespace JacobianChallenge
 
