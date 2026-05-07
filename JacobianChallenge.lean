@@ -75,6 +75,7 @@ import JacobianChallenge.Manifold.IntegerShadowChainRealisation
 import JacobianChallenge.Manifold.IntegerShadowStokes
 import JacobianChallenge.Manifold.IsConstantMapAux
 import JacobianChallenge.Manifold.LocalArgumentPrinciple
+import JacobianChallenge.Manifold.LocalBiholomorphism
 import JacobianChallenge.Manifold.LocalCountPackageInputsDischarge
 import JacobianChallenge.Manifold.LocalCountPackageSupplier
 import JacobianChallenge.Manifold.LocalKFoldMultiplicity
