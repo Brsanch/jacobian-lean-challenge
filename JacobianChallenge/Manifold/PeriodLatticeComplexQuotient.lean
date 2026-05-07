@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import Mathlib.Analysis.Complex.Basic
-import Mathlib.Data.Complex.FiniteDimensional
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 import JacobianChallenge.Manifold.PeriodLatticeLieGroup
 
 /-! # Complex-model `IsManifold 𝓘(ℂ, Fin g → ℂ) ω ((Fin g → ℂ) ⧸ Λ)`
