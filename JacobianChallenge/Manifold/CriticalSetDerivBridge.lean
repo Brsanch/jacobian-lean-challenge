@@ -99,7 +99,10 @@ theorem deriv_ne_zero_of_analyticOrderAt_eq_one
     have h1 := hfact z (hball_subset hz)
     have h2 : (z - x₀) ^ (1 : ℕ) * u z = (z - x₀) * u z := by rw [pow_one]
     have h3 : g z - w₀ = (z - x₀) * u z := h1.trans h2
-    linarith [sub_eq_iff_eq_add'.mp h3]
+    have h4 : g z = w₀ + (z - x₀) * u z := by
+      have := sub_eq_iff_eq_add'.mp h3
+      linear_combination this
+    exact h4
   set h : ℂ → ℂ := fun z => w₀ + (z - x₀) * u z with hh_def
   have hu_at_x₀ : AnalyticAt ℂ u x₀ :=
     hu_an x₀ (Metric.mem_closedBall_self hR_pos.le)
@@ -154,25 +157,67 @@ private lemma analyticOrderAt_eq_natCast_ge_one_of_not_eventually
     apply hne
     filter_upwards [hcontra] with z hz
     have : g z - w₀ = 0 := hz
-    linarith [sub_eq_zero.mp this]
-  rcases hf_an.eventually_eq_zero_or_eventually_ne_zero with hzero | hne_punctured
-  · exact (hf_ne hzero).elim
-  · have h_ord_ne_top : analyticOrderAt f x₀ ≠ ⊤ := by
-      rw [hf_an.analyticOrderAt_ne_top_iff]
-      exact hne_punctured
-    obtain ⟨k, hk_eq⟩ : ∃ k : ℕ, analyticOrderAt f x₀ = (k : ℕ∞) := by
-      rcases h : analyticOrderAt f x₀ with _ | n
-      · exact (h_ord_ne_top h).elim
-      · exact ⟨n, rfl⟩
-    have hk_ge_one : 1 ≤ k := by
-      by_contra hlt
-      push_neg at hlt
-      interval_cases k
-      have h_ord_zero : analyticOrderAt f x₀ = 0 := by exact_mod_cast hk_eq
-      have h_f_ne_zero : f x₀ ≠ 0 := by
-        rwa [hf_an.analyticOrderAt_eq_zero_iff] at h_ord_zero
-      exact h_f_ne_zero hf_x₀
-    exact ⟨k, hk_ge_one, hk_eq⟩
+    exact sub_eq_zero.mp this
+  -- Case analysis on `analyticOrderAt f x₀` ∈ ℕ∞ = WithTop ℕ.
+  rcases h_ord : analyticOrderAt f x₀ with _ | k
+  · -- order = ⊤. Then `f` is eventually 0, contradicting `hf_ne`.
+    exfalso
+    apply hf_ne
+    -- Use mathlib: `analyticOrderAt = ⊤ ↔ eventually 0` for analytic functions.
+    -- We use `hf_an.eventually_eq_zero_or_eventually_ne_zero` and rule out the
+    -- non-zero case via the `WithTop` lemma `AnalyticAt.analyticOrderAt_eq_natCast`.
+    rcases hf_an.eventually_eq_zero_or_eventually_ne_zero with hz | hne'
+    · exact hz
+    · -- `hne' : ∀ᶠ z in 𝓝[≠] x₀, f z ≠ 0` — but `analyticOrderAt = ⊤` says `f` is
+      -- eventually 0. Show contradiction by extracting a sequence of zeros forced
+      -- by `eventually_eq_zero_or_eventually_ne_zero` not happening.
+      -- Actually: if order = ⊤, `f =ᶠ 0` near `x₀`. We use `WithTop` directly:
+      -- order = ⊤ ⟹ the Taylor series is identically zero ⟹ f is locally zero.
+      -- We cite `AnalyticAt.frequently_zero_iff_eventually_zero` (mathlib has both
+      -- directions). Concretely: `hne'` says f is *not* eventually zero (only
+      -- eventually nonzero on the punctured side — but combined with `f x₀ = 0`,
+      -- which is not eventually nonzero, this gives "f frequently zero" which by
+      -- the analytic identity theorem implies eventually zero.
+      -- We avoid calling `hne'` directly and just prove `f =ᶠ 0` via order = ⊤
+      -- using `analyticOrderAt`'s `WithTop.add_top` style lemma. Easiest route:
+      -- contradiction with `hne'` directly.
+      -- `f x₀ = 0`, but `hne'` is on the punctured nbhd, so doesn't include `x₀`.
+      -- We use `AnalyticAt.eventually_eq_zero_iff_analyticOrderAt_eq_top`-style.
+      -- Bare-hands approach: order = ⊤ and `hne'` together. By `hne'`, there's a
+      -- punctured nbhd where `f ≠ 0`. By order = ⊤, the formal Taylor series at
+      -- x₀ is zero, so `f` is locally zero (mathlib's `AnalyticAt.locally_zero_iff`).
+      -- We invoke `hf_an.analyticOrderAt_eq_natCast` at `k = 0`: it would say
+      -- `f x₀ ≠ 0`, but we have `f x₀ = 0`. That's not directly useful since
+      -- `analyticOrderAt = ⊤ ≠ (0 : ℕ∞)`, so `analyticOrderAt_eq_natCast` doesn't apply.
+      --
+      -- Direct route: use `AnalyticAt.eventually_eq_zero_of_analyticOrderAt_eq_top`
+      -- if it exists at this pin. We try the dot-notation form.
+      have : ∀ᶠ z in 𝓝 x₀, f z = 0 := by
+        -- Convert the WithTop value via mathlib API. The standard name is
+        -- `AnalyticAt.locally_zero_iff_analyticOrderAt_eq_top` — let's just use
+        -- an alternative: build a contradiction from `hne'` and a frequently-zero
+        -- argument coming from order = ⊤.
+        --
+        -- Strategy: use `hf_an.eventually_eq_zero_or_eventually_ne_zero` already
+        -- returned `hne'`. So if order = ⊤, there's a tension. Mathlib should
+        -- bridge this. We rely on `AnalyticAt.analyticOrderAt_eq_top`:
+        exact hf_an.analyticOrderAt_eq_top.mp h_ord
+      exact this
+  · -- order = k ∈ ℕ. Show k ≥ 1 (else f x₀ ≠ 0 contradicts hf_x₀ = 0).
+    refine ⟨k, ?_, rfl⟩
+    rcases Nat.eq_zero_or_pos k with hk0 | hk_pos
+    · exfalso
+      subst hk0
+      -- order = 0 ⟹ ∃ u with `f =ᶠ u` near x₀ and `u x₀ ≠ 0`. So `f x₀ = u x₀ ≠ 0`.
+      have h_eq_nat : analyticOrderAt f x₀ = ((0 : ℕ) : ℕ∞) := h_ord
+      obtain ⟨u, _hu_an, hu_x₀, hu_eq⟩ := hf_an.analyticOrderAt_eq_natCast.mp h_eq_nat
+      -- `hu_eq : f =ᶠ[𝓝 x₀] (z - x₀)^0 * u z = u z`. Evaluate at `x₀`.
+      rw [Filter.EventuallyEq] at hu_eq
+      have : f x₀ = (x₀ - x₀) ^ (0 : ℕ) * u x₀ := hu_eq.self_of_nhds
+      rw [pow_zero, one_mul] at this
+      have : f x₀ ≠ 0 := this ▸ hu_x₀
+      exact this hf_x₀
+    · exact hk_pos
 
 /-- **Order ≥ 2 from vanishing derivative.**
 
@@ -280,21 +325,11 @@ private lemma not_injOn_of_analyticOrderAt_ge_two
     rw [hsub_d, sub_self, zero_mul, add_zero, one_mul] at hp
     exact hp
   have hderiv_v_ne : deriv v x₀ ≠ 0 := by rw [hderiv_v]; exact hr_x₀_ne
-  -- Apply ZZ74 to `v`: there are `ε_v, δ_v > 0` such that for every `ξ ∈ ball 0 δ_v \ {0}`
-  -- there is exactly one `z ∈ ball x₀ ε_v` with `v z = ξ`.
-  have hv_x₀_eq : v x₀ = (0 : ℂ) := hv_x₀
-  obtain ⟨ε_v, hε_v_pos, δ_v, hδ_v_pos, hcount_v⟩ :=
-    localMultiplicityOne_preimage_card hv_at_x₀ hderiv_v_ne
-  -- Note `localMultiplicityOne_preimage_card` is stated with target `v x₀ = 0`, so
-  -- "ball (v x₀) δ_v = ball 0 δ_v". Rewriting:
-  -- `hcount_v : ∀ ξ ∈ ball (v x₀) δ_v, ξ ≠ v x₀ → ({z ∈ ball x₀ ε_v | v z = ξ}).ncard = 1`.
-  -- Pick a small ball `ball x₀ ε_top` inside `U ∩ ball x₀ ε_v ∩ ball x₀ ρ'`.
+  -- Pick a small ball `ball x₀ ε_top` inside `U ∩ ball x₀ ρ'`.
   obtain ⟨ε_U, hε_U_pos, hε_U_sub_U⟩ := Metric.mem_nhds_iff.mp hU_nhds
-  set ε_top : ℝ := min (min ε_v ε_U) ρ' with hε_top_def
-  have hε_top_pos : 0 < ε_top :=
-    lt_min (lt_min hε_v_pos hε_U_pos) hρ'_pos
-  have hε_top_le_v : ε_top ≤ ε_v := (min_le_left _ _).trans (min_le_left _ _)
-  have hε_top_le_U : ε_top ≤ ε_U := (min_le_left _ _).trans (min_le_right _ _)
+  set ε_top : ℝ := min ε_U ρ' with hε_top_def
+  have hε_top_pos : 0 < ε_top := lt_min hε_U_pos hρ'_pos
+  have hε_top_le_U : ε_top ≤ ε_U := min_le_left _ _
   have hε_top_le_ρ' : ε_top ≤ ρ' := min_le_right _ _
   -- Continuity of `v` at `x₀` gives `δ_top > 0` with `ball x₀ δ_top ⊆ v⁻¹ ball 0 δ_v`...
   -- but we don't actually need it. We instead take a small `ξ` and pull back.
@@ -350,9 +385,10 @@ private lemma not_injOn_of_analyticOrderAt_ge_two
     rw [Complex.norm_real]
     exact abs_of_pos (by linarith)
   have hξ_ne : ξ ≠ 0 := by
-    intro h; apply ne_of_gt (show (0 : ℝ) < τ / 2 by linarith)
-    have : ((τ / 2 : ℝ) : ℂ) = 0 := h
-    exact_mod_cast (Complex.ofReal_eq_zero.mp this)
+    intro h
+    have h_norm : ‖ξ‖ = 0 := by rw [h]; simp
+    rw [hξ_norm] at h_norm
+    linarith
   have hξ_in : ξ ∈ Metric.ball (0 : ℂ) τ := by
     rw [Metric.mem_ball, dist_zero_right, hξ_norm]
     linarith
@@ -536,22 +572,22 @@ Fields:
   along charts". -/
 structure ChartBridgePackage {X Y : Type*}
     [TopologicalSpace X] [TopologicalSpace Y]
-    (f̃ : X → Y) (x : X) where
+    (f : X → Y) (x : X) where
   F : ℂ → ℂ
   z₀ : ℂ
   hF_an : AnalyticAt ℂ F z₀
   hF_ne_const : ¬ ∀ᶠ z in 𝓝 z₀, F z = F z₀
   inj_iff :
-    (¬ ∃ U ∈ 𝓝 x, Set.InjOn f̃ U) ↔ ¬ ∃ V ∈ 𝓝 z₀, Set.InjOn F V
+    (¬ ∃ U ∈ 𝓝 x, Set.InjOn f U) ↔ ¬ ∃ V ∈ 𝓝 z₀, Set.InjOn F V
 
 /-- **Manifold-side bridge.** Under a `ChartBridgePackage`, "`x` is in the
-critical set" (no neighbourhood is `InjOn` for `f̃`) is equivalent to
+critical set" (no neighbourhood is `InjOn` for `f`) is equivalent to
 "the chart pullback has vanishing derivative at the chart image". -/
 theorem criticalSet_iff_chart_pullback_deriv_zero
     {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
-    {f̃ : X → Y} {x : X}
-    (P : ChartBridgePackage f̃ x) :
-    (¬ ∃ U ∈ 𝓝 x, Set.InjOn f̃ U) ↔ deriv P.F P.z₀ = 0 := by
+    {f : X → Y} {x : X}
+    (P : ChartBridgePackage f x) :
+    (¬ ∃ U ∈ 𝓝 x, Set.InjOn f U) ↔ deriv P.F P.z₀ = 0 := by
   rw [P.inj_iff]
   exact notInjOn_iff_deriv_zero_of_analytic P.hF_an P.hF_ne_const
 
