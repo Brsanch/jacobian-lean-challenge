@@ -246,7 +246,7 @@ lemma assembled_remainder_diff_at_pole
   -- Step E. Transfer differentiability via `EqOn`.
   refine hRHS_diff.congr ?_
   intro z hz
-  exact (hRewrite hz).symm
+  exact hRewrite hz
 
 /-- **Headline existence theorem.** Given a finite set `S` of poles of
 `g`, with `0 < ε x` for each `x ∈ S` and pairwise-disjoint per-pole closed
