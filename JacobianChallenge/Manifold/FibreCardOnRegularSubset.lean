@@ -137,9 +137,9 @@ lemma fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant
 shape.** Same as `fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant`,
 but stated via the named `Prop` for downstream callers. -/
 lemma fibre_card_well_defined_at_regular_statement_holds_of_locallyConstant
-    (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    (Y : Type v) [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (h_lc : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
       ¬ JacobianChallenge.IsConstantMap f →
@@ -148,9 +148,10 @@ lemma fibre_card_well_defined_at_regular_statement_holds_of_locallyConstant
           (∀ w : RegularValueWitness f, card_of w.value = w.card) ∧
           IsLocallyConstant (fun y : (Cᶜ : Set Y) => card_of y.val) ∧
           IsPreconnected (Set.univ : Set (Cᶜ : Set Y))) :
-    fibre_card_well_defined_at_regular_statement X Y :=
-  fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant
-    (X := X) (Y := Y) h_lc
+    fibre_card_well_defined_at_regular_statement X Y := by
+  intro f hf hnc C w₁ w₂
+  exact fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant
+    h_lc f hf hnc C w₁ w₂
 
 end Owed.degree
 
