@@ -104,6 +104,13 @@ PY
 attempt_merge() {
   local branch="$1"
   echo "--- merging $branch ---"
+  # Belt-and-suspenders: abort any in-progress merge from a prior chip
+  # whose conflict resolution didn't complete cleanly. Otherwise `git pull`
+  # below errors with "Pulling is not possible because you have unmerged
+  # files" and every subsequent merge in this run is wedged.
+  if [[ -f .git/MERGE_HEAD ]]; then
+    git merge --abort 2>/dev/null || true
+  fi
   git checkout main --quiet
   git pull origin main --quiet
   if git merge --no-ff "origin/$branch" --no-edit 2>&1 | grep -q 'CONFLICT'; then
