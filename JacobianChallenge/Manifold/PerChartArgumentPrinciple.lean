@@ -191,7 +191,8 @@ theorem circleIntegral_perChart_argumentPrinciple
     by_cases hzy : z = y
     · subst hzy
       rw [Metric.mem_sphere, dist_self] at hz
-      exact (lt_irrefl 0) (hz ▸ hε_pos y hyS)
+      have := hε_pos y hyS
+      linarith
     · -- z ≠ y. z ∈ S so z ∈ closedBall z (ε z), and we have z ∈ closedBall y (ε y).
       have hzS' : z ∈ S := by exact_mod_cast hzS
       have hz_cb : z ∈ Metric.closedBall y (ε y) := Metric.sphere_subset_closedBall hz
