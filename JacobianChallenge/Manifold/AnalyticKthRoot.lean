@@ -91,11 +91,11 @@ theorem analytic_kth_root_of_nonvanishing
     have hwz : u z / c₀ ∈ Complex.slitPlane :=
       slitPlane_of_mem_ball_one (hz_in_ε z hz)
     have hu_an : AnalyticAt ℂ u z := hu z (hsubset hz)
-    have hw_an : AnalyticAt ℂ (fun ζ => u ζ / c₀) z := hu_an.div_const c₀
+    have hw_an : AnalyticAt ℂ (fun ζ => u ζ / c₀) z := hu_an.div_const
     have hlog_an : AnalyticAt ℂ (fun ζ => Complex.log (u ζ / c₀)) z :=
       hw_an.clog hwz
     have hdiv_an : AnalyticAt ℂ (fun ζ => Complex.log (u ζ / c₀) / k) z :=
-      hlog_an.div_const _
+      hlog_an.div_const
     have hexp_an : AnalyticAt ℂ
         (fun ζ => Complex.exp (Complex.log (u ζ / c₀) / k)) z :=
       hdiv_an.cexp'
