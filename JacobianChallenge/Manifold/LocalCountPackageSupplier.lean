@@ -78,7 +78,7 @@ the ∞-side as the residual.
 noncomputable section
 
 open Set Filter
-open scoped Topology
+open scoped Topology Manifold ContDiff
 
 namespace JacobianChallenge
 namespace Manifold
@@ -156,6 +156,8 @@ If for every `y₀ ∉ f.criticalValues` we have the tier-2
 `LocalCountPackageInputs` for `fibreSum`, then the
 `R5StackHypotheses.local_count_package` field is populated. -/
 theorem localCountPackage_supplies_R5_field
+    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
     (f : MeromorphicNonzero X) (fibreSum : OnePoint ℂ → ℕ)
     (h : ∀ y₀ : OnePoint ℂ, y₀ ∉ f.criticalValues →
         LocalCountPackageInputs fibreSum y₀) :
@@ -208,6 +210,8 @@ For a `MeromorphicNonzero X` and a chosen `fibreSum`, supplying
 `LocalCountPackageInputs` at every regular value yields the exact
 function shape that `R5StackHypotheses.ofResiduals` expects. -/
 theorem local_count_package_of_pointwise_inputs
+    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
     (f : MeromorphicNonzero X) (fibreSum : OnePoint ℂ → ℕ)
     (criticalValues : Set (OnePoint ℂ))
     (h : ∀ y₀ : OnePoint ℂ, y₀ ∉ criticalValues →
