@@ -36,8 +36,6 @@ by `localTrivAt_snd`.
 * `cotangentSection_contMDiffWithinAt_iff` — within-set, at a point.
 * `cotangentSection_contMDiffAt_iff` — at a point.
 * `cotangentSection_contMDiff_iff` — globally.
-* `contMDiffSection_cotangent_iff` — `Cₛ^n⟮I; E →L[𝕜] 𝕜, CotangentSpace I⟯`-level
-  characterisation suitable for `SmoothOneForm` consumers.
 
 These are the cotangent analogues of the tangent-side `Bundle.contMDiff*_section`
 applications used throughout `Mathlib.Geometry.Manifold.MFDeriv.*`.
@@ -128,18 +126,5 @@ theorem cotangentSection_contMDiff_iff
           (achart H x) (achart H x₀) x (ω x)) x₀ := by
   refine ⟨fun h x₀ => (cotangentSection_contMDiffAt_iff ω).mp (h x₀),
           fun h x₀ => (cotangentSection_contMDiffAt_iff ω).mpr (h x₀)⟩
-
-/-- `ContMDiffSection`-level characterisation, suitable for `SmoothOneForm`
-consumers: a section is `ContMDiff` iff its chart-coordinate representative
-around every base point is `ContMDiff` at that point. -/
-theorem contMDiffSection_cotangent_iff
-    {n : WithTop ℕ∞} (ω : ∀ x, CotangentSpace I x) :
-    ContMDiff I (I.prod 𝓘(𝕜, E →L[𝕜] 𝕜)) n
-        (fun x => (TotalSpace.mk' (E →L[𝕜] 𝕜) x (ω x) :
-          Bundle.TotalSpace (E →L[𝕜] 𝕜) (CotangentSpace I))) ↔
-      ∀ x₀ : M, ContMDiffAt I 𝓘(𝕜, E →L[𝕜] 𝕜) n
-        (fun x => (cotangentBundleCore I M).coordChange
-          (achart H x) (achart H x₀) x (ω x)) x₀ :=
-  cotangentSection_contMDiff_iff ω
 
 end
