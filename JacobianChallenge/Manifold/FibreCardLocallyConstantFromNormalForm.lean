@@ -127,11 +127,10 @@ lemma fibre_ncard_eq_xs_card_of_mem_W
     have hpb : pick a.1 a.2 ∈ h.U b.1 := by rw [hab']; exact hUb
     exact Set.disjoint_left.mp hdisj hpa hpb
   have hs_card : s.card = h.xs.card := by
-    have hcard_image : s.card = h.xs.attach.card := by
-      apply Finset.card_image_of_injOn
-      intro a ha b hb hab
-      exact h_inj ha hb hab
-    rw [hcard_image, Finset.card_attach]
+    have hcard_image : s.card = h.xs.attach.card :=
+      Finset.card_image_of_injOn h_inj
+    have : h.xs.attach.card = h.xs.card := Finset.card_attach
+    omega
   -- Step 2: ↑s = f ⁻¹' {y}.
   have hs_eq : (s : Set X) = f ⁻¹' {y} := by
     ext z
@@ -182,11 +181,11 @@ theorem fibreCard_isLocallyConstant_of_pointwiseHurwitz
     [TopologicalSpace X] [TopologicalSpace Y]
     (f : X → Y) (h : ∀ y₀ : Y, HurwitzPatchingData f y₀) :
     IsLocallyConstant (fun y : Y => (f ⁻¹' {y}).ncard) := by
-  rw [IsLocallyConstant.iff_exists_open]
+  rw [IsLocallyConstant.iff_eventually_eq]
   intro y₀
-  refine ⟨(h y₀).W, (h y₀).W_open, (h y₀).y₀_mem_W, ?_⟩
-  intro y hy
-  -- both fibre counts equal (h y₀).xs.card
+  have hW_mem : (h y₀).W ∈ nhds y₀ :=
+    (h y₀).W_open.mem_nhds (h y₀).y₀_mem_W
+  filter_upwards [hW_mem] with y hy
   have h_y : (f ⁻¹' {y}).ncard = (h y₀).xs.card :=
     (h y₀).fibre_ncard_eq_xs_card_of_mem_W hy
   have h_y₀ : (f ⁻¹' {y₀}).ncard = (h y₀).xs.card :=
@@ -205,15 +204,15 @@ theorem fibreCard_isLocallyConstant_on_subset_of_pointwiseHurwitz
     (h : ∀ y₀ ∈ R, HurwitzPatchingData f y₀) :
     IsLocallyConstant
       (fun y : (R : Set Y) => (f ⁻¹' {y.val}).ncard) := by
-  rw [IsLocallyConstant.iff_exists_open]
+  rw [IsLocallyConstant.iff_eventually_eq]
   intro y₀
   let pkg := h y₀.val y₀.property
-  refine ⟨Subtype.val ⁻¹' pkg.W, pkg.W_open.preimage continuous_subtype_val,
-    pkg.y₀_mem_W, ?_⟩
-  intro y hy
-  have hy_mem : y.val ∈ pkg.W := hy
+  have hW_amb : pkg.W ∈ nhds y₀.val := pkg.W_open.mem_nhds pkg.y₀_mem_W
+  have hW_sub : ∀ᶠ y in nhds y₀, y.val ∈ pkg.W :=
+    (continuous_subtype_val.tendsto y₀).eventually hW_amb
+  filter_upwards [hW_sub] with y hy
   have h_y : (f ⁻¹' {y.val}).ncard = pkg.xs.card :=
-    pkg.fibre_ncard_eq_xs_card_of_mem_W hy_mem
+    pkg.fibre_ncard_eq_xs_card_of_mem_W hy
   have h_y₀ : (f ⁻¹' {y₀.val}).ncard = pkg.xs.card :=
     pkg.fibre_ncard_eq_xs_card_of_mem_W pkg.y₀_mem_W
   rw [h_y, h_y₀]
