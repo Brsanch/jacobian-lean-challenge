@@ -34,9 +34,9 @@ truncation `N`, and the pointwise identity on the circles.
 
 * `circleIntegral_finite_principal_part_eq` — the headline identity,
   unconditional in mathlib at this pin given the bundled hypotheses.
-* `circleIntegral_zpow_neg_off_pole_vanishes` — for `y ≠ x` and
-  `closedBall y (ε y)` not containing `x`, the inner circle integral
-  `∮_{|z-y|=ε y} (z - x)^(-k : ℤ)` is zero. This is the
+* `circleIntegral_zpow_neg_off_pole_vanishes` — for `closedBall y r`
+  not containing `x`, the inner circle integral
+  `∮_{|z-y|=r} (z - x) ^ (-(k : ℕ) : ℤ)` is zero. This is the
   off-pole-vanishing chip used inside the headline proof.
 
 ## Strategy
@@ -62,11 +62,10 @@ The two-sided sum then collapses by re-indexing.
 
 * No `axiom`, no `sorry`.
 * No existing definition or signature is changed.
-* The bundled-hypothesis `MultiHolePrincipalPartData` is fresh (lives
-  inside this file's namespace).
 * All proof routes through ZZ63's discharged monomial deformation plus
   mathlib's `circleIntegral.integral_fun_sum`, `integral_const_mul`,
-  `integral_sub_zpow_of_ne`, and `DiffContOnCl.circleIntegral_eq_zero`.
+  `integral_sub_zpow_of_ne`, `circleIntegrable_sub_zpow_iff`, and
+  `DiffContOnCl.circleIntegral_eq_zero`.
 
 ## Residual hypotheses (named, concrete)
 
@@ -78,9 +77,9 @@ The caller must supply, alongside the geometry:
    part of the disc"; mathlib at this pin does not ship a removable-
    singularities theorem in this packaged form.)
 
-2. Principal-coefficient data `a : ↥S → ℕ → ℂ` and bound `N : ↥S → ℕ`,
+2. Principal-coefficient data `a : ℂ → ℕ → ℂ` and bound `N : ℂ → ℕ`,
    with
-       `g z = h z + ∑_{x ∈ S.attach} ∑_{k = 1}^{N x} a x k · (z - x)^(-k : ℤ)`
+       `g z = h z + ∑_{x ∈ S} ∑_{k = 1}^{N x} a x k · (z - x)^(-k : ℤ)`
    pointwise on every relevant circle.
 
 Given (1) and (2) plus the disjoint-closed-ball geometry, the multi-hole
@@ -96,104 +95,80 @@ namespace JacobianChallenge
 namespace MultiHoleCauchyMeromorphic
 
 /-- **Off-pole vanishing.** If `closedBall y r ⊆ {z : ℂ | z ≠ x}`
-(equivalently, `x ∉ closedBall y r`), then for every positive integer
-`k`, the function `z ↦ (z - x) ^ (-(k : ℤ))` is differentiable on a
-neighbourhood of `closedBall y r`, and its circle integral vanishes:
+(equivalently, `x ∉ closedBall y r`), and `0 ≤ r`, then for every
+positive integer `k`, the function `z ↦ (z - x) ^ (-(k : ℤ))` is
+differentiable on a neighbourhood of `closedBall y r`, and its circle
+integral vanishes:
 `∮_{|z-y|=r} (z - x) ^ (-(k : ℤ)) dz = 0`. -/
 lemma circleIntegral_zpow_neg_off_pole_vanishes
     {x y : ℂ} {r : ℝ} (hr : 0 ≤ r) (k : ℕ)
     (hxout : x ∉ closedBall y r) :
     (∮ z in C(y, r), (z - x) ^ (-(k : ℤ))) = 0 := by
-  -- The set `closedBall y r` is contained in `{z | z ≠ x}` since `x ∉ closedBall y r`.
-  -- On `{z | z ≠ x}`, the function `z ↦ (z - x) ^ (-k : ℤ)` is differentiable.
-  -- Then `DiffContOnCl.circleIntegral_eq_zero` finishes.
   set f : ℂ → ℂ := fun z => (z - x) ^ (-(k : ℤ))
-  -- Step 1: f is differentiable on `{z : ℂ | z ≠ x}`.
   have hf_diff_on : DifferentiableOn ℂ f {z : ℂ | z ≠ x} := by
     intro z hz
     have hz_ne : z - x ≠ 0 := sub_ne_zero.mpr hz
     have : DifferentiableAt ℂ f z := by
-      have h1 : DifferentiableAt ℂ (fun z => z - x) z :=
-        (differentiableAt_id').sub_const x
+      have h1 : DifferentiableAt ℂ (fun z : ℂ => z - x) z :=
+        (differentiableAt_id).sub_const x
       have h2 : DifferentiableAt ℂ (fun w : ℂ => w ^ (-(k : ℤ))) (z - x) :=
         differentiableAt_zpow.mpr (Or.inl hz_ne)
       exact h2.comp z h1
     exact this.differentiableWithinAt
-  -- Step 2: ball y r ⊆ {z | z ≠ x} since x ∉ closedBall y r.
   have hball_sub : Metric.ball y r ⊆ {z : ℂ | z ≠ x} := by
-    intro z hz
-    intro hzx
-    -- Then `x = z ∈ ball y r ⊆ closedBall y r`, contradicting `hxout`.
+    intro z hz hzx
     apply hxout
-    rw [← hzx]
+    rw [show x = z from hzx.symm]
     exact Metric.ball_subset_closedBall hz
   have hclosed_sub : closedBall y r ⊆ {z : ℂ | z ≠ x} := by
-    intro z hz
-    intro hzx
+    intro z hz hzx
     apply hxout
-    rw [← hzx]
+    rw [show x = z from hzx.symm]
     exact hz
-  -- Step 3: f is differentiable on `ball y r` and continuous on `closedBall y r`.
   have hf_diff_open : DifferentiableOn ℂ f (Metric.ball y r) :=
     hf_diff_on.mono hball_sub
   have hf_cont_closed : ContinuousOn f (closedBall y r) :=
     (hf_diff_on.continuousOn).mono hclosed_sub
   have hf_cont_clos : ContinuousOn f (closure (Metric.ball y r)) :=
     hf_cont_closed.mono Metric.closure_ball_subset_closedBall
-  -- Step 4: assemble `DiffContOnCl` and apply `circleIntegral_eq_zero`.
   have hdcoc : DiffContOnCl ℂ f (Metric.ball y r) := ⟨hf_diff_open, hf_cont_clos⟩
   exact hdcoc.circleIntegral_eq_zero hr
 
+/-- **Per-monomial circle-integrability:** if `0 < r` and `x ∉ sphere y r`,
+then `z ↦ coef * (z - x) ^ (-(k : ℤ))` is `CircleIntegrable` on `C(y, r)`. -/
+private lemma const_mul_zpow_neg_circleIntegrable
+    (y x : ℂ) (r : ℝ) (k : ℕ) (coef : ℂ)
+    (hxnot : x ∉ Metric.sphere y |r|) :
+    CircleIntegrable (fun z => coef * (z - x) ^ (-(k : ℤ))) y r := by
+  have hbase : CircleIntegrable (fun z : ℂ => (z - x) ^ (-(k : ℤ))) y r := by
+    rw [circleIntegrable_sub_zpow_iff]
+    exact Or.inr (Or.inr hxnot)
+  have := hbase.const_fun_smul (a := coef)
+  simpa [smul_eq_mul] using this
+
 /-- **Off-pole vanishing — `Finset.sum` of constant-multiples form.**
 
-If `closedBall y r` does not contain `x`, then
-`∮_{|z-y|=r} ∑_{k ∈ Finset.Icc 1 (N : ℕ)} a k * (z - x) ^ (-(k : ℤ)) dz = 0`. -/
+If `closedBall y r` does not contain `x` and `0 ≤ r`, then the
+circle integral of the principal-part sum
+`∑_{k ∈ Finset.Icc 1 (N : ℕ)} a k * (z - x) ^ (-(k : ℤ))` over
+`C(y, r)` vanishes. -/
 lemma circleIntegral_principal_part_off_pole_vanishes
     {x y : ℂ} {r : ℝ} (hr : 0 ≤ r) (N : ℕ) (a : ℕ → ℂ)
     (hxout : x ∉ closedBall y r) :
     (∮ z in C(y, r), ∑ k ∈ Finset.Icc 1 N, a k * (z - x) ^ (-(k : ℤ))) = 0 := by
-  -- Use linearity: `circleIntegral.integral_fun_sum`.
-  -- Each summand is circle-integrable: `(z - x)^(-k)` is continuous on the
-  -- compact `sphere y r` (since `x ∉ closedBall y r ⊇ sphere y r`),
-  -- hence integrable; multiplied by constant `a k` is still integrable.
-  -- Easier route: each summand has integral zero individually, by
-  -- `circleIntegral.integral_const_mul` + `circleIntegral_zpow_neg_off_pole_vanishes`.
-  -- We use `circleIntegral.integral_fun_sum` to turn the integral of the sum
-  -- into a sum of integrals.
-  have hxne : ∀ z ∈ sphere y r, z ≠ x := by
-    intro z hz hzx
+  have hxnot_sphere : x ∉ Metric.sphere y |r| := by
+    intro hx
     apply hxout
-    rw [← hzx]
-    exact Metric.sphere_subset_closedBall hz
+    have hxsphere : x ∈ Metric.sphere y r := by
+      rw [Metric.mem_sphere] at hx ⊢
+      rw [abs_of_nonneg hr] at hx; exact hx
+    exact Metric.sphere_subset_closedBall hxsphere
   have hint :
       ∀ k ∈ Finset.Icc 1 N,
         CircleIntegrable (fun z => a k * (z - x) ^ (-(k : ℤ))) y r := by
     intro k _
-    -- The base function `z ↦ (z - x) ^ (-k : ℤ)` is continuous on `sphere y r`
-    -- (since the sphere avoids `x`).
-    have hcont_on_sphere : ContinuousOn (fun z : ℂ => (z - x) ^ (-(k : ℤ)))
-        (sphere y r) := by
-      intro z hz
-      have hzne : z - x ≠ 0 := sub_ne_zero.mpr (hxne z hz)
-      have hcontAt : ContinuousAt (fun z : ℂ => (z - x) ^ (-(k : ℤ))) z := by
-        have h1 : ContinuousAt (fun z : ℂ => z - x) z :=
-          (continuous_id.sub continuous_const).continuousAt
-        have h2 : ContinuousAt (fun w : ℂ => w ^ (-(k : ℤ))) (z - x) :=
-          continuousAt_zpow.mpr (Or.inl hzne)
-        exact h2.comp h1
-      exact hcontAt.continuousWithinAt
-    -- Hence `CircleIntegrable`.
-    have hbase : CircleIntegrable (fun z : ℂ => (z - x) ^ (-(k : ℤ))) y r := by
-      apply ContinuousOn.circleIntegrable (hr := abs_nonneg r |>.trans (le_refl _))
-      -- We need `ContinuousOn ... (sphere y |r|)`.
-      rcases le_or_lt 0 r with hr0 | hr0
-      · rw [abs_of_nonneg hr0]; exact hcont_on_sphere
-      · -- `r < 0` ⇒ closedBall y r = ∅ since hr : 0 ≤ r contradicts; impossible.
-        exact absurd hr0 (not_lt.mpr hr)
-    have := hbase.const_fun_smul (a := a k)
-    simpa [smul_eq_mul] using this
+    exact const_mul_zpow_neg_circleIntegrable y x r k (a k) hxnot_sphere
   rw [circleIntegral.integral_fun_sum hint]
-  -- Now each integral is zero by `integral_const_mul` + off-pole vanishing.
   apply Finset.sum_eq_zero
   intro k _
   rw [circleIntegral.integral_const_mul]
@@ -238,19 +213,16 @@ theorem circleIntegral_finite_principal_part_eq
   -- Abbreviation for the principal-part big-sum.
   set Pg : ℂ → ℂ :=
     fun z => ∑ x ∈ S, ∑ k ∈ Finset.Icc 1 (N x), a x k * (z - x) ^ (-(k : ℤ)) with hPg
-  -- Rewrite both sides via the bundled identity, then use linearity.
-  -- LHS: rewrite `g` to `h + Pg` on `sphere c R`.
+  -- Rewrite both sides via the bundled identity.
   have hLHS : (∮ z in C(c, R), g z) = (∮ z in C(c, R), (h z + Pg z)) := by
     refine circleIntegral.integral_congr (R := R) hR.le ?_
     intro z hz; exact hg_outer z hz
-  -- RHS: similarly rewrite each inner integral.
   have hRHS_each : ∀ y ∈ S,
       (∮ z in C(y, ε y), g z) = (∮ z in C(y, ε y), (h z + Pg z)) := by
     intro y hyS
     refine circleIntegral.integral_congr (R := ε y) (hε_pos y hyS).le ?_
     intro z hz; exact hg_inner y hyS z hz
-  -- Step A: the `h` part contributes zero on every circle (analytic on closed disc).
-  -- For the outer circle: standard Cauchy on closed disc.
+  -- Step A: analytic-part vanishing on every circle.
   have hh_outer_zero : (∮ z in C(c, R), h z) = 0 := by
     have hball_sub : Metric.ball c R ⊆ Metric.closedBall c R := Metric.ball_subset_closedBall
     have hh_open : DifferentiableOn ℂ h (Metric.ball c R) :=
@@ -276,73 +248,35 @@ theorem circleIntegral_finite_principal_part_eq
       hh_cont_closed.mono Metric.closure_ball_subset_closedBall
     have hh_dcoc : DiffContOnCl ℂ h (Metric.ball y (ε y)) := ⟨hh_open, hh_cont_clos⟩
     exact hh_dcoc.circleIntegral_eq_zero (hε_pos y hyS).le
-  -- Step B: Build helper for the principal-part term `Pg` integrability and integral computations.
-  -- Per-monomial circle-integrability lemma (for any centre `w` with `x ∉ sphere w r`):
-  have hmono_integrable : ∀ (w x : ℂ) (rad : ℝ) (k : ℕ) (coef : ℂ),
-      x ∉ Metric.sphere w rad →
-      CircleIntegrable (fun z => coef * (z - x) ^ (-(k : ℤ))) w rad := by
-    intro w x rad k coef hxnot
-    -- Continuous on `sphere w |rad|`.
-    have hcont_on_sphere : ContinuousOn (fun z : ℂ => (z - x) ^ (-(k : ℤ)))
-        (sphere w rad) := by
-      intro z hz
-      have hzne : z - x ≠ 0 := by
-        intro hsub
-        have : z = x := by linear_combination hsub
-        rw [this] at hz; exact hxnot hz
-      have hcontAt : ContinuousAt (fun z : ℂ => (z - x) ^ (-(k : ℤ))) z := by
-        have h1 : ContinuousAt (fun z : ℂ => z - x) z :=
-          (continuous_id.sub continuous_const).continuousAt
-        have h2 : ContinuousAt (fun w : ℂ => w ^ (-(k : ℤ))) (z - x) :=
-          continuousAt_zpow.mpr (Or.inl hzne)
-        exact h2.comp h1
-      exact hcontAt.continuousWithinAt
-    have hbase : CircleIntegrable (fun z : ℂ => (z - x) ^ (-(k : ℤ))) w rad := by
-      apply ContinuousOn.circleIntegrable (hr := abs_nonneg rad |>.trans (le_refl _))
-      rcases le_or_lt 0 rad with hr0 | hr0
-      · rw [abs_of_nonneg hr0]; exact hcont_on_sphere
-      · -- `rad < 0` ⇒ `sphere w rad = ∅` actually; the `ContinuousOn` is vacuous.
-        intro z hz
-        have hempty : sphere w rad = ∅ := by
-          ext z
-          simp only [Metric.mem_sphere, Set.mem_empty_iff_false, iff_false]
-          intro hd
-          have : 0 ≤ dist z w := dist_nonneg
-          rw [hd] at this; linarith
-        rw [hempty] at hz; exact hz.elim
-    have := hbase.const_fun_smul (a := coef)
-    simpa [smul_eq_mul] using this
-  -- Step C: Sum-shape integrability. For each circle (outer or inner), the
-  -- `Pg` summand is integrable: every term is integrable.
-  -- We need this to apply `circleIntegral.integral_add` and `integral_fun_sum`.
-  -- Each "outer" sphere `sphere c R` contains no point of `S` (since `S ⊆ ball c R` strictly, so x ≠ z for z on outer sphere... wait, actually x ∈ ball c R ⊊ closedBall c R, so x ∈ ball c R means x is strictly inside, so x ∉ sphere c R).
-  have hx_not_outer_sphere : ∀ x ∈ S, x ∉ sphere c R := by
+  -- Geometric facts on poles vs spheres.
+  have hx_not_outer_sphere : ∀ x ∈ S, x ∉ Metric.sphere c |R| := by
     intro x hxS hxsph
-    have hx_in_ball : x ∈ ball c R := by
-      have := hε_sub x hxS (Metric.mem_closedBall_self (hε_pos x hxS).le)
-      exact this
-    rw [Metric.mem_sphere] at hxsph
+    have hx_in_ball : x ∈ ball c R :=
+      hε_sub x hxS (Metric.mem_closedBall_self (hε_pos x hxS).le)
+    rw [Metric.mem_sphere, abs_of_pos hR] at hxsph
     rw [Metric.mem_ball] at hx_in_ball
     rw [hxsph] at hx_in_ball
     exact lt_irrefl R hx_in_ball
-  have hx_not_inner_sphere : ∀ y ∈ S, ∀ x ∈ S, x ∉ sphere y (ε y) ∨ x = y := by
-    intro y hyS x hxS
-    by_cases hxy : x = y
-    · exact Or.inr hxy
-    · left
-      intro hxsph
-      have hx_in_cb : x ∈ closedBall y (ε y) := Metric.sphere_subset_closedBall hxsph
-      exact hε_disj x hxS y hyS hxy hx_in_cb
-  -- Step D: simplify each integral via linearity. We rewrite using `circleIntegral.integral_add`,
-  -- but to use that we need integrability of both summands.
-  -- The `h` part: continuous on the closed disc (in `U`), hence circle-integrable.
+  -- For inner circle centered at y with x ≠ y: x ∉ sphere y (ε y).
+  have hx_not_inner_sphere_off : ∀ y ∈ S, ∀ x ∈ S, x ≠ y →
+      x ∉ Metric.sphere y |ε y| := by
+    intro y hyS x hxS hxy hxsph
+    rw [Metric.mem_sphere, abs_of_pos (hε_pos y hyS)] at hxsph
+    have hx_in_cb : x ∈ closedBall y (ε y) := by
+      rw [Metric.mem_closedBall]; exact le_of_eq hxsph
+    exact hε_disj x hxS y hyS hxy hx_in_cb
+  -- For inner circle centered at y with x = y: y ∉ sphere y (ε y) (positive radius).
+  have hy_not_self_sphere : ∀ y ∈ S, y ∉ Metric.sphere y |ε y| := by
+    intro y hyS hy
+    rw [Metric.mem_sphere, dist_self, abs_of_pos (hε_pos y hyS)] at hy
+    exact (lt_irrefl 0) ((hε_pos y hyS).trans_le hy.le)
+  -- Step B: Integrability of `h` on each circle.
   have hh_integrable_outer : CircleIntegrable h c R := by
     have hh_cont_closed : ContinuousOn h (closedBall c R) :=
       (hh.continuousOn).mono hUsub
-    have : ContinuousOn h (sphere c R) :=
+    have hcs : ContinuousOn h (sphere c R) :=
       hh_cont_closed.mono Metric.sphere_subset_closedBall
-    apply ContinuousOn.circleIntegrable (hr := hR.le)
-    rwa [abs_of_pos hR]
+    exact ContinuousOn.circleIntegrable hR.le hcs
   have hh_integrable_inner : ∀ y ∈ S, CircleIntegrable h y (ε y) := by
     intro y hyS
     have hyR : closedBall y (ε y) ⊆ closedBall c R := by
@@ -350,52 +284,32 @@ theorem circleIntegral_finite_principal_part_eq
       exact (Metric.ball_subset_closedBall (hε_sub y hyS hz))
     have hh_cont_closed : ContinuousOn h (closedBall y (ε y)) :=
       (hh.continuousOn).mono (fun z hz => hUsub (hyR hz))
-    have : ContinuousOn h (sphere y (ε y)) :=
+    have hcs : ContinuousOn h (sphere y (ε y)) :=
       hh_cont_closed.mono Metric.sphere_subset_closedBall
-    apply ContinuousOn.circleIntegrable (hr := (hε_pos y hyS).le)
-    rwa [abs_of_pos (hε_pos y hyS)]
-  -- The `Pg` part on outer circle: integrable since each monomial is.
+    exact ContinuousOn.circleIntegrable (hε_pos y hyS).le hcs
+  -- Step C: Integrability of `Pg` on each circle. Use `CircleIntegrable.fun_sum`.
   have hPg_integrable_outer : CircleIntegrable Pg c R := by
-    -- Pg z = ∑ x ∈ S, ∑ k ∈ Icc 1 (N x), a x k * (z - x) ^ (-k:ℤ)
-    -- It's a finite sum of `CircleIntegrable` functions.
-    have : CircleIntegrable
+    show CircleIntegrable
         (fun z => ∑ x ∈ S, ∑ k ∈ Finset.Icc 1 (N x),
-            a x k * (z - x) ^ (-(k : ℤ))) c R := by
-      apply CircleIntegrable.sum
-      intro x hxS
-      apply CircleIntegrable.sum
-      intro k _
-      have hxnot : x ∉ sphere c R := hx_not_outer_sphere x hxS
-      exact hmono_integrable c x R k (a x k) hxnot
-    exact this
+            a x k * (z - x) ^ (-(k : ℤ))) c R
+    refine CircleIntegrable.fun_sum S (fun x hxS => ?_)
+    refine CircleIntegrable.fun_sum (Finset.Icc 1 (N x)) (fun k _ => ?_)
+    exact const_mul_zpow_neg_circleIntegrable c x R k (a x k)
+      (hx_not_outer_sphere x hxS)
   have hPg_integrable_inner : ∀ y ∈ S, CircleIntegrable Pg y (ε y) := by
     intro y hyS
-    have : CircleIntegrable
+    show CircleIntegrable
         (fun z => ∑ x ∈ S, ∑ k ∈ Finset.Icc 1 (N x),
-            a x k * (z - x) ^ (-(k : ℤ))) y (ε y) := by
-      apply CircleIntegrable.sum
-      intro x hxS
-      apply CircleIntegrable.sum
-      intro k _
-      -- Either x = y (centred at the pole) or x ∉ sphere y (ε y) (off-pole).
-      by_cases hxy : x = y
-      · -- Centred-at-pole case: `(z - x) ^ (-k : ℤ)` is continuous on `sphere y (ε y)`
-        -- because `y ∉ sphere y (ε y)` (since `ε y > 0`).
-        have hy_not : y ∉ sphere y (ε y) := by
-          intro hy
-          rw [Metric.mem_sphere] at hy
-          have := hε_pos y hyS
-          rw [dist_self] at hy
-          linarith
-        rw [hxy]
-        exact hmono_integrable y y (ε y) k (a x k) hy_not
-      · have hxnot : x ∉ sphere y (ε y) := by
-          intro hxsph
-          have hx_in_cb : x ∈ closedBall y (ε y) := Metric.sphere_subset_closedBall hxsph
-          exact hε_disj x hxS y hyS hxy hx_in_cb
-        exact hmono_integrable y x (ε y) k (a x k) hxnot
-    exact this
-  -- Step E: Linearise both sides.
+            a x k * (z - x) ^ (-(k : ℤ))) y (ε y)
+    refine CircleIntegrable.fun_sum S (fun x hxS => ?_)
+    refine CircleIntegrable.fun_sum (Finset.Icc 1 (N x)) (fun k _ => ?_)
+    by_cases hxy : x = y
+    · subst hxy
+      exact const_mul_zpow_neg_circleIntegrable y x (ε y) k (a x k)
+        (hy_not_self_sphere y hyS)
+    · exact const_mul_zpow_neg_circleIntegrable y x (ε y) k (a x k)
+        (hx_not_inner_sphere_off y hyS x hxS hxy)
+  -- Step D: Linearise both sides via `circleIntegral.integral_add`.
   have hLHS_split :
       (∮ z in C(c, R), (h z + Pg z))
         = (∮ z in C(c, R), h z) + (∮ z in C(c, R), Pg z) :=
@@ -404,28 +318,27 @@ theorem circleIntegral_finite_principal_part_eq
       (∮ z in C(y, ε y), (h z + Pg z))
         = (∮ z in C(y, ε y), h z) + (∮ z in C(y, ε y), Pg z) := by
     intro y hyS
-    exact circleIntegral.integral_add (hh_integrable_inner y hyS) (hPg_integrable_inner y hyS)
-  -- Step F: distribute `Pg` over the finite double sum on each circle.
-  -- Define `term x k z = a x k * (z - x) ^ (-(k : ℤ))`.
-  set term : ℂ → ℕ → ℂ → ℂ :=
-    fun x k z => a x k * (z - x) ^ (-(k : ℤ)) with hterm
-  -- Outer: ∮ Pg = ∑_{x ∈ S} ∮ (∑_k term x k).
+    exact circleIntegral.integral_add (hh_integrable_inner y hyS)
+      (hPg_integrable_inner y hyS)
+  -- Step E: Distribute Pg over the outer double sum.
   have hPg_outer_double :
       (∮ z in C(c, R), Pg z)
-        = ∑ x ∈ S, ∮ z in C(c, R), ∑ k ∈ Finset.Icc 1 (N x), term x k z := by
+        = ∑ x ∈ S, ∮ z in C(c, R),
+            ∑ k ∈ Finset.Icc 1 (N x), a x k * (z - x) ^ (-(k : ℤ)) := by
     show (∮ z in C(c, R), ∑ x ∈ S, ∑ k ∈ Finset.Icc 1 (N x),
             a x k * (z - x) ^ (-(k : ℤ)))
         = ∑ x ∈ S, ∮ z in C(c, R), ∑ k ∈ Finset.Icc 1 (N x),
             a x k * (z - x) ^ (-(k : ℤ))
     rw [circleIntegral.integral_fun_sum]
     intro x hxS
-    apply CircleIntegrable.sum
-    intro k _
-    have hxnot : x ∉ sphere c R := hx_not_outer_sphere x hxS
-    exact hmono_integrable c x R k (a x k) hxnot
+    refine CircleIntegrable.fun_sum (Finset.Icc 1 (N x)) (fun k _ => ?_)
+    exact const_mul_zpow_neg_circleIntegrable c x R k (a x k)
+      (hx_not_outer_sphere x hxS)
+  -- Distribute Pg over inner double sums.
   have hPg_inner_double : ∀ y ∈ S,
       (∮ z in C(y, ε y), Pg z)
-        = ∑ x ∈ S, ∮ z in C(y, ε y), ∑ k ∈ Finset.Icc 1 (N x), term x k z := by
+        = ∑ x ∈ S, ∮ z in C(y, ε y),
+            ∑ k ∈ Finset.Icc 1 (N x), a x k * (z - x) ^ (-(k : ℤ)) := by
     intro y hyS
     show (∮ z in C(y, ε y), ∑ x ∈ S, ∑ k ∈ Finset.Icc 1 (N x),
             a x k * (z - x) ^ (-(k : ℤ)))
@@ -433,87 +346,52 @@ theorem circleIntegral_finite_principal_part_eq
             a x k * (z - x) ^ (-(k : ℤ))
     rw [circleIntegral.integral_fun_sum]
     intro x hxS
-    apply CircleIntegrable.sum
-    intro k _
+    refine CircleIntegrable.fun_sum (Finset.Icc 1 (N x)) (fun k _ => ?_)
     by_cases hxy : x = y
-    · have hy_not : y ∉ sphere y (ε y) := by
-        intro hy
-        rw [Metric.mem_sphere] at hy
-        have := hε_pos y hyS
-        rw [dist_self] at hy; linarith
-      rw [hxy]; exact hmono_integrable y y (ε y) k (a x k) hy_not
-    · have hxnot : x ∉ sphere y (ε y) := by
-        intro hxsph
-        have hx_in_cb : x ∈ closedBall y (ε y) := Metric.sphere_subset_closedBall hxsph
-        exact hε_disj x hxS y hyS hxy hx_in_cb
-      exact hmono_integrable y x (ε y) k (a x k) hxnot
-  -- Step G: For each `x ∈ S`, the per-`x` summand integrals reduce.
-  -- Key per-x identity for the OUTER circle:
-  -- ∮_{|z-c|=R} ∑_k term x k z = ∑_k a x k * ∮_{|z-c|=R} (z - x) ^ (-k:ℤ)
-  --                           = ∑_k a x k * ∮_{|z-x|=ε x} (z - x) ^ (-k:ℤ)  (ZZ63)
-  --                           = ∮_{|z-x|=ε x} ∑_k term x k z
-  -- And for the INNER circle centered at y ≠ x: it's zero.
+    · subst hxy
+      exact const_mul_zpow_neg_circleIntegrable y x (ε y) k (a x k)
+        (hy_not_self_sphere y hyS)
+    · exact const_mul_zpow_neg_circleIntegrable y x (ε y) k (a x k)
+        (hx_not_inner_sphere_off y hyS x hxS hxy)
+  -- Step F: Per-x outer-to-inner identity (uses ZZ63).
   have h_outer_per_x : ∀ x ∈ S,
-      (∮ z in C(c, R), ∑ k ∈ Finset.Icc 1 (N x), term x k z)
-        = ∮ z in C(x, ε x), ∑ k ∈ Finset.Icc 1 (N x), term x k z := by
+      (∮ z in C(c, R), ∑ k ∈ Finset.Icc 1 (N x), a x k * (z - x) ^ (-(k : ℤ)))
+        = ∮ z in C(x, ε x), ∑ k ∈ Finset.Icc 1 (N x), a x k * (z - x) ^ (-(k : ℤ)) := by
     intro x hxS
-    -- Distribute on both sides via integral_fun_sum.
-    have hxnot_outer : x ∉ sphere c R := hx_not_outer_sphere x hxS
-    have hx_self_not_sphere : x ∉ sphere x (ε x) := by
-      intro hx
-      rw [Metric.mem_sphere] at hx
-      have := hε_pos x hxS
-      rw [dist_self] at hx; linarith
+    have hxnot_outer : x ∉ Metric.sphere c |R| := hx_not_outer_sphere x hxS
+    have hxnot_self : x ∉ Metric.sphere x |ε x| := hy_not_self_sphere x hxS
     have hLsum :
-        (∮ z in C(c, R), ∑ k ∈ Finset.Icc 1 (N x), term x k z)
-          = ∑ k ∈ Finset.Icc 1 (N x), ∮ z in C(c, R), term x k z := by
+        (∮ z in C(c, R), ∑ k ∈ Finset.Icc 1 (N x), a x k * (z - x) ^ (-(k : ℤ)))
+          = ∑ k ∈ Finset.Icc 1 (N x), ∮ z in C(c, R), a x k * (z - x) ^ (-(k : ℤ)) := by
       rw [circleIntegral.integral_fun_sum]
       intro k _
-      exact hmono_integrable c x R k (a x k) hxnot_outer
+      exact const_mul_zpow_neg_circleIntegrable c x R k (a x k) hxnot_outer
     have hRsum :
-        (∮ z in C(x, ε x), ∑ k ∈ Finset.Icc 1 (N x), term x k z)
-          = ∑ k ∈ Finset.Icc 1 (N x), ∮ z in C(x, ε x), term x k z := by
+        (∮ z in C(x, ε x), ∑ k ∈ Finset.Icc 1 (N x), a x k * (z - x) ^ (-(k : ℤ)))
+          = ∑ k ∈ Finset.Icc 1 (N x), ∮ z in C(x, ε x), a x k * (z - x) ^ (-(k : ℤ)) := by
       rw [circleIntegral.integral_fun_sum]
       intro k _
-      exact hmono_integrable x x (ε x) k (a x k) hx_self_not_sphere
+      exact const_mul_zpow_neg_circleIntegrable x x (ε x) k (a x k) hxnot_self
     rw [hLsum, hRsum]
     apply Finset.sum_congr rfl
     intro k _
-    -- ∮ a x k * (z - x) ^ (-k:ℤ) on outer = ∮ ... on inner C(x, ε x), via ZZ63.
-    show (∮ z in C(c, R), a x k * (z - x) ^ (-(k : ℤ)))
-        = ∮ z in C(x, ε x), a x k * (z - x) ^ (-(k : ℤ))
     rw [circleIntegral.integral_const_mul, circleIntegral.integral_const_mul]
     congr 1
     -- ZZ63 with n = -(k : ℤ).
     exact NonConcentricCauchy.nonConcentric_circleIntegral_zpow_eq
       (-(k : ℤ)) hR (hε_pos x hxS) (hε_sub x hxS)
-  -- For inner circle centered at y, with x ≠ y: per-x integral is zero.
+  -- Step G: Off-pole inner integrals vanish.
   have h_inner_per_x_off : ∀ y ∈ S, ∀ x ∈ S, x ≠ y →
-      (∮ z in C(y, ε y), ∑ k ∈ Finset.Icc 1 (N x), term x k z) = 0 := by
+      (∮ z in C(y, ε y), ∑ k ∈ Finset.Icc 1 (N x), a x k * (z - x) ^ (-(k : ℤ))) = 0 := by
     intro y hyS x hxS hxy
     have hxnot : x ∉ closedBall y (ε y) := hε_disj x hxS y hyS hxy
-    -- Apply our principal-part-off-pole lemma.
-    show (∮ z in C(y, ε y), ∑ k ∈ Finset.Icc 1 (N x),
-            a x k * (z - x) ^ (-(k : ℤ))) = 0
     exact circleIntegral_principal_part_off_pole_vanishes
       (hε_pos y hyS).le (N x) (a x) hxnot
-  -- Step H: Assemble.
-  -- LHS = ∮ h + ∮ Pg = 0 + ∑_{x ∈ S} ∮_{|z-c|=R} (∑_k term x k z)
-  --     = ∑_{x ∈ S} ∮_{|z-x|=ε x} (∑_k term x k z)        [by h_outer_per_x]
-  -- RHS = ∑_{y ∈ S} (∮_{|z-y|=ε y} h + ∮_{|z-y|=ε y} Pg)
-  --     = ∑_{y ∈ S} (0 + ∑_{x ∈ S} ∮_{|z-y|=ε y} ∑_k term x k z)
-  --     = ∑_{y ∈ S} ∑_{x ∈ S} ∮_{|z-y|=ε y} ∑_k term x k z
-  -- Inner double sum: ∑_y ∑_x = ∑_x ∑_y. For fixed x, ∑_y ∮_{|z-y|=ε y} = the y=x term + ∑_{y ≠ x} 0
-  --                = ∮_{|z-x|=ε x} ∑_k term x k z.
-  -- So RHS = ∑_{x ∈ S} ∮_{|z-x|=ε x} ∑_k term x k z. Same as LHS.
+  -- Step H: Final assembly.
   rw [hLHS, hLHS_split, hh_outer_zero, zero_add, hPg_outer_double]
-  -- LHS = ∑ x ∈ S, ∮_{|z-c|=R} ∑_k term x k z
-  -- We'll convert each summand to the inner-x form.
   rw [Finset.sum_congr rfl h_outer_per_x]
-  -- Now LHS = ∑ x ∈ S, ∮ z in C(x, ε x), ∑ k, term x k z
-  -- Show RHS equals the same.
   symm
-  -- Rewrite RHS pointwise.
+  -- Rewrite RHS via `hRHS_each`, `hRHS_split`, kill `h` parts, distribute `Pg`.
   have hRHS_eq :
       (∑ y ∈ S, ∮ z in C(y, ε y), g z)
         = ∑ y ∈ S, ((∮ z in C(y, ε y), h z) + (∮ z in C(y, ε y), Pg z)) := by
@@ -521,7 +399,6 @@ theorem circleIntegral_finite_principal_part_eq
     intro y hyS
     rw [hRHS_each y hyS, hRHS_split y hyS]
   rw [hRHS_eq]
-  -- ∑_y (0 + ∮ Pg) = ∑_y ∮ Pg.
   have hRHS_h_zero :
       (∑ y ∈ S, ((∮ z in C(y, ε y), h z) + (∮ z in C(y, ε y), Pg z)))
         = ∑ y ∈ S, (∮ z in C(y, ε y), Pg z) := by
@@ -529,35 +406,33 @@ theorem circleIntegral_finite_principal_part_eq
     intro y hyS
     rw [hh_inner_zero y hyS, zero_add]
   rw [hRHS_h_zero]
-  -- Distribute Pg into the per-x double sum.
   have hRHS_double :
       (∑ y ∈ S, ∮ z in C(y, ε y), Pg z)
-        = ∑ y ∈ S, ∑ x ∈ S, ∮ z in C(y, ε y), ∑ k ∈ Finset.Icc 1 (N x), term x k z := by
+        = ∑ y ∈ S, ∑ x ∈ S, ∮ z in C(y, ε y),
+            ∑ k ∈ Finset.Icc 1 (N x), a x k * (z - x) ^ (-(k : ℤ)) := by
     apply Finset.sum_congr rfl
     intro y hyS
     exact hPg_inner_double y hyS
-  rw [hRHS_double]
-  -- Swap sums: ∑_y ∑_x = ∑_x ∑_y.
-  rw [Finset.sum_comm]
-  -- Now: ∑_x ∑_y ∮_{|z-y|=ε y} ∑_k term x k z = ∑_x [∮_{|z-x|=ε x} ∑_k term x k z + ∑_{y ≠ x} 0].
+  rw [hRHS_double, Finset.sum_comm]
+  -- Now: ∑_x ∑_y ∮(at y) ∑_k = ∑_x [∮(at x) ∑_k + ∑_{y ∈ erase x} 0].
   apply Finset.sum_congr rfl
   intro x hxS
-  -- Split the inner sum at y = x.
-  rw [show (∑ y ∈ S, ∮ z in C(y, ε y), ∑ k ∈ Finset.Icc 1 (N x), term x k z)
-          = (∮ z in C(x, ε x), ∑ k ∈ Finset.Icc 1 (N x), term x k z)
-            + ∑ y ∈ S.erase x, ∮ z in C(y, ε y), ∑ k ∈ Finset.Icc 1 (N x), term x k z from ?_]
-  · -- Show the erase sum is zero.
-    have herase_zero :
-        (∑ y ∈ S.erase x, ∮ z in C(y, ε y), ∑ k ∈ Finset.Icc 1 (N x), term x k z) = 0 := by
+  rw [show (∑ y ∈ S, ∮ z in C(y, ε y),
+              ∑ k ∈ Finset.Icc 1 (N x), a x k * (z - x) ^ (-(k : ℤ)))
+          = (∮ z in C(x, ε x),
+                ∑ k ∈ Finset.Icc 1 (N x), a x k * (z - x) ^ (-(k : ℤ)))
+            + ∑ y ∈ S.erase x, ∮ z in C(y, ε y),
+                ∑ k ∈ Finset.Icc 1 (N x), a x k * (z - x) ^ (-(k : ℤ)) from ?_]
+  · have herase_zero :
+        (∑ y ∈ S.erase x, ∮ z in C(y, ε y),
+            ∑ k ∈ Finset.Icc 1 (N x), a x k * (z - x) ^ (-(k : ℤ))) = 0 := by
       apply Finset.sum_eq_zero
       intro y hy
       rw [Finset.mem_erase] at hy
       obtain ⟨hyx, hyS⟩ := hy
-      -- y ≠ x; apply h_inner_per_x_off.
       exact h_inner_per_x_off y hyS x hxS (Ne.symm hyx)
     rw [herase_zero, add_zero]
-  · -- Auxiliary: ∑ y ∈ S = ∮(at x) + ∑_{y ∈ S.erase x} ∮(at y).
-    rw [← Finset.sum_erase_add S _ hxS]
+  · rw [← Finset.sum_erase_add S _ hxS]
 
 end MultiHoleCauchyMeromorphic
 
