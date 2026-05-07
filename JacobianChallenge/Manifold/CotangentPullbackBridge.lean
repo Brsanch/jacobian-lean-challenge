@@ -121,10 +121,10 @@ theorem pullback_section_in_cotangent_coordinates_apply
   --       ((cotangentBundleCore I' M').coordChange (achart H' (f x)) (achart H' (f x₀)) (f x) η))
   --     ∘L mfderiv f x`.
   -- Collapse the inner cocycle round-trip via `cotangent_coordChange_cocycle`.
-  have hxa : f x ∈ (cotangentBundleCore I' M').baseSet (achart H' (f x)) := by
-    simpa [cotangentBundleCore_baseSet] using mem_chart_source H' (f x)
-  have hxb : f x ∈ (cotangentBundleCore I' M').baseSet (achart H' (f x₀)) := by
-    simpa [cotangentBundleCore_baseSet] using hfx
+  have hxa : f x ∈ (cotangentBundleCore I' M').baseSet (achart H' (f x)) :=
+    mem_chart_source H' (f x)
+  have hxb : f x ∈ (cotangentBundleCore I' M').baseSet (achart H' (f x₀)) :=
+    hfx
   have hcoc := cotangent_coordChange_cocycle (I' := I') (M' := M')
     (achart H' (f x)) (achart H' (f x₀)) (f x) hxa hxb η
   -- `hcoc : (cotangentBundleCore I' M').coordChange (achart H' (f x₀)) (achart H' (f x)) (f x)
