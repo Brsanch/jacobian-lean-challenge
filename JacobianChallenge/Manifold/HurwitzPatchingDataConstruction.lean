@@ -260,16 +260,8 @@ noncomputable def ofLocalSheets
     intro x hx
     have hcont : ContinuousOn (sheet x hx).g (sheet x hx).V := (sheet x hx).g_continuousOn
     have hWsep_op : IsOpen (Wsep x) := hWsep_open x hx
-    -- Use ContinuousOn.preimage_isOpen_of_isOpen — exists open O in Y with
-    -- (sheet x).V ∩ (sheet x).g ⁻¹' (Wsep x) = (sheet x).V ∩ O
-    obtain ⟨O, hO_open, hO_eq⟩ := hcont.isOpen_inter_preimage_iff.symm ▸ ⟨_, isOpen_univ, by rfl⟩
-    -- This is too clever; do it directly using preimage characterization:
-    -- ContinuousOn g s means g ∘ Subtype.val on s is continuous.
-    -- For `IsOpen (s ∩ g⁻¹' U)` when U open: this is exactly
-    -- `ContinuousOn.isOpen_preimage` after restricting.
-    -- Use the lemma `ContinuousOn.preimage_open_of_isOpen`: not standard name.
-    -- Simpler: rewrite via the characterization.
-    -- Use `continuousOn_iff_isOpen`: ContinuousOn g s ↔ ∀ open t, ∃ u open, s ∩ g⁻¹' t = s ∩ u.
+    -- Use `continuousOn_iff_isOpen`: ContinuousOn g s ↔ ∀ open t, ∃ u open,
+    -- s ∩ g⁻¹' t = s ∩ u.
     rw [continuousOn_iff_isOpen] at hcont
     obtain ⟨u, hu_open, hu_eq⟩ := hcont (Wsep x) hWsep_op
     show IsOpen ((sheet x hx).V ∩ (sheet x hx).g ⁻¹' Wsep x)
