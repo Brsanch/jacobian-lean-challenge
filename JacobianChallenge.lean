@@ -54,7 +54,6 @@ import JacobianChallenge.Manifold.CriticalSetDiscrete
 import JacobianChallenge.Manifold.CriticalSetFiniteUnconditional
 import JacobianChallenge.Manifold.CriticalSetWitnessSupplier
 import JacobianChallenge.Manifold.Degree
-import JacobianChallenge.Manifold.DegreeUnconditional
 import JacobianChallenge.Manifold.FiberCountBridge
 import JacobianChallenge.Manifold.FibreBalance
 import JacobianChallenge.Manifold.FibreBalanceTopologicalDegree
@@ -62,7 +61,6 @@ import JacobianChallenge.Manifold.FibreCardClopenReduction
 import JacobianChallenge.Manifold.FibreCardLevelSetClopenDischarge
 import JacobianChallenge.Manifold.FibreCardLocallyConstantFromNormalForm
 import JacobianChallenge.Manifold.FibreCardOnRegularSubset
-import JacobianChallenge.Manifold.FibreCardWellDefinedAtRegular
 import JacobianChallenge.Manifold.FibreCardWellDefinedUnconditional
 import JacobianChallenge.Manifold.FibreSumDegreeIdentification
 import JacobianChallenge.Manifold.FibreSumGloballyConstant
@@ -75,6 +73,7 @@ import JacobianChallenge.Manifold.HodgeFiniteDimensional
 import JacobianChallenge.Manifold.HodgeRiemannSphereInstance
 import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.HolomorphicOneFormRealification
+import JacobianChallenge.Manifold.HurwitzPatchingDataConstruction
 import JacobianChallenge.Manifold.IntegerShadowChainRealisation
 import JacobianChallenge.Manifold.IntegerShadowStokes
 import JacobianChallenge.Manifold.IsConstantMapAux
@@ -117,8 +116,8 @@ import JacobianChallenge.Manifold.PeriodImageLattice
 import JacobianChallenge.Manifold.PeriodIntegral
 import JacobianChallenge.Manifold.PeriodLattice
 import JacobianChallenge.Manifold.PeriodLatticeChartedSpace
-import JacobianChallenge.Manifold.PeriodLatticeComplexQuotient
 import JacobianChallenge.Manifold.PeriodLatticeCompactQuotient
+import JacobianChallenge.Manifold.PeriodLatticeComplexQuotient
 import JacobianChallenge.Manifold.PeriodLatticeOfRankTwoG_ComplexWiring
 import JacobianChallenge.Manifold.PeriodLatticeOfRankTwoG_Wiring
 import JacobianChallenge.Manifold.PeriodLatticeRankTwoG
