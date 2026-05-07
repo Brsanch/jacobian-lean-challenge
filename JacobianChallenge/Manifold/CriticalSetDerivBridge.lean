@@ -102,11 +102,12 @@ theorem deriv_ne_zero_of_analyticOrderAt_eq_one
   have hg_h_eventually : g =ᶠ[𝓝 x₀] h := by
     filter_upwards [hball_nhds] with z hz using hg_eq z hz
   have hderiv_sub : deriv (fun ζ : ℂ => ζ - x₀) x₀ = 1 := by
-    have hid : DifferentiableAt ℂ (fun ζ : ℂ => ζ) x₀ := differentiableAt_id
-    have hd := deriv_sub (f := fun ζ : ℂ => ζ) (g := fun _ : ℂ => x₀) (x := x₀)
-      hid (differentiableAt_const x₀)
-    rw [deriv_id', deriv_const] at hd
-    linarith
+    -- Directly: `(z - x₀)` is `z ↦ z + (- x₀)`, derivative = 1.
+    have h_eq : (fun ζ : ℂ => ζ - x₀) = (fun ζ : ℂ => ζ + (- x₀)) := by
+      funext ζ; ring
+    rw [h_eq]
+    rw [deriv_add_const]
+    exact deriv_id' x₀
   have hderiv_prod :
       deriv (fun z : ℂ => (z - x₀) * u z) x₀ = u x₀ := by
     have hp := deriv_mul (𝕜 := ℂ) hsub_diff hu_diff
@@ -114,13 +115,8 @@ theorem deriv_ne_zero_of_analyticOrderAt_eq_one
     exact hp
   have hsplit : deriv (fun z : ℂ => w₀ + (z - x₀) * u z) x₀
       = deriv (fun z : ℂ => (z - x₀) * u z) x₀ := by
-    have hd_const : DifferentiableAt ℂ (fun _ : ℂ => w₀) x₀ :=
-      differentiableAt_const w₀
-    have hd_prod : DifferentiableAt ℂ (fun z : ℂ => (z - x₀) * u z) x₀ :=
-      hsub_diff.mul hu_diff
-    have h_add := deriv_add (𝕜 := ℂ) hd_const hd_prod
-    rw [deriv_const] at h_add
-    linarith
+    -- `deriv_const_add'` style: `deriv (fun z => c + g z) x = deriv g x`.
+    exact deriv_const_add' w₀ (f := fun z : ℂ => (z - x₀) * u z) x₀
   have hderiv_h : deriv h x₀ = u x₀ := by
     show deriv (fun z : ℂ => w₀ + (z - x₀) * u z) x₀ = u x₀
     rw [hsplit, hderiv_prod]
@@ -209,11 +205,10 @@ theorem notInjOn_of_analyticOrderAt_ge_two
   have hderiv_v : deriv v x₀ = r_root x₀ := by
     have hp := deriv_mul (𝕜 := ℂ) hsub_diff hr_root_diff
     have hsub_d : deriv (fun ζ : ℂ => ζ - x₀) x₀ = 1 := by
-      have hid : DifferentiableAt ℂ (fun ζ : ℂ => ζ) x₀ := differentiableAt_id
-      have hd' := deriv_sub (f := fun ζ : ℂ => ζ) (g := fun _ : ℂ => x₀) (x := x₀)
-        hid (differentiableAt_const x₀)
-      rw [deriv_id', deriv_const] at hd'
-      linarith
+      have h_eq : (fun ζ : ℂ => ζ - x₀) = (fun ζ : ℂ => ζ + (- x₀)) := by
+        funext ζ; ring
+      rw [h_eq, deriv_add_const]
+      exact deriv_id' x₀
     rw [hsub_d, sub_self, zero_mul, add_zero, one_mul] at hp
     exact hp
   have hderiv_v_ne : deriv v x₀ ≠ 0 := by rw [hderiv_v]; exact hr_x₀_ne
@@ -285,27 +280,27 @@ theorem notInjOn_of_analyticOrderAt_ge_two
       have hpi : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
       have h2 : (2 : ℂ) ≠ 0 := by norm_num
       exact mul_ne_zero (mul_ne_zero h2 hpi) Complex.I_ne_zero
-    -- From `hn : 2 π i / k = n * (2 π i)`, multiply both sides by `k`.
+    -- From `hn : 2 π i / k = n * (2 π i)`, multiply both sides by `k`:
+    --   `2 π i = n * (2 π i) * k`. Then cancel `2 π i`: `1 = n * k`.
+    have hk_ne_complex : (k : ℂ) ≠ 0 := hk_ne
     have hn_k : (2 * (Real.pi : ℂ) * Complex.I) =
-                ((n : ℂ) * (2 * (Real.pi : ℂ) * Complex.I)) * k := by
-      have := congrArg (fun w => w * (k : ℂ)) hn
-      simp at this
-      have hdiv : (2 * (Real.pi : ℂ) * Complex.I / (k : ℂ)) * (k : ℂ) = 2 * (Real.pi : ℂ) * Complex.I :=
-        div_mul_cancel₀ _ hk_ne
-      rw [hdiv] at this
-      linear_combination this
-    -- Cancel `2 π i` from both sides: `1 = n * k`.
-    have h_one : (1 : ℂ) = (n : ℂ) * (k : ℂ) := by
+                ((n : ℂ) * k) * (2 * (Real.pi : ℂ) * Complex.I) := by
+      have h_mul : (2 * (Real.pi : ℂ) * Complex.I / (k : ℂ)) * (k : ℂ)
+                   = ((n : ℂ) * (2 * (Real.pi : ℂ) * Complex.I)) * (k : ℂ) := by
+        rw [hn]
+      rw [div_mul_cancel₀ _ hk_ne_complex] at h_mul
+      linear_combination h_mul
+    have h_one : (1 : ℂ) = ((n : ℂ) * k) := by
       have hh : (2 * (Real.pi : ℂ) * Complex.I) * 1 =
                 (2 * (Real.pi : ℂ) * Complex.I) * ((n : ℂ) * (k : ℂ)) := by
         rw [mul_one]
-        rw [hn_k]; ring
+        linear_combination hn_k
       exact mul_left_cancel₀ hpi_ne hh
     have h_int : (n * (k : ℤ) : ℤ) = 1 := by
-      have : ((n * (k : ℤ) : ℤ) : ℂ) = 1 := by
-        push_cast; linear_combination h_one.symm
-      exact_mod_cast this
-    -- k ≥ 2 in ℤ, n * k = 1: k ∣ 1 in ℤ ⟹ k ≤ 1.
+      have hcast : ((n * (k : ℤ) : ℤ) : ℂ) = (1 : ℤ) := by
+        push_cast
+        linear_combination -h_one
+      exact_mod_cast hcast
     have h_k_int : (k : ℤ) ≥ 2 := by exact_mod_cast hk_ge_two
     have h_dvd : (k : ℤ) ∣ 1 := ⟨n, by linarith [h_int]⟩
     have h_k_le : (k : ℤ) ≤ 1 := Int.le_of_dvd (by norm_num) h_dvd
@@ -320,9 +315,8 @@ theorem notInjOn_of_analyticOrderAt_ge_two
       have hk_re : ((k : ℂ)).re = (k : ℝ) := Complex.natCast_re _
       have hk_im : ((k : ℂ)).im = 0 := Complex.natCast_im _
       rw [Complex.div_re, h_num_re, h_num_im, hk_re, hk_im]
-      have hk_norm_sq : Complex.normSq (k : ℂ) ≠ 0 :=
-        Complex.normSq_ne_zero.mpr hk_ne
-      field_simp
+      -- Goal: `0 * ↑k / Complex.normSq ↑k - 2 * Real.pi * 0 / Complex.normSq ↑k = 0`.
+      ring
     rw [h_re_zero]; exact Real.exp_zero
   have hωξ_norm : ‖ω * ξ‖ = τ / 2 := by
     rw [norm_mul, hω_norm, one_mul, hξ_norm]
@@ -374,10 +368,12 @@ theorem notInjOn_of_analyticOrderAt_ge_two
     have h_v_eq : v z₁ = v z₂ := by rw [h_eq]
     rw [hv_z₁, hv_z₂] at h_v_eq
     -- ξ = ω * ξ ⟹ (1 - ω) * ξ = 0 ⟹ ω = 1 (since ξ ≠ 0).
-    have h_zero : (1 - ω) * ξ = 0 := by linear_combination -h_v_eq
+    have h_zero : (1 - ω) * ξ = 0 := by linear_combination h_v_eq
     rcases mul_eq_zero.mp h_zero with hω1 | hξ0
-    · apply hω_ne_one
-      linear_combination -hω1
+    · -- hω1 : 1 - ω = 0. Hence ω = 1.
+      apply hω_ne_one
+      have := sub_eq_zero.mp hω1
+      exact this.symm
     · exact hξ_ne hξ0
   have hz₁_U : z₁ ∈ U := by
     apply hε_U_sub_U
