@@ -3,10 +3,12 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
+import Mathlib.Analysis.LocallyConvex.WithSeminorms
 import Mathlib.Analysis.Normed.Module.Connected
 import Mathlib.Geometry.Manifold.IsManifold.Basic
 import Mathlib.Geometry.Manifold.ChartedSpace
 import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+import Mathlib.Topology.Algebra.Module.LocallyConvex
 import Mathlib.Topology.Connected.LocPathConnected
 import Mathlib.Topology.Connected.PathConnected
 import Mathlib.Topology.Separation.Basic
