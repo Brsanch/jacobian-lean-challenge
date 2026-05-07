@@ -161,7 +161,8 @@ theorem chart_local_detour_of_target_univ_complex
   have h_img_countable : (φ '' (φ.source ∩ C)).Countable := h_img_fin.countable
   -- `1 < Module.rank ℝ ℂ`.
   have h_rank : (1 : Cardinal) < Module.rank ℝ ℂ := by
-    rw [Complex.rank_real_complex]; exact one_lt_two
+    rw [Complex.rank_real_complex]
+    exact_mod_cast (Nat.one_lt_two)
   -- Path-connectedness of the complement in the whole plane.
   have h_compl_pc : IsPathConnected ((φ '' (φ.source ∩ C))ᶜ : Set ℂ) :=
     h_img_countable.isPathConnected_compl_of_one_lt_rank h_rank
