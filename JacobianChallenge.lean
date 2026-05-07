@@ -21,6 +21,7 @@ import JacobianChallenge.Manifold.ChartPullbackDataConstruction
 import JacobianChallenge.Manifold.FibresFiniteAssembly
 import JacobianChallenge.Manifold.RiemannSphere
 import JacobianChallenge.Manifold.RiemannSphereGenus
+import JacobianChallenge.Manifold.HodgeRiemannSphereInstance
 import JacobianChallenge.Manifold.RiemannSphereMobius
 import JacobianChallenge.Manifold.PlanarAnnulusCircleIntegral
 import JacobianChallenge.Manifold.MultiHoleCauchyDeformation
