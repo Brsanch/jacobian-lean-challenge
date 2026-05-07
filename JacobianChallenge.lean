@@ -117,3 +117,4 @@ import JacobianChallenge.Manifold.PrincipalDivisorDegreeZero
 import JacobianChallenge.Manifold.ArgumentPrincipleOnDisc
 import JacobianChallenge.Manifold.RegularValueSetConnected
 import JacobianChallenge.Manifold.ChartIntegralFibreBalanceFromR5Stack
+import JacobianChallenge.Manifold.R5StackHypothesesDischarge
