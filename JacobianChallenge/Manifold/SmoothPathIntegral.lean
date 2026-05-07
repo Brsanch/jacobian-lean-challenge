@@ -90,11 +90,11 @@ def velocity (γ : SmoothPath I X) (t : ℝ) : E :=
   (mfderiv (𝓘(ℝ, ℝ)) I γ.ambient t : ℝ →L[ℝ] TangentSpace I (γ.ambient t))
     (1 : ℝ)
 
-/-- Pair a covector at `x` with a tangent vector. Both
-`CotangentSpace I x` and `TangentSpace I x` reduce definitionally to
-`E →L[ℝ] ℝ` and `E`; the pairing is plain CLM application. -/
+/-- Pair a covector at `x` with a tangent vector, viewed as raw
+elements of `E →L[ℝ] ℝ` and `E`. Defined via the explicit defeq
+identification `CotangentSpace I x ↦ (E →L[ℝ] ℝ)` and CLM application. -/
 def applyCotangent {x : X} (φ : CotangentSpace I x) (v : E) : ℝ :=
-  (show E →L[ℝ] ℝ from φ) v
+  (id φ : E →L[ℝ] ℝ) v
 
 /-- The integrand `t ↦ ω(γ t)(γ' t)` of the path integral. -/
 def integrand (γ : SmoothPath I X) (ω : SmoothOneForm I X) (t : ℝ) : ℝ :=
@@ -111,16 +111,20 @@ namespace SmoothPath
 
 @[simp] lemma applyCotangent_zero {x : X} (v : E) :
     applyCotangent (0 : CotangentSpace I x) v = 0 := by
-  simp [applyCotangent]
+  show ((0 : E →L[ℝ] ℝ)) v = 0
+  exact ContinuousLinearMap.zero_apply v
 
 @[simp] lemma applyCotangent_add {x : X} (φ ψ : CotangentSpace I x) (v : E) :
     applyCotangent (φ + ψ) v = applyCotangent φ v + applyCotangent ψ v := by
-  simp [applyCotangent, ContinuousLinearMap.add_apply]
+  show (((φ : E →L[ℝ] ℝ) + (ψ : E →L[ℝ] ℝ))) v
+      = ((φ : E →L[ℝ] ℝ)) v + ((ψ : E →L[ℝ] ℝ)) v
+  exact ContinuousLinearMap.add_apply _ _ _
 
 @[simp] lemma applyCotangent_smul {x : X} (c : ℝ) (φ : CotangentSpace I x)
     (v : E) :
     applyCotangent (c • φ) v = c * applyCotangent φ v := by
-  simp [applyCotangent, ContinuousLinearMap.smul_apply, smul_eq_mul]
+  show ((c • (φ : E →L[ℝ] ℝ))) v = c * ((φ : E →L[ℝ] ℝ)) v
+  rw [ContinuousLinearMap.smul_apply, smul_eq_mul]
 
 variable (γ : SmoothPath I X)
 
@@ -175,55 +179,74 @@ end SmoothPath
 
 namespace SmoothChain
 
+/-- View a `SmoothChain I X` as the underlying `Finsupp`. Just an
+identity-on-data wrapper to coax the typeclass picture for `Finsupp`
+operations to fire on a `SmoothChain` argument. -/
+@[reducible] def asFinsupp (c : SmoothChain I X) : SmoothPath I X →₀ ℤ := c
+
 /-- The integral of a smooth 1-form `ω` along a smooth 1-chain `c`,
 i.e. `∑_{γ ∈ c.support} (c γ : ℝ) * γ.integrate ω`. -/
 def integrate (c : SmoothChain I X) (ω : SmoothOneForm I X) : ℝ :=
-  c.support.sum (fun γ => (c γ : ℝ) * γ.integrate ω)
+  (asFinsupp c).support.sum
+    (fun γ => ((asFinsupp c) γ : ℝ) * γ.integrate ω)
 
 @[simp] theorem integrate_zero (ω : SmoothOneForm I X) :
     integrate (0 : SmoothChain I X) ω = 0 := by
-  unfold integrate
+  unfold integrate asFinsupp
+  show (0 : SmoothPath I X →₀ ℤ).support.sum
+        (fun γ => (((0 : SmoothPath I X →₀ ℤ) γ : ℤ) : ℝ) * γ.integrate ω) = 0
   simp
 
 @[simp] theorem integrate_single (γ : SmoothPath I X) (ω : SmoothOneForm I X) :
     integrate (SmoothChain.single γ) ω = γ.integrate ω := by
-  unfold integrate single
+  unfold integrate asFinsupp single
   have h1 : (1 : ℤ) ≠ 0 := one_ne_zero
-  simp [Finsupp.support_single_ne_zero _ h1]
+  show (Finsupp.single γ (1 : ℤ)).support.sum
+        (fun δ => ((Finsupp.single γ (1 : ℤ)) δ : ℝ) * δ.integrate ω)
+      = γ.integrate ω
+  rw [Finsupp.support_single_ne_zero _ h1]
+  simp
 
 @[simp] theorem integrate_add (c₁ c₂ : SmoothChain I X) (ω : SmoothOneForm I X) :
     integrate (c₁ + c₂) ω = integrate c₁ ω + integrate c₂ ω := by
   classical
-  unfold integrate
-  -- Push all three sums onto the common index set `c₁.support ∪ c₂.support`
-  -- by extending with zeros, then combine pointwise.
-  have e₀ : (c₁ + c₂).support.sum
-        (fun γ => ((c₁ + c₂) γ : ℝ) * γ.integrate ω) =
-      (c₁.support ∪ c₂.support).sum
-        (fun γ => ((c₁ + c₂) γ : ℝ) * γ.integrate ω) := by
+  -- Reduce to the underlying Finsupp.
+  set f₁ : SmoothPath I X →₀ ℤ := asFinsupp c₁
+  set f₂ : SmoothPath I X →₀ ℤ := asFinsupp c₂
+  have hsum : asFinsupp (c₁ + c₂) = f₁ + f₂ := rfl
+  show (asFinsupp (c₁ + c₂)).support.sum
+        (fun γ => ((asFinsupp (c₁ + c₂)) γ : ℝ) * γ.integrate ω)
+      = f₁.support.sum (fun γ => (f₁ γ : ℝ) * γ.integrate ω)
+        + f₂.support.sum (fun γ => (f₂ γ : ℝ) * γ.integrate ω)
+  rw [hsum]
+  -- Push everything onto the union support and split.
+  have e₀ : (f₁ + f₂).support.sum
+        (fun γ => (((f₁ + f₂) γ) : ℝ) * γ.integrate ω) =
+      (f₁.support ∪ f₂.support).sum
+        (fun γ => (((f₁ + f₂) γ) : ℝ) * γ.integrate ω) := by
     apply Finset.sum_subset Finsupp.support_add
     intro γ _ hγ
-    have h0 : (c₁ + c₂) γ = 0 := Finsupp.notMem_support_iff.mp hγ
+    have h0 : (f₁ + f₂) γ = 0 := Finsupp.notMem_support_iff.mp hγ
     rw [h0]; push_cast; ring
-  have e₁ : c₁.support.sum (fun γ => (c₁ γ : ℝ) * γ.integrate ω) =
-      (c₁.support ∪ c₂.support).sum
-        (fun γ => (c₁ γ : ℝ) * γ.integrate ω) := by
+  have e₁ : f₁.support.sum (fun γ => ((f₁ γ) : ℝ) * γ.integrate ω) =
+      (f₁.support ∪ f₂.support).sum
+        (fun γ => ((f₁ γ) : ℝ) * γ.integrate ω) := by
     apply Finset.sum_subset Finset.subset_union_left
     intro γ _ hγ
-    have h0 : c₁ γ = 0 := Finsupp.notMem_support_iff.mp hγ
+    have h0 : f₁ γ = 0 := Finsupp.notMem_support_iff.mp hγ
     rw [h0]; push_cast; ring
-  have e₂ : c₂.support.sum (fun γ => (c₂ γ : ℝ) * γ.integrate ω) =
-      (c₁.support ∪ c₂.support).sum
-        (fun γ => (c₂ γ : ℝ) * γ.integrate ω) := by
+  have e₂ : f₂.support.sum (fun γ => ((f₂ γ) : ℝ) * γ.integrate ω) =
+      (f₁.support ∪ f₂.support).sum
+        (fun γ => ((f₂ γ) : ℝ) * γ.integrate ω) := by
     apply Finset.sum_subset Finset.subset_union_right
     intro γ _ hγ
-    have h0 : c₂ γ = 0 := Finsupp.notMem_support_iff.mp hγ
+    have h0 : f₂ γ = 0 := Finsupp.notMem_support_iff.mp hγ
     rw [h0]; push_cast; ring
   rw [e₀, e₁, e₂, ← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
   intro γ _
-  have hsum : (c₁ + c₂) γ = c₁ γ + c₂ γ := Finsupp.add_apply _ _ _
-  rw [hsum]; push_cast; ring
+  have hadd : (f₁ + f₂) γ = f₁ γ + f₂ γ := Finsupp.add_apply _ _ _
+  rw [hadd]; push_cast; ring
 
 end SmoothChain
 
