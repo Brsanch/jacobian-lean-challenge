@@ -108,6 +108,7 @@ import JacobianChallenge.Manifold.PeriodImageLattice
 import JacobianChallenge.Manifold.PeriodIntegral
 import JacobianChallenge.Manifold.PeriodLattice
 import JacobianChallenge.Manifold.PeriodLatticeChartedSpace
+import JacobianChallenge.Manifold.PeriodLatticeComplexQuotient
 import JacobianChallenge.Manifold.PeriodLatticeCompactQuotient
 import JacobianChallenge.Manifold.PeriodLatticeOfRankTwoG_Wiring
 import JacobianChallenge.Manifold.PeriodLatticeRankTwoG
