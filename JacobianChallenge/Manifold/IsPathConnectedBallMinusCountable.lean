@@ -120,21 +120,14 @@ theorem Set.Countable.isPathConnected_ball_diff_complex
     simp [← List.ofFn_inj]
   -- Bounded-`t` constraint: choose `t` small enough that `c + t•y ∈ ball`.
   obtain ⟨δ, hδpos, hδ⟩ := exists_delta_smul_mem_ball hc_ball y
-  -- Pick `t ∈ Ioo (-δ) δ` outside both countable bad sets.
-  have hIoo_nc : ¬ (Set.Ioo (-δ) δ).Countable := by
-    rw [Real.Ioo_countable_iff]
-    push_neg
-    linarith
-  have hbad_count : ({t : ℝ | ([c + x -[ℝ] c + t • y] ∩ s).Nonempty} ∪
-      {t : ℝ | ([c - x -[ℝ] c + t • y] ∩ s).Nonempty}).Countable := A.union B
-  have hexists : ∃ t ∈ Set.Ioo (-δ) δ,
-      t ∉ ({t : ℝ | ([c + x -[ℝ] c + t • y] ∩ s).Nonempty} ∪
-          {t : ℝ | ([c - x -[ℝ] c + t • y] ∩ s).Nonempty}) := by
-    by_contra hH
-    push_neg at hH
-    apply hIoo_nc
-    exact hbad_count.mono hH
-  obtain ⟨t, ht_mem, ht⟩ := hexists
+  -- The complement of the countable bad-set is dense in ℝ.
+  have hdense : Dense (({t : ℝ | ([c + x -[ℝ] c + t • y] ∩ s).Nonempty} ∪
+      {t : ℝ | ([c - x -[ℝ] c + t • y] ∩ s).Nonempty})ᶜ : Set ℝ) :=
+    (A.union B).dense_compl ℝ
+  -- Intersect with the open interval `Ioo (-δ) δ` to extract a witness `t`.
+  have hIoo_open : IsOpen (Set.Ioo (-δ) δ : Set ℝ) := isOpen_Ioo
+  have hIoo_ne : (Set.Ioo (-δ) δ : Set ℝ).Nonempty := ⟨0, by simp [hδpos]⟩
+  obtain ⟨t, ht_mem, ht⟩ := hdense.inter_open_nonempty _ hIoo_open hIoo_ne
   have ht_abs : |t| < δ := abs_lt.mpr ht_mem
   let w : ℂ := c + t • y
   have hw_ball : w ∈ Metric.ball z r := hδ t ht_abs
