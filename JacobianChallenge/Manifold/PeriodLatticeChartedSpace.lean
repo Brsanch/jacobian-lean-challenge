@@ -43,7 +43,7 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimension
 
 /-- A `DiscreteTopology` ℤ-submodule of a normed space admits a positive
 radius whose open ball meets the lattice only at `0`. -/
-private lemma exists_discreteness_radius (L : Submodule ℤ E) [DiscreteTopology L] :
+lemma exists_discreteness_radius (L : Submodule ℤ E) [DiscreteTopology L] :
     ∃ r : ℝ, 0 < r ∧ ∀ x ∈ (L : Set E), ‖x‖ < r → x = 0 := by
   have hopen : IsOpen ({(0 : L)} : Set L) := isOpen_discrete _
   rw [isOpen_induced_iff] at hopen
@@ -69,7 +69,7 @@ variable (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
 
 /-- `L.mkQ` is injective on any open ball of radius `r/2`, where `r` is a
 discreteness radius for `L`. -/
-private lemma mkQ_injOn_ball
+lemma mkQ_injOn_ball
     {r : ℝ} (hrL : ∀ x ∈ (L : Set E), ‖x‖ < r → x = 0)
     (e : E) : Set.InjOn L.mkQ (Metric.ball e (r/2)) := by
   intro x hx y hy hxy
@@ -136,13 +136,13 @@ noncomputable def localChart
 /-! ### The `ChartedSpace` instance -/
 
 /-- A discreteness witness packaged once as a noncomputable `Classical.choose`. -/
-private noncomputable def discRadius : ℝ :=
+noncomputable def discRadius : ℝ :=
   Classical.choose (exists_discreteness_radius L)
 
-private lemma discRadius_pos : 0 < discRadius L :=
+lemma discRadius_pos : 0 < discRadius L :=
   (Classical.choose_spec (exists_discreteness_radius L)).1
 
-private lemma discRadius_separates :
+lemma discRadius_separates :
     ∀ x ∈ (L : Set E), ‖x‖ < discRadius L → x = 0 :=
   (Classical.choose_spec (exists_discreteness_radius L)).2
 
