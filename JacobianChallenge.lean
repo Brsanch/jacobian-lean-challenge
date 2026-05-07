@@ -6,6 +6,7 @@ import JacobianChallenge.Manifold.HodgeFiniteDimensional
 import JacobianChallenge.Manifold.PeriodIntegral
 import JacobianChallenge.Manifold.PeriodLattice
 import JacobianChallenge.Manifold.PeriodLatticeRankTwoG
+import JacobianChallenge.Manifold.PeriodPairingDefinition
 import JacobianChallenge.Manifold.MeromorphicAt
 import JacobianChallenge.Manifold.MeromorphicDivisor
 import JacobianChallenge.Manifold.LocalMultiplicity
