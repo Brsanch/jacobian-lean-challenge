@@ -152,6 +152,8 @@ private lemma transition_eventuallyEq_translation
   intro x hxU
   obtain ⟨hx_in_ballc, hxlam_in_ballc'⟩ := hxU
   -- transition x = (localChart c').symm ((localChart c) x) = (localChart c').symm (L.mkQ x)
+  show ((localChart L hrL c).trans (localChart L hrL c').symm) x = x - lam
+  -- The transition `e₁ ≫ₕ e₂.symm` is the composition `e₂.symm ∘ e₁` on the source.
   have h_step1 : ((localChart L hrL c).trans (localChart L hrL c').symm) x
       = (localChart L hrL c').symm (L.mkQ x) := by
     change (localChart L hrL c').symm ((localChart L hrL c) x) = _
@@ -222,29 +224,10 @@ noncomputable instance isManifold_quotient_of_zlattice (n : WithTop ℕ∞) :
   -- The model with corners is `𝓘(ℝ, E)`, so `I = id` and `range I = univ`.
   -- After simp, the source becomes the trans-source.
   have h := contDiffOn_chart_transition L (discRadius_separates L) c c' n
-  -- Transport via the `mfld_simps` shape.
-  -- `(I.symm) ⁻¹' S ∩ range I` simplifies to `S` since `I = 𝓘(ℝ,E) = id`.
-  -- We rewrite the goal to match.
-  -- Use the symm-symm reduction.
-  have hsymm : ((localChart L (discRadius_separates L) c).symm).symm
-      = localChart L (discRadius_separates L) c := by
-    exact OpenPartialHomeomorph.symm_symm _
-  -- The goal:
-  --   ContDiffOn ℝ n
-  --     (𝓘(ℝ,E) ∘ ((localChart c).symm).symm ≫ₕ (localChart c').symm ∘ 𝓘(ℝ,E).symm)
-  --     (𝓘(ℝ,E).symm ⁻¹' (((localChart c).symm).symm ≫ₕ (localChart c').symm).source ∩
-  --        range 𝓘(ℝ,E))
-  -- Since 𝓘 = id and range = univ, this reduces to:
-  --   ContDiffOn ℝ n ((localChart c) ≫ₕ (localChart c').symm)
-  --     ((localChart c) ≫ₕ (localChart c').symm).source
-  -- which is exactly `h`.
-  simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
-    Function.comp_id, id_comp, Function.id_comp,
-    Set.preimage_id, Set.range_id, Set.inter_univ] at h ⊢
-  -- After simp, the hypothesis and goal should match up to `symm_symm`.
-  -- We compose with the symm_symm rewrite.
-  -- Use `OpenPartialHomeomorph.symm_symm` to rewrite the goal.
-  -- Direct convert.
-  convert h using 2 <;> simp [OpenPartialHomeomorph.symm_symm]
+  -- Goal involves `((localChart c).symm).symm` which equals `localChart c`.
+  -- Also `𝓘(ℝ,E)` is the identity model, so coercion and symm both act as `id`,
+  -- and `range 𝓘(ℝ,E) = univ`. The `mfld_simps` simp set normalises this.
+  simp only [mfld_simps] at h ⊢
+  exact h
 
 end JacobianChallenge
