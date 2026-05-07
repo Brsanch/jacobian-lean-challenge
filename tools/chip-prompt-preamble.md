@@ -14,6 +14,7 @@ git checkout -b feat/zz<N>-chip origin/main
 ## Discipline rules (non-negotiable)
 
 - **No `sorry`, no `axiom`** anywhere in the code you write.
+- **Do not use `ω` as a binder name.** Lean 4.30 reserves `ω` as the omega-tactic token; `(ω : ...)` produces "unexpected token 'ω'; expected '_' or identifier" errors. Use `om`, `form`, `oneform`, or any ASCII identifier instead. (`ω` is fine inside docstrings or as `open scoped` notation; just not as a `def`/`theorem`/`fun`/`have` binder.)
 - **No signature changes** to anything outside the new file you create.
 - **CI-only verification.** NEVER run `lake build` or `lake env lean` locally — Apple Silicon kernel-panics under those.
 - **After every push:** poll ONLY the `build` job. Do NOT wait for docgen / dedupe-caches / any other job — they take 5-10 extra minutes and the build job alone determines correctness. Use this exact polling command (copy-paste, replace `<N>`):
