@@ -269,7 +269,8 @@ theorem circleIntegral_finite_principal_part_eq
   have hy_not_self_sphere : ∀ y ∈ S, y ∉ Metric.sphere y |ε y| := by
     intro y hyS hy
     rw [Metric.mem_sphere, dist_self, abs_of_pos (hε_pos y hyS)] at hy
-    exact (lt_irrefl 0) ((hε_pos y hyS).trans_le hy.le)
+    have := hε_pos y hyS
+    linarith
   -- Step B: Integrability of `h` on each circle.
   have hh_integrable_outer : CircleIntegrable h c R := by
     have hh_cont_closed : ContinuousOn h (closedBall c R) :=
@@ -304,9 +305,11 @@ theorem circleIntegral_finite_principal_part_eq
     refine CircleIntegrable.fun_sum S (fun x hxS => ?_)
     refine CircleIntegrable.fun_sum (Finset.Icc 1 (N x)) (fun k _ => ?_)
     by_cases hxy : x = y
-    · subst hxy
-      exact const_mul_zpow_neg_circleIntegrable y x (ε y) k (a x k)
-        (hy_not_self_sphere y hyS)
+    · -- x = y case: the only "pole" on the integration disc is x = y itself, and
+      -- `y ∉ sphere y (ε y)` since `0 < ε y`.
+      have hxnot : x ∉ Metric.sphere y |ε y| := by
+        rw [hxy]; exact hy_not_self_sphere y hyS
+      exact const_mul_zpow_neg_circleIntegrable y x (ε y) k (a x k) hxnot
     · exact const_mul_zpow_neg_circleIntegrable y x (ε y) k (a x k)
         (hx_not_inner_sphere_off y hyS x hxS hxy)
   -- Step D: Linearise both sides via `circleIntegral.integral_add`.
@@ -348,9 +351,9 @@ theorem circleIntegral_finite_principal_part_eq
     intro x hxS
     refine CircleIntegrable.fun_sum (Finset.Icc 1 (N x)) (fun k _ => ?_)
     by_cases hxy : x = y
-    · subst hxy
-      exact const_mul_zpow_neg_circleIntegrable y x (ε y) k (a x k)
-        (hy_not_self_sphere y hyS)
+    · have hxnot : x ∉ Metric.sphere y |ε y| := by
+        rw [hxy]; exact hy_not_self_sphere y hyS
+      exact const_mul_zpow_neg_circleIntegrable y x (ε y) k (a x k) hxnot
     · exact const_mul_zpow_neg_circleIntegrable y x (ε y) k (a x k)
         (hx_not_inner_sphere_off y hyS x hxS hxy)
   -- Step F: Per-x outer-to-inner identity (uses ZZ63).
@@ -432,7 +435,7 @@ theorem circleIntegral_finite_principal_part_eq
       obtain ⟨hyx, hyS⟩ := hy
       exact h_inner_per_x_off y hyS x hxS (Ne.symm hyx)
     rw [herase_zero, add_zero]
-  · rw [← Finset.sum_erase_add S _ hxS]
+  · rw [← Finset.sum_erase_add S _ hxS, add_comm]
 
 end MultiHoleCauchyMeromorphic
 
