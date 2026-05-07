@@ -162,7 +162,7 @@ private lemma transition_eventuallyEq_translation
   -- show (localChart c').symm (L.mkQ x) = x - lam
   -- We have x - lam ∈ ball c' (r/2), and L.mkQ (x - lam) = L.mkQ x.
   have h_lattice_eq : L.mkQ (x - lam) = L.mkQ x := by
-    have hsub : (x - lam) - x = -lam := by ring
+    have hsub : (x - lam) - x = -lam := by abel
     -- (x - lam) - x ∈ L ↔ Quotient.mk equal.
     have hmem : (x - lam) - x ∈ L := by
       rw [hsub]; exact L.neg_mem hlam_mem
