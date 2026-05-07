@@ -169,7 +169,7 @@ lemma assembled_remainder_diff_at_pole
       have hzc : z ∈ Metric.closedBall x ε := Metric.ball_subset_closedBall hz
       rw [hzy'] at hzc
       exact hzc
-    apply DifferentiableOn.sum
+    apply DifferentiableOn.fun_sum
     intro k _
     apply DifferentiableOn.const_mul
     intro z hz
@@ -238,7 +238,7 @@ lemma assembled_remainder_diff_at_pole
       (Metric.ball x ε \ {x}) := by
     apply DifferentiableOn.sub
     · exact hh_x_on_punc
-    · apply DifferentiableOn.sum
+    · apply DifferentiableOn.fun_sum
       intro y hy
       rw [Finset.mem_erase] at hy
       obtain ⟨hyx, hyS⟩ := hy
