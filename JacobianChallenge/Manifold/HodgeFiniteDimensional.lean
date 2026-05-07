@@ -3,8 +3,8 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
-import Mathlib.LinearAlgebra.Dimension.Constructions
-import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
+import Mathlib.LinearAlgebra.FiniteDimensional.Defs
+import Mathlib.RingTheory.Finiteness.Defs
 import JacobianChallenge.Manifold.HolomorphicOneForm
 
 /-! # Finite-dimensionality of `HolomorphicOneForm X` for compact Riemann surfaces
@@ -32,10 +32,10 @@ At this pin mathlib does **not** carry:
 
 What it does carry: the bare manifold + cotangent-bundle infrastructure,
 `ContMDiffSection`, `Module.finrank`, `FiniteDimensional` typeclasses on
-abstract vector spaces, and ellipticity-on-`ℝⁿ` style results. None of
-these is sufficient by itself to derive finite-dimensionality of global
-holomorphic sections of the cotangent bundle for a compact complex
-manifold; the bridging analytic content is missing.
+abstract vector spaces. None of these is sufficient by itself to derive
+finite-dimensionality of global holomorphic sections of the cotangent
+bundle for a compact complex manifold; the bridging analytic content is
+missing.
 
 ## What this file does
 
@@ -47,15 +47,14 @@ JacobianChallenge.HolomorphicOneFormFiniteDim X : Prop
 
 defined as `Module.Finite ℂ (HolomorphicOneForm X)`, and provide:
 
-* `JacobianChallenge.genus_pos_of_HolomorphicOneFormFiniteDim` — under the
-  hypothesis, the genus is the `Module.finrank` of a genuinely
-  finite-dimensional space (so `Module.finrank` is no longer the junk-zero
-  on infinite-dimensional spaces).
 * `JacobianChallenge.finiteDimensional_of_HolomorphicOneFormFiniteDim` —
   promotes the hypothesis to a `FiniteDimensional ℂ (HolomorphicOneForm X)`
-  instance for downstream lemmas.
-* `JacobianChallenge.holomorphicOneForm_basis` — chooses a `ℂ`-basis of
-  `HolomorphicOneForm X` indexed by `Fin (genus X)` under the hypothesis.
+  instance for downstream lemmas (so basis-extraction lemmas, dimension
+  arithmetic, etc., all become available without being asserted here).
+* `JacobianChallenge.genus_eq_finrank` — under the hypothesis, the genus
+  equals `Module.finrank ℂ (HolomorphicOneForm X)` definitionally; the
+  point is that the right-hand side is no longer the junk-zero on
+  infinite-dimensional spaces.
 
 Subsequent chips can attack the hypothesis itself by importing analytic
 content (Hodge decomposition, Cauchy-kernel estimates on a compact surface,
@@ -64,8 +63,9 @@ or the Bergman-kernel route).
 ## Status
 
 * What is **proven** here: the bookkeeping that turns the named
-  finite-dimensionality hypothesis into the statements the rest of the
-  challenge files want (basis, finrank-is-real, instance promotion).
+  finite-dimensionality hypothesis into the typeclass instance the rest of
+  the challenge files want, plus the (definitional) compatibility between
+  `JacobianChallenge.genus` and `Module.finrank`.
 * What is **reduced to a hypothesis**:
   `Module.Finite ℂ (HolomorphicOneForm X)` for a compact connected
   complex 1-manifold. This is the single open assumption.
@@ -101,14 +101,16 @@ def HolomorphicOneFormFiniteDim : Prop :=
 
 variable {X}
 
-/-- Under `HolomorphicOneFormFiniteDim X`, promote the hypothesis to a
-`Module.Finite` instance for the local context. -/
+/-- Under `HolomorphicOneFormFiniteDim X`, expose the hypothesis as the
+underlying `Module.Finite` typeclass term. -/
 lemma HolomorphicOneFormFiniteDim.toModuleFinite
     (h : HolomorphicOneFormFiniteDim X) :
     Module.Finite ℂ (HolomorphicOneForm X) := h
 
 /-- Under the named hypothesis, `HolomorphicOneForm X` is a
-finite-dimensional `ℂ`-vector space. -/
+finite-dimensional `ℂ`-vector space. With this lemma in scope, every
+mathlib basis-extraction / dimension-arithmetic lemma about
+finite-dimensional spaces becomes available for `HolomorphicOneForm X`. -/
 lemma finiteDimensional_of_HolomorphicOneFormFiniteDim
     (h : HolomorphicOneFormFiniteDim X) :
     FiniteDimensional ℂ (HolomorphicOneForm X) := h
@@ -116,25 +118,13 @@ lemma finiteDimensional_of_HolomorphicOneFormFiniteDim
 /-- Trivial restatement: under the hypothesis, the genus equals the
 finrank of `HolomorphicOneForm X` (definitionally). The point is that on
 the right-hand side `Module.finrank` is no longer the junk-zero value on
-infinite-dimensional spaces — we have a genuine finite-dimensional space,
-so `Module.finrank` matches `Module.rank` cast to `ℕ`. -/
+infinite-dimensional spaces — under the hypothesis we have a genuinely
+finite-dimensional space, so `Module.finrank` matches `Module.rank` cast
+to `ℕ`. -/
 lemma genus_eq_finrank
     (_h : HolomorphicOneFormFiniteDim X) :
     JacobianChallenge.genus X = Module.finrank ℂ (HolomorphicOneForm X) :=
   rfl
-
-/-- Under the named hypothesis, `HolomorphicOneForm X` admits a `ℂ`-basis
-indexed by `Fin (JacobianChallenge.genus X)`. This is the form most
-useful for downstream constructions (period matrices, Abel-Jacobi map,
-etc.). -/
-noncomputable def holomorphicOneForm_basis
-    (h : HolomorphicOneFormFiniteDim X) :
-    Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X) :=
-  letI : FiniteDimensional ℂ (HolomorphicOneForm X) :=
-    finiteDimensional_of_HolomorphicOneFormFiniteDim h
-  Module.finBasisOfFinrankEq ℂ (HolomorphicOneForm X)
-    (rfl : Module.finrank ℂ (HolomorphicOneForm X) =
-           JacobianChallenge.genus X)
 
 end JacobianChallenge
 
