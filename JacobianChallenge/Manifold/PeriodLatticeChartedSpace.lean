@@ -92,7 +92,7 @@ private lemma mkQ_injOn_ball
 /-- The local chart on `E ⧸ L` around the image of a point `e ∈ E`,
 built from a discreteness radius `r > 0`. Source is `Metric.ball e (r/2)`,
 target is its image under `L.mkQ`. -/
-private noncomputable def localChart
+noncomputable def localChart
     {r : ℝ} (hrL : ∀ x ∈ (L : Set E), ‖x‖ < r → x = 0) (e : E) :
     OpenPartialHomeomorph E (E ⧸ L) := by
   classical
