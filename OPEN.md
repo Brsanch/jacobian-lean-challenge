@@ -87,10 +87,16 @@ items 1, 2, 5, 8, 9 will need infrastructure not in mathlib at the pin.
   H₁(X; ℤ) for compact Riemann surfaces (not in mathlib at the pin) plus
   period-pairing integration of holomorphic 1-forms over loops.
 - **Topological degree of proper holomorphic maps** between Riemann surfaces.
-  Three classical inputs gated, named in `Manifold/Degree.lean` as
-  `Owed.degree.fibres_finite_statement`,
-  `Owed.degree.regular_value_exists_statement`,
-  `Owed.degree.fibre_card_well_defined_statement`.
+  Three classical inputs were originally named in `Manifold/Degree.lean`. As of
+  2026-05-07: `fibres_finite_statement` and `regular_value_exists_statement`
+  are now **discharged unconditionally** in `Manifold/FibresFiniteUnconditional.lean`
+  and `Manifold/RegularValueExistsUnconditional.lean`. Only
+  `fibre_card_well_defined_statement` remains — and per ZZ127's audit the
+  original universe-quantified form is false at branched points; the viable
+  shape is `fibre_card_well_defined_at_regular_statement` (regular-value-restricted)
+  which still needs analytic local normal form `z ↦ z^k` (not in mathlib).
+  ZZ129 added a regular-value certificate to `RegularValueWitness`; ZZ134
+  reduced the regular-restricted statement to two analytic hypotheses.
 - **`genus_eq_zero_iff_homeo`** — closed-orientable-surface classification
   plus Riemann-sphere `ChartedSpace`. Multi-month.
 
@@ -116,7 +122,34 @@ items 1, 2, 5, 8, 9 will need infrastructure not in mathlib at the pin.
 - `Divisor/Single.lean` (~150 LOC) — `Div.single`, `degree_single = 1`, `single_sub_single_mem_Div0`.
 - `Jacobian.lean` (~470 LOC) — honest `ofCurve`, honest `Pic⁰` pushforward via `Div.singletonMap`, zero-stub pullback.
 
-**Roughly ~6,200 LOC of real local infrastructure**, none of which strict-closes any item by itself. The path to first STRICT-CLOSED runs through `Manifold/ResidueTheorem.lean`'s named R5 gap: discharging R5 makes `PrincipalDivisorMultiplicative X` constructible (via the I1 lemmas + a `CommGroup` upgrade) and `ResidueTheorem X` true, after which the one-line swap in `Divisor.lean` (`PrincDiv := principalDivisorAddHom.range`) flips items 15, 19, 20 from STUB *(PROOF-HONEST)* to STRICT-CLOSED simultaneously.
+### 2026-05-07 wave (R5 partition-of-unity-Stokes infrastructure + Hodge L² + period-lattice quotient + Hurwitz refactor)
+
+- `Manifold/SmoothOneForm.lean` (~105 LOC, ZZ113) — `SmoothOneForm` type + `AddCommGroup` + `Module ℝ` + `CoeFun`.
+- `Manifold/CotangentInCoordinates.lean` (ZZ117) — `inCotangentCoordinates` analogue of mathlib's `inTangentCoordinates`.
+- `Manifold/CotangentBundleSmoothness.lean` (ZZ119) — `cotangentSection_contMDiffAt_iff` + `cotangentBundle_trivializationAt_snd_apply`.
+- `Manifold/ContMDiffAnalyticBridge.lean` (~119 LOC, ZZ124) — `contMDiffAt_omega_iff_analyticAt_chart_pullback` (full iff for analytic manifolds).
+- `Manifold/MFDerivTranspose.lean` (ZZ125) — `ContMDiffAt.mfderiv_transpose`.
+- `Manifold/CotangentPullbackBridge.lean` (ZZ133) — `pullback_section_in_cotangent_coordinates_apply`.
+- `Manifold/CotangentTangentBridge.lean` (ZZ141) — `inCotangentCoordinates_eq_compL_flip_inTangentCoordinates_apply`.
+- `Manifold/SmoothOneFormPullback.lean` (ZZ138/142) — `SmoothOneForm.pullback` end-to-end smooth.
+- `Manifold/SmoothChain.lean` (ZZ132) — `SmoothPath` + `SmoothChain` (Finsupp ℤ-linear).
+- `Manifold/SmoothPathIntegral.lean` (ZZ139) — `SmoothPath.integrate` + `SmoothChain.integrate` + linearity.
+- `Manifold/PeriodLatticeCompactQuotient.lean` (~53 LOC, ZZ114) — `compactSpace_quotient_of_zlattice`.
+- `Manifold/PeriodLatticeChartedSpace.lean` (~175 LOC, ZZ116) — `chartedSpace_quotient_of_zlattice` + `localChart` infrastructure.
+- `Manifold/PeriodLatticeLieGroup.lean` (ZZ118) — `IsManifold` instance on `E ⧸ L`.
+- `Manifold/PeriodLatticeOfRankTwoG_Wiring.lean` (ZZ137) — `compactSpaceHypothesis_holds`.
+- `Manifold/PeriodLatticeComplexQuotient.lean` (ZZ140) — `IsManifold 𝓘(ℂ, ·) ω` for the lattice quotient (analytic/complex variant).
+- `Analysis/L2OnManifold.lean` (ZZ128) — `L2NormSq` + `IsL2 := MemLp _ 2 _`.
+- `Analysis/CompactManifoldMeasure.lean` (ZZ135) — `partitionPushforwardSum` finite-measure helper.
+- `Analysis/CompactManifoldMeasureExistence.lean` (ZZ136) — `compactManifoldMeasureOfData` conditional on `SubordinateChartData`.
+- `Analysis/CompactManifoldMeasureFromCharts.lean` (ZZ143) — unconditional `SubordinateChartData.ofCompactManifold`.
+- `Topology/OnePointHomeoSphere.lean` (~68 LOC, ZZ130) — `TopologicalGenus RiemannSphere = TopologicalGenus StandardS2`.
+- `Manifold/FibresFiniteUnconditional.lean` (ZZ46/47-era, surfaced 2026-05-07) — discharges `fibres_finite_statement` unconditionally.
+- `Manifold/RegularValueExistsUnconditional.lean` (same) — discharges `regular_value_exists_statement`.
+- `Manifold/FibreCardOnRegularSubset.lean` (ZZ134) — `fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant` (conditional on 2 analytic hypotheses).
+- `Manifold/NcardMultiplicityBridge.lean` (ZZ105) — real ncard↔multiplicity bridge for regular fibres at `{0}`/`{∞}`.
+
+Cumulative across all sessions: **~35,600 LOC across ~148 files**. None of which strict-closes any item by itself. The path to first STRICT-CLOSED runs through `Manifold/ResidueTheorem.lean`'s named R5 gap: discharging R5 makes `PrincipalDivisorMultiplicative X` constructible (via the I1 lemmas + a `CommGroup` upgrade) and `ResidueTheorem X` true, after which the one-line swap in `Divisor.lean` (`PrincDiv := principalDivisorAddHom.range`) flips items 15, 19, 20 from STUB *(PROOF-HONEST)* to STRICT-CLOSED simultaneously. Per the 2026-05-07 cluster audits, R5 is **~60-80% built** (closest wall); other walls 5-40%.
 
 ## Honest scoring
 
