@@ -113,7 +113,8 @@ theorem deriv_ne_zero_of_analyticOrderAt_eq_one
   have hg_h_eventually : g =ᶠ[𝓝 x₀] h := by
     filter_upwards [hball_nhds] with z hz using hg_eq z hz
   have hderiv_sub : deriv (fun ζ : ℂ => ζ - x₀) x₀ = 1 := by
-    have hd := deriv_sub (𝕜 := ℂ) (differentiableAt_id) (differentiableAt_const x₀)
+    have hid : DifferentiableAt ℂ (id : ℂ → ℂ) x₀ := differentiableAt_id
+    have hd := deriv_sub (f := id) (g := fun _ => x₀) (x := x₀) hid (differentiableAt_const x₀)
     simp at hd
     exact hd
   have hderiv_prod :
@@ -158,51 +159,38 @@ private lemma analyticOrderAt_eq_natCast_ge_one_of_not_eventually
     filter_upwards [hcontra] with z hz
     have : g z - w₀ = 0 := hz
     exact sub_eq_zero.mp this
-  -- Case analysis on `analyticOrderAt f x₀` ∈ ℕ∞ = WithTop ℕ.
+  -- Use the dichotomy: either `f` is eventually zero (contradiction with `hf_ne`),
+  -- or `f` is eventually nonzero on a punctured neighbourhood. In the latter case
+  -- we case-split on `analyticOrderAt f x₀` ∈ ℕ∞.
+  rcases hf_an.eventually_eq_zero_or_eventually_ne_zero with hz | _hne'
+  · exact (hf_ne hz).elim
   rcases h_ord : analyticOrderAt f x₀ with _ | k
-  · -- order = ⊤. Then `f` is eventually 0, contradicting `hf_ne`.
+  · -- order = ⊤. Combined with `_hne'` (eventually nonzero on punctured nbhd),
+    -- this is contradictory: order = ⊤ means *all* Taylor coefficients vanish,
+    -- forcing `f` eventually zero on a *full* neighbourhood. We reach the
+    -- contradiction by invoking `analyticOrderAt_eq_natCast` at `k = 0`.
+    -- Specifically: order = ⊤ rules out `analyticOrderAt = (k : ℕ∞)` for any k,
+    -- so the `mp`-direction of `analyticOrderAt_eq_natCast` is not the route.
+    -- Instead: order = ⊤ at an analytic function means `f` vanishes to all
+    -- orders. Mathlib's `AnalyticAt.frequently_zero_iff_eventually_zero` and the
+    -- identity-theorem-style lemmas give: order = ⊤ ⟹ `f =ᶠ 0` near x₀.
+    -- We use the contrapositive of `hf_an.analyticOrderAt_eq_natCast` *combined*
+    -- with `_hne'`: from `_hne'` (∀ᶠ z in 𝓝[≠] x₀, f z ≠ 0), the order is ≠ ⊤
+    -- because ⊤ would mean Taylor series ≡ 0 ⇒ `f` locally zero ⇒
+    -- contradicts `_hne'`. We prove this directly.
     exfalso
-    apply hf_ne
-    -- Use mathlib: `analyticOrderAt = ⊤ ↔ eventually 0` for analytic functions.
-    -- We use `hf_an.eventually_eq_zero_or_eventually_ne_zero` and rule out the
-    -- non-zero case via the `WithTop` lemma `AnalyticAt.analyticOrderAt_eq_natCast`.
-    rcases hf_an.eventually_eq_zero_or_eventually_ne_zero with hz | hne'
-    · exact hz
-    · -- `hne' : ∀ᶠ z in 𝓝[≠] x₀, f z ≠ 0` — but `analyticOrderAt = ⊤` says `f` is
-      -- eventually 0. Show contradiction by extracting a sequence of zeros forced
-      -- by `eventually_eq_zero_or_eventually_ne_zero` not happening.
-      -- Actually: if order = ⊤, `f =ᶠ 0` near `x₀`. We use `WithTop` directly:
-      -- order = ⊤ ⟹ the Taylor series is identically zero ⟹ f is locally zero.
-      -- We cite `AnalyticAt.frequently_zero_iff_eventually_zero` (mathlib has both
-      -- directions). Concretely: `hne'` says f is *not* eventually zero (only
-      -- eventually nonzero on the punctured side — but combined with `f x₀ = 0`,
-      -- which is not eventually nonzero, this gives "f frequently zero" which by
-      -- the analytic identity theorem implies eventually zero.
-      -- We avoid calling `hne'` directly and just prove `f =ᶠ 0` via order = ⊤
-      -- using `analyticOrderAt`'s `WithTop.add_top` style lemma. Easiest route:
-      -- contradiction with `hne'` directly.
-      -- `f x₀ = 0`, but `hne'` is on the punctured nbhd, so doesn't include `x₀`.
-      -- We use `AnalyticAt.eventually_eq_zero_iff_analyticOrderAt_eq_top`-style.
-      -- Bare-hands approach: order = ⊤ and `hne'` together. By `hne'`, there's a
-      -- punctured nbhd where `f ≠ 0`. By order = ⊤, the formal Taylor series at
-      -- x₀ is zero, so `f` is locally zero (mathlib's `AnalyticAt.locally_zero_iff`).
-      -- We invoke `hf_an.analyticOrderAt_eq_natCast` at `k = 0`: it would say
-      -- `f x₀ ≠ 0`, but we have `f x₀ = 0`. That's not directly useful since
-      -- `analyticOrderAt = ⊤ ≠ (0 : ℕ∞)`, so `analyticOrderAt_eq_natCast` doesn't apply.
-      --
-      -- Direct route: use `AnalyticAt.eventually_eq_zero_of_analyticOrderAt_eq_top`
-      -- if it exists at this pin. We try the dot-notation form.
-      have : ∀ᶠ z in 𝓝 x₀, f z = 0 := by
-        -- Convert the WithTop value via mathlib API. The standard name is
-        -- `AnalyticAt.locally_zero_iff_analyticOrderAt_eq_top` — let's just use
-        -- an alternative: build a contradiction from `hne'` and a frequently-zero
-        -- argument coming from order = ⊤.
-        --
-        -- Strategy: use `hf_an.eventually_eq_zero_or_eventually_ne_zero` already
-        -- returned `hne'`. So if order = ⊤, there's a tension. Mathlib should
-        -- bridge this. We rely on `AnalyticAt.analyticOrderAt_eq_top`:
-        exact hf_an.analyticOrderAt_eq_top.mp h_ord
-      exact this
+    -- Direct contradiction: pick a sequence in 𝓝[≠] x₀ on which `f ≠ 0` (from `_hne'`)
+    -- *and* on which f = 0 (from order = ⊤ ⇒ f locally zero). For the order = ⊤ ⇒
+    -- f locally zero step we use `AnalyticAt.eq_zero_of_analyticOrderAt_eq_top` or
+    -- `AnalyticAt.eventuallyEq_zero_of_analyticOrderAt_eq_top` (mathlib name guess).
+    -- Probe via `analyticOrderAt_eq_natCast` taken contrapositively at `k = 0`:
+    -- order = ⊤ but `analyticOrderAt = (0 : ℕ)` is not equal to ⊤, so we cannot
+    -- directly. Instead we use the *factorization* hypothesis: at order = ⊤, no
+    -- factorization exists with non-vanishing remainder. The cleanest mathlib
+    -- handle is `AnalyticAt.analyticOrderAt_eq_top_iff_eventuallyEq_zero`.
+    have h_evz : ∀ᶠ z in 𝓝 x₀, f z = 0 :=
+      (hf_an.analyticOrderAt_eq_top_iff_eventuallyEq_zero).mp h_ord
+    exact hf_ne h_evz
   · -- order = k ∈ ℕ. Show k ≥ 1 (else f x₀ ≠ 0 contradicts hf_x₀ = 0).
     refine ⟨k, ?_, rfl⟩
     rcases Nat.eq_zero_or_pos k with hk0 | hk_pos
@@ -211,12 +199,11 @@ private lemma analyticOrderAt_eq_natCast_ge_one_of_not_eventually
       -- order = 0 ⟹ ∃ u with `f =ᶠ u` near x₀ and `u x₀ ≠ 0`. So `f x₀ = u x₀ ≠ 0`.
       have h_eq_nat : analyticOrderAt f x₀ = ((0 : ℕ) : ℕ∞) := h_ord
       obtain ⟨u, _hu_an, hu_x₀, hu_eq⟩ := hf_an.analyticOrderAt_eq_natCast.mp h_eq_nat
-      -- `hu_eq : f =ᶠ[𝓝 x₀] (z - x₀)^0 * u z = u z`. Evaluate at `x₀`.
-      rw [Filter.EventuallyEq] at hu_eq
-      have : f x₀ = (x₀ - x₀) ^ (0 : ℕ) * u x₀ := hu_eq.self_of_nhds
-      rw [pow_zero, one_mul] at this
-      have : f x₀ ≠ 0 := this ▸ hu_x₀
-      exact this hf_x₀
+      -- `hu_eq : f =ᶠ[𝓝 x₀] fun z => (z - x₀)^0 * u z`. Evaluate at `x₀`.
+      have h_at_x₀ : f x₀ = (x₀ - x₀) ^ (0 : ℕ) * u x₀ := hu_eq.self_of_nhds
+      rw [pow_zero, one_mul] at h_at_x₀
+      have h_ne : f x₀ ≠ 0 := h_at_x₀ ▸ hu_x₀
+      exact h_ne hf_x₀
     · exact hk_pos
 
 /-- **Order ≥ 2 from vanishing derivative.**
@@ -320,7 +307,8 @@ private lemma not_injOn_of_analyticOrderAt_ge_two
   have hderiv_v : deriv v x₀ = r_root x₀ := by
     have hp := deriv_mul (𝕜 := ℂ) hsub_diff hr_root_diff
     have hsub_d : deriv (fun ζ : ℂ => ζ - x₀) x₀ = 1 := by
-      have hd' := deriv_sub (𝕜 := ℂ) (differentiableAt_id) (differentiableAt_const x₀)
+      have hid : DifferentiableAt ℂ (id : ℂ → ℂ) x₀ := differentiableAt_id
+      have hd' := deriv_sub (f := id) (g := fun _ => x₀) (x := x₀) hid (differentiableAt_const x₀)
       simp at hd'; exact hd'
     rw [hsub_d, sub_self, zero_mul, add_zero, one_mul] at hp
     exact hp
