@@ -53,7 +53,7 @@ theorem isPreconnected_compl_finite_of_isPathConnected
     (h_path : (Cᶜ : Set Y).Nonempty → IsPathConnected (Cᶜ : Set Y)) :
     IsPreconnected (Cᶜ : Set Y) := by
   by_cases h : (Cᶜ : Set Y) = ∅
-  · simp [h]
+  · rw [h]; exact isPreconnected_empty
   · have hne : (Cᶜ : Set Y).Nonempty := Set.nonempty_iff_ne_empty.mpr h
     exact (h_path hne).isConnected.isPreconnected
 
