@@ -157,7 +157,7 @@ The statement is about discreteness as a *subset* of `f.criticalSet`
 (via the existing `CriticalChartPullbackData ... f.criticalSet x`
 witness), which is what the downstream `criticalSet_finite_of_isDiscrete_of_isClosed`
 lemma consumes. -/
-lemma nonDegenerateCriticalSet_chartPullbackData
+noncomputable def nonDegenerateCriticalSet_chartPullbackData
     (f : MeromorphicNonzero X) :
     ∀ x ∈ f.nonDegenerateCriticalSet,
       ContMDiff.Owed.degree.CriticalChartPullbackData
