@@ -123,7 +123,8 @@ lemma fibre_ncard_eq_xs_card_of_mem_W
       h.U_pairwiseDisjoint a.1 a.2 b.1 b.2 hlab
     -- pick a = pick b ∈ U a and ∈ U b: contradicts disjointness.
     have hpa : pick a.1 a.2 ∈ h.U a.1 := hUa
-    have hpb : pick a.1 a.2 ∈ h.U b.1 := by rw [hab]; exact hUb
+    have hab' : pick a.1 a.2 = pick b.1 b.2 := hab
+    have hpb : pick a.1 a.2 ∈ h.U b.1 := by rw [hab']; exact hUb
     exact Set.disjoint_left.mp hdisj hpa hpb
   have hs_card : s.card = h.xs.card := by
     have hcard_image : s.card = h.xs.attach.card := by
@@ -162,7 +163,7 @@ lemma fibre_ncard_eq_xs_card_of_mem_W
         Set.mem_univ, true_and]
       exact ⟨⟨x, hxxs⟩, hz_eq.symm⟩
   -- Step 3: rewrite ncard.
-  rw [← hs_eq, Set.ncard_coe_Finset]
+  rw [← hs_eq, Set.ncard_coe_finset]
   exact hs_card
 
 end HurwitzPatchingData
