@@ -135,7 +135,7 @@ post-triangulation wiring already prepared by upstream files. -/
 
 noncomputable section
 
-open scoped BigOperators
+open scoped BigOperators Manifold ContDiff
 
 namespace JacobianChallenge
 
