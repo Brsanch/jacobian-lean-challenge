@@ -93,6 +93,9 @@ theorem fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo
     (h_C_fin : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
       ¬ JacobianChallenge.IsConstantMap f → ∀ (C : Set Y), C.Finite) :
     fibre_card_well_defined_at_regular_statement X Y := by
+  -- Unfold the statement to its Pi shape and discharge directly.
+  show ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ JacobianChallenge.IsConstantMap f →
+      ∀ (C : Set Y) (w₁ w₂ : RegularValueWitnessReg f C), w₁.card = w₂.card
   -- Build the bundled local-constancy package consumed by ZZ134.
   have h_pkg :
       ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
