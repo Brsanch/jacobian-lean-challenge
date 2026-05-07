@@ -24,6 +24,7 @@ import JacobianChallenge.Manifold.NonConcentricCauchyDeformation
 import JacobianChallenge.Manifold.NonConcentricCauchyDeformationDischarge
 import JacobianChallenge.Manifold.MultiHoleCauchyMeromorphic
 import JacobianChallenge.Manifold.AnalyticPartExtraction
+import JacobianChallenge.Manifold.MultiPoleLaurentExistence
 import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.Single
 import JacobianChallenge.Divisor.FiberSum
