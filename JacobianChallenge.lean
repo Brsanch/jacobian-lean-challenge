@@ -74,6 +74,7 @@ import JacobianChallenge.Topology.SurfaceGenus
 import JacobianChallenge.Topology.SurfaceClassificationGenus
 import JacobianChallenge.Topology.S2ImpliesGenus0Discharge
 import JacobianChallenge.Topology.Genus0ImpliesS2Reduction
+import JacobianChallenge.Topology.OnePointHomeoSphere
 import JacobianChallenge.Manifold.StokesDisk
 import JacobianChallenge.Manifold.StokesCompactSurface
 import JacobianChallenge.Manifold.ResidueTheoremAssembly
