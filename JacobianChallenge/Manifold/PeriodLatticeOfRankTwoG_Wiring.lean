@@ -80,9 +80,26 @@ private theorem JacobianOfLattice.eq_intSubmodule_quotient
   -- The `Submodule.hasQuotient` instance unfolds to a `QuotientAddGroup`
   -- quotient by the underlying `AddSubgroup`, which is `data.lattice`
   -- itself by `AddSubgroup.toIntSubmodule_toAddSubgroup`.
-  show ((Fin (JacobianChallenge.genus X) → ℂ) ⧸ data.lattice) = _
-  congr 1
-  exact (AddSubgroup.toIntSubmodule_toAddSubgroup data.lattice).symm
+  -- Both quotients have the same underlying `Quotient` type because
+  -- `Submodule.hasQuotient` unfolds via `toAddSubgroup`, and
+  -- `AddSubgroup.toIntSubmodule_toAddSubgroup` is the `rfl` round-trip.
+  rfl
+
+/-- Same as `eq_intSubmodule_quotient` but in the form needed by
+`CompactSpace`-style transport: as a `HEq` on the topology. -/
+private theorem JacobianOfLattice.compactSpace_iff
+    (data : PeriodLatticeOfRankTwoG X) :
+    CompactSpace (JacobianOfLattice X data) ↔
+      CompactSpace
+        ((Fin (JacobianChallenge.genus X) → ℂ) ⧸ data.lattice.toIntSubmodule) := by
+  -- The two underlying types are definitionally the same `QuotientAddGroup`,
+  -- because `Submodule.hasQuotient` unfolds via `toAddSubgroup` and
+  -- `AddSubgroup.toIntSubmodule_toAddSubgroup` is `rfl` in the
+  -- `Quotient.mk`-eq direction (`Submodule.toAddSubgroup_toIntSubmodule`
+  -- of `AddSubgroup.toIntSubmodule`).
+  -- Both topologies are the corresponding `instTopologicalSpaceQuotient`
+  -- on the *same* underlying `Quotient`, so `CompactSpace` agrees.
+  exact Iff.rfl
 
 /-- **Wiring discharge of OPEN.md item 11.** The `CompactSpaceHypothesis`
 of `PeriodLatticeOfRankTwoG` is automatic once the lattice is
@@ -99,9 +116,8 @@ theorem PeriodLatticeOfRankTwoG.compactSpaceHypothesis_holds
       CompactSpace
         ((Fin (JacobianChallenge.genus X) → ℂ) ⧸ data.lattice.toIntSubmodule) :=
     compactSpace_quotient_of_zlattice data.lattice.toIntSubmodule
-  -- Transport along the type-level identification of the two quotients.
-  rw [JacobianOfLattice.eq_intSubmodule_quotient]
-  exact h
+  -- Transport along the iff identification of the two quotients (defeq).
+  exact (JacobianOfLattice.compactSpace_iff data).mpr h
 
 end JacobianChallenge
 
