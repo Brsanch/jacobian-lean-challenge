@@ -26,6 +26,7 @@ import JacobianChallenge.Manifold.MultiHoleCauchyMeromorphic
 import JacobianChallenge.Manifold.AnalyticPartExtraction
 import JacobianChallenge.Manifold.MultiPoleLaurentExistence
 import JacobianChallenge.Manifold.SinglePoleLaurentExtractionDischarge
+import JacobianChallenge.Manifold.PerChartArgumentPrinciple
 import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.Single
 import JacobianChallenge.Divisor.FiberSum
