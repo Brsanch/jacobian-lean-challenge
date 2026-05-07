@@ -105,9 +105,8 @@ theorem deriv_ne_zero_of_analyticOrderAt_eq_one
     -- Directly: `(z - x₀)` is `z ↦ z + (- x₀)`, derivative = 1.
     have h_eq : (fun ζ : ℂ => ζ - x₀) = (fun ζ : ℂ => ζ + (- x₀)) := by
       funext ζ; ring
-    rw [h_eq]
-    rw [deriv_add_const]
-    exact deriv_id' x₀
+    rw [h_eq, deriv_add_const]
+    exact deriv_id x₀
   have hderiv_prod :
       deriv (fun z : ℂ => (z - x₀) * u z) x₀ = u x₀ := by
     have hp := deriv_mul (𝕜 := ℂ) hsub_diff hu_diff
@@ -115,8 +114,10 @@ theorem deriv_ne_zero_of_analyticOrderAt_eq_one
     exact hp
   have hsplit : deriv (fun z : ℂ => w₀ + (z - x₀) * u z) x₀
       = deriv (fun z : ℂ => (z - x₀) * u z) x₀ := by
-    -- `deriv_const_add'` style: `deriv (fun z => c + g z) x = deriv g x`.
-    exact deriv_const_add' w₀ (f := fun z : ℂ => (z - x₀) * u z) x₀
+    -- `deriv_const_add'` is an equation of functions; apply at x₀.
+    have h := deriv_const_add' (𝕜 := ℂ) (f := fun z : ℂ => (z - x₀) * u z) (c := w₀)
+    -- h : (deriv fun x => w₀ + (fun z => (z - x₀) * u z) x) = deriv fun z => (z - x₀) * u z
+    exact congrFun h x₀
   have hderiv_h : deriv h x₀ = u x₀ := by
     show deriv (fun z : ℂ => w₀ + (z - x₀) * u z) x₀ = u x₀
     rw [hsplit, hderiv_prod]
@@ -208,7 +209,7 @@ theorem notInjOn_of_analyticOrderAt_ge_two
       have h_eq : (fun ζ : ℂ => ζ - x₀) = (fun ζ : ℂ => ζ + (- x₀)) := by
         funext ζ; ring
       rw [h_eq, deriv_add_const]
-      exact deriv_id' x₀
+      exact deriv_id x₀
     rw [hsub_d, sub_self, zero_mul, add_zero, one_mul] at hp
     exact hp
   have hderiv_v_ne : deriv v x₀ ≠ 0 := by rw [hderiv_v]; exact hr_x₀_ne
