@@ -189,18 +189,21 @@ on `U` and equal to `f` off `T`.
 
 Proved by induction on `T`. -/
 lemma exists_differentiable_extension_of_finite_pole_set
-    {f : ℂ → ℂ} {U : Set ℂ} (hUopen : IsOpen U)
-    (T : Finset ℂ) (hTsub : (T : Set ℂ) ⊆ U)
+    (T : Finset ℂ) {f : ℂ → ℂ} {U : Set ℂ} (hUopen : IsOpen U)
+    (hTsub : (T : Set ℂ) ⊆ U)
     (hf_diff : DifferentiableOn ℂ f (U \ T))
     (hf_bdd : ∀ x ∈ T, ∃ V ∈ 𝓝 x,
         BddAbove (norm ∘ f '' (V \ {x}))) :
     ∃ h : ℂ → ℂ, DifferentiableOn ℂ h U ∧ ∀ z ∈ U \ T, h z = f z := by
   classical
+  revert f U hUopen hTsub hf_diff hf_bdd
   induction T using Finset.induction_on with
   | empty =>
+      intro f U _ _ hf_diff _
       refine ⟨f, ?_, fun _ _ => rfl⟩
       simpa using hf_diff
   | @insert x T hxT ih =>
+      intro f U hUopen hTsub hf_diff hf_bdd
       -- x ∉ T, x ∈ insert x T ⊆ U.
       have hxU : x ∈ U := hTsub (by exact Finset.mem_insert_self x T)
       have hTsub' : (T : Set ℂ) ⊆ U := by
@@ -338,7 +341,7 @@ theorem exists_analytic_part_of_finite_pole_meromorphic
     (Metric.ball_subset_closedBall (_hSsub hz))
   obtain ⟨h, hh_diff, hh_eq⟩ :=
     exists_differentiable_extension_of_finite_pole_set
-      hU₀_open S hSsubU₀ hf_diff hf_bdd
+      S hU₀_open hSsubU₀ hf_diff hf_bdd
   refine ⟨h, hh_diff, ?_⟩
   intro z hzU
   have hh_eq_z := hh_eq z hzU
