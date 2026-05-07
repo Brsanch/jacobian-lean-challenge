@@ -4,6 +4,7 @@ import JacobianChallenge.Manifold.Cotangent
 import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.PeriodIntegral
 import JacobianChallenge.Manifold.PeriodLattice
+import JacobianChallenge.Manifold.PeriodLatticeRankTwoG
 import JacobianChallenge.Manifold.MeromorphicAt
 import JacobianChallenge.Manifold.MeromorphicDivisor
 import JacobianChallenge.Manifold.LocalMultiplicity
