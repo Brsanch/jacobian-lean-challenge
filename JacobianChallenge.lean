@@ -135,6 +135,7 @@ import JacobianChallenge.Manifold.SinglePoleLaurentExtractionDischarge
 import JacobianChallenge.Manifold.SmoothChain
 import JacobianChallenge.Manifold.SmoothChainBoundary
 import JacobianChallenge.Manifold.SmoothOneForm
+import JacobianChallenge.Manifold.SmoothPathChartCompat
 import JacobianChallenge.Manifold.SmoothPathIntegral
 import JacobianChallenge.Manifold.StokesCompactSurface
 import JacobianChallenge.Manifold.StokesDisk
