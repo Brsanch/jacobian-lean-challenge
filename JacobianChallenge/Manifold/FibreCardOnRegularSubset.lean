@@ -31,8 +31,8 @@ becomes automatic, and no caller needs to thread it.
 * `fibre_card_eq_of_locallyConstant_compl` — drop-in form of
   `fibre_card_eq_of_locallyConstant_subtype_reg` with `R := Cᶜ` and the
   `h_supp` hypothesis discharged from the regularity certificate.
-* `fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant`
-  and the named-`Prop` variant — uniform top-level reductions.
+* `fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant` —
+  uniform top-level reduction.
 
 ## Status
 
@@ -132,27 +132,6 @@ lemma fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant
   obtain ⟨card_of, h_witness, h_lc_sub, h_conn_sub⟩ := h_lc f hf hnc C
   exact fibre_card_eq_of_locallyConstant_compl
     card_of h_witness h_lc_sub h_conn_sub w₁ w₂
-
-/-- **Top-level reduction (regular-form), `Owed.degree.fibre_card_well_defined_at_regular_statement`
-shape.** Same as `fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant`,
-but stated via the named `Prop` for downstream callers. -/
-lemma fibre_card_well_defined_at_regular_statement_holds_of_locallyConstant
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (h_lc : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
-      ¬ JacobianChallenge.IsConstantMap f →
-      ∀ (C : Set Y),
-        ∃ (card_of : Y → ℕ),
-          (∀ w : RegularValueWitness f, card_of w.value = w.card) ∧
-          IsLocallyConstant (fun y : (Cᶜ : Set Y) => card_of y.val) ∧
-          IsPreconnected (Set.univ : Set (Cᶜ : Set Y))) :
-    fibre_card_well_defined_at_regular_statement X Y := by
-  unfold fibre_card_well_defined_at_regular_statement
-  intro f hf hnc C w₁ w₂
-  exact fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant
-    h_lc f hf hnc C w₁ w₂
 
 end Owed.degree
 
