@@ -116,3 +116,4 @@ import JacobianChallenge.Manifold.FibreCardLevelSetClopenDischarge
 import JacobianChallenge.Manifold.PrincipalDivisorDegreeZero
 import JacobianChallenge.Manifold.ArgumentPrincipleOnDisc
 import JacobianChallenge.Manifold.RegularValueSetConnected
+import JacobianChallenge.Manifold.ChartIntegralFibreBalanceFromR5Stack
