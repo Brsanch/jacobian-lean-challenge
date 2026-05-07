@@ -110,7 +110,7 @@ theorem pullback_section_in_cotangent_coordinates_apply
   --       (cotangentBundleCore I' M').coordChange (achart H' (f x₀)) (achart H' (f x)) (f x))
   -- applied to `(cotangentBundleCore I' M').coordChange (achart H' (f x)) (achart H' (f x₀)) (f x) η`.
   -- Simplify `id` and unfold `.comp`-application.
-  simp only [Function.id_def, id_eq, ContinuousLinearMap.coe_comp',
+  simp only [id_eq, ContinuousLinearMap.coe_comp',
     Function.comp_apply, ContinuousLinearMap.flip_apply,
     ContinuousLinearMap.compL_apply]
   -- Now both sides have an outer `(cotangentBundleCore I M).coordChange (achart H x)
@@ -122,9 +122,8 @@ theorem pullback_section_in_cotangent_coordinates_apply
   --     ∘L mfderiv f x`.
   -- Collapse the inner cocycle round-trip via `cotangent_coordChange_cocycle`.
   have hxa : f x ∈ (cotangentBundleCore I' M').baseSet (achart H' (f x)) :=
-    mem_chart_source H' (f x)
-  have hxb : f x ∈ (cotangentBundleCore I' M').baseSet (achart H' (f x₀)) :=
-    hfx
+    (cotangentBundleCore I' M').mem_baseSet_at (f x)
+  have hxb : f x ∈ (cotangentBundleCore I' M').baseSet (achart H' (f x₀)) := hfx
   have hcoc := cotangent_coordChange_cocycle (I' := I') (M' := M')
     (achart H' (f x)) (achart H' (f x₀)) (f x) hxa hxb η
   -- `hcoc : (cotangentBundleCore I' M').coordChange (achart H' (f x₀)) (achart H' (f x)) (f x)
