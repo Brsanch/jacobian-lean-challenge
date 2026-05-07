@@ -55,7 +55,7 @@ theorem isPreconnected_compl_finite_of_isPathConnected
   by_cases h : (Cᶜ : Set Y) = ∅
   · simp [h]
   · have hne : (Cᶜ : Set Y).Nonempty := Set.nonempty_iff_ne_empty.mpr h
-    exact (h_path hne).isPreconnected
+    exact (h_path hne).isConnected.isPreconnected
 
 /-- **Convenience composition.** Provides the `h_topo` shape that
 `RegularSubsetPreconnected.lean`'s reduction consumes, conditional on
