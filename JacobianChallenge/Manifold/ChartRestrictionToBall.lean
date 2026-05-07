@@ -143,8 +143,8 @@ theorem chart_restrict_to_ball
   · rfl
   -- Source ⊆ original chart source.
   · intro y hy
-    have hy' : y ∈ φ.source ∩ (φ.toPartialEquiv : Y → ℂ) ⁻¹' Metric.ball c r := by
-      rw [← PartialEquiv.IsImage.restr_source]; exact hy
+    -- `hy : y ∈ φ'.source = φ.source ∩ (φ.toPartialEquiv) ⁻¹' Metric.ball c r`.
+    have hy' : y ∈ φ.source ∩ (φ.toPartialEquiv : Y → ℂ) ⁻¹' Metric.ball c r := hy
     exact hy'.1
 
 end JacobianChallenge
