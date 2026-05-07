@@ -22,6 +22,7 @@ import JacobianChallenge.Manifold.PlanarAnnulusCircleIntegral
 import JacobianChallenge.Manifold.MultiHoleCauchyDeformation
 import JacobianChallenge.Manifold.NonConcentricCauchyDeformation
 import JacobianChallenge.Manifold.NonConcentricCauchyDeformationDischarge
+import JacobianChallenge.Manifold.MultiHoleCauchyMeromorphic
 import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.Single
 import JacobianChallenge.Divisor.FiberSum
