@@ -70,7 +70,8 @@ the sum of magnitudes of chart-circle integers over pole-points of `f`.
 
 noncomputable section
 
-open scoped BigOperators
+open scoped Real Topology BigOperators Manifold ContDiff
+open Complex MeasureTheory
 
 namespace JacobianChallenge
 
