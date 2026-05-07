@@ -164,15 +164,13 @@ lemma assembled_remainder_diff_at_pole
     -- `(z - y)^(-(k:ℤ))` is differentiable wherever `z ≠ y`.
     have h_sub_ne : ∀ z ∈ Metric.ball x ε, z - y ≠ 0 := by
       intro z hz hzy
+      have hzy' : z = y := sub_eq_zero.mp hzy
       apply hy_out
-      rw [Metric.mem_closedBall, dist_comm]
-      have hzy' : z = y := by
-        have := sub_eq_zero.mp hzy
-        exact this
-      rw [hzy']
-      have := (Metric.ball_subset_closedBall hz)
-      rwa [hzy'] at this
-    apply DifferentiableOn.sum
+      have hzc : z ∈ Metric.closedBall x ε := Metric.ball_subset_closedBall hz
+      rw [hzy'] at hzc
+      exact hzc
+    refine DifferentiableOn.sum (s := Finset.Icc 1 (N y))
+      (f := fun k z => a y k * (z - y) ^ (-(k : ℤ))) ?_
     intro k _
     apply DifferentiableOn.const_mul
     intro z hz
@@ -241,12 +239,18 @@ lemma assembled_remainder_diff_at_pole
       (Metric.ball x ε \ {x}) := by
     apply DifferentiableOn.sub
     · exact hh_x_on_punc
-    · refine DifferentiableOn.sum (fun y hy => ?_)
+    · refine DifferentiableOn.sum
+        (s := S.erase x)
+        (f := fun y z => ∑ k ∈ Finset.Icc 1 (N y),
+            a y k * (z - y) ^ (-(k : ℤ))) ?_
+      intro y hy
       rw [Finset.mem_erase] at hy
       obtain ⟨hyx, hyS⟩ := hy
       exact (hP_y_diff y hyS hyx).mono (fun z hz => hz.1)
   -- Step E. Transfer differentiability via `EqOn`.
-  exact hRHS_diff.congr (fun z hz => (hRewrite hz).symm)
+  refine hRHS_diff.congr ?_
+  intro z hz
+  exact (hRewrite hz).symm
 
 /-- **Headline existence theorem.** Given a finite set `S` of poles of
 `g`, with `0 < ε x` for each `x ∈ S` and pairwise-disjoint per-pole closed
