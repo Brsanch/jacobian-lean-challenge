@@ -63,43 +63,43 @@ namespace HolomorphicOneForm
 
 variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- The real part of `ω x`, viewed as a continuous `ℝ`-linear functional
-`ℂ →L[ℝ] ℝ`. Concretely: `ω.realPart x v = (ω x v).re`. -/
-def realPart (ω : HolomorphicOneForm X) (x : X) : ℂ →L[ℝ] ℝ :=
-  Complex.reCLM.comp (((ω : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
+/-- The real part of `om x`, viewed as a continuous `ℝ`-linear functional
+`ℂ →L[ℝ] ℝ`. Concretely: `om.realPart x v = (om x v).re`. -/
+def realPart (om : HolomorphicOneForm X) (x : X) : ℂ →L[ℝ] ℝ :=
+  Complex.reCLM.comp (((om : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
     𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _)) x).restrictScalars ℝ)
 
-/-- The imaginary part of `ω x`, viewed as a continuous `ℝ`-linear
-functional `ℂ →L[ℝ] ℝ`. Concretely: `ω.imagPart x v = (ω x v).im`. -/
-def imagPart (ω : HolomorphicOneForm X) (x : X) : ℂ →L[ℝ] ℝ :=
-  Complex.imCLM.comp (((ω : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
+/-- The imaginary part of `om x`, viewed as a continuous `ℝ`-linear
+functional `ℂ →L[ℝ] ℝ`. Concretely: `om.imagPart x v = (om x v).im`. -/
+def imagPart (om : HolomorphicOneForm X) (x : X) : ℂ →L[ℝ] ℝ :=
+  Complex.imCLM.comp (((om : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
     𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _)) x).restrictScalars ℝ)
 
 @[simp]
-theorem realPart_apply (ω : HolomorphicOneForm X) (x : X) (v : ℂ) :
-    ω.realPart x v =
-      ((ω : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
+theorem realPart_apply (om : HolomorphicOneForm X) (x : X) (v : ℂ) :
+    om.realPart x v =
+      ((om : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
         𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _)) x v).re := by
   simp [realPart, Complex.reCLM_apply]
 
 @[simp]
-theorem imagPart_apply (ω : HolomorphicOneForm X) (x : X) (v : ℂ) :
-    ω.imagPart x v =
-      ((ω : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
+theorem imagPart_apply (om : HolomorphicOneForm X) (x : X) (v : ℂ) :
+    om.imagPart x v =
+      ((om : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
         𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _)) x v).im := by
   simp [imagPart, Complex.imCLM_apply]
 
 /-- Pointwise reconstruction: a holomorphic 1-form's value at `x` applied
 to `v : ℂ` decomposes as `realPart x v + I * imagPart x v`. -/
-theorem eval_eq (ω : HolomorphicOneForm X) (x : X) (v : ℂ) :
-    ((ω : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
+theorem eval_eq (om : HolomorphicOneForm X) (x : X) (v : ℂ) :
+    ((om : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
       𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _)) x v) =
-      (ω.realPart x v : ℂ) + Complex.I * (ω.imagPart x v : ℂ) := by
-  set z : ℂ := ((ω : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
+      (om.realPart x v : ℂ) + Complex.I * (om.imagPart x v : ℂ) := by
+  set z : ℂ := ((om : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
     𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _)) x v) with hz
-  have hre : (ω.realPart x v : ℂ) = (z.re : ℂ) := by
+  have hre : (om.realPart x v : ℂ) = (z.re : ℂ) := by
     simp [realPart_apply, hz]
-  have him : (ω.imagPart x v : ℂ) = (z.im : ℂ) := by
+  have him : (om.imagPart x v : ℂ) = (z.im : ℂ) := by
     simp [imagPart_apply, hz]
   rw [hre, him]
   -- Goal: z = (z.re : ℂ) + I * (z.im : ℂ).
