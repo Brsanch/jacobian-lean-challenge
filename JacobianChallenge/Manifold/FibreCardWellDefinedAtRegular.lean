@@ -73,13 +73,9 @@ theorem fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo
     exact Set.ncard_eq_toFinset_card (f ⁻¹' {w.value}) w.fiber_finite
   · -- Local-constancy from h_lc.
     exact h_lc f hf hnc C
-  · -- IsPreconnected (Set.univ : Set (Cᶜ : Set Y)) from ZZ154-shape.
-    have hCfin : C.Finite := h_C_fin f hf hnc C
-    have h_pre : IsPreconnected (Cᶜ : Set Y) :=
-      JacobianChallenge.Manifold.regularSubset_isPreconnected_of_finite_complement_hypothesis
-        h_topo C hCfin
-    rw [isPreconnected_iff_preconnectedSpace] at h_pre
-    exact (Subtype.preconnectedSpace h_pre).isPreconnected_univ
+  · -- IsPreconnected (Set.univ : Set (Cᶜ : Set Y)) directly from ZZ154.
+    exact JacobianChallenge.Manifold.regularSubset_isPreconnected_of_finite_complement_hypothesis
+      h_topo C (h_C_fin f hf hnc C)
 
 /-- **Definitional packaging** — the same composition delivered against the
 def name `fibre_card_well_defined_at_regular_statement`. -/
