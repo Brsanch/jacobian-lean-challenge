@@ -9,6 +9,7 @@ import JacobianChallenge.Manifold.PeriodLattice
 import JacobianChallenge.Manifold.PeriodLatticeRankTwoG
 import JacobianChallenge.Manifold.PeriodLatticeCompactQuotient
 import JacobianChallenge.Manifold.PeriodLatticeChartedSpace
+import JacobianChallenge.Manifold.PeriodLatticeLieGroup
 import JacobianChallenge.Manifold.PeriodPairingDefinition
 import JacobianChallenge.Manifold.PeriodImageLattice
 import JacobianChallenge.Manifold.MeromorphicAt
