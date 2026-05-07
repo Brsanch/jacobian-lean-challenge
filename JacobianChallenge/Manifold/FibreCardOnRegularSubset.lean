@@ -27,15 +27,12 @@ becomes automatic, and no caller needs to thread it.
 
 ## What is delivered
 
-* `fibre_card_eq_of_locallyConstant_compl`: drop-in form of
+* `RegularValueWitnessReg.value_mem_compl` — trivial helper.
+* `fibre_card_eq_of_locallyConstant_compl` — drop-in form of
   `fibre_card_eq_of_locallyConstant_subtype_reg` with `R := Cᶜ` and the
   `h_supp` hypothesis discharged from the regularity certificate.
-* `fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant`:
-  uniform top-level reduction. Given `card_of : Y → ℕ`, the witness-
-  card readout, and the analytic content (locally constant on `Cᶜ`,
-  preconnected `Cᶜ`), the conclusion of
-  `fibre_card_well_defined_at_regular_statement` for the *specific*
-  critical-value set `C` follows.
+* `fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant`
+  and the named-`Prop` variant — uniform top-level reductions.
 
 ## Status
 
@@ -61,19 +58,17 @@ namespace JacobianChallenge
 
 namespace ContMDiff
 
-namespace Owed.degree
-
 universe u v
-
-variable {X : Type u} {Y : Type v}
 
 /-- **Trivial helper.** A regular witness against critical-value set `C`
 has value in `Cᶜ`. -/
 lemma RegularValueWitnessReg.value_mem_compl
-    [TopologicalSpace Y]
+    {X : Type u} {Y : Type v}
     {f : X → Y} {C : Set Y} (w : RegularValueWitnessReg f C) :
     w.toWitness.value ∈ (Cᶜ : Set Y) :=
   w.is_regular
+
+namespace Owed.degree
 
 /-- **Discharge with `R := Cᶜ`.** Specialisation of
 `fibre_card_eq_of_locallyConstant_subtype_reg` to the canonical regular
@@ -93,7 +88,7 @@ Inputs:
 Conclusion: any two regular witnesses against `C` give the same fibre
 cardinality. -/
 lemma fibre_card_eq_of_locallyConstant_compl
-    [TopologicalSpace Y]
+    {X : Type u} {Y : Type v} [TopologicalSpace Y]
     {f : X → Y} {C : Set Y}
     (card_of : Y → ℕ)
     (h_witness : ∀ w : RegularValueWitness f, card_of w.value = w.card)
