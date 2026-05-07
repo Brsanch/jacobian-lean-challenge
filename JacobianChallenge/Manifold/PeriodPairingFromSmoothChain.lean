@@ -72,22 +72,22 @@ smooth real 1-form along a smooth singular 1-chain. This is exactly
 `SmoothChain.integrate` (ZZ139) re-exposed in `pairing`-shape so that
 downstream `PeriodPairing`-style code has a stable name. -/
 def smoothChain_realOneForm_pairing
-    (c : SmoothChain I X) (ω : SmoothOneForm I X) : ℝ :=
-  SmoothChain.integrate c ω
+    (c : SmoothChain I X) (oneForm : SmoothOneForm I X) : ℝ :=
+  SmoothChain.integrate c oneForm
 
 @[simp] theorem smoothChain_realOneForm_pairing_zero_left
-    (ω : SmoothOneForm I X) :
-    smoothChain_realOneForm_pairing (0 : SmoothChain I X) ω = 0 := by
+    (oneForm : SmoothOneForm I X) :
+    smoothChain_realOneForm_pairing (0 : SmoothChain I X) oneForm = 0 := by
   unfold smoothChain_realOneForm_pairing
-  exact SmoothChain.integrate_zero ω
+  exact SmoothChain.integrate_zero oneForm
 
 theorem smoothChain_realOneForm_pairing_add_left
-    (c₁ c₂ : SmoothChain I X) (ω : SmoothOneForm I X) :
-    smoothChain_realOneForm_pairing (c₁ + c₂) ω
-      = smoothChain_realOneForm_pairing c₁ ω
-        + smoothChain_realOneForm_pairing c₂ ω := by
+    (c₁ c₂ : SmoothChain I X) (oneForm : SmoothOneForm I X) :
+    smoothChain_realOneForm_pairing (c₁ + c₂) oneForm
+      = smoothChain_realOneForm_pairing c₁ oneForm
+        + smoothChain_realOneForm_pairing c₂ oneForm := by
   unfold smoothChain_realOneForm_pairing
-  exact SmoothChain.integrate_add c₁ c₂ ω
+  exact SmoothChain.integrate_add c₁ c₂ oneForm
 
 @[simp] theorem smoothChain_realOneForm_pairing_zero_right
     (c : SmoothChain I X) :
@@ -100,9 +100,9 @@ theorem smoothChain_realOneForm_pairing_add_left
   ring
 
 theorem smoothChain_realOneForm_pairing_smul_right
-    (c : SmoothChain I X) (a : ℝ) (ω : SmoothOneForm I X) :
-    smoothChain_realOneForm_pairing c (a • ω)
-      = a * smoothChain_realOneForm_pairing c ω := by
+    (c : SmoothChain I X) (a : ℝ) (oneForm : SmoothOneForm I X) :
+    smoothChain_realOneForm_pairing c (a • oneForm)
+      = a * smoothChain_realOneForm_pairing c oneForm := by
   classical
   unfold smoothChain_realOneForm_pairing SmoothChain.integrate SmoothChain.asFinsupp
   rw [Finset.mul_sum]
@@ -127,16 +127,16 @@ Downstream chips that want to upgrade the chain-side pairing to an
 Both are infrastructure currently missing from the repo at the present
 mathlib pin; this hom is the chain-side ingredient ready for that
 upgrade. -/
-def smoothChain_realOneForm_pairingHom (ω : SmoothOneForm I X) :
+def smoothChain_realOneForm_pairingHom (oneForm : SmoothOneForm I X) :
     SmoothChain I X →+ ℝ where
-  toFun c := smoothChain_realOneForm_pairing c ω
-  map_zero' := smoothChain_realOneForm_pairing_zero_left ω
-  map_add' c₁ c₂ := smoothChain_realOneForm_pairing_add_left c₁ c₂ ω
+  toFun c := smoothChain_realOneForm_pairing c oneForm
+  map_zero' := smoothChain_realOneForm_pairing_zero_left oneForm
+  map_add' c₁ c₂ := smoothChain_realOneForm_pairing_add_left c₁ c₂ oneForm
 
 @[simp] theorem smoothChain_realOneForm_pairingHom_apply
-    (ω : SmoothOneForm I X) (c : SmoothChain I X) :
-    smoothChain_realOneForm_pairingHom ω c
-      = smoothChain_realOneForm_pairing c ω := rfl
+    (oneForm : SmoothOneForm I X) (c : SmoothChain I X) :
+    smoothChain_realOneForm_pairingHom oneForm c
+      = smoothChain_realOneForm_pairing c oneForm := rfl
 
 end JacobianChallenge
 
