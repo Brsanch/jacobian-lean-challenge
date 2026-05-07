@@ -122,4 +122,5 @@ import JacobianChallenge.Manifold.ArgumentPrincipleOnDisc
 import JacobianChallenge.Manifold.RegularValueSetConnected
 import JacobianChallenge.Manifold.ChartIntegralFibreBalanceFromR5Stack
 import JacobianChallenge.Manifold.R5StackHypothesesDischarge
+import JacobianChallenge.Manifold.FibreSumDegreeIdentification
 import JacobianChallenge.Manifold.LocalCountPackageSupplier
