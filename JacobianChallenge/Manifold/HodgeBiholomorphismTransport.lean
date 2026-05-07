@@ -87,6 +87,10 @@ noncomputable section
 
 namespace JacobianChallenge
 
+variable (X Y : Type*)
+  [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+
 /-- **Named tier-2 hypothesis.** Finite-dimensionality of holomorphic
 1-forms transports from `Y` to `X`.
 
@@ -96,11 +100,10 @@ applied to the named ZZ76 hypothesis (a `LinearEquiv` would transport
 `Module.Finite` directly via `Module.Finite.equiv`). Packaging the
 section-level pullback is not in mathlib at the project pin, so we expose
 the conclusion itself as a named hypothesis. -/
-def HolomorphicOneFormFiniteDimTransport
-    (X Y : Type*)
-    [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] : Prop :=
+def HolomorphicOneFormFiniteDimTransport : Prop :=
   HolomorphicOneFormFiniteDim Y → HolomorphicOneFormFiniteDim X
+
+variable {X Y}
 
 /-- **Tier-2 transport theorem.** If finite-dimensionality of holomorphic
 1-forms transports from `Y` to `X`, then ZZ76's named hypothesis
@@ -108,15 +111,23 @@ transports from `Y` to `X`. This is the trivial application of the
 hypothesis itself; it is recorded under a stable name so downstream files
 can cite it without unfolding the `Prop`-level definition. -/
 theorem holomorphicOneFormFiniteDim_of_transport
-    {X Y : Type*}
-    [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (hT : HolomorphicOneFormFiniteDimTransport X Y)
     (hY : HolomorphicOneFormFiniteDim Y) :
     HolomorphicOneFormFiniteDim X :=
   hT hY
 
+end JacobianChallenge
+
+/-! ### Sphere-specialised conditional discharges
+
+These compose the abstract transport with ZZ80's sphere bridge. -/
+
+namespace JacobianChallenge
+
 namespace RiemannSphere
+
+variable {X : Type*}
+  [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-- **Conditional discharge specialised to the Riemann sphere.** If `X`
 admits a finite-dimensionality transport from the Riemann sphere (the
@@ -129,8 +140,6 @@ Riemann surface has finite-dimensional `H⁰(X, Ω¹)`*. The analytic content
 (uniformisation: `X ≃ ℂℙ¹`, plus
 `Subsingleton (HolomorphicOneForm ℂℙ¹)`) lives upstream. -/
 theorem holomorphicOneFormFiniteDim_of_transport_from_riemannSphere
-    {X : Type*}
-    [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (hT : HolomorphicOneFormFiniteDimTransport X RiemannSphere)
     (hSub : Subsingleton (HolomorphicOneForm RiemannSphere)) :
     JacobianChallenge.HolomorphicOneFormFiniteDim X := by
@@ -143,34 +152,10 @@ theorem holomorphicOneFormFiniteDim_of_transport_from_riemannSphere
 `RiemannSphereGenus.lean`. Convenient for downstream callers that thread
 `_statement` props rather than `Subsingleton` instances. -/
 theorem holomorphicOneFormFiniteDim_of_transport_from_riemannSphere_statement
-    {X : Type*}
-    [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (hT : HolomorphicOneFormFiniteDimTransport X RiemannSphere)
     (hSub : HolomorphicOneForm_RiemannSphere_subsingleton_statement) :
     JacobianChallenge.HolomorphicOneFormFiniteDim X :=
   holomorphicOneFormFiniteDim_of_transport_from_riemannSphere hT hSub
-
-/-- **Headline (open, `_statement`-form).** ZZ76's hypothesis specialised
-to *any* `X` admitting a finite-dimensionality transport from the
-Riemann sphere. Reduces (via the bridges in this file) to closing
-`HolomorphicOneForm_RiemannSphere_subsingleton_statement` from ZZ80 *plus*
-exhibiting the transport hypothesis (which a future chip producing the
-biholomorphism pullback would supply). -/
-def holomorphicOneFormFiniteDim_via_riemannSphere_transport_statement
-    (X : Type*)
-    [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Prop :=
-  HolomorphicOneFormFiniteDimTransport X RiemannSphere →
-    HolomorphicOneForm_RiemannSphere_subsingleton_statement →
-      JacobianChallenge.HolomorphicOneFormFiniteDim X
-
-/-- The above headline is **proven**: it is exactly the curried form of
-`holomorphicOneFormFiniteDim_of_transport_from_riemannSphere_statement`. -/
-theorem holomorphicOneFormFiniteDim_via_riemannSphere_transport_statement_holds
-    (X : Type*)
-    [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
-    holomorphicOneFormFiniteDim_via_riemannSphere_transport_statement X :=
-  fun hT hSub =>
-    holomorphicOneFormFiniteDim_of_transport_from_riemannSphere_statement hT hSub
 
 end RiemannSphere
 
