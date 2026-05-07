@@ -9,6 +9,7 @@ import JacobianChallenge.Manifold.MeromorphicDivisor
 import JacobianChallenge.Manifold.LocalMultiplicity
 import JacobianChallenge.Manifold.IsConstantMapAux
 import JacobianChallenge.Manifold.LocalNormalForm
+import JacobianChallenge.Manifold.LocalMultiplicityInvariance
 import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Manifold.AnalyticFiberDiscrete
 import JacobianChallenge.Manifold.AnalyticContinuationGlobalization
