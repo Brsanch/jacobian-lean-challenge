@@ -40,6 +40,8 @@ import JacobianChallenge.Manifold.ConnectivityGlobalizationReduction
 import JacobianChallenge.Manifold.ContMDiffOmegaAnalytic
 import JacobianChallenge.Manifold.Cotangent
 import JacobianChallenge.Manifold.CotangentBundleSmoothness
+import JacobianChallenge.Manifold.CotangentInCoordinates
+import JacobianChallenge.Manifold.CotangentPullbackBridge
 import JacobianChallenge.Manifold.CriticalSetDefinition
 import JacobianChallenge.Manifold.CriticalSetDerivBridge
 import JacobianChallenge.Manifold.CriticalSetDiscrete
@@ -81,6 +83,7 @@ import JacobianChallenge.Manifold.LogDerivLaurentDischarge
 import JacobianChallenge.Manifold.LogDiffAnchored
 import JacobianChallenge.Manifold.LogDiffAnchoredDischarge
 import JacobianChallenge.Manifold.LogDiffAnchoredWitness
+import JacobianChallenge.Manifold.MFDerivTranspose
 import JacobianChallenge.Manifold.MeromorphicAt
 import JacobianChallenge.Manifold.MeromorphicDegreeFiberSum
 import JacobianChallenge.Manifold.MeromorphicDegreeFiberSumEquivalences
