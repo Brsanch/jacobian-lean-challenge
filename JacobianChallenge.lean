@@ -34,6 +34,7 @@ import JacobianChallenge.Manifold.ChartCircleVanishingRegular
 import JacobianChallenge.Manifold.ChartDiskRegularity
 import JacobianChallenge.Manifold.ChartedSpaceLocPathConnected
 import JacobianChallenge.Manifold.ChartIntegralEqOrderDischarge
+import JacobianChallenge.Manifold.ChartLocalDetour
 import JacobianChallenge.Manifold.ChartIntegralFibreBalanceFromR5Stack
 import JacobianChallenge.Manifold.ChartIntegralFibreBalanceWiring
 import JacobianChallenge.Manifold.ChartNhdsHelpers
