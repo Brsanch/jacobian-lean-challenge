@@ -148,7 +148,7 @@ Fields:
   `ord_x f` (from `principalDivisorMap`); see the file header for why
   this is a separate residual rather than a consequence of the upper
   chips. -/
-structure R5StackHypotheses (f : MeromorphicNonzero X) : Prop where
+structure R5StackHypotheses (f : MeromorphicNonzero X) where
   /-- Multiplicity-weighted fibre count on `OnePoint ℂ`. -/
   fibreSum : OnePoint ℂ → ℕ
   /-- Finite critical-value set. -/
@@ -222,13 +222,13 @@ theorem meromorphicDegrees_eq_of_R5Stack
   have hfeq := fibreSum_zero_eq_fibreSum_infty R5
   -- Cast to ℤ via the bundle's identifications.
   have h0 := R5.fibreSum_zero_eq
-  have h∞ := R5.fibreSum_infty_eq
+  have hinf := R5.fibreSum_infty_eq
   have hcast :
       (R5.fibreSum (OnePoint.some (0 : ℂ)) : ℤ)
         = (R5.fibreSum (∞ : OnePoint ℂ) : ℤ) := by
     exact_mod_cast hfeq
   rw [h0] at hcast
-  rw [h∞] at hcast
+  rw [hinf] at hcast
   exact hcast
 
 /-! ## Convergence: bundle-level `chartIntegralFibreBalance` -/
