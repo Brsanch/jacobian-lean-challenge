@@ -90,11 +90,23 @@ def velocity (γ : SmoothPath I X) (t : ℝ) : E :=
   (mfderiv (𝓘(ℝ, ℝ)) I γ.ambient t : ℝ →L[ℝ] TangentSpace I (γ.ambient t))
     (1 : ℝ)
 
-/-- Pair a covector at `x` with a tangent vector, viewed as raw
-elements of `E →L[ℝ] ℝ` and `E`. Defined via the explicit defeq
-identification `CotangentSpace I x ↦ (E →L[ℝ] ℝ)` and CLM application. -/
+/-- The canonical identification `CotangentSpace I x ≃ (E →L[ℝ] ℝ)`,
+realised as the identity-on-data linear equivalence. This is the
+gadget we use to pair a covector with a tangent vector without
+fighting the irreducibility of the type synonym `CotangentSpace`. -/
+def cotangentEquiv {x : X} : CotangentSpace I x ≃ₗ[ℝ] (E →L[ℝ] ℝ) where
+  toFun φ := φ
+  invFun φ := φ
+  left_inv _ := rfl
+  right_inv _ := rfl
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+
+/-- Pair a covector at `x` with a tangent vector, defined via the
+identification `cotangentEquiv : CotangentSpace I x ≃ₗ[ℝ] E →L[ℝ] ℝ`
+and continuous-linear-map application. -/
 def applyCotangent {x : X} (φ : CotangentSpace I x) (v : E) : ℝ :=
-  (id φ : E →L[ℝ] ℝ) v
+  (cotangentEquiv (I := I) (X := X) (x := x) φ) v
 
 /-- The integrand `t ↦ ω(γ t)(γ' t)` of the path integral. -/
 def integrand (γ : SmoothPath I X) (ω : SmoothOneForm I X) (t : ℝ) : ℝ :=
@@ -111,20 +123,20 @@ namespace SmoothPath
 
 @[simp] lemma applyCotangent_zero {x : X} (v : E) :
     applyCotangent (0 : CotangentSpace I x) v = 0 := by
-  show ((0 : E →L[ℝ] ℝ)) v = 0
+  unfold applyCotangent
+  rw [map_zero]
   exact ContinuousLinearMap.zero_apply v
 
 @[simp] lemma applyCotangent_add {x : X} (φ ψ : CotangentSpace I x) (v : E) :
     applyCotangent (φ + ψ) v = applyCotangent φ v + applyCotangent ψ v := by
-  show (((φ : E →L[ℝ] ℝ) + (ψ : E →L[ℝ] ℝ))) v
-      = ((φ : E →L[ℝ] ℝ)) v + ((ψ : E →L[ℝ] ℝ)) v
-  exact ContinuousLinearMap.add_apply _ _ _
+  unfold applyCotangent
+  rw [map_add, ContinuousLinearMap.add_apply]
 
 @[simp] lemma applyCotangent_smul {x : X} (c : ℝ) (φ : CotangentSpace I x)
     (v : E) :
     applyCotangent (c • φ) v = c * applyCotangent φ v := by
-  show ((c • (φ : E →L[ℝ] ℝ))) v = c * ((φ : E →L[ℝ] ℝ)) v
-  rw [ContinuousLinearMap.smul_apply, smul_eq_mul]
+  unfold applyCotangent
+  rw [map_smul, ContinuousLinearMap.smul_apply, smul_eq_mul]
 
 variable (γ : SmoothPath I X)
 
