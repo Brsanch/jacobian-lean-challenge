@@ -132,8 +132,17 @@ theorem Set.Countable.isPathConnected_ball_diff_complex
   let w : ℂ := c + t • y
   have hw_ball : w ∈ Metric.ball z r := hδ t ht_abs
   -- Decode the negated union membership.
-  simp only [Set.mem_union, Set.mem_setOf_eq, not_or, not_nonempty_iff_eq_empty] at ht
-  obtain ⟨ht1, ht2⟩ := ht
+  have ht' : t ∉ {u : ℝ | ([c + x -[ℝ] c + u • y] ∩ s).Nonempty} ∧
+              t ∉ {u : ℝ | ([c - x -[ℝ] c + u • y] ∩ s).Nonempty} := by
+    have := ht
+    rw [Set.mem_compl_iff, Set.mem_union] at this
+    tauto
+  have ht1 : ([c + x -[ℝ] c + t • y] ∩ s) = ∅ := by
+    have : ¬ ([c + x -[ℝ] c + t • y] ∩ s).Nonempty := ht'.1
+    rwa [Set.not_nonempty_iff_eq_empty] at this
+  have ht2 : ([c - x -[ℝ] c + t • y] ∩ s) = ∅ := by
+    have : ¬ ([c - x -[ℝ] c + t • y] ∩ s).Nonempty := ht'.2
+    rwa [Set.not_nonempty_iff_eq_empty] at this
   -- Build the two ball-respecting JoinedIn segments.
   have hseg_aw : [a -[ℝ] w] ⊆ Metric.ball z r := by
     have : [a -[ℝ] w] ⊆ Metric.ball z r :=
