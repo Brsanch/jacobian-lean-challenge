@@ -81,6 +81,7 @@ import JacobianChallenge.Manifold.HurwitzPatchingDataConstruction
 import JacobianChallenge.Manifold.IntegerShadowChainRealisation
 import JacobianChallenge.Manifold.IntegerShadowStokes
 import JacobianChallenge.Manifold.IsConstantMapAux
+import JacobianChallenge.Manifold.IsPathConnectedBallMinusCountable
 import JacobianChallenge.Manifold.LocalArgumentPrinciple
 import JacobianChallenge.Manifold.LocalBiholomorphism
 import JacobianChallenge.Manifold.LocalCountPackageInputsDischarge
