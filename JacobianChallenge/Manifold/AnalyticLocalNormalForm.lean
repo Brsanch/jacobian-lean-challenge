@@ -102,7 +102,7 @@ theorem analytic_local_normal_form
   · -- analyticity of ψ on closedBall x₀ ρ'
     intro z hz
     have h_id : AnalyticAt ℂ (fun w : ℂ => w - x₀) z :=
-      (analyticAt_id (𝕜 := ℂ) (x := z)).sub analyticAt_const
+      (analyticAt_id : AnalyticAt ℂ (fun w : ℂ => w) z).sub analyticAt_const
     have h_r : AnalyticAt ℂ r z := hr_an z hz
     exact h_id.mul h_r
   · -- ψ x₀ = 0
