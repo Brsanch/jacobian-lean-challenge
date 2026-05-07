@@ -16,13 +16,12 @@ set_option diagnostics.threshold 100
 /-! # Unconditional k-fold local multiplicity (composition of ZZ74 + ZZ75 + ZZ87)
 
 Composes ZZ87 (analytic k-th root) + ZZ75 (substitution bundle) + ZZ74
-(k=1 IFT count, re-implemented with a radius bound) to produce: under a
-local analytic factorization
-`g(z) - w₀ = (z - x₀)^k · u(z)` with `u(x₀) ≠ 0`, the equation
-`g z = w` has exactly `k` solutions in a small ball around `x₀` for
-`w` near (but not equal to) `w₀`.
+(re-implemented inline with a radius bound) to give: under a local
+analytic factorization `g(z) - w₀ = (z - x₀)^k · u(z)` with `u(x₀) ≠ 0`,
+the equation `g z = w` has exactly `k` solutions in a small ball around
+`x₀` for `w` near (but not equal to) `w₀`.
 
-The bijection is `z ↦ v z` between
+Bijection: `z ↦ v z` between
 `{z ∈ ball x₀ ε | g z = w}` and `{ξ : ℂ | ξ^k = w - w₀}`. -/
 
 noncomputable section
@@ -148,36 +147,42 @@ private theorem localMultiplicityOne_preimage_card_with_radius
   rw [h_preimage_eq]
   exact Set.ncard_singleton _
 
-/-- The k-th roots of a nonzero complex number form a set of cardinality `k`. -/
-lemma card_kth_roots_complex {k : ℕ} (hk : 1 ≤ k) {a : ℂ} (ha : a ≠ 0) :
-    ({ξ : ℂ | ξ ^ k = a}).ncard = k := by
+/-! ## Cardinality of k-th roots of a nonzero complex number -/
+
+/-- The k-th roots of a nonzero complex number, viewed as a `Finset`. -/
+private noncomputable def kthRootsFinset (k : ℕ) (a : ℂ) : Finset ℂ :=
+  (Polynomial.X ^ k - Polynomial.C a : Polynomial ℂ).roots.toFinset
+
+/-- The set of k-th roots of `a` equals `(kthRootsFinset k a : Set ℂ)`,
+when `a ≠ 0` and `k ≥ 1`. -/
+private lemma kth_roots_eq_finset {k : ℕ} (hk : 1 ≤ k) {a : ℂ} (ha : a ≠ 0) :
+    {ξ : ℂ | ξ ^ k = a} = (kthRootsFinset k a : Set ℂ) := by
+  set p : Polynomial ℂ := Polynomial.X ^ k - Polynomial.C a with hp_def
+  have hk0 : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
+  have hp_deg : p.natDegree = k := by
+    rw [hp_def]; exact Polynomial.natDegree_X_pow_sub_C
+  have hp_ne : p ≠ 0 := fun h => by
+    rw [h] at hp_deg
+    simp at hp_deg
+    exact hk0 hp_deg.symm
+  ext ξ
+  simp only [Set.mem_setOf_eq, kthRootsFinset, Finset.mem_coe,
+             Multiset.mem_toFinset]
+  rw [Polynomial.mem_roots hp_ne]
+  show ξ ^ k = a ↔ p.IsRoot ξ
+  unfold Polynomial.IsRoot
+  rw [hp_def]
+  simp [sub_eq_zero, Polynomial.eval_sub, Polynomial.eval_pow,
+        Polynomial.eval_X, Polynomial.eval_C, eq_comm]
+
+/-- The Finset of k-th roots has cardinality `k`. -/
+private lemma kth_roots_finset_card {k : ℕ} (hk : 1 ≤ k) {a : ℂ} (ha : a ≠ 0) :
+    (kthRootsFinset k a).card = k := by
   classical
   set p : Polynomial ℂ := Polynomial.X ^ k - Polynomial.C a with hp_def
   have hk0 : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
   have hp_deg : p.natDegree = k := by
     rw [hp_def]; exact Polynomial.natDegree_X_pow_sub_C
-  have hp_ne_zero : p ≠ 0 := fun h => by
-    rw [h] at hp_deg
-    simp at hp_deg
-    exact hk0 hp_deg.symm
-  have h_roots_eq : ({ξ : ℂ | ξ ^ k = a}) = (p.roots.toFinset : Set ℂ) := by
-    ext ξ
-    constructor
-    · intro hξ
-      simp only [Finset.mem_coe, Multiset.mem_toFinset]
-      rw [Polynomial.mem_roots hp_ne_zero]
-      change p.eval ξ = 0
-      rw [hp_def]
-      simp [hξ]
-    · intro hξ
-      simp only [Finset.mem_coe, Multiset.mem_toFinset] at hξ
-      rw [Polynomial.mem_roots hp_ne_zero] at hξ
-      change p.eval ξ = 0 at hξ
-      rw [hp_def] at hξ
-      simp only [Polynomial.eval_sub, Polynomial.eval_pow, Polynomial.eval_X,
-                 Polynomial.eval_C, sub_eq_zero] at hξ
-      exact hξ
-  rw [h_roots_eq, Set.ncard_coe_Finset]
   have h_separable : p.Separable := by
     rw [hp_def]
     exact Polynomial.separable_X_pow_sub_C a (by exact_mod_cast hk0) ha
@@ -186,50 +191,11 @@ lemma card_kth_roots_complex {k : ℕ} (hk : 1 ≤ k) {a : ℂ} (ha : a ≠ 0) :
   have h_card_roots : p.roots.card = p.natDegree :=
     (Polynomial.splits_iff_card_roots.mp h_splits)
   have h_nodup : p.roots.Nodup := h_separable.squarefree.nodup_roots
-  rw [Multiset.toFinset_card_of_nodup h_nodup, h_card_roots, hp_deg]
+  unfold kthRootsFinset
+  rw [show (Polynomial.X ^ k - Polynomial.C a : Polynomial ℂ) = p from rfl]
+  rw [Multiset.toFinset_card_eq_card h_nodup, h_card_roots, hp_deg]
 
-/-- The set of k-th roots of a nonzero complex is finite. -/
-lemma kth_roots_finite {k : ℕ} {a : ℂ} (ha : a ≠ 0) :
-    ({ξ : ℂ | ξ ^ k = a}).Finite := by
-  classical
-  set p : Polynomial ℂ := Polynomial.X ^ k - Polynomial.C a with hp_def
-  have h_roots_subset : {ξ : ℂ | ξ ^ k = a} ⊆ (p.roots.toFinset : Set ℂ) := by
-    intro ξ hξ
-    by_cases hk0 : k = 0
-    · -- k=0 ⇒ ξ^0 = 1 = a; but then a ≠ 0 is fine; p = 1 - C a = const ≠ 0 (for a ≠ 1).
-      -- Could be empty or all-of-ℂ depending on a. Fall back: roots set is finite anyway.
-      -- For our purposes show finite by other means.
-      simp [hk0] at hξ
-      -- hξ : 1 = a; conflict possible. Just finite by trivial subset.
-      -- Roots-finset gives finite container.
-      simp only [Finset.mem_coe, Multiset.mem_toFinset]
-      -- p = X^0 - C a = 1 - C a. If a = 1 then p = 0 (roots = 0); else p ≠ 0 with no roots.
-      -- Either way the set we need is at most a singleton. Use direct trick:
-      -- map injectively to the empty/singleton.
-      rw [hp_def]
-      by_cases ha1 : a = 1
-      · subst ha1
-        simp
-      · have hp_ne : Polynomial.X ^ (0 : ℕ) - Polynomial.C a ≠ 0 := by
-          intro h
-          have := congrArg (·.eval 0) h
-          simp at this
-          exact ha1 this.symm
-        rw [Polynomial.mem_roots hp_ne]
-        change Polynomial.eval ξ (Polynomial.X ^ 0 - Polynomial.C a) = 0
-        simp [hξ]
-    · have hp_deg : p.natDegree = k := by
-        rw [hp_def]; exact Polynomial.natDegree_X_pow_sub_C
-      have hp_ne : p ≠ 0 := fun h => by
-        rw [h] at hp_deg
-        simp at hp_deg
-        exact hk0 hp_deg.symm
-      simp only [Finset.mem_coe, Multiset.mem_toFinset]
-      rw [Polynomial.mem_roots hp_ne]
-      change p.eval ξ = 0
-      rw [hp_def]
-      simp [hξ]
-  exact (p.roots.toFinset.finite_toSet).subset h_roots_subset
+/-! ## Main count from the bundle -/
 
 /-- **Cardinality count from the substitution bundle.** -/
 theorem localKFoldMultiplicity_preimage_card_of_substitution
@@ -260,11 +226,9 @@ theorem localKFoldMultiplicity_preimage_card_of_substitution
     rw [hw₀_eq_gx₀]; exact hh
   have h_roots_small : ∀ ξ : ℂ, ξ ^ k = w₁ → ‖ξ‖ < δ₁ := by
     intro ξ hξ
-    have hξn : ‖ξ‖ ^ k = ‖w₁‖ := by
-      rw [← norm_pow, hξ]
+    have hξn : ‖ξ‖ ^ k = ‖w₁‖ := by rw [← norm_pow, hξ]
     have h1 : ‖ξ‖ ^ k < (δ₁ / 2) ^ k := by
       rw [hξn, ← hδ_def]; exact hw_dist
-    have hξ_nn : 0 ≤ ‖ξ‖ := norm_nonneg _
     have hδ₁_half_nn : 0 ≤ δ₁ / 2 := by linarith
     have h2 : ‖ξ‖ < δ₁ / 2 := by
       by_contra h
@@ -279,89 +243,97 @@ theorem localKFoldMultiplicity_preimage_card_of_substitution
     rw [zero_pow hk0] at hξ
     exact hw₁_ne hξ.symm
   classical
-  set Roots : Set ℂ := {ξ : ℂ | ξ ^ k = w₁} with hRoots_def
   set Pre : Set ℂ := {z ∈ Metric.ball x₀ ε | g z = w} with hPre_def
-  have hRoots_finite : Roots.Finite := kth_roots_finite hw₁_ne
-  have hRoots_card : Roots.ncard = k := card_kth_roots_complex hk hw₁_ne
-  -- z ↦ v z maps Pre to Roots.
+  -- Use the Finset-of-roots encoding directly.
+  set F : Finset ℂ := kthRootsFinset k w₁ with hF_def
+  have hF_card : F.card = k := kth_roots_finset_card hk hw₁_ne
+  have hF_eq : (F : Set ℂ) = {ξ : ℂ | ξ ^ k = w₁} := (kth_roots_eq_finset hk hw₁_ne).symm
+  -- z ↦ v z maps Pre to F.
   have h_ball_sub_closed : Metric.ball x₀ ε ⊆ Metric.closedBall x₀ ρ := by
     intro z hz
     rw [Metric.mem_ball] at hz
     rw [Metric.mem_closedBall]
     exact (le_of_lt hz).trans hε_le_ρ
-  have h_v_to_roots : ∀ z ∈ Pre, v z ∈ Roots := by
+  have h_v_to_roots : ∀ z ∈ Pre, v z ∈ F := by
     intro z hz
     obtain ⟨hz_ball, hz_g⟩ := hz
     have hz_closed : z ∈ Metric.closedBall x₀ ρ := h_ball_sub_closed hz_ball
     have hpow : g z - w₀ = v z ^ k := hv_pow z hz_closed
     rw [hz_g] at hpow
-    show v z ^ k = w₁
-    rw [hw₁_def]; exact hpow.symm
-  -- For each ξ ∈ Roots, ZZ74 gives unique z with v z = ξ in ball x₀ ε.
-  have h_v_count : ∀ ξ ∈ Roots, ({z ∈ Metric.ball x₀ ε | v z = ξ} : Set ℂ).ncard = 1 := by
+    have hvk : v z ^ k = w₁ := by rw [hw₁_def]; exact hpow.symm
+    -- Move v z into F via hF_eq.
+    have hin_set : v z ∈ ({ξ : ℂ | ξ ^ k = w₁} : Set ℂ) := hvk
+    rw [← hF_eq] at hin_set
+    exact_mod_cast hin_set
+  have h_v_count : ∀ ξ ∈ F, ({z ∈ Metric.ball x₀ ε | v z = ξ} : Set ℂ).ncard = 1 := by
     intro ξ hξ
+    have hξ_in_set : ξ ∈ ({ξ : ℂ | ξ ^ k = w₁} : Set ℂ) := by
+      rw [← hF_eq]; exact_mod_cast hξ
+    have hξk : ξ ^ k = w₁ := hξ_in_set
+    have hξ_ne : ξ ≠ 0 := h_roots_ne ξ hξk
+    have hξ_norm : ‖ξ‖ < δ₁ := h_roots_small ξ hξk
     have hξ_ball : ξ ∈ Metric.ball (0 : ℂ) δ₁ := by
-      rw [Metric.mem_ball, dist_zero_right]; exact h_roots_small ξ hξ
-    exact hZZ74_v ξ hξ_ball (h_roots_ne ξ hξ)
-  -- Existence: for each ξ ∈ Roots, there exists z ∈ Pre with v z = ξ.
-  have h_exists : ∀ ξ ∈ Roots, ∃ z ∈ Pre, v z = ξ := by
+      rw [Metric.mem_ball, dist_zero_right]; exact hξ_norm
+    exact hZZ74_v ξ hξ_ball hξ_ne
+  -- Existence: each ξ ∈ F has a (unique) preimage in Pre.
+  have h_exists : ∀ ξ ∈ F, ∃ z ∈ Pre, v z = ξ := by
     intro ξ hξ
     have h_card1 : ({z ∈ Metric.ball x₀ ε | v z = ξ} : Set ℂ).ncard = 1 := h_v_count ξ hξ
-    have h_finite : ({z ∈ Metric.ball x₀ ε | v z = ξ} : Set ℂ).Finite := by
-      rw [Set.finite_coe_iff.symm]
-      exact (Set.finite_of_ncard_ne_zero (by rw [h_card1]; exact one_ne_zero))
+    have h_finite : ({z ∈ Metric.ball x₀ ε | v z = ξ} : Set ℂ).Finite :=
+      Set.finite_of_ncard_ne_zero (by rw [h_card1]; exact one_ne_zero)
     have h_ne : ({z ∈ Metric.ball x₀ ε | v z = ξ} : Set ℂ).Nonempty := by
-      rw [← Set.ncard_pos h_finite]
-      rw [h_card1]
-      exact Nat.one_pos
+      rw [← Set.ncard_pos h_finite, h_card1]; exact Nat.one_pos
     obtain ⟨z, hz_ball_mem, hzv⟩ := h_ne
     refine ⟨z, ⟨hz_ball_mem, ?_⟩, hzv⟩
-    -- g z = w via the bundle relation.
     have hz_closed : z ∈ Metric.closedBall x₀ ρ := h_ball_sub_closed hz_ball_mem
     have hpow : g z - w₀ = v z ^ k := hv_pow z hz_closed
     rw [hzv] at hpow
-    have hξk : ξ ^ k = w₁ := hξ
+    have hξ_in_set : ξ ∈ ({ξ : ℂ | ξ ^ k = w₁} : Set ℂ) := by
+      rw [← hF_eq]; exact_mod_cast hξ
+    have hξk : ξ ^ k = w₁ := hξ_in_set
     rw [hξk] at hpow
-    have : g z = w₁ + w₀ := by linarith [hpow]
-    rw [hw₁_def] at this
-    linarith [this]
-  -- Injectivity of v on Pre: two z's mapping to same v(z) must be the same.
-  -- This follows from ZZ74 uniqueness applied to value v(z₁) = v(z₂) ∈ Roots.
+    -- hpow : g z - w₀ = w₁; want g z = w. w₁ = w - w₀.
+    have : g z = w₁ + w₀ := by
+      have hh : g z = (g z - w₀) + w₀ := by ring
+      rw [hh, hpow]
+    rw [this, hw₁_def]; ring
+  -- Injectivity of z ↦ v z on Pre via ZZ74 uniqueness.
   have h_v_injOn : Set.InjOn (fun z => v z) Pre := by
     intro z₁ hz₁ z₂ hz₂ hvz
-    have hξ : v z₁ ∈ Roots := h_v_to_roots z₁ hz₁
+    have hξ : v z₁ ∈ F := h_v_to_roots z₁ hz₁
     have h_card1 : ({z ∈ Metric.ball x₀ ε | v z = v z₁} : Set ℂ).ncard = 1 :=
       h_v_count (v z₁) hξ
-    -- both z₁ and z₂ lie in this set.
     have hz₁_mem : z₁ ∈ ({z ∈ Metric.ball x₀ ε | v z = v z₁} : Set ℂ) :=
       ⟨hz₁.1, rfl⟩
     have hz₂_mem : z₂ ∈ ({z ∈ Metric.ball x₀ ε | v z = v z₁} : Set ℂ) :=
       ⟨hz₂.1, hvz.symm⟩
-    -- ncard = 1 ⇒ subsingleton.
-    have h_finite : ({z ∈ Metric.ball x₀ ε | v z = v z₁} : Set ℂ).Finite :=
-      Set.finite_of_ncard_ne_zero (by rw [h_card1]; exact one_ne_zero)
-    have h_subs : ({z ∈ Metric.ball x₀ ε | v z = v z₁} : Set ℂ).Subsingleton := by
-      apply Set.subsingleton_of_ncard_le_one
-      rw [h_card1]
-    exact h_subs hz₁_mem hz₂_mem
-  -- Putting it together: BijOn.
-  have h_bijOn : Set.BijOn (fun z => v z) Pre Roots := by
-    refine ⟨?_, h_v_injOn, ?_⟩
-    · -- MapsTo
-      exact h_v_to_roots
-    · -- SurjOn
-      intro ξ hξ
-      obtain ⟨z, hz_pre, hzv⟩ := h_exists ξ hξ
+    have h_eq_singleton : ({z ∈ Metric.ball x₀ ε | v z = v z₁} : Set ℂ).ncard = 1 := h_card1
+    -- Use Set.ncard_eq_one to extract singleton.
+    rw [Set.ncard_eq_one] at h_eq_singleton
+    obtain ⟨a, ha⟩ := h_eq_singleton
+    rw [ha] at hz₁_mem hz₂_mem
+    rw [Set.mem_singleton_iff] at hz₁_mem hz₂_mem
+    exact hz₁_mem.trans hz₂_mem.symm
+  -- Image of Pre under z ↦ v z equals (F : Set ℂ).
+  have h_image_eq : (fun z => v z) '' Pre = (F : Set ℂ) := by
+    apply Set.Subset.antisymm
+    · intro y hy
+      obtain ⟨z, hz_pre, hzy⟩ := hy
+      rw [← hzy]
+      exact_mod_cast h_v_to_roots z hz_pre
+    · intro ξ hξ
+      have hξF : ξ ∈ F := by exact_mod_cast hξ
+      obtain ⟨z, hz_pre, hzv⟩ := h_exists ξ hξF
       exact ⟨z, hz_pre, hzv⟩
-  -- Conclude: Pre.ncard = Roots.ncard = k.
-  have hPre_ncard : Pre.ncard = Roots.ncard := by
-    rw [← Set.BijOn.ncard_image (s := Pre) (f := fun z => v z) h_bijOn.injOn]
-    congr 1
-    exact h_bijOn.image_eq
-  rw [hPre_ncard, hRoots_card]
+  -- Pre.ncard = image.ncard (injOn) = F.card = k.
+  have hPre_ncard : Pre.ncard = F.card := by
+    have h1 : Pre.ncard = ((fun z => v z) '' Pre).ncard :=
+      (Set.ncard_image_of_injOn h_v_injOn).symm
+    rw [h1, h_image_eq, Set.ncard_coe_Finset]
+  rw [hPre_ncard, hF_card]
 
-/-- **Unconditional `k`-fold local multiplicity** (composition of
-ZZ74 + ZZ75 + ZZ87) under a local analytic factorization hypothesis. -/
+/-- **Unconditional `k`-fold local multiplicity** under a local analytic
+factorization hypothesis. -/
 theorem localKFoldMultiplicity_preimage_card_unconditional
     {g u : ℂ → ℂ} {x₀ w₀ : ℂ} {R : ℝ} {k : ℕ}
     (hR : 0 < R) (hk : 1 ≤ k)
