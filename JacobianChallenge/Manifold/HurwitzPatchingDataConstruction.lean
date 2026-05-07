@@ -230,8 +230,13 @@ noncomputable def ofLocalSheets
   let sheet : (x : X) → x ∈ xs → LocalSheetData f y₀ x :=
     fun x hx => sheets x (hxs_mem x hx)
   -- Step 1: pairwise-disjoint open neighbourhoods.
-  obtain ⟨Wsep, hWsep_open, hWsep_mem, hWsep_disj⟩ :=
-    exists_pairwiseDisjoint_open_of_finset (X := X) xs
+  have hWsep_ex := exists_pairwiseDisjoint_open_of_finset (X := X) xs
+  let Wsep : X → Set X := hWsep_ex.choose
+  have hWsep_spec := hWsep_ex.choose_spec
+  have hWsep_open : ∀ x ∈ xs, IsOpen (Wsep x) := hWsep_spec.1
+  have hWsep_mem : ∀ x ∈ xs, x ∈ Wsep x := hWsep_spec.2.1
+  have hWsep_disj : ∀ x ∈ xs, ∀ x' ∈ xs, x ≠ x' → Disjoint (Wsep x) (Wsep x') :=
+    hWsep_spec.2.2
   -- U x := (sheet x).U ∩ Wsep x.
   -- V x := preimage of U x under g, restricted to (sheet x).V — i.e.,
   -- V x := (sheet x).V ∩ (sheet x).g ⁻¹' (Wsep x).
