@@ -186,10 +186,9 @@ private lemma kth_roots_finset_card {k : ℕ} (hk : 1 ≤ k) {a : ℂ} (ha : a �
   have h_separable : p.Separable := by
     rw [hp_def]
     exact Polynomial.separable_X_pow_sub_C a (by exact_mod_cast hk0) ha
-  have h_splits : Polynomial.Splits (RingHom.id ℂ) p :=
-    (Complex.isAlgClosed).splits _
+  have h_splits : p.Splits := IsAlgClosed.splits p
   have h_card_roots : p.roots.card = p.natDegree :=
-    (Polynomial.splits_iff_card_roots.mp h_splits)
+    Polynomial.splits_iff_card_roots.mp h_splits
   have h_nodup : p.roots.Nodup := h_separable.squarefree.nodup_roots
   unfold kthRootsFinset
   rw [show (Polynomial.X ^ k - Polynomial.C a : Polynomial ℂ) = p from rfl]
@@ -329,7 +328,7 @@ theorem localKFoldMultiplicity_preimage_card_of_substitution
   have hPre_ncard : Pre.ncard = F.card := by
     have h1 : Pre.ncard = ((fun z => v z) '' Pre).ncard :=
       (Set.ncard_image_of_injOn h_v_injOn).symm
-    rw [h1, h_image_eq, Set.ncard_coe_Finset]
+    rw [h1, h_image_eq, Set.ncard_coe_finset]
   rw [hPre_ncard, hF_card]
 
 /-- **Unconditional `k`-fold local multiplicity** under a local analytic
