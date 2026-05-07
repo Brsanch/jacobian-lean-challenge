@@ -134,3 +134,4 @@ import JacobianChallenge.Manifold.FibreSumDegreeIdentification
 import JacobianChallenge.Manifold.NcardMultiplicityBridge
 import JacobianChallenge.Manifold.LocalCountPackageSupplier
 import JacobianChallenge.Manifold.LocalCountPackageInputsDischarge
+import JacobianChallenge.Analysis.L2OnManifold
