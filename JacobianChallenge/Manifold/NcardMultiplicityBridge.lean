@@ -28,7 +28,7 @@ If `S : Finset X` and `m : X → ℤ` satisfy `∀ x ∈ S, m x = 1`, then
 
   `(S : Set X).ncard = (∑ x ∈ S, m x).toNat`.
 
-This is `Set.ncard_coe_Finset` + `Finset.sum_const_one` repackaged through
+This is `Set.ncard_coe_finset` + `Finset.sum_const_one` repackaged through
 `Int.toNat`. It is the algebraic skeleton of "at a regular value where every
 preimage has multiplicity one, ncard = multiplicity-weighted sum".
 
@@ -125,7 +125,7 @@ lemma Set.ncard_eq_sum_mult_toNat_of_simple
     rw [Finset.sum_congr rfl (g := fun _ => (1 : ℤ)) (by
       intro x hx; exact hsimple x hx)]
     simp
-  rw [hsum, Set.ncard_coe_Finset, Int.toNat_natCast]
+  rw [hsum, Set.ncard_coe_finset, Int.toNat_natCast]
 
 /-! ## Bridge for `some 0` — conditional on (R1) and (R2) -/
 
@@ -186,7 +186,7 @@ theorem ncard_eq_meromorphicDegreeAtZero_toNat_of_simple
         (f.toRiemannSphere ⁻¹' {(OnePoint.some (0 : ℂ) : RiemannSphere)}).ncard
           = (hfin.toFinset : Finset X).card :=
       Set.ncard_eq_toFinset_card _ hfin
-    rw [htopo_card, hcoe, Set.ncard_coe_Finset]
+    rw [htopo_card, hcoe, Set.ncard_coe_finset]
   rw [hncard_topo, halg, hsum_eq]
 
 /-! ## Bridge for `∞` — conditional on (R1∞) and (R2∞) -/
@@ -252,7 +252,7 @@ theorem ncard_eq_meromorphicDegreeAtInfty_toNat_of_simple
               (fun x => mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x < 0)).card := by
       have := hbridge
       simpa [JacobianChallenge.MeromorphicNonzero.fiberCount] using this
-    rw [h_fiber_eq, ← hsupport_partition, Set.ncard_coe_Finset]
+    rw [h_fiber_eq, ← hsupport_partition, Set.ncard_coe_finset]
   rw [hncard_topo, halg, hsum_eq]
 
 end MeromorphicDegreeFiberSum
