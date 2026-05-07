@@ -88,7 +88,9 @@ lemma mdifferentiableAt_ambient (γ : SmoothPath I X) (t : ℝ) :
   have h : ContMDiff 𝓘(ℝ, ℝ) I ⊤ γ.ambient := γ.ambient_contMDiff
   -- `ContMDiffAt ⊤ ⇒ MDifferentiableAt` (since `1 ≤ ⊤`).
   have hAt : ContMDiffAt 𝓘(ℝ, ℝ) I ⊤ γ.ambient t := h t
-  exact hAt.mdifferentiableAt (by exact OrderTop.le_top (1 : WithTop ℕ∞))
+  -- `ContMDiffAt.mdifferentiableAt` needs `n ≠ 0`; here `n = ⊤ ≠ 0`.
+  refine hAt.mdifferentiableAt ?_
+  exact (lt_of_lt_of_le (zero_lt_one' (WithTop ℕ∞)) le_top).ne'
 
 /-- Each chart of the manifold `X` is `MDifferentiableAt` every point
 of its source, against the model `I` on both sides. This is the
@@ -131,7 +133,7 @@ theorem mfderiv_chart_comp_ambient_apply_one (γ : SmoothPath I X)
     mfderiv_comp_apply (I := 𝓘(ℝ, ℝ)) (I' := I) (I'' := I)
       (f := γ.ambient) (g := (φ : X → H)) (x := t) hg hf (1 : ℝ)
   -- Unfold `velocity` on the right.
-  show (mfderiv 𝓘(ℝ, ℝ) I ((φ : X → H) ∘ γ.ambient) t) (1 : ℝ) = _
+  change (mfderiv 𝓘(ℝ, ℝ) I ((φ : X → H) ∘ γ.ambient) t) (1 : ℝ) = _
   rw [hcomp]
   rfl
 
