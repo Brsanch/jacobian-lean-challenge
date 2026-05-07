@@ -77,7 +77,7 @@ lemma L2NormSq_zero (μ : Measure α) :
 lemma isL2_zero (μ : Measure α) :
     IsL2 (F := F) μ (fun _ => (0 : F)) := by
   unfold IsL2
-  exact MeasureTheory.memLp_zero_fun
+  exact MeasureTheory.MemLp.zero'
 
 /-- The squared `L²` norm is monotone in the integrand's pointwise
 norm. This will be useful when bounding bundle sections by chart-
@@ -88,7 +88,9 @@ lemma L2NormSq_mono {μ : Measure α} {s t : α → F}
   unfold L2NormSq
   refine lintegral_mono (fun x => ?_)
   have hx : (‖s x‖₊ : ℝ≥0∞) ≤ (‖t x‖₊ : ℝ≥0∞) := by
-    exact_mod_cast (NNReal.coe_le_coe.mp (by simpa using h x))
+    have : ‖s x‖₊ ≤ ‖t x‖₊ := by
+      rw [← NNReal.coe_le_coe]; simpa using h x
+    exact_mod_cast this
   exact pow_le_pow_left' hx 2
 
 end JacobianChallenge
