@@ -73,6 +73,7 @@ import JacobianChallenge.Manifold.HodgeFiniteDimensional
 import JacobianChallenge.Manifold.HodgeRiemannSphereInstance
 import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.HolomorphicOneFormRealification
+import JacobianChallenge.Manifold.HLcUnconditional
 import JacobianChallenge.Manifold.HurwitzPatchingDataConstruction
 import JacobianChallenge.Manifold.IntegerShadowChainRealisation
 import JacobianChallenge.Manifold.IntegerShadowStokes
