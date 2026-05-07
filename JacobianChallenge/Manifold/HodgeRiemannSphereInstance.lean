@@ -81,11 +81,13 @@ private lemma moduleFinite_of_subsingleton
     (R : Type*) [Semiring R] (M : Type*) [AddCommMonoid M] [Module R M]
     [Subsingleton M] : Module.Finite R M := by
   refine ⟨⟨(∅ : Finset M), ?_⟩⟩
-  -- Every element of `M` is `0` (by subsingleton), and `0 ∈ ⊤.span = ⊥.span = ⊥ ⊆ ...`.
-  -- It suffices to show `⊤ ≤ Submodule.span R (∅ : Finset M)`.
-  rw [Finset.coe_empty, Submodule.span_empty]
-  intro x _
-  -- `x = 0` because `M` is a subsingleton.
+  -- Goal: `Submodule.span R ↑(∅ : Finset M) = ⊤`. Both sides are submodules of
+  -- a subsingleton ambient module, so any two submodules are equal because
+  -- they have the same (sub)singleton carrier.
+  apply Submodule.ext
+  intro x
+  refine ⟨fun _ => trivial, fun _ => ?_⟩
+  -- `x = 0` by subsingleton; `0` is in every submodule, in particular the span of `∅`.
   have hx : x = 0 := Subsingleton.elim x 0
   rw [hx]
   exact Submodule.zero_mem _
