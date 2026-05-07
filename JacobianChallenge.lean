@@ -104,6 +104,7 @@ import JacobianChallenge.Manifold.PeriodIntegral
 import JacobianChallenge.Manifold.PeriodLattice
 import JacobianChallenge.Manifold.PeriodLatticeChartedSpace
 import JacobianChallenge.Manifold.PeriodLatticeCompactQuotient
+import JacobianChallenge.Manifold.PeriodLatticeOfRankTwoG_Wiring
 import JacobianChallenge.Manifold.PeriodLatticeRankTwoG
 import JacobianChallenge.Manifold.PeriodPairingDefinition
 import JacobianChallenge.Manifold.PlanarAnnulusCircleIntegral
