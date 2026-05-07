@@ -259,7 +259,7 @@ theorem singlePole_laurent_extraction_of_meromorphicAt
                   (zpow_natCast (z - x) a).symm,
                 ← zpow_add₀ hzx_ne, h_natCast]
           linear_combination (c a) * h_pow_eq
-      rw [h_sum]
+      rw [h_sum, add_comm]
 
 end MultiPoleLaurentExistence
 
