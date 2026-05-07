@@ -126,7 +126,9 @@ import JacobianChallenge.Manifold.RiemannSphere
 import JacobianChallenge.Manifold.RiemannSphereGenus
 import JacobianChallenge.Manifold.RiemannSphereMobius
 import JacobianChallenge.Manifold.SinglePoleLaurentExtractionDischarge
+import JacobianChallenge.Manifold.SmoothChain
 import JacobianChallenge.Manifold.SmoothOneForm
+import JacobianChallenge.Manifold.SmoothPathIntegral
 import JacobianChallenge.Manifold.StokesCompactSurface
 import JacobianChallenge.Manifold.StokesDisk
 import JacobianChallenge.Manifold.StokesDiskClosedForm
