@@ -3,12 +3,7 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
-import Mathlib.MeasureTheory.Function.LpSpace.Basic
-import Mathlib.MeasureTheory.Function.L2Space
-import Mathlib.MeasureTheory.Measure.Lebesgue.EuclideanSpace
-import Mathlib.Geometry.Manifold.IsManifold.Basic
-import Mathlib.Analysis.Calculus.FDeriv.Add
-import Mathlib.Analysis.InnerProductSpace.EuclideanDist
+import Mathlib
 import JacobianChallenge.Analysis.L2OnManifold
 import JacobianChallenge.Analysis.CompactManifoldMeasureFromCharts
 
