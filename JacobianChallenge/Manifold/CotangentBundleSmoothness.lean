@@ -34,8 +34,9 @@ by `localTrivAt_snd`.
   trivialization at `x₀` of a cotangent section, in terms of the cotangent
   core's `coordChange`.
 * `cotangentSection_contMDiffWithinAt_iff` — within-set, at a point.
-* `cotangentSection_contMDiffAt_iff` — at a point.
-* `cotangentSection_contMDiff_iff` — globally.
+* `cotangentSection_contMDiffAt_iff` — at a point. The global form is the
+  pointwise quantification of this iff and is therefore not stated separately;
+  any consumer can compose it with `contMDiff_iff_contMDiffAt`.
 
 These are the cotangent analogues of the tangent-side `Bundle.contMDiff*_section`
 applications used throughout `Mathlib.Geometry.Manifold.MFDeriv.*`.
@@ -113,18 +114,5 @@ theorem cotangentSection_contMDiffAt_iff
           (achart H x) (achart H x₀) x (ω x)) x₀ := by
   simp_rw [← contMDiffWithinAt_univ]
   exact cotangentSection_contMDiffWithinAt_iff ω
-
-/-- Global characterisation: a section `ω` of the cotangent bundle is
-`C^n` iff for every `x₀`, its chart-coordinate representative around `x₀` is
-`C^n` at `x₀`. -/
-theorem cotangentSection_contMDiff_iff
-    {n : WithTop ℕ∞} (ω : ∀ x, CotangentSpace I x) :
-    ContMDiff I (I.prod 𝓘(𝕜, E →L[𝕜] 𝕜)) n
-        (fun x => TotalSpace.mk' (E →L[𝕜] 𝕜) x (ω x)) ↔
-      ∀ x₀ : M, ContMDiffAt I 𝓘(𝕜, E →L[𝕜] 𝕜) n
-        (fun x => (cotangentBundleCore I M).coordChange
-          (achart H x) (achart H x₀) x (ω x)) x₀ := by
-  refine ⟨fun h x₀ => (cotangentSection_contMDiffAt_iff ω).mp (h x₀),
-          fun h x₀ => (cotangentSection_contMDiffAt_iff ω).mpr (h x₀)⟩
 
 end
