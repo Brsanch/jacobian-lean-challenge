@@ -59,21 +59,24 @@ form).
 
 If `f : M → M'` is `C^(n+1)` at `x`, then the family
 
-  `y ↦ (inTangentCoordinates I I' id f (fun y ↦ mfderiv I I' f y) x y).precomp 𝕜
+  `y ↦ (compL 𝕜 E E' 𝕜).flip
+        (inTangentCoordinates I I' id f (mfderiv I I' f) x y)
         : (E' →L[𝕜] 𝕜) →L[𝕜] (E →L[𝕜] 𝕜)`
 
-is `C^n` at `x`. The `.precomp 𝕜` factor sends a continuous linear map
-`L : E →L[𝕜] E'` to its transpose
-`(η : E' →L[𝕜] 𝕜) ↦ η ∘L L : E →L[𝕜] 𝕜`, which is the
-cotangent pullback of `L`.
+is `C^n` at `x`. The factor `(compL 𝕜 E E' 𝕜).flip` sends a continuous
+linear map `L : E →L[𝕜] E'` to its transpose
+`(η : E' →L[𝕜] 𝕜) ↦ η ∘L L : E →L[𝕜] 𝕜`, which is the cotangent
+pullback of `L` (this is the unbundled `ContinuousLinearMap.precomp`
+specialised to scalar codomain).
 
 This is the cotangent analogue of `ContMDiffAt.mfderiv_const`. -/
 theorem ContMDiffAt.mfderiv_transpose
     {n m : WithTop ℕ∞} {x : M} {f : M → M'}
     (hf : ContMDiffAt I I' n f x) (hmn : m + 1 ≤ n) :
     ContMDiffAt I 𝓘(𝕜, (E' →L[𝕜] 𝕜) →L[𝕜] (E →L[𝕜] 𝕜)) m
-      (fun y => (inTangentCoordinates I I' id f
-        (fun y ↦ (mfderiv I I' f y : E →L[𝕜] E')) x y).precomp 𝕜) x :=
+      (fun y => (ContinuousLinearMap.compL 𝕜 E E' 𝕜).flip
+        (inTangentCoordinates I I' id f
+          (fun y ↦ (mfderiv I I' f y : E →L[𝕜] E')) x y)) x :=
   ContDiff.comp_contMDiffAt
     (g := (ContinuousLinearMap.compL 𝕜 E E' 𝕜).flip)
     (ContinuousLinearMap.contDiff _) (hf.mfderiv_const hmn)
