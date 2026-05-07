@@ -30,12 +30,33 @@ list_chip_branches() {
 
 build_conclusion() {
   # Args: branch
+  # Honors GH API rate limits: if `gh` returns 403, surface "rate-limited"
+  # so the caller can back off rather than retrying tightly.
   local branch="$1"
+  local list_out
+  list_out=$(gh run list --branch "$branch" --limit 1 --json databaseId 2>&1) || true
+  if [[ "$list_out" == *"rate limit exceeded"* ]]; then
+    echo "rate-limited"; return
+  fi
   local run_id
-  run_id=$(gh run list --branch "$branch" --limit 1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || echo "")
+  run_id=$(echo "$list_out" | python3 -c "import sys,json; data=json.load(sys.stdin); print(data[0]['databaseId'] if data else '')" 2>/dev/null || echo "")
   if [[ -z "$run_id" ]]; then echo "no-ci"; return; fi
-  gh run view "$run_id" --json jobs 2>/dev/null \
-    | python3 -c "import sys,json; jobs=json.load(sys.stdin)['jobs']; b=[j for j in jobs if j['name']=='build']; print(b[0]['status'] if not b[0]['conclusion'] else b[0]['conclusion']) if b else print('no-build')"
+  local view_out
+  view_out=$(gh run view "$run_id" --json jobs 2>&1) || true
+  if [[ "$view_out" == *"rate limit exceeded"* ]]; then
+    echo "rate-limited"; return
+  fi
+  echo "$view_out" \
+    | python3 -c "import sys,json
+try:
+  jobs = json.load(sys.stdin).get('jobs', [])
+  b = [j for j in jobs if j['name']=='build']
+  if b:
+    print(b[0]['status'] if not b[0]['conclusion'] else b[0]['conclusion'])
+  else:
+    print('no-build')
+except Exception:
+  print('parse-err')" 2>/dev/null
 }
 
 ahead_of_main() {
@@ -101,22 +122,32 @@ attempt_merge() {
 case "$cmd" in
   watch)
     # Loop until all in-flight chips reach terminal status, then run merge.
+    # Backs off on GH API rate-limit (sleeps 5 min instead of 60s).
     while true; do
       any_pending=0
+      rate_limited=0
       for branch in $(list_chip_branches); do
         ahead=$(ahead_of_main "$branch")
         if [[ "$ahead" == "0" ]]; then continue; fi
         behind=$(behind_main "$branch")
         if [[ "$behind" -gt 50 ]]; then continue; fi
         conclusion=$(build_conclusion "$branch")
+        if [[ "$conclusion" == "rate-limited" ]]; then
+          rate_limited=1; any_pending=1; break
+        fi
         if [[ "$conclusion" == "in_progress" || "$conclusion" == "queued" ]]; then
           any_pending=1
           break
         fi
       done
       if [[ "$any_pending" == "0" ]]; then break; fi
-      echo "$(date +%H:%M:%S) waiting for chips to settle..."
-      sleep 60
+      if [[ "$rate_limited" == "1" ]]; then
+        echo "$(date +%H:%M:%S) rate-limited; backing off 5 min..."
+        sleep 300
+      else
+        echo "$(date +%H:%M:%S) waiting for chips to settle..."
+        sleep 60
+      fi
     done
     exec "$0" merge
     ;;
