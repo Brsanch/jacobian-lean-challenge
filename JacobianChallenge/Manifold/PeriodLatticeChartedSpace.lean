@@ -114,7 +114,8 @@ private noncomputable def localChart
     rw [isOpen_induced_iff] at hU
     obtain ⟨V, hVopen, hVeq⟩ := hU
     -- Reduce to: `IsOpen (L.mkQ '' (V ∩ s))`.
-    have himage : (s.restrict L.mkQ) '' U = L.mkQ '' (V ∩ s) := by
+    show IsOpen ((s.restrict (L.mkQ : E → E ⧸ L)) '' U)
+    have himage : (s.restrict (L.mkQ : E → E ⧸ L)) '' U = L.mkQ '' (V ∩ s) := by
       ext q
       constructor
       · rintro ⟨⟨x, hxs⟩, hxU, hqx⟩
