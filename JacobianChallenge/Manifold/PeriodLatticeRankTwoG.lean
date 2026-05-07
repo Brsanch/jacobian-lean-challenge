@@ -210,6 +210,8 @@ We name each as a hypothesis. The naming pattern matches OPEN.md's
 
 namespace JacobianOfLattice
 
+variable {X}
+
 /-- **Named-hypothesis reduction** of OPEN.md item 11: the period-lattice
 quotient is compact. Classical fact: a closed full-rank-`2g`
 `ℤ`-submodule of `ℂ^g ≃ ℝ^{2g}` makes the quotient a compact `2g`-torus. -/
