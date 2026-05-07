@@ -100,8 +100,9 @@ theorem fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo
   refine ⟨fun y => (f ⁻¹' {y}).ncard, ?_, ?_, ?_⟩
   · -- `card_of w.value = w.card` via the standard ncard ↔ toFinset.card bridge.
     intro w
+    classical
     show (f ⁻¹' {w.value}).ncard = w.fiber_finite.toFinset.card
-    exact Set.ncard_eq_toFinset_card _ w.fiber_finite
+    exact Set.ncard_eq_toFinset_card (f ⁻¹' {w.value}) w.fiber_finite
   · -- Local-constancy on `Cᶜ`: literal ZZ153 shape.
     exact h_lc f hf hnc C
   · -- Subtype preconnectedness from ZZ154 + finite-complement hypothesis.
