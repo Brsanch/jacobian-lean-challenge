@@ -58,6 +58,7 @@ import JacobianChallenge.Jacobian
 import JacobianChallenge.Divisor.FiberPullback
 import JacobianChallenge.Topology.SurfaceGenus
 import JacobianChallenge.Topology.SurfaceClassificationGenus
+import JacobianChallenge.Topology.S2ImpliesGenus0Discharge
 import JacobianChallenge.Manifold.StokesDisk
 import JacobianChallenge.Manifold.StokesCompactSurface
 import JacobianChallenge.Manifold.ResidueTheoremAssembly
