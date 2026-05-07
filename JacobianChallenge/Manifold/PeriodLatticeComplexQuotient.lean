@@ -3,6 +3,7 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
+import Mathlib.Analysis.Complex.Basic
 import JacobianChallenge.Manifold.PeriodLatticeLieGroup
 
 /-! # Complex-model `IsManifold 𝓘(ℂ, Fin g → ℂ) ω ((Fin g → ℂ) ⧸ Λ)`
@@ -41,7 +42,7 @@ variable {g : ℕ}
 
 /-- `Fin g → ℂ` is finite-dimensional over `ℝ`. -/
 instance : FiniteDimensional ℝ (Fin g → ℂ) :=
-  Module.Finite.pi
+  Module.Finite.pi (R := ℝ) (M := fun _ : Fin g => ℂ)
 
 variable (L : Submodule ℤ (Fin g → ℂ))
   [DiscreteTopology L] [IsZLattice ℝ L]
