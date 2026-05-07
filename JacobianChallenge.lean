@@ -2,6 +2,7 @@
 import JacobianChallenge.Basic
 import JacobianChallenge.Manifold.Cotangent
 import JacobianChallenge.Manifold.HolomorphicOneForm
+import JacobianChallenge.Manifold.HodgeFiniteDimensional
 import JacobianChallenge.Manifold.PeriodIntegral
 import JacobianChallenge.Manifold.PeriodLattice
 import JacobianChallenge.Manifold.PeriodLatticeRankTwoG
