@@ -70,11 +70,11 @@ noncomputable def SubordinateChartData.ofCompactManifold
 , measurable_g := by
     intro i hi
     -- vacuous: `hi : i ∈ ∅`
-    exact (Finset.not_mem_empty i hi).elim
+    exact (Finset.notMem_empty i hi).elim
 , ν := fun _ => (0 : Measure (EuclideanSpace ℝ (Fin n)))
 , finite_ν := by
     intro i hi
-    exact (Finset.not_mem_empty i hi).elim }
+    exact (Finset.notMem_empty i hi).elim }
 
 /-- Public-name alias used by downstream chips. -/
 noncomputable def compactManifoldSubordinateChartData
