@@ -122,7 +122,10 @@ attempt_merge() {
     fi
     git commit --no-edit
   fi
-  git push origin main
+  if ! git push origin main; then
+    echo "  ! git push failed; merge not landed"
+    return 1
+  fi
   echo "  merged"
 }
 
