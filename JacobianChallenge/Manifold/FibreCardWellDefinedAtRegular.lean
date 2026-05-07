@@ -93,22 +93,28 @@ theorem fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo
     (h_C_fin : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
       ¬ JacobianChallenge.IsConstantMap f → ∀ (C : Set Y), C.Finite) :
     fibre_card_well_defined_at_regular_statement X Y := by
-  -- Specialise ZZ134's reduction.
-  apply fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant
-  intro f hf hnc C
-  -- The fibre-cardinality function on all of `Y`, in `ncard` form.
-  refine ⟨fun y => (f ⁻¹' {y}).ncard, ?_, ?_, ?_⟩
-  · -- `card_of w.value = w.card` via the standard ncard ↔ toFinset.card bridge.
-    intro w
-    classical
-    show (f ⁻¹' {w.value}).ncard = w.fiber_finite.toFinset.card
-    exact Set.ncard_eq_toFinset_card (f ⁻¹' {w.value}) w.fiber_finite
-  · -- Local-constancy on `Cᶜ`: literal ZZ153 shape.
-    exact h_lc f hf hnc C
-  · -- Subtype preconnectedness from ZZ154 + finite-complement hypothesis.
-    have hCfin : C.Finite := h_C_fin f hf hnc C
-    exact JacobianChallenge.Manifold.regularSubset_isPreconnected_of_finite_complement_hypothesis
-      h_topo C hCfin
+  -- Build the bundled local-constancy package consumed by ZZ134.
+  have h_pkg :
+      ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
+        ¬ JacobianChallenge.IsConstantMap f →
+        ∀ (C : Set Y),
+          ∃ (card_of : Y → ℕ),
+            (∀ w : RegularValueWitness f, card_of w.value = w.card) ∧
+            IsLocallyConstant (fun y : (Cᶜ : Set Y) => card_of y.val) ∧
+            IsPreconnected (Set.univ : Set (Cᶜ : Set Y)) := by
+    intro f hf hnc C
+    refine ⟨fun y => (f ⁻¹' {y}).ncard, ?_, ?_, ?_⟩
+    · -- `card_of w.value = w.card` via ncard ↔ toFinset.card.
+      intro w
+      classical
+      show (f ⁻¹' {w.value}).ncard = w.fiber_finite.toFinset.card
+      exact Set.ncard_eq_toFinset_card (f ⁻¹' {w.value}) w.fiber_finite
+    · exact h_lc f hf hnc C
+    · have hCfin : C.Finite := h_C_fin f hf hnc C
+      exact JacobianChallenge.Manifold.regularSubset_isPreconnected_of_finite_complement_hypothesis
+        h_topo C hCfin
+  -- Apply ZZ134.
+  exact fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant h_pkg
 
 end Owed.degree
 
