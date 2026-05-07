@@ -53,7 +53,7 @@ We deliberately do *not* prove Stokes' theorem or chart-pullback
 compatibility here — separate chips.
 -/
 
-open scoped Manifold Topology Bundle ContDiff
+open scoped Manifold Topology
 open MeasureTheory intervalIntegral
 
 noncomputable section
