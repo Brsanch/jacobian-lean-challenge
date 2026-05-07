@@ -8,21 +8,21 @@ import Mathlib.Analysis.Complex.Basic
 
 /-! # Pointwise real / imaginary split of a holomorphic 1-form
 
-A holomorphic 1-form `ω : HolomorphicOneForm X` evaluates at a point `x : X`
-to a continuous `ℂ`-linear map `ω x : ℂ →L[ℂ] ℂ` on the cotangent fibre.
-Restricting scalars from `ℂ` to `ℝ` and post-composing with the real-linear
-projections `Complex.reCLM, Complex.imCLM : ℂ →L[ℝ] ℝ` extracts two
-real-valued continuous `ℝ`-linear functionals
+A holomorphic 1-form `om : HolomorphicOneForm X` evaluates at a point
+`x : X` to a continuous `ℂ`-linear map on the cotangent fibre of type
+`ℂ →L[ℂ] ℂ`. Restricting scalars from `ℂ` to `ℝ` and post-composing with
+the real-linear projections `Complex.reCLM, Complex.imCLM : ℂ →L[ℝ] ℝ`
+extracts two real-valued continuous `ℝ`-linear functionals
 
 ```
-ω.realPart x : ℂ →L[ℝ] ℝ
-ω.imagPart x : ℂ →L[ℝ] ℝ
+om.realPart x : ℂ →L[ℝ] ℝ
+om.imagPart x : ℂ →L[ℝ] ℝ
 ```
 
 satisfying the pointwise decomposition
 
 ```
-ω x v = (ω.realPart x v : ℂ) + Complex.I * (ω.imagPart x v : ℂ).
+om.eval x v = (om.realPart x v : ℂ) + Complex.I * (om.imagPart x v : ℂ).
 ```
 
 This is the pointwise content of the realification needed by the
@@ -35,24 +35,30 @@ already enough to feed the period-pairing's real / imaginary integral split.
 
 ## Main definitions
 
-* `HolomorphicOneForm.realPart ω x : ℂ →L[ℝ] ℝ` — real part of `ω x`,
-  taken over the realified cotangent fibre.
-* `HolomorphicOneForm.imagPart ω x : ℂ →L[ℝ] ℝ` — imaginary part of `ω x`,
-  taken over the realified cotangent fibre.
+* `HolomorphicOneForm.eval om x : ℂ →L[ℂ] ℂ` — pointwise value of `om`
+  at `x`, exposing the `DFunLike` coercion of `ContMDiffSection` under a
+  short, type-ascription-free name.
+* `HolomorphicOneForm.realPart om x : ℂ →L[ℝ] ℝ` — real part of
+  `om.eval x`, taken over the realified cotangent fibre.
+* `HolomorphicOneForm.imagPart om x : ℂ →L[ℝ] ℝ` — imaginary part of
+  `om.eval x`, taken over the realified cotangent fibre.
 
 ## Main theorem
 
 * `HolomorphicOneForm.eval_eq` — the pointwise reconstruction
-  `ω x v = ω.realPart x v + Complex.I * ω.imagPart x v`.
+  `om.eval x v = om.realPart x v + Complex.I * om.imagPart x v`.
 
 ## Design notes
 
 The cotangent fibre at `x` is `CotangentSpace 𝓘(ℂ) x = ℂ →L[ℂ] ℂ`. We use
-`ContinuousLinearMap.restrictScalars ℝ` to reinterpret `ω x` as
-`ℂ →L[ℝ] ℂ`, then post-compose with `Complex.reCLM` and `Complex.imCLM`.
-The reconstruction `eval_eq` is a direct application of `Complex.re_add_im`
-combined with `Complex.coe_algebraMap`-style coercions, all of which are
-already in mathlib.
+`ContinuousLinearMap.restrictScalars ℝ` to reinterpret the value
+`om.eval x : ℂ →L[ℂ] ℂ` as `ℂ →L[ℝ] ℂ`, then post-compose with
+`Complex.reCLM` and `Complex.imCLM`. The reconstruction `eval_eq` is a
+direct application of `Complex.re_add_im`.
+
+We deliberately use `om` rather than the Greek letter as the binder for
+the holomorphic 1-form; Lean 4.30 reserves the Greek omega as a
+tactic-block token and rejects it as a `def`/`theorem` binder.
 -/
 
 open scoped Manifold Topology Bundle ContDiff
@@ -63,48 +69,54 @@ namespace HolomorphicOneForm
 
 variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- The real part of `om x`, viewed as a continuous `ℝ`-linear functional
-`ℂ →L[ℝ] ℝ`. Concretely: `om.realPart x v = (om x v).re`. -/
-def realPart (om : HolomorphicOneForm X) (x : X) : ℂ →L[ℝ] ℝ :=
-  Complex.reCLM.comp (((om : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
-    𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _)) x).restrictScalars ℝ)
+/-- Evaluation of a holomorphic 1-form at a point, with no detour through
+the underlying `ContMDiffSection` type ascription. The fibre at `x` is
+the complex cotangent fibre `ℂ →L[ℂ] ℂ` (i.e. `CotangentSpace 𝓘(ℂ) x`).
 
-/-- The imaginary part of `om x`, viewed as a continuous `ℝ`-linear
-functional `ℂ →L[ℝ] ℝ`. Concretely: `om.imagPart x v = (om x v).im`. -/
+Concretely this is just the `DFunLike` coercion of the underlying
+`ContMDiffSection`, packaged as a named function so that downstream
+lemmas can talk about `om.eval x` without restating the full section
+signature each time. -/
+def eval (om : HolomorphicOneForm X) (x : X) : ℂ →L[ℂ] ℂ :=
+  (om :
+    ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
+      𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _))
+    x
+
+/-- The real part of `om.eval x`, viewed as a continuous `ℝ`-linear
+functional `ℂ →L[ℝ] ℝ`. Concretely: `om.realPart x v = (om.eval x v).re`. -/
+def realPart (om : HolomorphicOneForm X) (x : X) : ℂ →L[ℝ] ℝ :=
+  Complex.reCLM.comp ((om.eval x).restrictScalars ℝ)
+
+/-- The imaginary part of `om.eval x`, viewed as a continuous `ℝ`-linear
+functional `ℂ →L[ℝ] ℝ`. Concretely: `om.imagPart x v = (om.eval x v).im`. -/
 def imagPart (om : HolomorphicOneForm X) (x : X) : ℂ →L[ℝ] ℝ :=
-  Complex.imCLM.comp (((om : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
-    𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _)) x).restrictScalars ℝ)
+  Complex.imCLM.comp ((om.eval x).restrictScalars ℝ)
 
 @[simp]
 theorem realPart_apply (om : HolomorphicOneForm X) (x : X) (v : ℂ) :
-    om.realPart x v =
-      ((om : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
-        𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _)) x v).re := by
+    om.realPart x v = (om.eval x v).re := by
   simp [realPart, Complex.reCLM_apply]
 
 @[simp]
 theorem imagPart_apply (om : HolomorphicOneForm X) (x : X) (v : ℂ) :
-    om.imagPart x v =
-      ((om : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
-        𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _)) x v).im := by
+    om.imagPart x v = (om.eval x v).im := by
   simp [imagPart, Complex.imCLM_apply]
 
 /-- Pointwise reconstruction: a holomorphic 1-form's value at `x` applied
 to `v : ℂ` decomposes as `realPart x v + I * imagPart x v`. -/
 theorem eval_eq (om : HolomorphicOneForm X) (x : X) (v : ℂ) :
-    ((om : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
-      𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _)) x v) =
+    om.eval x v =
       (om.realPart x v : ℂ) + Complex.I * (om.imagPart x v : ℂ) := by
-  set z : ℂ := ((om : ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
-    𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _)) x v) with hz
-  have hre : (om.realPart x v : ℂ) = (z.re : ℂ) := by
-    simp [realPart_apply, hz]
-  have him : (om.imagPart x v : ℂ) = (z.im : ℂ) := by
-    simp [imagPart_apply, hz]
+  -- Reduce both sides to the underlying complex value `om.eval x v` and apply
+  -- the `Complex.re_add_im` identity.
+  have hre : (om.realPart x v : ℂ) = ((om.eval x v).re : ℂ) := by
+    simp [realPart_apply]
+  have him : (om.imagPart x v : ℂ) = ((om.eval x v).im : ℂ) := by
+    simp [imagPart_apply]
   rw [hre, him]
-  -- Goal: z = (z.re : ℂ) + I * (z.im : ℂ).
-  -- Mathlib has `Complex.re_add_im : (z.re : ℂ) + z.im * I = z`; rearrange.
-  have h := Complex.re_add_im z
+  -- Goal: `om.eval x v = ((om.eval x v).re : ℂ) + I * ((om.eval x v).im : ℂ)`.
+  have h := Complex.re_add_im (om.eval x v)
   linear_combination -h
 
 end HolomorphicOneForm
