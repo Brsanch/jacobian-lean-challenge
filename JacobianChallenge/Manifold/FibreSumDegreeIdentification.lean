@@ -151,8 +151,10 @@ and non-negativity of `meromorphicDegreeAtZero f` lets us cast this back to
 theorem fibreSumWitness_zero_eq (f : MeromorphicNonzero X) :
     (fibreSumWitness f (OnePoint.some (0 : ℂ)) : ℤ)
       = meromorphicDegreeAtZero f := by
-  unfold fibreSumWitness
-  simp [Int.toNat_of_nonneg (meromorphicDegreeAtZero_nonneg f)]
+  show ((if (0 : ℂ) = 0 then (meromorphicDegreeAtZero f).toNat else 0 : ℕ) : ℤ)
+        = meromorphicDegreeAtZero f
+  rw [if_pos rfl]
+  exact Int.toNat_of_nonneg (meromorphicDegreeAtZero_nonneg f)
 
 /-- **`fibreSum_infty_eq` for the witness.**
 
