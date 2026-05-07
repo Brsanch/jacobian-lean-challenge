@@ -18,6 +18,7 @@ import JacobianChallenge.Manifold.LocalKFoldMultiplicity
 import JacobianChallenge.Manifold.AnalyticKthRoot
 import JacobianChallenge.Manifold.LocalKFoldMultiplicityUnconditional
 import JacobianChallenge.Manifold.LocalMultiplicityChartPullback
+import JacobianChallenge.Manifold.LocalKFoldMultiplicityChartPullback
 import JacobianChallenge.Manifold.FibreSumGloballyConstant
 import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Manifold.AnalyticFiberDiscrete
