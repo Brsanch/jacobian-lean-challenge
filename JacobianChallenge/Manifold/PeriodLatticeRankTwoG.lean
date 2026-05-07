@@ -253,7 +253,7 @@ theorem wrapper_compactSpace
 
 /-- **Wrapper** for items 5 and 12. Given a bundle and the named
 chart-bundle hypothesis, extract `ChartedSpace`. -/
-theorem wrapper_chartedSpace
+def wrapper_chartedSpace
     (data : PeriodLatticeOfRankTwoG X)
     (h : ChartedSpaceHypothesis data) :
     ChartedSpace (Fin (JacobianChallenge.genus X) → ℂ)
