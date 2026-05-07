@@ -46,6 +46,7 @@ noncomputable section
 namespace JacobianChallenge.Manifold
 
 open Set unitInterval Topology JacobianChallenge
+open scoped Manifold Topology
 
 /-- **Auxiliary: path-connected piece inside a ball-chart source minus `C`.**
 
@@ -77,14 +78,12 @@ private lemma joinedIn_compl_in_ball_chart_source
     (φ := φ) hC_fin hPC hu_src hv_src hu_nc hv_nc
 
 /-- The image of a continuous path between two points lies in the
-ambient space; the parameter `1` lands at `q`. -/
+ambient space; the parameter `1 : I` lands at `q`. -/
 private lemma path_target_eq {Y : Type*} [TopologicalSpace Y]
-    {p q : Y} (γ : Path p q) : γ ⟨1, by simp [unitInterval]⟩ = q :=
-  γ.target
+    {p q : Y} (γ : Path p q) : γ (1 : I) = q := γ.target
 
 private lemma path_source_eq {Y : Type*} [TopologicalSpace Y]
-    {p q : Y} (γ : Path p q) : γ ⟨0, by simp [unitInterval]⟩ = p :=
-  γ.source
+    {p q : Y} (γ : Path p q) : γ (0 : I) = p := γ.source
 
 /-- **Inductive gluing along the chart subdivision.**
 
@@ -149,26 +148,21 @@ private lemma joinedIn_compl_along_subdivision
     · simp [hp_nc]
     · intro _hlt
       -- `p = γ 0 = γ (t 0)`, lies in `(φ 0).source` via `hpiece 0`.
-      have hp_eq : p = γ ⟨t 0, (t 0).2⟩ := by
-        rw [ht0]
-        have := path_source_eq γ
-        -- `γ ⟨0, _⟩ = p` so `p = γ ⟨0, _⟩`.
-        exact this.symm
+      have hp_eq : p = γ (t 0) := by
+        rw [ht0]; exact (path_source_eq γ).symm
       rw [hp_eq]
-      have ht_mem : (⟨t 0, (t 0).2⟩ : I) ∈ Set.Icc (t 0) (t 1) := by
-        refine ⟨le_rfl, ?_⟩
-        exact ht_mono (Nat.le_succ 0)
-      exact hpiece 0 _ ht_mem
+      have ht_mem : t 0 ∈ Set.Icc (t 0) (t 1) :=
+        ⟨le_rfl, ht_mono (Nat.le_succ 0)⟩
+      exact hpiece 0 (t 0) ht_mem
     · intro h_eq
-      -- `0 = N`, so `t N = t 0 = 0`, but `t N = 1`. Then `(0 : I) = 1`,
-      -- which is false.
+      -- `0 = N`, so `t N = t 0 = 0`, but `t N = 1`. Contradiction.
       exfalso
-      have : t 0 = (1 : I) := by rw [← h_eq]; exact htN
-      rw [ht0] at this
-      have : (0 : ℝ) = (1 : ℝ) := by
-        have := congrArg Subtype.val this
-        simpa using this
-      norm_num at this
+      have h1 : t N = (1 : I) := htN
+      have h2 : t N = t 0 := by rw [← h_eq]
+      have h3 : t 0 = (1 : I) := h2 ▸ h1
+      rw [ht0] at h3
+      have h4 : ((0 : I) : ℝ) = ((1 : I) : ℝ) := congrArg Subtype.val h3
+      norm_num at h4
   | succ k ih =>
     have hk' : k ≤ N := Nat.le_of_succ_le hk
     obtain ⟨w_k, hw_k_nc, hjoin_k, hw_k_src, _⟩ := ih hk'
@@ -176,25 +170,20 @@ private lemma joinedIn_compl_along_subdivision
     have hk_lt_N : k < N := hk
     have hw_k_in : w_k ∈ (φ k).source := hw_k_src hk_lt_N
     -- The next-endpoint parameter point.
-    set s_next : I := ⟨t (k + 1), (t (k + 1)).2⟩ with hs_next_def
-    -- `γ s_next ∈ (φ k).source` from `hpiece k`.
-    have hs_next_in_k : s_next ∈ Set.Icc (t k) (t (k + 1)) :=
+    -- `γ (t (k+1)) ∈ (φ k).source` from `hpiece k`.
+    have hs_next_in_k : t (k + 1) ∈ Set.Icc (t k) (t (k + 1)) :=
       ⟨ht_mono (Nat.le_succ k), le_rfl⟩
-    have hγ_in_k : γ s_next ∈ (φ k).source := by
-      have := hpiece k s_next hs_next_in_k
-      simpa [hs_next_def] using this
+    have hγ_in_k : γ (t (k + 1)) ∈ (φ k).source :=
+      hpiece k (t (k + 1)) hs_next_in_k
     -- Case-split on whether `k + 1 = N` or `k + 1 < N`.
     by_cases hN_eq : k + 1 = N
-    · -- Final step: `s_next = t N = 1`, so `γ s_next = q`.
-      have hs_next_one : s_next = (1 : I) := by
-        apply Subtype.ext
-        show t (k + 1) = (1 : I)
-        rw [hN_eq]; exact htN
-      have hγ_eq_q : γ s_next = q := by
+    · -- Final step: `t (k+1) = t N = 1`, so `γ (t (k+1)) = q`.
+      have hs_next_one : t (k + 1) = (1 : I) := by rw [hN_eq]; exact htN
+      have hγ_eq_q : γ (t (k + 1)) = q := by
         rw [hs_next_one]
         exact path_target_eq γ
       -- Connect `w_k` to `q` inside `(φ k).source ∩ Cᶜ`.
-      have hq_in_φk : q ∈ (φ k).source := by rw [← hγ_eq_q]; exact hγ_in_k
+      have hq_in_φk : q ∈ (φ k).source := hγ_eq_q ▸ hγ_in_k
       have hjoin_kq : JoinedIn ((Cᶜ : Set Y) ∩ (φ k).source) w_k q :=
         joinedIn_compl_in_ball_chart_source (hr_pos k) (hφ_target k) hC_fin
           hw_k_in hq_in_φk hw_k_nc hq_nc
@@ -205,17 +194,16 @@ private lemma joinedIn_compl_along_subdivision
         -- `k + 1 < N` contradicts `k + 1 = N`.
         exfalso; omega
       · intro _; rfl
-    · -- Non-final: `k + 1 < N`, so we also have `γ s_next ∈ (φ (k+1)).source`.
+    · -- Non-final: `k + 1 < N`, so `γ (t (k+1)) ∈ (φ (k+1)).source`.
       have hk1_lt_N : k + 1 < N := lt_of_le_of_ne hk hN_eq
-      have hs_next_in_k1 : s_next ∈ Set.Icc (t (k + 1)) (t (k + 1 + 1)) :=
+      have hs_next_in_k1 : t (k + 1) ∈ Set.Icc (t (k + 1)) (t (k + 1 + 1)) :=
         ⟨le_rfl, ht_mono (Nat.le_succ (k + 1))⟩
-      have hγ_in_k1 : γ s_next ∈ (φ (k + 1)).source := by
-        have := hpiece (k + 1) s_next hs_next_in_k1
-        simpa [hs_next_def] using this
+      have hγ_in_k1 : γ (t (k + 1)) ∈ (φ (k + 1)).source :=
+        hpiece (k + 1) (t (k + 1)) hs_next_in_k1
       -- Open chart-overlap.
       set U : Set Y := (φ k).source ∩ (φ (k + 1)).source with hU_def
       have hU_open : IsOpen U := (φ k).open_source.inter (φ (k + 1)).open_source
-      have hγ_in_U : γ s_next ∈ U := ⟨hγ_in_k, hγ_in_k1⟩
+      have hγ_in_U : γ (t (k + 1)) ∈ U := ⟨hγ_in_k, hγ_in_k1⟩
       -- Apply ZZ165e to perturb `γ s_next` to a `C`-avoiding point in `U`.
       obtain ⟨z', hz'_U, hz'_nC, hjoin_z⟩ :=
         exists_avoidance_in_open_chartedSpace_complex
