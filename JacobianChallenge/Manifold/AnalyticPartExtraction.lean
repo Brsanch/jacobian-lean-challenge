@@ -99,9 +99,8 @@ lemma principalPartAt_differentiableOn_compl_singleton
   have hzx : z - x ≠ 0 := sub_ne_zero.mpr hz
   have h1 : DifferentiableAt ℂ (fun z : ℂ => z - x) z :=
     (differentiableAt_id).sub_const x
-  have h2 : DifferentiableAt ℂ (fun w : ℂ => w ^ (-(k : ℤ))) (z - x) :=
-    differentiableAt_zpow.mpr (Or.inl hzx)
-  have h3 : DifferentiableAt ℂ (fun z : ℂ => (z - x) ^ (-(k : ℤ))) z := h2.comp z h1
+  have h3 : DifferentiableAt ℂ (fun z : ℂ => (z - x) ^ (-(k : ℤ))) z :=
+    h1.zpow (Or.inl hzx)
   exact ((differentiableAt_const (a x k)).mul h3).differentiableWithinAt
 
 /-- Single-pole principal part is continuous at any point off its pole. -/
@@ -134,29 +133,32 @@ lemma bddAbove_full_diff_of_bddAbove_single_diff
     ∃ W ∈ 𝓝 x,
       BddAbove (norm ∘ (fun z => g z - fullPrincipalPart S a N z) '' (W \ {x})) := by
   classical
-  -- Let T = S \ {x}. Each principalPartAt a N y for y ∈ T is continuous at x.
-  -- So `∑_{y ∈ T} principalPartAt a N y` is continuous at x, hence bounded on a nhd.
+  -- Let T = S \ {x}. Each principalPartAt a N y for y ∈ T is differentiable at x.
+  -- So `∑_{y ∈ T} principalPartAt a N y` is differentiable, hence continuous, hence
+  -- bounded on a neighbourhood of `x`.
   set T : Finset ℂ := S.erase x with hTdef
-  have hT_cont : ContinuousAt (fun z => ∑ y ∈ T, principalPartAt a N y z) x := by
-    refine continuousAt_finset_sum T ?_
+  have hT_diff : DifferentiableAt ℂ (fun z => ∑ y ∈ T, principalPartAt a N y z) x := by
+    apply DifferentiableAt.fun_sum
     intro y hyT
     have hyx : y ≠ x := (Finset.mem_erase.mp hyT).1
-    -- continuity of principalPartAt a N y at x ≠ y
-    have : x ≠ y := fun h => hyx h.symm
-    exact principalPartAt_continuousAt_of_ne a N this
+    have hxy : x ≠ y := fun h => hyx h.symm
+    exact ((principalPartAt_differentiableOn_compl_singleton a N y).differentiableAt
+      (IsOpen.mem_nhds isOpen_ne hxy))
+  have hT_cont : ContinuousAt (fun z => ∑ y ∈ T, principalPartAt a N y z) x :=
+    hT_diff.continuousAt
   -- bounded on a neighbourhood
-  obtain ⟨W₁, hW₁, hbnd₁⟩ : ∃ W ∈ 𝓝 x,
-      ∃ M, ∀ z ∈ W, ‖∑ y ∈ T, principalPartAt a N y z‖ ≤ M := by
-    have := hT_cont.norm
-    -- ContinuousAt → bounded above on a neighbourhood
-    rcases (this.eventually_le_const (by exact lt_add_one _)) with ⟨W, hWmem, hWle⟩
-    exact ⟨W, hWmem, ‖∑ y ∈ T, principalPartAt a N y x‖ + 1, hWle⟩
+  set Mref : ℝ := ‖∑ y ∈ T, principalPartAt a N y x‖ + 1 with hMref
+  have hev : ∀ᶠ z in 𝓝 x, ‖∑ y ∈ T, principalPartAt a N y z‖ ≤ Mref := by
+    have htend : Filter.Tendsto
+        (fun z => ‖∑ y ∈ T, principalPartAt a N y z‖) (𝓝 x)
+        (𝓝 ‖∑ y ∈ T, principalPartAt a N y x‖) := hT_cont.norm
+    exact htend.eventually_le_const (by exact lt_add_one _)
+  rw [Filter.eventually_iff_exists_mem] at hev
+  obtain ⟨W₁, hW₁, hbnd₁⟩ := hev
   refine ⟨V ∩ W₁, Filter.inter_mem hV hW₁, ?_⟩
   -- Now bound g - fullPrincipalPart on (V ∩ W₁) \ {x}
   obtain ⟨M₀, hM₀⟩ := hbdd
-  obtain ⟨M₁, hM₁⟩ : ∃ M, ∀ z ∈ W₁, ‖∑ y ∈ T, principalPartAt a N y z‖ ≤ M :=
-    ⟨_, hbnd₁⟩
-  refine ⟨M₀ + M₁, ?_⟩
+  refine ⟨M₀ + Mref, ?_⟩
   rintro v ⟨z, ⟨hzVW, hzx⟩, rfl⟩
   -- Decompose: full = principalPartAt x + ∑_{y∈T} principalPartAt y
   have hfull_eq : fullPrincipalPart S a N z =
@@ -168,16 +170,16 @@ lemma bddAbove_full_diff_of_bddAbove_single_diff
   -- triangle inequality
   have h1 : ‖g z - principalPartAt a N x z‖ ≤ M₀ := by
     apply hM₀; refine ⟨z, ⟨hzVW.1, hzx⟩, rfl⟩
-  have h2 : ‖∑ y ∈ T, principalPartAt a N y z‖ ≤ M₁ := hM₁ z hzVW.2
+  have h2 : ‖∑ y ∈ T, principalPartAt a N y z‖ ≤ Mref := hbnd₁ z hzVW.2
   have hrearr : g z - fullPrincipalPart S a N z =
       (g z - principalPartAt a N x z) - (∑ y ∈ T, principalPartAt a N y z) := by
     rw [hfull_eq]; ring
-  show ‖g z - fullPrincipalPart S a N z‖ ≤ M₀ + M₁
+  show ‖g z - fullPrincipalPart S a N z‖ ≤ M₀ + Mref
   rw [hrearr]
   calc ‖(g z - principalPartAt a N x z) - (∑ y ∈ T, principalPartAt a N y z)‖
       ≤ ‖g z - principalPartAt a N x z‖ + ‖∑ y ∈ T, principalPartAt a N y z‖ :=
         norm_sub_le _ _
-    _ ≤ M₀ + M₁ := add_le_add h1 h2
+    _ ≤ M₀ + Mref := add_le_add h1 h2
 
 /-- **Iterated removable-singularity update over a `Finset`.**
 
@@ -210,7 +212,7 @@ lemma exists_differentiable_extension_of_finite_pole_set
         rw [hcoe] at hf_diff; exact hf_diff
       -- Get inductive extension across T on the open set U \ {x}.
       have hUopen_x : IsOpen (U \ ({x} : Set ℂ)) :=
-        hUopen.sdiff (T₂ := ({x} : Set ℂ)) isClosed_singleton
+        hUopen.sdiff isClosed_singleton
       have hTsub_x : (T : Set ℂ) ⊆ U \ ({x} : Set ℂ) := by
         intro z hz
         refine ⟨hTsub' hz, ?_⟩
