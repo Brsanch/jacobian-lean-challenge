@@ -344,24 +344,6 @@ noncomputable def ofLocalSheets
     intro x hx y hy
     have : y ∈ InterV := hy.2
     exact mem_iInter.mp this ⟨x, hx⟩
-  have preimage_W_subset_unionU :
-      f ⁻¹' W ⊆ ⋃ x ∈ xs, U x ‹_› := by
-    intro z hzW
-    have hzfW₀ : f z ∈ W₀ := hzW.1
-    -- So f z ∉ f '' K, hence z ∉ K, hence z ∈ UnionU'.
-    have hzK_neg : z ∉ K := by
-      intro hzK
-      have : f z ∈ f '' K := ⟨z, hzK, rfl⟩
-      exact hzfW₀ this
-    have hz_in_unionU' : z ∈ UnionU' := by
-      by_contra h
-      exact hzK_neg h
-    obtain ⟨_, hz_mem_⟩ := mem_iUnion.mp hz_in_unionU'
-    -- Translate `iUnion (p : {a // a ∈ xs})` to `iUnion x ∈ xs`.
-    -- We'll provide the assembled package next.
-    exact mem_iUnion.mpr ⟨_, hz_mem_⟩
-  -- Wait — the conclusion shape is `⋃ x ∈ xs, U x _`, not `⋃ p : Subtype, U p.1 p.2`.
-  -- Convert.
   -- Now assemble HurwitzPatchingData.
   refine
     { xs := xs
