@@ -6,7 +6,6 @@ Authors: Bryan Sanchez
 import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Topology.SurfaceGenus
 import Mathlib.Analysis.InnerProductSpace.EuclideanDist
-import Mathlib.Analysis.NormedSpace.Real
 
 set_option diagnostics.threshold 100
 
