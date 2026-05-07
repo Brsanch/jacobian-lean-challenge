@@ -124,15 +124,11 @@ In the ZZ79/91 pipeline `S` indexes the (assumed-finite) preimages of
 + stays-finite supplies a per-`xᵢ` `Eventually`. -/
 theorem LocalCountPackageInputs.of_finset_eventually_join
     {fibreSum : OnePoint ℂ → ℕ} {y₀ : OnePoint ℂ}
-    {ι : Type*} (S : Finset ι)
+    {ι : Type*} {S : Finset ι} (hS : S.Nonempty)
     (h : ∀ i ∈ S, ∀ᶠ y in 𝓝 y₀, fibreSum y = fibreSum y₀) :
     LocalCountPackageInputs fibreSum y₀ := by
-  refine ⟨?_⟩
-  by_cases hS : S.Nonempty
-  · obtain ⟨i, hi⟩ := hS
-    exact h i hi
-  · -- empty case: degrade to vacuous `Eventually` from `rfl`.
-    exact Filter.Eventually.of_forall (fun _ => rfl)
+  obtain ⟨i, hi⟩ := hS
+  exact ⟨h i hi⟩
 
 /-- **Empty-preimage corollary.**
 
