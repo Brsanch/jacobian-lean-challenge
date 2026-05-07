@@ -88,8 +88,10 @@ noncomputable section
 namespace JacobianChallenge
 
 variable (X Y : Type*)
-  [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-  [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
+  [TopologicalSpace X] [ChartedSpace ℂ X]
+  [IsManifold 𝓘(ℂ) ω X] [IsManifold 𝓘(ℂ) ⊤ X]
+  [TopologicalSpace Y] [ChartedSpace ℂ Y]
+  [IsManifold 𝓘(ℂ) ω Y] [IsManifold 𝓘(ℂ) ⊤ Y]
 
 /-- **Named tier-2 hypothesis.** Finite-dimensionality of holomorphic
 1-forms transports from `Y` to `X`.
@@ -127,7 +129,8 @@ namespace JacobianChallenge
 namespace RiemannSphere
 
 variable {X : Type*}
-  [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+  [TopologicalSpace X] [ChartedSpace ℂ X]
+  [IsManifold 𝓘(ℂ) ω X] [IsManifold 𝓘(ℂ) ⊤ X]
 
 /-- **Conditional discharge specialised to the Riemann sphere.** If `X`
 admits a finite-dimensionality transport from the Riemann sphere (the
