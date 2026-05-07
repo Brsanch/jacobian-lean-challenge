@@ -54,6 +54,7 @@ import JacobianChallenge.Manifold.StokesCompactSurface
 import JacobianChallenge.Manifold.ResidueTheoremAssembly
 import JacobianChallenge.Manifold.GlobalResidueSum
 import JacobianChallenge.Manifold.GlobalChainBoundaryDischarge
+import JacobianChallenge.Manifold.IntegerShadowStokes
 import JacobianChallenge.Manifold.ResidueViaTopologicalDegree
 import JacobianChallenge.Manifold.MeromorphicDegreeFiberSum
 import JacobianChallenge.Manifold.LogDerivLaurent
