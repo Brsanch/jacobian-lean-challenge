@@ -1,6 +1,7 @@
 -- Library entry point. New module files must be added to this import list.
 import JacobianChallenge.Analysis.CompactManifoldMeasure
 import JacobianChallenge.Analysis.CompactManifoldMeasureExistence
+import JacobianChallenge.Analysis.CompactManifoldMeasureFromCharts
 import JacobianChallenge.Basic
 import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.ChipAliases
