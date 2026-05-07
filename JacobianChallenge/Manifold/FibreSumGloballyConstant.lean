@@ -99,7 +99,7 @@ lemma eventually_eq {fibreSum : Y → ℕ} {y₀ : Y}
     (h : LocalCountPackage fibreSum y₀) :
     ∀ᶠ y in 𝓝 y₀, fibreSum y = fibreSum y₀ := by
   obtain ⟨V, hV_open, hy₀, hconst⟩ := h.exists_const_nhd
-  exact (hV_open.mem_nhds hy₀).mono (fun y hy => hconst y hy)
+  filter_upwards [hV_open.mem_nhds hy₀] with y hy using hconst y hy
 
 end LocalCountPackage
 
@@ -131,10 +131,7 @@ theorem fibreSum_isLocallyConstant_on_Y_reg
   have h_amb : ∀ᶠ z in 𝓝 (y.val), fibreSum z = fibreSum y.val :=
     (h_pkg y.val y.property).eventually_eq
   -- Subtype-topology pullback of an ambient `eventually`.
-  have h_cont : Continuous (fun z : Y_reg => z.val) := continuous_subtype_val
-  have := h_cont.continuousAt (x := y) h_amb
-  -- `ContinuousAt` on a constant target gives the eventually-equal we need.
-  exact this
+  exact (continuous_subtype_val.tendsto y).eventually h_amb
 
 /-- **Globalisation by preconnectedness.**
 
