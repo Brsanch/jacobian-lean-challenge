@@ -225,10 +225,10 @@ structure ChartedSpaceHypothesis (data : PeriodLatticeOfRankTwoG X) where
     ChartedSpace (Fin (JacobianChallenge.genus X) → ℂ)
       (JacobianOfLattice X data)
   toIsManifold :
-    @IsManifold _ _ _ _ _
-      (modelWithCornersSelf ℂ (Fin (JacobianChallenge.genus X) → ℂ))
-      (Fin (JacobianChallenge.genus X) → ℂ) _ _
-      (JacobianOfLattice X data) _ toChartedSpace ω
+    @IsManifold ℂ _ (Fin (JacobianChallenge.genus X) → ℂ) _ _
+      (Fin (JacobianChallenge.genus X) → ℂ) _
+      (modelWithCornersSelf ℂ (Fin (JacobianChallenge.genus X) → ℂ)) ω
+      (JacobianOfLattice X data) _ toChartedSpace
 
 /-- **Named-hypothesis reduction** of OPEN.md item 13: the period-lattice
 quotient is a Lie additive group, i.e. `+` and `-` are smooth through
@@ -237,10 +237,10 @@ of the chart-bundle so the dependency on local charts is explicit. -/
 def LieAddGroupHypothesis
     (data : PeriodLatticeOfRankTwoG X)
     (charts : ChartedSpaceHypothesis data) : Prop :=
-  @LieAddGroup _ _ _ _ _
-    (modelWithCornersSelf ℂ (Fin (JacobianChallenge.genus X) → ℂ))
+  @LieAddGroup ℂ _ (Fin (JacobianChallenge.genus X) → ℂ) _
     (Fin (JacobianChallenge.genus X) → ℂ) _ _
-    (JacobianOfLattice X data) _ _ charts.toChartedSpace ω _ _
+    (modelWithCornersSelf ℂ (Fin (JacobianChallenge.genus X) → ℂ)) ω
+    (JacobianOfLattice X data) _ _ charts.toChartedSpace
 
 /-- **Wrapper** for item 11. Given a bundle and the named-hypothesis
 discharge `h`, produce a `CompactSpace` instance. -/
@@ -261,10 +261,10 @@ theorem wrapper_chartedSpace
 theorem wrapper_isManifold
     (data : PeriodLatticeOfRankTwoG X)
     (h : ChartedSpaceHypothesis data) :
-    @IsManifold _ _ _ _ _
-      (modelWithCornersSelf ℂ (Fin (JacobianChallenge.genus X) → ℂ))
-      (Fin (JacobianChallenge.genus X) → ℂ) _ _
-      (JacobianOfLattice X data) _ h.toChartedSpace ω :=
+    @IsManifold ℂ _ (Fin (JacobianChallenge.genus X) → ℂ) _ _
+      (Fin (JacobianChallenge.genus X) → ℂ) _
+      (modelWithCornersSelf ℂ (Fin (JacobianChallenge.genus X) → ℂ)) ω
+      (JacobianOfLattice X data) _ h.toChartedSpace :=
   h.toIsManifold
 
 /-- **Wrapper** for item 13. -/
@@ -272,10 +272,10 @@ theorem wrapper_lieAddGroup
     (data : PeriodLatticeOfRankTwoG X)
     (charts : ChartedSpaceHypothesis data)
     (h : LieAddGroupHypothesis data charts) :
-    @LieAddGroup _ _ _ _ _
-      (modelWithCornersSelf ℂ (Fin (JacobianChallenge.genus X) → ℂ))
+    @LieAddGroup ℂ _ (Fin (JacobianChallenge.genus X) → ℂ) _
       (Fin (JacobianChallenge.genus X) → ℂ) _ _
-      (JacobianOfLattice X data) _ _ charts.toChartedSpace ω _ _ := h
+      (modelWithCornersSelf ℂ (Fin (JacobianChallenge.genus X) → ℂ)) ω
+      (JacobianOfLattice X data) _ _ charts.toChartedSpace := h
 
 end JacobianOfLattice
 
