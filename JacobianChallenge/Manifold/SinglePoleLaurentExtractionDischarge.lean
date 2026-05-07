@@ -97,8 +97,7 @@ theorem singlePole_laurent_extraction_of_meromorphicAt
   set N : ℕ := (-n).toNat with hN_def
   -- Step 3. Shift `G` to the origin and apply the global Taylor formula at order `N`.
   have hG_an_shift : AnalyticAt ℂ (fun w : ℂ => G (w + x)) 0 := by
-    have h_id : AnalyticAt ℂ (fun w : ℂ => w + x) 0 :=
-      (analyticAt_id (𝕜 := ℂ) (x := (0 : ℂ))).add analyticAt_const
+    have h_id : AnalyticAt ℂ (fun w : ℂ => w + x) 0 := by fun_prop
     exact hG_an.comp_of_eq h_id (by simp)
   obtain ⟨F, hF_an, hF_eq⟩ := hG_an_shift.exists_eq_sum_add_pow_mul N
   -- Taylor coefficients of the shifted analytic factor.
@@ -166,19 +165,17 @@ theorem singlePole_laurent_extraction_of_meromorphicAt
     have h_an : AnalyticOnNhd ℂ
         (fun z : ℂ => (z - x) ^ ((n + N : ℤ)) • F (z - x))
         (Metric.ball x r) := by
-      intro z hz
-      have h_sub_an : AnalyticAt ℂ (fun z : ℂ => z - x) z :=
-        (analyticAt_id (𝕜 := ℂ) (x := z)).sub analyticAt_const
-      have hF_at : AnalyticAt ℂ (fun z : ℂ => F (z - x)) z :=
-        (hF_anOn_r (z - x) (h_sub z hz)).comp h_sub_an
-      -- `(z-x) ^ M = (z-x) ^ ((n+N : ℤ))` via `zpow_natCast`.
-      have h_pow_at : AnalyticAt ℂ (fun z : ℂ => (z - x) ^ M) z :=
+      intro z₀ hz₀
+      have h_sub_an : AnalyticAt ℂ (fun w : ℂ => w - x) z₀ := by fun_prop
+      have hF_at : AnalyticAt ℂ (fun w : ℂ => F (w - x)) z₀ :=
+        AnalyticAt.comp_of_eq (hF_anOn_r (z₀ - x) (h_sub z₀ hz₀)) h_sub_an rfl
+      have h_pow_at : AnalyticAt ℂ (fun w : ℂ => (w - x) ^ M) z₀ :=
         h_sub_an.pow M
-      have h_zpow_eq : (fun z : ℂ => (z - x) ^ ((n + N : ℤ)))
-          = (fun z : ℂ => (z - x) ^ M) := by
+      have h_zpow_eq : (fun w : ℂ => (w - x) ^ ((n + N : ℤ)))
+          = (fun w : ℂ => (w - x) ^ M) := by
         funext w
         rw [← hM, zpow_natCast]
-      have h_zpow_at : AnalyticAt ℂ (fun z : ℂ => (z - x) ^ ((n + N : ℤ))) z := by
+      have h_zpow_at : AnalyticAt ℂ (fun w : ℂ => (w - x) ^ ((n + N : ℤ))) z₀ := by
         rw [h_zpow_eq]; exact h_pow_at
       exact h_zpow_at.smul hF_at
     exact h_an.differentiableOn
@@ -215,53 +212,53 @@ theorem singlePole_laurent_extraction_of_meromorphicAt
     -- `(N : ℤ) = -n`, i.e. `n + N = 0`. This is the algebraic identity we need.
     by_cases hN0 : N = 0
     · -- `N = 0`: the principal sum is empty.
-      subst hN0
-      simp
+      simp [hN0]
     · -- `N > 0`: the order is genuinely negative, `n = -(N : ℤ)`.
       have hN_pos : 0 < N := Nat.pos_of_ne_zero hN0
-      have hn_neg : n < 0 := by
+      have hn_nonpos : n ≤ 0 := by
         by_contra h_not_neg
         push_neg at h_not_neg
-        have : N = 0 := by simp [hN_def, Int.toNat_of_nonpos (by linarith : -n ≤ 0)]
-        exact hN0 this
+        have hN_zero : N = 0 := by
+          show (-n).toNat = 0
+          exact Int.toNat_of_nonpos (by linarith)
+        exact hN0 hN_zero
       have hN_eq : (N : ℤ) = -n := by
-        simp [hN_def, Int.toNat_of_nonneg (by linarith : 0 ≤ -n)]
+        show ((-n).toNat : ℤ) = -n
+        exact Int.toNat_of_nonneg (by linarith)
       have h_sum :
           ((z - x) ^ n) • (∑ i ∈ Finset.range N, (z - x) ^ i • c i)
             = ∑ k ∈ Finset.Icc 1 N, c (N - k) * (z - x) ^ (-(k : ℤ)) := by
         simp only [smul_eq_mul, Finset.mul_sum]
-        -- Re-index: bijection `k ↦ N - k` from `Icc 1 N` onto `range N`.
-        rw [show (Finset.range N : Finset ℕ) = (Finset.Icc 1 N).image (fun k => N - k) from ?_]
-        · rw [Finset.sum_image (by
-              intro a ha b hb hab
-              rw [Finset.mem_Icc] at ha hb
-              omega)]
-          refine Finset.sum_congr rfl ?_
-          intro k hk
-          rw [Finset.mem_Icc] at hk
-          obtain ⟨hk1, hk2⟩ := hk
-          -- After the bijection, the summand at `k` is the original summand at `i = N-k`:
-          -- `(z-x)^n * ((z-x)^(N-k) * c (N-k))`. We must show this equals
-          -- `c (N-k) * (z-x)^(-k:ℤ)`.
-          have h_pow_eq : (z - x) ^ n * (z - x) ^ (N - k) = (z - x) ^ (-(k : ℤ)) := by
-            -- Convert `^ : ℂ → ℕ` to `^ : ℂ → ℤ` and apply `zpow_add₀`.
-            have h_natCast : ((N - k : ℕ) : ℤ) = -n - k := by
-              have : ((N - k : ℕ) : ℤ) = (N : ℤ) - k := by
-                push_cast; omega
-              rw [this, hN_eq]
-            rw [show ((z - x) ^ (N - k) : ℂ) = (z - x) ^ ((N - k : ℕ) : ℤ) from
-                  (zpow_natCast (z - x) (N - k)).symm,
+        -- Bijection `a ↦ N - a` from `range N` onto `Icc 1 N`.
+        apply Finset.sum_bij' (fun a _ => N - a) (fun b _ => N - b)
+        · intro a ha
+          rw [Finset.mem_range] at ha
+          rw [Finset.mem_Icc]
+          omega
+        · intro b hb
+          rw [Finset.mem_Icc] at hb
+          rw [Finset.mem_range]
+          omega
+        · intro a ha
+          rw [Finset.mem_range] at ha
+          omega
+        · intro b hb
+          rw [Finset.mem_Icc] at hb
+          omega
+        · intro a ha
+          rw [Finset.mem_range] at ha
+          -- Goal: (z - x)^n * ((z - x)^a * c a) = c (N - (N - a)) * (z - x)^(-(N - a:ℕ):ℤ)
+          have h_idx : N - (N - a) = a := by omega
+          rw [h_idx]
+          have h_pow_eq : (z - x) ^ n * (z - x) ^ a = (z - x) ^ (-((N - a : ℕ) : ℤ)) := by
+            have h_natCast : -((N - a : ℕ) : ℤ) = n + a := by
+              have h_diff : ((N - a : ℕ) : ℤ) = (N : ℤ) - a := by push_cast; omega
+              rw [h_diff, hN_eq]
+              ring
+            rw [show ((z - x) ^ a : ℂ) = (z - x) ^ ((a : ℕ) : ℤ) from
+                  (zpow_natCast (z - x) a).symm,
                 ← zpow_add₀ hzx_ne, h_natCast]
-            congr 1
-            ring
-          calc (z - x) ^ n * ((z - x) ^ (N - k) * c (N - k))
-              = c (N - k) * ((z - x) ^ n * (z - x) ^ (N - k)) := by ring
-            _ = c (N - k) * (z - x) ^ (-(k : ℤ)) := by rw [h_pow_eq]
-        · ext i
-          simp only [Finset.mem_range, Finset.mem_image, Finset.mem_Icc]
-          constructor
-          · intro hi; refine ⟨N - i, ⟨by omega, by omega⟩, by omega⟩
-          · rintro ⟨k, ⟨_, hk2⟩, rfl⟩; omega
+          linear_combination (c a) * h_pow_eq
       rw [h_sum]
 
 end MultiPoleLaurentExistence
