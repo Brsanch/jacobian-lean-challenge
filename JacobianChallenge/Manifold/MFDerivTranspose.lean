@@ -5,6 +5,7 @@ Authors: Bryan Sanchez
 -/
 import Mathlib.Geometry.Manifold.ContMDiffMFDeriv
 import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+import Mathlib.Analysis.Normed.Operator.Bilinear
 import JacobianChallenge.Manifold.CotangentInCoordinates
 
 set_option diagnostics.threshold 100
@@ -73,6 +74,8 @@ theorem ContMDiffAt.mfderiv_transpose
     ContMDiffAt I 𝓘(𝕜, (E' →L[𝕜] 𝕜) →L[𝕜] (E →L[𝕜] 𝕜)) m
       (fun y => (inTangentCoordinates I I' id f
         (fun y ↦ (mfderiv I I' f y : E →L[𝕜] E')) x y).precomp 𝕜) x :=
-  (hf.mfderiv_const hmn).clm_precomp
+  ContDiff.comp_contMDiffAt
+    (g := (ContinuousLinearMap.compL 𝕜 E E' 𝕜).flip)
+    (ContinuousLinearMap.contDiff _) (hf.mfderiv_const hmn)
 
 end
