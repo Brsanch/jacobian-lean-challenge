@@ -118,7 +118,7 @@ lemma chartDerivativeL2_zero {n : ℕ} {M : Type}
           = (fun _ => (0 : EuclideanSpace ℝ (Fin n) →L[ℝ] ℝ)) := by
       funext x
       rw [hcomp]
-      exact fderiv_const (x := x) (c := (0 : ℝ))
+      simp [fderiv_const]
     rw [hderiv]
     exact MemLp.zero'
 
@@ -150,7 +150,7 @@ lemma chartDerivativeL2_add {n : ℕ} {M : Type}
         MemLp (fun x => fderiv ℝ (f ∘ φ.symm) x
                           + fderiv ℝ (g ∘ φ.symm) x)
           2 (volume.restrict φ.target) :=
-      hf_L2.add hg_L2
+      MemLp.add hf_L2 hg_L2
     have h_eq_ae :
         (fun x => fderiv ℝ ((fun x => f x + g x) ∘ φ.symm) x)
           =ᵐ[volume.restrict φ.target]
@@ -165,7 +165,20 @@ lemma chartDerivativeL2_add {n : ℕ} {M : Type}
         (hg_diff x hx).differentiableAt (φ.open_target.mem_nhds hx)
       rw [hcomp_eq]
       exact fderiv_add hfx hgx
-    exact hsum_L2.congr h_eq_ae.symm
+    -- `MemLp` is preserved under a.e. equality: rebuild from
+    -- `aestronglyMeasurable` and `eLpNorm` finiteness, transferred
+    -- across `h_eq_ae`.
+    refine ⟨?_, ?_⟩
+    · exact hsum_L2.aestronglyMeasurable.congr h_eq_ae.symm
+    · have h_eLp : eLpNorm
+            (fun x => fderiv ℝ ((fun x => f x + g x) ∘ φ.symm) x) 2
+            (volume.restrict φ.target)
+          = eLpNorm
+            (fun x => fderiv ℝ (f ∘ φ.symm) x
+                      + fderiv ℝ (g ∘ φ.symm) x) 2
+            (volume.restrict φ.target) :=
+        eLpNorm_congr_ae h_eq_ae
+      rw [h_eLp]; exact hsum_L2.eLpNorm_lt_top
 
 /-- **`H¹` Sobolev space** on a compact charted manifold.
 
