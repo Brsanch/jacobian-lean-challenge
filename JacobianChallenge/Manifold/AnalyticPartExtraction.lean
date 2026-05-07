@@ -285,7 +285,7 @@ lemma exists_differentiable_extension_of_finite_pole_set
               have hopen_ne : IsOpen ({y : ℂ | y ≠ x}) := isOpen_ne
               filter_upwards [hopen_ne.mem_nhds hzx] with w hw
               exact hh₂_eq_h₁ w hw
-            exact h₁_diff_at.congr_of_eventuallyEq heq.symm
+            exact h₁_diff_at.congr_of_eventuallyEq heq
           exact this.differentiableWithinAt
       · -- agreement off insert x T
         intro z hzU
