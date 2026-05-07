@@ -13,7 +13,7 @@ monotone partition `t : ℕ → I`) is already provided by mathlib as
 to the chart-source cover associated to the path.
 -/
 import Mathlib.Geometry.Manifold.ChartedSpace
-import Mathlib.Topology.PartialHomeomorph
+import Mathlib.Topology.OpenOpenPartialHomeomorph.Basic
 import Mathlib.Topology.UnitInterval
 import Mathlib.Topology.Path
 
@@ -40,7 +40,7 @@ Strategy:
 theorem Path.exists_chart_subdivision
     {Y H : Type*} [TopologicalSpace Y] [TopologicalSpace H] [ChartedSpace H Y]
     {p q : Y} (γ : Path p q) :
-    ∃ (t : ℕ → I) (φ : ℕ → PartialHomeomorph Y H),
+    ∃ (t : ℕ → I) (φ : ℕ → OpenPartialHomeomorph Y H),
       t 0 = 0 ∧ Monotone t ∧ (∃ N, ∀ m ≥ N, t m = 1) ∧
       (∀ i, φ i ∈ atlas H Y) ∧
       (∀ i, ∀ s ∈ Icc (t i) (t (i + 1)), γ s ∈ (φ i).source) := by
