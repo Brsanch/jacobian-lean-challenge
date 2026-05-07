@@ -9,6 +9,8 @@ import JacobianChallenge.Manifold.LocalMultiplicityInvariance
 import Mathlib.Analysis.Calculus.Deriv.Mul
 import Mathlib.Analysis.Calculus.Deriv.Comp
 import Mathlib.RingTheory.Polynomial.Cyclotomic.Roots
+import Mathlib.Analysis.Complex.Polynomial.Basic
+import Mathlib.FieldTheory.Separable
 
 set_option diagnostics true
 set_option diagnostics.threshold 100
@@ -189,10 +191,10 @@ private lemma kth_roots_finset_card {k : ℕ} (hk : 1 ≤ k) {a : ℂ} (ha : a �
   have h_splits : p.Splits := IsAlgClosed.splits p
   have h_card_roots : p.roots.card = p.natDegree :=
     Polynomial.splits_iff_card_roots.mp h_splits
-  have h_nodup : p.roots.Nodup := h_separable.squarefree.nodup_roots
+  have h_nodup : p.roots.Nodup := Polynomial.nodup_roots h_separable
   unfold kthRootsFinset
   rw [show (Polynomial.X ^ k - Polynomial.C a : Polynomial ℂ) = p from rfl]
-  rw [Multiset.toFinset_card_eq_card h_nodup, h_card_roots, hp_deg]
+  rw [Multiset.toFinset_card_of_nodup h_nodup, h_card_roots, hp_deg]
 
 /-! ## Main count from the bundle -/
 
