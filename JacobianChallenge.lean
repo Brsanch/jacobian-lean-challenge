@@ -64,6 +64,7 @@ import JacobianChallenge.Manifold.LogDerivLaurentDischarge
 import JacobianChallenge.Manifold.ZeroCountEqPoleCount
 import JacobianChallenge.Manifold.MeromorphicDegreeFiberSumEquivalences
 import JacobianChallenge.Manifold.ChartIntegralFibreBalanceWiring
+import JacobianChallenge.Manifold.FibreBalanceTopologicalDegree
 import JacobianChallenge.Manifold.LogDiffAnchored
 import JacobianChallenge.Manifold.LogDiffAnchoredDischarge
 import JacobianChallenge.Manifold.LogDiffAnchoredWitness
