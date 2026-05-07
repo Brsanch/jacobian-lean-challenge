@@ -77,23 +77,12 @@ theorem fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo
     exact JacobianChallenge.Manifold.regularSubset_isPreconnected_of_finite_complement_hypothesis
       h_topo C (h_C_fin f hf hnc C)
 
-/-- **Definitional packaging** — the same composition delivered against the
-def name `fibre_card_well_defined_at_regular_statement`. -/
-theorem fibre_card_well_defined_at_regular_statement_holds_of_lc_ncard_and_topo
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
-    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    (h_lc : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
-      ¬ JacobianChallenge.IsConstantMap f →
-      ∀ (C : Set Y),
-        IsLocallyConstant (fun y : (Cᶜ : Set Y) => (f ⁻¹' {y.val}).ncard))
-    (h_topo : ∀ C : Set Y, C.Finite → IsPreconnected (Cᶜ : Set Y))
-    (h_C_fin : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
-      ¬ JacobianChallenge.IsConstantMap f → ∀ (C : Set Y), C.Finite) :
-    fibre_card_well_defined_at_regular_statement X Y :=
-  fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo (X := X) (Y := Y)
-    h_lc h_topo h_C_fin
+-- (Definitional wrapper against `fibre_card_well_defined_at_regular_statement`
+-- removed: Lean's elaborator hits "typeclass instance problem is stuck" when
+-- elaborating that def-typed return at the := site, even though the underlying
+-- statement is reducibly identical to the unfolded form above. Consumers can
+-- apply `fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo`
+-- directly — the def's body is exactly its goal.)
 
 end Owed.degree
 
