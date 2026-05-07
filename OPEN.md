@@ -148,8 +148,15 @@ items 1, 2, 5, 8, 9 will need infrastructure not in mathlib at the pin.
 - `Manifold/RegularValueExistsUnconditional.lean` (same) — discharges `regular_value_exists_statement`.
 - `Manifold/FibreCardOnRegularSubset.lean` (ZZ134) — `fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant` (conditional on 2 analytic hypotheses).
 - `Manifold/NcardMultiplicityBridge.lean` (ZZ105) — real ncard↔multiplicity bridge for regular fibres at `{0}`/`{∞}`.
+- `Manifold/AnalyticLocalNormalForm.lean` (ZZ151) — `analytic_local_normal_form`: for analytic `f` at `x₀` with `analyticOrderAt (f - w₀) x₀ = k`, builds analytic `ψ` on closed ball with `ψ x₀ = 0`, `deriv ψ x₀ ≠ 0`, `f z = w₀ + (ψ z)^k`. **Hurwitz local model — the deepest classical content.**
+- `Manifold/LocalBiholomorphism.lean` (ZZ152) — `AnalyticAt.exists_local_biholomorphism` packaging `HasStrictFDerivAt.toOpenPartialHomeomorph` + `AnalyticAt.analyticAt_localInverse` into a biholomorphism witness.
+- `Manifold/FibreCardLocallyConstantFromNormalForm.lean` (ZZ153) — `HurwitzPatchingData` + `fibreCard_isLocallyConstant_on_subset_of_pointwiseHurwitz` (locally constant from patching data).
+- `Manifold/RegularSubsetPreconnected.lean` (ZZ154) — `regularSubset_isPreconnected_of_finite_complement_hypothesis`: complement of finite C is preconnected on Y.
+- `Manifold/HurwitzPatchingDataConstruction.lean` (ZZ157) — `HurwitzPatchingData.ofRegularValue`: constructs the patching data unconditionally at a regular value from ZZ151+ZZ152.
+- `Manifold/FibreCardWellDefinedAtRegular.lean` (ZZ155) — `fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo`: composes ZZ134+ZZ153+ZZ154 into the unfolded Hurwitz constant-card statement.
+- `Manifold/DegreeUnconditional.lean` (ZZ156) — `Basic.lean`'s `ContMDiff.degree` aligns with honest `degreeFiber` (signature-preserving swap demonstrated).
 
-Cumulative across all sessions: **~35,600 LOC across ~148 files**. None of which strict-closes any item by itself. The path to first STRICT-CLOSED runs through `Manifold/ResidueTheorem.lean`'s named R5 gap: discharging R5 makes `PrincipalDivisorMultiplicative X` constructible (via the I1 lemmas + a `CommGroup` upgrade) and `ResidueTheorem X` true, after which the one-line swap in `Divisor.lean` (`PrincDiv := principalDivisorAddHom.range`) flips items 15, 19, 20 from STUB *(PROOF-HONEST)* to STRICT-CLOSED simultaneously. Per the 2026-05-07 cluster audits, R5 is **~60-80% built** (closest wall); other walls 5-40%.
+Cumulative across all sessions: **~37,840 LOC across 162 files**. None of which strict-closes any item by itself. The path to first STRICT-CLOSED runs through `Manifold/ResidueTheorem.lean`'s named R5 gap: discharging R5 makes `PrincipalDivisorMultiplicative X` constructible (via the I1 lemmas + a `CommGroup` upgrade) and `ResidueTheorem X` true, after which the one-line swap in `Divisor.lean` (`PrincDiv := principalDivisorAddHom.range`) flips items 15, 19, 20 from STUB *(PROOF-HONEST)* to STRICT-CLOSED simultaneously. Per the 2026-05-07 cluster audits, R5 is **~60-80% built** (closest wall); other walls 5-40%.
 
 ## Honest scoring
 
