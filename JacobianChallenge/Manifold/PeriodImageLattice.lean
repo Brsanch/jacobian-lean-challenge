@@ -6,7 +6,6 @@ Authors: Bryan Sanchez
 import JacobianChallenge.Manifold.HodgeFiniteDimensional
 import JacobianChallenge.Manifold.PeriodPairingDefinition
 import JacobianChallenge.Manifold.PeriodLatticeRankTwoG
-import Mathlib.LinearAlgebra.Basis.Defs
 import Mathlib.LinearAlgebra.Dimension.Finrank
 
 /-! # Period image lattice (chip ZZ85)
@@ -222,31 +221,6 @@ theorem PeriodLatticeOfRankTwoG.ofPeriodImage_lattice
         = 2 * JacobianChallenge.genus X) :
     (PeriodLatticeOfRankTwoG.ofPeriodImage data basis hClosed hRank).lattice
       = PeriodImageLattice X data basis := rfl
-
-/-! ### Convenience: extracting a basis from `HolomorphicOneFormFiniteDim`
-
-Under the named hypothesis `HolomorphicOneFormFiniteDim X`, the
-`ℂ`-vector space `HolomorphicOneForm X` is finite-dimensional. By
-definition `genus X = Module.finrank ℂ (HolomorphicOneForm X)`, so a
-basis indexed by `Fin (genus X)` exists. We expose this as a `Prop`-level
-existence so downstream chips can `obtain` a basis without tracking
-intermediate `FiniteDimensional` instances.
--/
-
-/-- Under finite-dimensionality of `HolomorphicOneForm X`, there exists a
-`ℂ`-basis indexed by `Fin (genus X)`. -/
-theorem exists_basis_of_HolomorphicOneFormFiniteDim
-    (h : HolomorphicOneFormFiniteDim X) :
-    ∃ b : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X),
-      True := by
-  -- `genus X` is by definition `Module.finrank ℂ (HolomorphicOneForm X)`,
-  -- and under `h` the space is finite-dimensional, so `finBasis` applies.
-  haveI : FiniteDimensional ℂ (HolomorphicOneForm X) :=
-    finiteDimensional_of_HolomorphicOneFormFiniteDim h
-  refine ⟨?_, trivial⟩
-  -- `Module.finBasis ℂ V` produces a basis indexed by `Fin (finrank ℂ V)`
-  -- when `V` is finite-dimensional. By definition this matches `genus X`.
-  exact Module.finBasis ℂ (HolomorphicOneForm X)
 
 end JacobianChallenge
 
