@@ -20,6 +20,7 @@ import JacobianChallenge.Manifold.AnalyticContinuationGlobalization
 import JacobianChallenge.Manifold.AnalyticFiberDiscrete
 import JacobianChallenge.Manifold.AnalyticKthRoot
 import JacobianChallenge.Manifold.AnalyticLocalFactorization
+import JacobianChallenge.Manifold.AnalyticLocalNormalForm
 import JacobianChallenge.Manifold.AnalyticPartExtraction
 import JacobianChallenge.Manifold.ArgumentPrincipleOnDisc
 import JacobianChallenge.Manifold.BranchedCoverDegree
