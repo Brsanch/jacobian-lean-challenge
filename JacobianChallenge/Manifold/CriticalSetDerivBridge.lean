@@ -17,48 +17,47 @@ set_option diagnostics.threshold 100
 
 /-! # Bridge: critical set ↔ chart-pullback derivative zero (ZZ99)
 
-This file supplies the **bridge lemma** that ZZ97's *topological* definition
+This file supplies bridge lemmas linking ZZ97's *topological* critical-set
+definition
 
 ```
 criticalSet f := { x | ¬ ∃ U ∈ 𝓝 x, Set.InjOn (f̃) U }
 ```
 
-coincides with the *analytic* "chart-pullback derivative vanishes" condition
-consumed downstream.
+to the *analytic* "chart-pullback derivative vanishes" condition consumed
+downstream.
 
-## Pieces
+## Pieces delivered
 
 * **`deriv_ne_zero_of_analyticOrderAt_eq_one`** — order-`1` ⇒ deriv ≠ `0`.
   From the factorization `g(z) - w₀ = (z - x₀) · u(z)` with `u(x₀) ≠ 0`
   (ZZ90), the product rule gives `deriv g x₀ = u(x₀) ≠ 0`.
 
-* **`analyticOrderAt_ge_two_of_deriv_zero`** — deriv = `0` ⇒ order ≥ `2`,
-  under `g x₀ = w₀` and "not eventually constant near `x₀`". The
-  "not eventually constant" hypothesis is required to rule out
-  `analyticOrderAt = ⊤` (the locally-constant case).
+* **`notInjOn_of_deriv_zero_of_analyticOrderAt`** — the headline planar
+  consequence: for analytic `g : ℂ → ℂ` at `x₀` with `g x₀ = w₀` and the
+  analytic order of `g - w₀` at `x₀` equal to some `k ≥ 2`, then `g` is
+  not injective on any neighbourhood of `x₀`. Proof: extract the
+  `KthRootSubstitution`-style data via the local factorization (ZZ90)
+  and the `k`-th root branch (ZZ87); use the inverse function theorem
+  applied to `v(z) := (z - x₀) · r(z)` (which has nonvanishing
+  derivative) to pull two distinct `k`-th roots of unity back to two
+  distinct preimages of any small target value.
 
-* **`notInjOn_iff_deriv_zero_of_analytic`** — the headline planar lemma:
-  for analytic `g : ℂ → ℂ` at `x₀` not eventually equal to `g x₀` near
-  `x₀`,
+* **`injOn_nhds_of_deriv_ne_zero`** — the immediate forward direction:
+  `deriv g x₀ ≠ 0` ⇒ `g` is locally injective. Routes through the
+  inverse function theorem (`HasStrictFDerivAt.toOpenPartialHomeomorph`).
 
-  `(¬ ∃ U ∈ 𝓝 x₀, Set.InjOn g U) ↔ deriv g x₀ = 0`.
-
-  *Forward.* If not InjOn, then `deriv g x₀ ≠ 0` would (by the inverse
-  function theorem packaged via `HasStrictFDerivAt.toOpenPartialHomeomorph`)
-  produce an open neighbourhood of `x₀` on which `g` is injective — a
-  contradiction. So `deriv g x₀ = 0`.
-
-  *Reverse.* If `deriv g x₀ = 0`, then by `analyticOrderAt_ge_two_of_deriv_zero`
-  the local order `k = analyticOrderAt (g - g x₀) x₀` is `≥ 2`. ZZ92 then
-  gives, for some `ε, δ > 0`, that every `w ∈ ball (g x₀) δ \ {g x₀}` has
-  exactly `k ≥ 2` preimages in `ball x₀ ε`. Two distinct preimages in any
-  neighbourhood of `x₀` (after shrinking via the local
-  `KthRootSubstitution` bundle) violate `InjOn g U`.
+* **`notInjOn_iff_deriv_zero_of_analytic_of_order`** — combined planar
+  iff. We state the iff under the explicit hypothesis that the analytic
+  order of `g - g x₀` at `x₀` equals some `k ≥ 1`; this avoids the
+  identity-theorem branching for "g locally constant at its value"
+  (which is folded into `analyticOrderAt = ⊤` in the unhypothesised
+  formulation).
 
 * **`criticalSet_iff_chart_pullback_deriv_zero`** — manifold-side
-  translation. Given a chart-package recording the chart pullback,
-  its analyticity, and its non-degeneracy, we transport the planar
-  statement to the manifold side.
+  translation, packaged as a bridge taking a `ChartBridgePackage` that
+  records the chart pullback, its analyticity at the chart image, and
+  its order data.
 
 No `sorry`, no `axiom`. No signature changes outside this new file.
 -/
@@ -75,15 +74,7 @@ namespace Manifold
 
 /-! ## Step 1. `analyticOrderAt = 1` ⇒ `deriv ≠ 0` -/
 
-/-- **From `analyticOrderAt (g - w₀) x₀ = 1` to `deriv g x₀ ≠ 0`.**
-
-If `g` is analytic at `x₀` with `g x₀ = w₀` and the analytic order of
-`g - w₀` at `x₀` is exactly `1`, then `deriv g x₀ ≠ 0`.
-
-Proof: ZZ90 (`analytic_local_factorization`) gives `R > 0` and a
-non-vanishing analytic factor `u` on `closedBall x₀ R` with
-`g z - w₀ = (z - x₀) ^ 1 * u z`. So `g(z) = w₀ + (z - x₀) * u(z)`. The
-product rule gives `deriv g x₀ = u(x₀) ≠ 0`. -/
+/-- **From `analyticOrderAt (g - w₀) x₀ = 1` to `deriv g x₀ ≠ 0`.** -/
 theorem deriv_ne_zero_of_analyticOrderAt_eq_one
     {g : ℂ → ℂ} {x₀ w₀ : ℂ}
     (hg : AnalyticAt ℂ g x₀)
@@ -99,10 +90,8 @@ theorem deriv_ne_zero_of_analyticOrderAt_eq_one
     have h1 := hfact z (hball_subset hz)
     have h2 : (z - x₀) ^ (1 : ℕ) * u z = (z - x₀) * u z := by rw [pow_one]
     have h3 : g z - w₀ = (z - x₀) * u z := h1.trans h2
-    have h4 : g z = w₀ + (z - x₀) * u z := by
-      have := sub_eq_iff_eq_add'.mp h3
-      linear_combination this
-    exact h4
+    have := sub_eq_iff_eq_add'.mp h3
+    linear_combination this
   set h : ℂ → ℂ := fun z => w₀ + (z - x₀) * u z with hh_def
   have hu_at_x₀ : AnalyticAt ℂ u x₀ :=
     hu_an x₀ (Metric.mem_closedBall_self hR_pos.le)
@@ -113,10 +102,11 @@ theorem deriv_ne_zero_of_analyticOrderAt_eq_one
   have hg_h_eventually : g =ᶠ[𝓝 x₀] h := by
     filter_upwards [hball_nhds] with z hz using hg_eq z hz
   have hderiv_sub : deriv (fun ζ : ℂ => ζ - x₀) x₀ = 1 := by
-    have hid : DifferentiableAt ℂ (id : ℂ → ℂ) x₀ := differentiableAt_id
-    have hd := deriv_sub (f := id) (g := fun _ => x₀) (x := x₀) hid (differentiableAt_const x₀)
-    simp at hd
-    exact hd
+    have hid : DifferentiableAt ℂ (fun ζ : ℂ => ζ) x₀ := differentiableAt_id
+    have hd := deriv_sub (f := fun ζ : ℂ => ζ) (g := fun _ : ℂ => x₀) (x := x₀)
+      hid (differentiableAt_const x₀)
+    rw [deriv_id', deriv_const] at hd
+    linarith
   have hderiv_prod :
       deriv (fun z : ℂ => (z - x₀) * u z) x₀ = u x₀ := by
     have hp := deriv_mul (𝕜 := ℂ) hsub_diff hu_diff
@@ -129,8 +119,8 @@ theorem deriv_ne_zero_of_analyticOrderAt_eq_one
     have hd_prod : DifferentiableAt ℂ (fun z : ℂ => (z - x₀) * u z) x₀ :=
       hsub_diff.mul hu_diff
     have h_add := deriv_add (𝕜 := ℂ) hd_const hd_prod
-    simp at h_add
-    exact h_add
+    rw [deriv_const] at h_add
+    linarith
   have hderiv_h : deriv h x₀ = u x₀ := by
     show deriv (fun z : ℂ => w₀ + (z - x₀) * u z) x₀ = u x₀
     rw [hsplit, hderiv_prod]
@@ -138,101 +128,10 @@ theorem deriv_ne_zero_of_analyticOrderAt_eq_one
   rw [hderiv_g, hderiv_h]
   exact hu_x₀
 
-/-! ## Step 2. Order ≥ 2 from deriv = 0 -/
+/-! ## Step 2. Forward direction: `deriv ≠ 0` ⇒ locally injective -/
 
-/-- If `g` is analytic at `x₀`, `g x₀ = w₀`, and `g` is not eventually
-equal to `w₀` near `x₀`, then `analyticOrderAt (g - w₀) x₀` equals some
-finite natural number `k ≥ 1`. -/
-private lemma analyticOrderAt_eq_natCast_ge_one_of_not_eventually
-    {g : ℂ → ℂ} {x₀ w₀ : ℂ}
-    (hg : AnalyticAt ℂ g x₀)
-    (h_w₀ : g x₀ = w₀)
-    (hne : ¬ ∀ᶠ z in 𝓝 x₀, g z = w₀) :
-    ∃ k : ℕ, 1 ≤ k ∧ analyticOrderAt (fun z => g z - w₀) x₀ = (k : ℕ∞) := by
-  set f : ℂ → ℂ := fun z => g z - w₀ with hf_def
-  have hf_an : AnalyticAt ℂ f x₀ :=
-    hg.sub (analyticAt_const : AnalyticAt ℂ (fun _ : ℂ => w₀) x₀)
-  have hf_x₀ : f x₀ = 0 := by simp [hf_def, h_w₀]
-  have hf_ne : ¬ ∀ᶠ z in 𝓝 x₀, f z = 0 := by
-    intro hcontra
-    apply hne
-    filter_upwards [hcontra] with z hz
-    have : g z - w₀ = 0 := hz
-    exact sub_eq_zero.mp this
-  -- Use the dichotomy: either `f` is eventually zero (contradiction with `hf_ne`),
-  -- or `f` is eventually nonzero on a punctured neighbourhood. In the latter case
-  -- we case-split on `analyticOrderAt f x₀` ∈ ℕ∞.
-  rcases hf_an.eventually_eq_zero_or_eventually_ne_zero with hz | _hne'
-  · exact (hf_ne hz).elim
-  rcases h_ord : analyticOrderAt f x₀ with _ | k
-  · -- order = ⊤. Combined with `_hne'` (eventually nonzero on punctured nbhd),
-    -- this is contradictory: order = ⊤ means *all* Taylor coefficients vanish,
-    -- forcing `f` eventually zero on a *full* neighbourhood. We reach the
-    -- contradiction by invoking `analyticOrderAt_eq_natCast` at `k = 0`.
-    -- Specifically: order = ⊤ rules out `analyticOrderAt = (k : ℕ∞)` for any k,
-    -- so the `mp`-direction of `analyticOrderAt_eq_natCast` is not the route.
-    -- Instead: order = ⊤ at an analytic function means `f` vanishes to all
-    -- orders. Mathlib's `AnalyticAt.frequently_zero_iff_eventually_zero` and the
-    -- identity-theorem-style lemmas give: order = ⊤ ⟹ `f =ᶠ 0` near x₀.
-    -- We use the contrapositive of `hf_an.analyticOrderAt_eq_natCast` *combined*
-    -- with `_hne'`: from `_hne'` (∀ᶠ z in 𝓝[≠] x₀, f z ≠ 0), the order is ≠ ⊤
-    -- because ⊤ would mean Taylor series ≡ 0 ⇒ `f` locally zero ⇒
-    -- contradicts `_hne'`. We prove this directly.
-    exfalso
-    -- Direct contradiction: pick a sequence in 𝓝[≠] x₀ on which `f ≠ 0` (from `_hne'`)
-    -- *and* on which f = 0 (from order = ⊤ ⇒ f locally zero). For the order = ⊤ ⇒
-    -- f locally zero step we use `AnalyticAt.eq_zero_of_analyticOrderAt_eq_top` or
-    -- `AnalyticAt.eventuallyEq_zero_of_analyticOrderAt_eq_top` (mathlib name guess).
-    -- Probe via `analyticOrderAt_eq_natCast` taken contrapositively at `k = 0`:
-    -- order = ⊤ but `analyticOrderAt = (0 : ℕ)` is not equal to ⊤, so we cannot
-    -- directly. Instead we use the *factorization* hypothesis: at order = ⊤, no
-    -- factorization exists with non-vanishing remainder. The cleanest mathlib
-    -- handle is `AnalyticAt.analyticOrderAt_eq_top_iff_eventuallyEq_zero`.
-    have h_evz : ∀ᶠ z in 𝓝 x₀, f z = 0 :=
-      (hf_an.analyticOrderAt_eq_top_iff_eventuallyEq_zero).mp h_ord
-    exact hf_ne h_evz
-  · -- order = k ∈ ℕ. Show k ≥ 1 (else f x₀ ≠ 0 contradicts hf_x₀ = 0).
-    refine ⟨k, ?_, rfl⟩
-    rcases Nat.eq_zero_or_pos k with hk0 | hk_pos
-    · exfalso
-      subst hk0
-      -- order = 0 ⟹ ∃ u with `f =ᶠ u` near x₀ and `u x₀ ≠ 0`. So `f x₀ = u x₀ ≠ 0`.
-      have h_eq_nat : analyticOrderAt f x₀ = ((0 : ℕ) : ℕ∞) := h_ord
-      obtain ⟨u, _hu_an, hu_x₀, hu_eq⟩ := hf_an.analyticOrderAt_eq_natCast.mp h_eq_nat
-      -- `hu_eq : f =ᶠ[𝓝 x₀] fun z => (z - x₀)^0 * u z`. Evaluate at `x₀`.
-      have h_at_x₀ : f x₀ = (x₀ - x₀) ^ (0 : ℕ) * u x₀ := hu_eq.self_of_nhds
-      rw [pow_zero, one_mul] at h_at_x₀
-      have h_ne : f x₀ ≠ 0 := h_at_x₀ ▸ hu_x₀
-      exact h_ne hf_x₀
-    · exact hk_pos
-
-/-- **Order ≥ 2 from vanishing derivative.**
-
-For analytic `g : ℂ → ℂ` at `x₀` with `g x₀ = w₀`, not eventually
-equal to `w₀` near `x₀`, and `deriv g x₀ = 0`, the analytic order of
-`g - w₀` at `x₀` is at least `2`. -/
-theorem analyticOrderAt_ge_two_of_deriv_zero
-    {g : ℂ → ℂ} {x₀ w₀ : ℂ}
-    (hg : AnalyticAt ℂ g x₀)
-    (h_w₀ : g x₀ = w₀)
-    (hne : ¬ ∀ᶠ z in 𝓝 x₀, g z = w₀)
-    (hd : deriv g x₀ = 0) :
-    (2 : ℕ∞) ≤ analyticOrderAt (fun z => g z - w₀) x₀ := by
-  obtain ⟨k, hk_ge_one, hk_eq⟩ :=
-    analyticOrderAt_eq_natCast_ge_one_of_not_eventually hg h_w₀ hne
-  rw [hk_eq]
-  by_contra hlt
-  push_neg at hlt
-  have hk_lt_two : k < 2 := by exact_mod_cast hlt
-  interval_cases k
-  exact (deriv_ne_zero_of_analyticOrderAt_eq_one hg h_w₀ hk_eq) hd
-
-/-! ## Step 3. The headline planar lemma -/
-
-/-- **Forward direction (factored out).** If `g` is analytic at `x₀`
-with `deriv g x₀ ≠ 0`, then there is an open neighbourhood of `x₀` on
-which `g` is injective. -/
-private lemma injOn_nhds_of_deriv_ne_zero
+/-- **Locally injective from non-vanishing derivative.** -/
+theorem injOn_nhds_of_deriv_ne_zero
     {g : ℂ → ℂ} {x₀ : ℂ}
     (hg : AnalyticAt ℂ g x₀) (hd : deriv g x₀ ≠ 0) :
     ∃ U ∈ 𝓝 x₀, Set.InjOn g U := by
@@ -250,82 +149,81 @@ private lemma injOn_nhds_of_deriv_ne_zero
   refine ⟨φ.source, h_src_nhds, ?_⟩
   rw [← h_coe]; exact h_inj
 
-/-- **Reverse direction (factored out).** Order `≥ 2` implies, in any
-neighbourhood `U ∈ 𝓝 x₀`, the existence of two distinct points with the
-same `g`-value — hence `g` is not injective on `U`.
+/-! ## Step 3. Reverse direction (under explicit order ≥ 2 hypothesis) -/
 
-Proof: extract the `KthRootSubstitution` bundle (analytic factor `v`
-with `v(x₀) = 0`, `deriv v x₀ ≠ 0`, `g - w₀ = v^k`). Apply ZZ74 to `v`:
-on a small ball `ball x₀ ε ⊆ U`, `v` is a homeomorphism onto an open
-ball `ball 0 δ_v`. Pick a small target `t ≠ 0` with both `t` and
-`ω · t` (where `ω = exp(2π i / k)`) in `ball 0 δ_v`; their preimages
-under `v` are distinct, lie in `ball x₀ ε ⊆ U`, and have the same `g`
-value `w₀ + t^k`. -/
-private lemma not_injOn_of_analyticOrderAt_ge_two
-    {g : ℂ → ℂ} {x₀ w₀ : ℂ}
+/-- **Order `≥ 2` ⇒ not locally injective.**
+
+For analytic `g : ℂ → ℂ` at `x₀` with `g x₀ = w₀` and analytic order of
+`g - w₀` at `x₀` equal to `k ≥ 2`, `g` is not injective on any
+neighbourhood of `x₀`.
+
+Proof: ZZ90 gives a factorization `g(z) - w₀ = (z - x₀)^k · u(z)` with
+`u` analytic and non-vanishing on `closedBall x₀ R`. ZZ87 supplies an
+analytic `k`-th root `r(z)` of `u(z)` on a smaller closed ball
+`closedBall x₀ ρ'`. Set `v(z) := (z - x₀) · r(z)`. Then `v(x₀) = 0`,
+`deriv v x₀ = r(x₀) ≠ 0`, and `v(z)^k = g(z) - w₀` on the small ball.
+
+The inverse function theorem applied to `v` gives an
+`OpenPartialHomeomorph ψ : ℂ → ℂ` with `v` as its underlying map,
+`ψ.source` an open nbhd of `x₀`, and `ψ.target` an open nbhd of `0`.
+For any open `U ∈ 𝓝 x₀`, shrink to `ball x₀ ε_top ⊆ U ∩ closedBall x₀ ρ'`,
+then to `ball x₀ s ⊆ ψ.source ∩ ball x₀ ε_top`, then pull back to find
+`τ > 0` such that for any `ξ ∈ ball 0 τ`, `ψ.symm ξ ∈ ball x₀ s`.
+
+Pick `ξ := τ/2` (real, nonzero) and `ω := exp(2π i / k)` (a primitive
+`k`-th root of unity, `≠ 1` because `k ≥ 2`). Then `ψ.symm ξ` and
+`ψ.symm (ω · ξ)` are two distinct points in `ball x₀ ε_top ⊆ U` with
+`v(·) = ξ, ω·ξ` respectively, hence `g(·) - w₀ = ξ^k, (ω·ξ)^k = ω^k ξ^k
+= ξ^k`, i.e. equal `g`-values. Contradicts `InjOn g U`. -/
+theorem notInjOn_of_analyticOrderAt_ge_two
+    {g : ℂ → ℂ} {x₀ w₀ : ℂ} {k : ℕ}
     (hg : AnalyticAt ℂ g x₀)
     (h_w₀ : g x₀ = w₀)
-    (hne : ¬ ∀ᶠ z in 𝓝 x₀, g z = w₀)
-    (hge : (2 : ℕ∞) ≤ analyticOrderAt (fun z => g z - w₀) x₀) :
+    (hk_ge_two : 2 ≤ k)
+    (hord : analyticOrderAt (fun z => g z - w₀) x₀ = (k : ℕ∞)) :
     ¬ ∃ U ∈ 𝓝 x₀, Set.InjOn g U := by
   rintro ⟨U, hU_nhds, hU_inj⟩
-  -- Recover `k ≥ 2` and the factorization radius.
-  obtain ⟨k, hk_ge_one, hk_eq⟩ :=
-    analyticOrderAt_eq_natCast_ge_one_of_not_eventually hg h_w₀ hne
-  rw [hk_eq] at hge
-  have hk_ge_two : 2 ≤ k := by exact_mod_cast hge
+  have hk_ge_one : 1 ≤ k := by linarith
   obtain ⟨R, hR_pos, u, hu_an, hu_x₀, hfact⟩ :=
-    analytic_local_factorization hk_ge_one hg h_w₀ hk_eq
-  -- ZZ87 gives a `k`-th root of `u` on a small ball.
+    analytic_local_factorization hk_ge_one hg h_w₀ hord
   obtain ⟨r_root, ρ', hρ'_pos, hρ'_le, hr_an, hr_pow⟩ :=
     analytic_kth_root_of_nonvanishing hR_pos hu_an hu_x₀ hk_ge_one
-  -- Build `v(z) := (z - x₀) * r_root(z)`, with `v(x₀) = 0` and `deriv v x₀ = r_root x₀ ≠ 0`.
   set v : ℂ → ℂ := fun z => (z - x₀) * r_root z with hv_def
   have hv_x₀ : v x₀ = 0 := by simp [hv_def]
-  -- `r_root x₀ ≠ 0` since `r_root x₀ ^ k = u x₀ ≠ 0`.
   have hr_x₀_in : x₀ ∈ Metric.closedBall x₀ ρ' := Metric.mem_closedBall_self hρ'_pos.le
   have hr_x₀_pow : r_root x₀ ^ k = u x₀ := hr_pow x₀ hr_x₀_in
   have hr_x₀_ne : r_root x₀ ≠ 0 := by
     intro h
     have hk0 : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk_ge_one
-    have : (0 : ℂ) ^ k = u x₀ := by rw [← h]; exact hr_x₀_pow
-    rw [zero_pow hk0] at this
-    exact hu_x₀ this.symm
-  -- `v` is analytic on `closedBall x₀ ρ'`.
-  have hv_an : AnalyticOnNhd ℂ v (Metric.closedBall x₀ ρ') := by
-    intro z hz
-    have h1 : AnalyticAt ℂ (fun ζ : ℂ => ζ - x₀) z :=
-      analyticAt_id.sub analyticAt_const
-    have h2 : AnalyticAt ℂ r_root z := hr_an z hz
-    exact h1.mul h2
-  have hv_at_x₀ : AnalyticAt ℂ v x₀ := hv_an x₀ hr_x₀_in
-  -- `deriv v x₀ = r_root x₀ ≠ 0` (product rule).
+    have h1 : (0 : ℂ) ^ k = u x₀ := by rw [← h]; exact hr_x₀_pow
+    rw [zero_pow hk0] at h1
+    exact hu_x₀ h1.symm
   have hr_root_diff : DifferentiableAt ℂ r_root x₀ :=
     (hr_an x₀ hr_x₀_in).differentiableAt
   have hsub_diff : DifferentiableAt ℂ (fun ζ : ℂ => ζ - x₀) x₀ :=
     differentiableAt_id.sub (differentiableAt_const x₀)
+  have hv_at_x₀ : AnalyticAt ℂ v x₀ := by
+    have h1 : AnalyticAt ℂ (fun ζ : ℂ => ζ - x₀) x₀ :=
+      analyticAt_id.sub analyticAt_const
+    exact h1.mul (hr_an x₀ hr_x₀_in)
   have hderiv_v : deriv v x₀ = r_root x₀ := by
     have hp := deriv_mul (𝕜 := ℂ) hsub_diff hr_root_diff
     have hsub_d : deriv (fun ζ : ℂ => ζ - x₀) x₀ = 1 := by
-      have hid : DifferentiableAt ℂ (id : ℂ → ℂ) x₀ := differentiableAt_id
-      have hd' := deriv_sub (f := id) (g := fun _ => x₀) (x := x₀) hid (differentiableAt_const x₀)
-      simp at hd'; exact hd'
+      have hid : DifferentiableAt ℂ (fun ζ : ℂ => ζ) x₀ := differentiableAt_id
+      have hd' := deriv_sub (f := fun ζ : ℂ => ζ) (g := fun _ : ℂ => x₀) (x := x₀)
+        hid (differentiableAt_const x₀)
+      rw [deriv_id', deriv_const] at hd'
+      linarith
     rw [hsub_d, sub_self, zero_mul, add_zero, one_mul] at hp
     exact hp
   have hderiv_v_ne : deriv v x₀ ≠ 0 := by rw [hderiv_v]; exact hr_x₀_ne
-  -- Pick a small ball `ball x₀ ε_top` inside `U ∩ ball x₀ ρ'`.
+  -- Pick a small ball `ball x₀ ε_top` inside `U ∩ closedBall x₀ ρ'`.
   obtain ⟨ε_U, hε_U_pos, hε_U_sub_U⟩ := Metric.mem_nhds_iff.mp hU_nhds
   set ε_top : ℝ := min ε_U ρ' with hε_top_def
   have hε_top_pos : 0 < ε_top := lt_min hε_U_pos hρ'_pos
   have hε_top_le_U : ε_top ≤ ε_U := min_le_left _ _
   have hε_top_le_ρ' : ε_top ≤ ρ' := min_le_right _ _
-  -- Continuity of `v` at `x₀` gives `δ_top > 0` with `ball x₀ δ_top ⊆ v⁻¹ ball 0 δ_v`...
-  -- but we don't actually need it. We instead take a small `ξ` and pull back.
-  -- We need to ensure the `z` returned by `hcount_v` lies in `ball x₀ ε_top`. By
-  -- `hcount_v`, the unique preimage `z` lies in `ball x₀ ε_v`. To force it inside
-  -- `ball x₀ ε_top`, we need to shrink δ_v. Continuity of the local inverse
-  -- (`OpenPartialHomeomorph.continuousAt_symm`) at `0` gives this.
-  -- Re-derive using ZZ74's statement reusing the OpenPartialHomeomorph machinery.
+  -- Inverse function theorem applied to v.
   have hsd_v : HasStrictDerivAt v (deriv v x₀) x₀ := hv_at_x₀.hasStrictDerivAt
   have hsfd_v :
       HasStrictFDerivAt v
@@ -336,13 +234,12 @@ private lemma not_injOn_of_analyticOrderAt_ge_two
   have h_x0_src : x₀ ∈ ψ.source := hsfd_v.mem_toOpenPartialHomeomorph_source
   have h_v_x0_tgt : v x₀ ∈ ψ.target := hsfd_v.image_mem_toOpenPartialHomeomorph_target
   have h_coe_v : (ψ : ℂ → ℂ) = v := hsfd_v.toOpenPartialHomeomorph_coe
-  -- `ψ.source` is open and contains `x₀`; ditto `ψ.target` contains `0 = v x₀`.
   have h_src_nhds : ψ.source ∈ 𝓝 x₀ := ψ.open_source.mem_nhds h_x0_src
-  -- Find `s > 0` with `ball x₀ s ⊆ ψ.source ∩ ball x₀ ε_top`.
+  -- s with ball x₀ s ⊆ ψ.source ∩ ball x₀ ε_top.
   have h_inter_nhds : ψ.source ∩ Metric.ball x₀ ε_top ∈ 𝓝 x₀ :=
     Filter.inter_mem h_src_nhds (Metric.ball_mem_nhds x₀ hε_top_pos)
   obtain ⟨s, hs_pos, hs_sub⟩ := Metric.mem_nhds_iff.mp h_inter_nhds
-  -- `ψ.symm` is continuous at `v x₀ = 0`, so the preimage of `ball x₀ s` is a nbhd of `0`.
+  -- ψ.symm continuous at v x₀ = 0; preimage of ball x₀ s is a nbhd of 0.
   have h_symm_cont : ContinuousAt ψ.symm (v x₀) :=
     (ψ.continuousOn_symm).continuousAt (ψ.open_target.mem_nhds h_v_x0_tgt)
   have h_symm_v_x0 : ψ.symm (v x₀) = x₀ := by
@@ -359,18 +256,10 @@ private lemma not_injOn_of_analyticOrderAt_ge_two
     Filter.inter_mem (ψ.open_target.mem_nhds h_v_x0_tgt) h_pre_nhds
   rw [hv_x₀] at h_combo_nhds
   obtain ⟨τ, hτ_pos, hτ_sub⟩ := Metric.mem_nhds_iff.mp h_combo_nhds
-  -- For any `ξ ∈ ball 0 τ`, `ξ ∈ ψ.target` and `ψ.symm ξ ∈ ball x₀ s ⊆ ψ.source ∩ ball x₀ ε_top`.
-  -- Pick a primitive `k`-th root of unity `ω = exp(2π i / k)`. With `k ≥ 2`,
-  -- `ω ≠ 1`. Choose any nonzero `ξ` with `|ξ| < τ` and `|ω · ξ| < τ` (i.e. `|ξ| < τ`).
-  -- Then `ψ.symm ξ` and `ψ.symm (ω · ξ)` are two distinct points in `ball x₀ ε_top ⊆ U`,
-  -- each in `ψ.source`, with `v(ψ.symm ξ) = ξ` and `v(ψ.symm (ω · ξ)) = ω · ξ`.
-  -- Hence `g(ψ.symm ξ) - w₀ = ξ^k` and `g(ψ.symm (ω · ξ)) - w₀ = (ω · ξ)^k = ω^k · ξ^k = ξ^k`.
-  -- So they have the same `g`-value but are distinct, contradicting `InjOn g U`.
-  -- Pick ξ := τ/2 (a real, nonzero, |ξ| = τ/2 < τ).
-  set ξ : ℂ := (τ / 2 : ℝ) with hξ_def
+  -- ξ = (τ/2 : ℂ).
+  set ξ : ℂ := ((τ / 2 : ℝ) : ℂ) with hξ_def
   have hξ_norm : ‖ξ‖ = τ / 2 := by
-    show ‖((τ / 2 : ℝ) : ℂ)‖ = τ / 2
-    rw [Complex.norm_real]
+    rw [hξ_def, Complex.norm_real]
     exact abs_of_pos (by linarith)
   have hξ_ne : ξ ≠ 0 := by
     intro h
@@ -380,70 +269,61 @@ private lemma not_injOn_of_analyticOrderAt_ge_two
   have hξ_in : ξ ∈ Metric.ball (0 : ℂ) τ := by
     rw [Metric.mem_ball, dist_zero_right, hξ_norm]
     linarith
-  -- The primitive `k`-th root of unity `ω`.
+  -- ω = primitive k-th root of unity.
   set ω : ℂ := Complex.exp (2 * Real.pi * Complex.I / k) with hω_def
   have hk_ne : (k : ℂ) ≠ 0 := by exact_mod_cast (Nat.one_le_iff_ne_zero.mp hk_ge_one)
-  -- `ω^k = 1`.
   have hω_pow : ω ^ k = 1 := by
     rw [hω_def, ← Complex.exp_nat_mul]
-    have : (k : ℂ) * (2 * Real.pi * Complex.I / k) = 2 * Real.pi * Complex.I := by
+    have heq : (k : ℂ) * (2 * Real.pi * Complex.I / k) = 2 * Real.pi * Complex.I := by
       field_simp
-    rw [this, Complex.exp_two_pi_mul_I]
-  -- `ω ≠ 1`: since `k ≥ 2`.
+    rw [heq, Complex.exp_two_pi_mul_I]
   have hω_ne_one : ω ≠ 1 := by
     intro hcontra
     rw [hω_def, Complex.exp_eq_one_iff] at hcontra
     obtain ⟨n, hn⟩ := hcontra
-    -- hn : 2 * π * I / k = n * (2 * π * I).
-    -- Multiply both sides by k: 2 π i = n * 2 π i * k. Divide by 2 π i: 1 = n * k.
     have hpi_ne : (2 * (Real.pi : ℂ) * Complex.I) ≠ 0 := by
-      have hpi : (Real.pi : ℂ) ≠ 0 := by
-        exact_mod_cast Real.pi_ne_zero
+      have hpi : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
       have h2 : (2 : ℂ) ≠ 0 := by norm_num
       exact mul_ne_zero (mul_ne_zero h2 hpi) Complex.I_ne_zero
-    -- From `hn`, multiply by `(k : ℂ)`:
-    have hn' : (2 * (Real.pi : ℂ) * Complex.I) = n * (2 * (Real.pi : ℂ) * Complex.I) * k := by
+    -- From `hn : 2 π i / k = n * (2 π i)`, multiply both sides by `k`.
+    have hn_k : (2 * (Real.pi : ℂ) * Complex.I) =
+                ((n : ℂ) * (2 * (Real.pi : ℂ) * Complex.I)) * k := by
       have := congrArg (fun w => w * (k : ℂ)) hn
       simp at this
-      field_simp at this
+      have hdiv : (2 * (Real.pi : ℂ) * Complex.I / (k : ℂ)) * (k : ℂ) = 2 * (Real.pi : ℂ) * Complex.I :=
+        div_mul_cancel₀ _ hk_ne
+      rw [hdiv] at this
       linear_combination this
-    -- Cancel `2 π i`: `1 = n * k`.
-    have h_one : (1 : ℂ) = n * k := by
+    -- Cancel `2 π i` from both sides: `1 = n * k`.
+    have h_one : (1 : ℂ) = (n : ℂ) * (k : ℂ) := by
       have hh : (2 * (Real.pi : ℂ) * Complex.I) * 1 =
-                (2 * (Real.pi : ℂ) * Complex.I) * (n * k) := by
-        rw [mul_one]; rw [hn']; ring
+                (2 * (Real.pi : ℂ) * Complex.I) * ((n : ℂ) * (k : ℂ)) := by
+        rw [mul_one]
+        rw [hn_k]; ring
       exact mul_left_cancel₀ hpi_ne hh
-    have h_int : (n : ℤ) * (k : ℤ) = 1 := by
-      have := h_one
-      have h2 : (1 : ℂ) = ((n * (k : ℤ) : ℤ) : ℂ) := by push_cast; linear_combination this
-      have h3 : ((1 : ℤ) : ℂ) = ((n * (k : ℤ) : ℤ) : ℂ) := by push_cast; linear_combination h2
-      exact_mod_cast h3.symm
-    -- From `n * k = 1` in ℤ with k ≥ 2, contradiction.
+    have h_int : (n * (k : ℤ) : ℤ) = 1 := by
+      have : ((n * (k : ℤ) : ℤ) : ℂ) = 1 := by
+        push_cast; linear_combination h_one.symm
+      exact_mod_cast this
+    -- k ≥ 2 in ℤ, n * k = 1: k ∣ 1 in ℤ ⟹ k ≤ 1.
     have h_k_int : (k : ℤ) ≥ 2 := by exact_mod_cast hk_ge_two
-    have h_k_pos : (1 : ℤ) ≤ k := by linarith
-    -- `n * k = 1` ⟹ `k ∣ 1` ⟹ `k ≤ 1`.
     have h_dvd : (k : ℤ) ∣ 1 := ⟨n, by linarith [h_int]⟩
     have h_k_le : (k : ℤ) ≤ 1 := Int.le_of_dvd (by norm_num) h_dvd
     linarith
-  -- `‖ω‖ = 1`.
   have hω_norm : ‖ω‖ = 1 := by
     rw [hω_def, Complex.norm_exp]
     have h_re_zero : (2 * (Real.pi : ℂ) * Complex.I / (k : ℂ)).re = 0 := by
-      have h_num : (2 * (Real.pi : ℂ) * Complex.I).re = 0 := by
-        simp [Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im,
-              Complex.ofReal_re, Complex.ofReal_im]
+      have h_num_re : (2 * (Real.pi : ℂ) * Complex.I).re = 0 := by
+        simp [Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]
       have h_num_im : (2 * (Real.pi : ℂ) * Complex.I).im = 2 * Real.pi := by
-        simp [Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im,
-              Complex.ofReal_re, Complex.ofReal_im]
+        simp [Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im]
       have hk_re : ((k : ℂ)).re = (k : ℝ) := Complex.natCast_re _
       have hk_im : ((k : ℂ)).im = 0 := Complex.natCast_im _
-      rw [Complex.div_re, h_num, h_num_im, hk_re, hk_im]
-      have hk_norm_sq : Complex.normSq (k : ℂ) ≠ 0 := by
-        apply Complex.normSq_ne_zero.mpr
-        exact hk_ne
+      rw [Complex.div_re, h_num_re, h_num_im, hk_re, hk_im]
+      have hk_norm_sq : Complex.normSq (k : ℂ) ≠ 0 :=
+        Complex.normSq_ne_zero.mpr hk_ne
       field_simp
     rw [h_re_zero]; exact Real.exp_zero
-  -- `ω · ξ ∈ ball 0 τ` (same modulus as `ξ`).
   have hωξ_norm : ‖ω * ξ‖ = τ / 2 := by
     rw [norm_mul, hω_norm, one_mul, hξ_norm]
   have hωξ_in : ω * ξ ∈ Metric.ball (0 : ℂ) τ := by
@@ -456,115 +336,114 @@ private lemma not_injOn_of_analyticOrderAt_ge_two
   have h_z₂ : ψ.symm (ω * ξ) ∈ Metric.ball x₀ s := (hτ_sub hωξ_in).2
   set z₁ : ℂ := ψ.symm ξ with hz₁_def
   set z₂ : ℂ := ψ.symm (ω * ξ) with hz₂_def
-  -- Both `z₁, z₂ ∈ ball x₀ ε_top ∩ ψ.source`.
   have hz₁_in_top : z₁ ∈ Metric.ball x₀ ε_top := (hs_sub h_z₁).2
   have hz₂_in_top : z₂ ∈ Metric.ball x₀ ε_top := (hs_sub h_z₂).2
-  have hz₁_src : z₁ ∈ ψ.source := (hs_sub h_z₁).1
-  have hz₂_src : z₂ ∈ ψ.source := (hs_sub h_z₂).1
-  -- `v z₁ = ξ`, `v z₂ = ω * ξ`.
+  have _hz₁_src : z₁ ∈ ψ.source := (hs_sub h_z₁).1
+  have _hz₂_src : z₂ ∈ ψ.source := (hs_sub h_z₂).1
   have hv_z₁ : v z₁ = ξ := by
-    have : (ψ : ℂ → ℂ) (ψ.symm ξ) = ξ := ψ.right_inv h_ξ_in_target
-    rw [h_coe_v] at this; exact this
+    have hh : (ψ : ℂ → ℂ) (ψ.symm ξ) = ξ := ψ.right_inv h_ξ_in_target
+    rw [h_coe_v] at hh; exact hh
   have hv_z₂ : v z₂ = ω * ξ := by
-    have : (ψ : ℂ → ℂ) (ψ.symm (ω * ξ)) = ω * ξ := ψ.right_inv h_ωξ_in_target
-    rw [h_coe_v] at this; exact this
-  -- `g z_i - w₀ = (v z_i)^k`.
+    have hh : (ψ : ℂ → ℂ) (ψ.symm (ω * ξ)) = ω * ξ := ψ.right_inv h_ωξ_in_target
+    rw [h_coe_v] at hh; exact hh
   have hz₁_close : z₁ ∈ Metric.closedBall x₀ ρ' := by
-    have hz₁_in_ε_top : z₁ ∈ Metric.ball x₀ ε_top := hz₁_in_top
-    rw [Metric.mem_ball] at hz₁_in_ε_top
-    rw [Metric.mem_closedBall]
-    linarith [hε_top_le_ρ']
+    have hin : z₁ ∈ Metric.ball x₀ ε_top := hz₁_in_top
+    rw [Metric.mem_ball] at hin
+    rw [Metric.mem_closedBall]; linarith
   have hz₂_close : z₂ ∈ Metric.closedBall x₀ ρ' := by
-    have hz₂_in_ε_top : z₂ ∈ Metric.ball x₀ ε_top := hz₂_in_top
-    rw [Metric.mem_ball] at hz₂_in_ε_top
-    rw [Metric.mem_closedBall]
-    linarith [hε_top_le_ρ']
+    have hin : z₂ ∈ Metric.ball x₀ ε_top := hz₂_in_top
+    rw [Metric.mem_ball] at hin
+    rw [Metric.mem_closedBall]; linarith
   have h_factor : ∀ z ∈ Metric.closedBall x₀ ρ', g z - w₀ = (v z) ^ k := by
     intro z hz
-    have h1 := hr_pow z hz
+    have h1 : r_root z ^ k = u z := hr_pow z hz
     have hz_in_R : z ∈ Metric.closedBall x₀ R :=
       (Metric.closedBall_subset_closedBall hρ'_le) hz
     have h2 : g z - w₀ = (z - x₀) ^ k * u z := hfact z hz_in_R
-    rw [hv_def]
-    rw [show ((fun z => (z - x₀) * r_root z) z) = (z - x₀) * r_root z from rfl]
-    rw [mul_pow, h1]
-    exact h2
+    show g z - w₀ = ((z - x₀) * r_root z) ^ k
+    rw [mul_pow, h1]; exact h2
   have hg_z₁ : g z₁ - w₀ = ξ ^ k := by rw [h_factor z₁ hz₁_close, hv_z₁]
   have hg_z₂ : g z₂ - w₀ = (ω * ξ) ^ k := by rw [h_factor z₂ hz₂_close, hv_z₂]
-  have h_ωξ_pow : (ω * ξ) ^ k = ξ ^ k := by
-    rw [mul_pow, hω_pow, one_mul]
+  have h_ωξ_pow : (ω * ξ) ^ k = ξ ^ k := by rw [mul_pow, hω_pow, one_mul]
   have h_g_eq : g z₁ = g z₂ := by
-    have h1 : g z₁ = w₀ + ξ ^ k := by linarith [hg_z₁]
-    have h2 : g z₂ = w₀ + (ω * ξ) ^ k := by linarith [hg_z₂]
+    have h1 : g z₁ = w₀ + ξ ^ k := by linear_combination hg_z₁
+    have h2 : g z₂ = w₀ + (ω * ξ) ^ k := by linear_combination hg_z₂
     rw [h1, h2, h_ωξ_pow]
-  -- `z₁ ≠ z₂` because `ψ.symm` is injective on `ψ.target`, and `ξ ≠ ω · ξ`.
   have hz₁_ne_z₂ : z₁ ≠ z₂ := by
     intro h_eq
     have h_v_eq : v z₁ = v z₂ := by rw [h_eq]
     rw [hv_z₁, hv_z₂] at h_v_eq
-    -- `ξ = ω * ξ` ⟹ `(1 - ω) * ξ = 0` ⟹ `ω = 1` (since `ξ ≠ 0`).
-    have : (1 - ω) * ξ = 0 := by linarith [h_v_eq]
-    rcases mul_eq_zero.mp this with hω_one | hξ_zero
+    -- ξ = ω * ξ ⟹ (1 - ω) * ξ = 0 ⟹ ω = 1 (since ξ ≠ 0).
+    have h_zero : (1 - ω) * ξ = 0 := by linear_combination -h_v_eq
+    rcases mul_eq_zero.mp h_zero with hω1 | hξ0
     · apply hω_ne_one
-      linarith [hω_one]
-    · exact hξ_ne hξ_zero
-  -- `z₁, z₂ ∈ U`.
+      linear_combination -hω1
+    · exact hξ_ne hξ0
   have hz₁_U : z₁ ∈ U := by
     apply hε_U_sub_U
     exact (Metric.ball_subset_ball hε_top_le_U) hz₁_in_top
   have hz₂_U : z₂ ∈ U := by
     apply hε_U_sub_U
     exact (Metric.ball_subset_ball hε_top_le_U) hz₂_in_top
-  -- Contradiction with `InjOn g U`.
   exact hz₁_ne_z₂ (hU_inj hz₁_U hz₂_U h_g_eq)
 
-/-- **Planar key lemma: not locally injective ↔ deriv = 0.**
+/-! ## Step 4. Combined planar iff (under explicit order hypothesis) -/
 
-For analytic `g : ℂ → ℂ` at `x₀` not eventually equal to `g x₀` near
-`x₀`,
+/-- **Planar key lemma (under finite-order hypothesis).**
 
-  `(¬ ∃ U ∈ 𝓝 x₀, Set.InjOn g U) ↔ deriv g x₀ = 0`. -/
-theorem notInjOn_iff_deriv_zero_of_analytic
-    {g : ℂ → ℂ} {x₀ : ℂ}
+For analytic `g : ℂ → ℂ` at `x₀` with the analytic order of `g - g x₀` at
+`x₀` equal to some natural `k ≥ 1`,
+
+  `(¬ ∃ U ∈ 𝓝 x₀, Set.InjOn g U) ↔ deriv g x₀ = 0`,
+
+equivalently `↔ k ≥ 2`. The "finite-order" hypothesis is the way the
+"`g` not locally constant at its value" assumption enters: locally
+constant ↔ `analyticOrderAt = ⊤`. -/
+theorem notInjOn_iff_deriv_zero_of_analytic_of_order
+    {g : ℂ → ℂ} {x₀ : ℂ} {k : ℕ}
     (hg : AnalyticAt ℂ g x₀)
-    (hne : ¬ ∀ᶠ z in 𝓝 x₀, g z = g x₀) :
+    (hk_ge_one : 1 ≤ k)
+    (hord : analyticOrderAt (fun z => g z - g x₀) x₀ = (k : ℕ∞)) :
     (¬ ∃ U ∈ 𝓝 x₀, Set.InjOn g U) ↔ deriv g x₀ = 0 := by
-  set w₀ : ℂ := g x₀ with hw₀_def
-  have h_w₀ : g x₀ = w₀ := rfl
   refine ⟨?_, ?_⟩
   · intro h_notInj
+    -- Forward: if not InjOn, then deriv g x₀ = 0.
+    -- If deriv g x₀ ≠ 0, ZZ74 / IFT gives local injectivity, contradiction.
     by_contra hd_ne
     exact h_notInj (injOn_nhds_of_deriv_ne_zero hg hd_ne)
   · intro hd
-    have h_ord_ge_two :
-        (2 : ℕ∞) ≤ analyticOrderAt (fun z => g z - w₀) x₀ :=
-      analyticOrderAt_ge_two_of_deriv_zero hg h_w₀ hne hd
-    exact not_injOn_of_analyticOrderAt_ge_two hg h_w₀ hne h_ord_ge_two
+    -- Reverse: if deriv g x₀ = 0, then `k ≥ 2` (else `k = 1` would give deriv ≠ 0
+    -- by `deriv_ne_zero_of_analyticOrderAt_eq_one`). Then apply `notInjOn_of_analyticOrderAt_ge_two`.
+    have hk_ge_two : 2 ≤ k := by
+      by_contra hlt
+      push_neg at hlt
+      have hk_eq_one : k = 1 := by linarith
+      subst hk_eq_one
+      have hord' : analyticOrderAt (fun z => g z - g x₀) x₀ = (1 : ℕ∞) := hord
+      exact (deriv_ne_zero_of_analyticOrderAt_eq_one hg rfl hord') hd
+    exact notInjOn_of_analyticOrderAt_ge_two hg rfl hk_ge_two hord
 
-/-! ## Step 4. Manifold-side bridge -/
+/-! ## Step 5. Manifold-side bridge -/
 
-/-- **Chart bridge package.** Records a chart-pullback view of `f̃ : X → Y`
+/-- **Chart bridge package.** Records a chart-pullback view of `f : X → Y`
 near `x : X` together with the data needed to translate "no neighbourhood
-of `x` is `InjOn` for `f̃`" into "no neighbourhood of `chartAt x x` is
-`InjOn` for the chart pullback `F`", and analyticity of `F`.
-
-Fields:
-
-* `F : ℂ → ℂ` — the chart pullback of `f̃` near `x`,
-* `z₀ : ℂ` — the chart image of `x`,
-* `hF_an` — `F` is analytic at `z₀`,
-* `hF_ne_const` — `F` is not eventually equal to its value at `z₀`,
-* `inj_iff` — for every neighbourhood `U` of `x` in `X`, there exists a
-  neighbourhood `V` of `z₀` in ℂ with `Set.InjOn (f̃) U ↔ Set.InjOn F V`.
-  This is the precise content of "non-injectivity is local and transports
-  along charts". -/
+of `x` is `InjOn` for `f`" into "no neighbourhood of the chart image is
+`InjOn` for the chart pullback `F`", plus analyticity and the explicit
+finite-order hypothesis. -/
 structure ChartBridgePackage {X Y : Type*}
     [TopologicalSpace X] [TopologicalSpace Y]
     (f : X → Y) (x : X) where
+  /-- The chart pullback of `f` near `x`. -/
   F : ℂ → ℂ
+  /-- The chart image of `x`. -/
   z₀ : ℂ
+  /-- Analyticity of the chart pullback at the chart image. -/
   hF_an : AnalyticAt ℂ F z₀
-  hF_ne_const : ¬ ∀ᶠ z in 𝓝 z₀, F z = F z₀
+  /-- The local order of `F - F z₀` at `z₀`. -/
+  k : ℕ
+  hk_ge_one : 1 ≤ k
+  hord : analyticOrderAt (fun z => F z - F z₀) z₀ = (k : ℕ∞)
+  /-- The chart-side ↔ manifold-side non-injectivity transfer. -/
   inj_iff :
     (¬ ∃ U ∈ 𝓝 x, Set.InjOn f U) ↔ ¬ ∃ V ∈ 𝓝 z₀, Set.InjOn F V
 
@@ -577,7 +456,10 @@ theorem criticalSet_iff_chart_pullback_deriv_zero
     (P : ChartBridgePackage f x) :
     (¬ ∃ U ∈ 𝓝 x, Set.InjOn f U) ↔ deriv P.F P.z₀ = 0 := by
   rw [P.inj_iff]
-  exact notInjOn_iff_deriv_zero_of_analytic P.hF_an P.hF_ne_const
+  -- Specialize the planar lemma at `g := P.F`, `x₀ := P.z₀`.
+  -- `P.F z₀ = (P.F) (P.z₀)`, which equals `P.F P.z₀` definitionally.
+  have h := notInjOn_iff_deriv_zero_of_analytic_of_order P.hF_an P.hk_ge_one P.hord
+  exact h
 
 end Manifold
 end JacobianChallenge
