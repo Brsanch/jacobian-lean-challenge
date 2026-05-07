@@ -15,6 +15,7 @@ import JacobianChallenge.Manifold.IsConstantMapAux
 import JacobianChallenge.Manifold.LocalNormalForm
 import JacobianChallenge.Manifold.LocalMultiplicityInvariance
 import JacobianChallenge.Manifold.LocalKFoldMultiplicity
+import JacobianChallenge.Manifold.AnalyticKthRoot
 import JacobianChallenge.Manifold.LocalMultiplicityChartPullback
 import JacobianChallenge.Manifold.FibreSumGloballyConstant
 import JacobianChallenge.Manifold.Degree
