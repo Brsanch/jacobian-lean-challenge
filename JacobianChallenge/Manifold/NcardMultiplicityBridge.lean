@@ -252,7 +252,7 @@ theorem ncard_eq_meromorphicDegreeAtInfty_toNat_of_simple
               (fun x => mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x < 0)).card := by
       have := hbridge
       simpa [JacobianChallenge.MeromorphicNonzero.fiberCount] using this
-    rw [h_fiber_eq, Set.ncard_coe_finset, ← hsupport_partition]
+    rw [h_fiber_eq, Set.ncard_coe_finset, hsupport_partition]
   rw [hncard_topo, halg, hsum_eq]
 
 end MeromorphicDegreeFiberSum
