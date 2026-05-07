@@ -260,13 +260,14 @@ noncomputable def ofLocalSheets
     intro x hx
     have hcont : ContinuousOn (sheet x hx).g (sheet x hx).V := (sheet x hx).g_continuousOn
     have hWsep_op : IsOpen (Wsep x) := hWsep_open x hx
-    -- Use `continuousOn_iff_isOpen`: ContinuousOn g s ↔ ∀ open t, ∃ u open,
-    -- s ∩ g⁻¹' t = s ∩ u.
-    rw [continuousOn_iff_isOpen] at hcont
+    -- `continuousOn_iff'`: ContinuousOn g s ↔ ∀ open t, ∃ u open,
+    --   g ⁻¹' t ∩ s = u ∩ s.
+    rw [continuousOn_iff'] at hcont
     obtain ⟨u, hu_open, hu_eq⟩ := hcont (Wsep x) hWsep_op
     show IsOpen ((sheet x hx).V ∩ (sheet x hx).g ⁻¹' Wsep x)
-    rw [hu_eq]
-    exact (sheet x hx).V_open.inter hu_open
+    -- (sheet x).V ∩ g ⁻¹' Wsep x = g ⁻¹' Wsep x ∩ (sheet x).V = u ∩ (sheet x).V
+    rw [Set.inter_comm, hu_eq]
+    exact hu_open.inter (sheet x hx).V_open
   have y₀_mem_V : ∀ x (hx : x ∈ xs), y₀ ∈ V x hx := by
     intro x hx
     refine ⟨(sheet x hx).mem_V, ?_⟩
@@ -377,37 +378,43 @@ noncomputable def ofLocalSheets
       y₀_mem_W := y₀_mem_W
       W_subset_V := ?W_subset_V
       preimage_W_subset := ?preimage_W_subset }
-  · intro x hx; simp only [dif_pos hx]; exact U_open x hx
-  · intro x hx; simp only [dif_pos hx]; exact U_mem x hx
-  · intro x hx x' hx' hne
-    simp only [dif_pos hx, dif_pos hx']
-    exact U_disj x hx x' hx' hne
-  · intro x hx; simp only [dif_pos hx]; exact y₀_mem_V x hx
-  · intro x hx; simp only [dif_pos hx]; exact injOn_f_U x hx
-  · intro x hx; simp only [dif_pos hx]
-    intro y hy
-    -- We have to show: y ∈ V x hx → ∃ z ∈ U x hx, f z = y. surjOn_f_U_V gives
-    -- y ∈ V → ∃ z ∈ U with f z = y; then need to dif_pos U as well in the witness.
-    obtain ⟨z, hzU, hzy⟩ := surjOn_f_U_V x hx hy
-    refine ⟨z, ?_, hzy⟩
-    simp only [dif_pos hx]; exact hzU
   · intro x hx
-    simp only [dif_pos hx]
-    intro y hy
-    exact W_subset_V x hx hy
-  · intro z hz
-    have hz_subtype : z ∈ ⋃ (p : {a // a ∈ xs}), U p.1 p.2 := by
-      have hzfW₀ : f z ∈ W₀ := hz.1
-      have hzK_neg : z ∉ K := fun hzK => hzfW₀ ⟨z, hzK, rfl⟩
-      by_contra hnotin
-      apply hzK_neg
-      intro hzU'
-      exact hnotin hzU'
-    rw [mem_iUnion] at hz_subtype
-    obtain ⟨p, hzp⟩ := hz_subtype
+    show IsOpen (if hx : x ∈ xs then U x hx else ∅)
+    rw [dif_pos hx]; exact U_open x hx
+  · intro x hx
+    show x ∈ (if hx : x ∈ xs then U x hx else ∅)
+    rw [dif_pos hx]; exact U_mem x hx
+  · intro x hx x' hx' hne
+    show Disjoint (if hx : x ∈ xs then U x hx else ∅) (if hx' : x' ∈ xs then U x' hx' else ∅)
+    rw [dif_pos hx, dif_pos hx']
+    exact U_disj x hx x' hx' hne
+  · intro x hx
+    show y₀ ∈ (if hx : x ∈ xs then V x hx else Set.univ)
+    rw [dif_pos hx]; exact y₀_mem_V x hx
+  · intro x hx
+    show InjOn f (if hx : x ∈ xs then U x hx else ∅)
+    rw [dif_pos hx]; exact injOn_f_U x hx
+  · intro x hx
+    show SurjOn f (if hx : x ∈ xs then U x hx else ∅) (if hx : x ∈ xs then V x hx else Set.univ)
+    rw [dif_pos hx, dif_pos hx]
+    exact surjOn_f_U_V x hx
+  · intro x hx
+    show W ⊆ (if hx : x ∈ xs then V x hx else Set.univ)
+    rw [dif_pos hx]
+    intro y hy; exact W_subset_V x hx hy
+  · -- preimage_W_subset : f ⁻¹' W ⊆ ⋃ x ∈ xs, (if hx : x ∈ xs then U x hx else ∅)
+    intro z hz
+    have hzfW₀ : f z ∈ W₀ := hz.1
+    have hzK_neg : z ∉ K := fun hzK => hzfW₀ ⟨z, hzK, rfl⟩
+    have hz_in_unionU' : z ∈ UnionU' := by
+      by_contra h; exact hzK_neg h
+    rw [show UnionU' = ⋃ (p : {a // a ∈ xs}), U p.1 p.2 from rfl] at hz_in_unionU'
+    rw [mem_iUnion] at hz_in_unionU'
+    obtain ⟨p, hzp⟩ := hz_in_unionU'
     rw [mem_iUnion₂]
     refine ⟨p.1, p.2, ?_⟩
-    simp only [dif_pos p.2]; exact hzp
+    show z ∈ (if hx : p.1 ∈ xs then U p.1 hx else ∅)
+    rw [dif_pos p.2]; exact hzp
 
 end HurwitzPatchingData
 
