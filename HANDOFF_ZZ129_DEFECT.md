@@ -1,5 +1,26 @@
 # Handoff: `RegularValueWitnessReg` architectural defect (introduced ZZ129, surfaced ZZ170/ZZ171)
 
+## Status: RESOLVED 2026-05-08 (ZZ172)
+
+The structural fix landed on `main` at `030b1b3` (merge of `feat/zz172-degree-fix`,
+commit `a25a43f`). CI green on first push (14m45s). Items below describe the
+defect history and the chip plan; what was actually executed in ZZ172:
+
+- `RegularValueWitnessReg` no longer takes `C : Set Y`. `is_regular` is now the
+  chart-pullback-derivative-nonzero certificate inlined in the structure
+  (matching the shape ZZ169's `LocalSheetData.ofContMDiffMfderivNeZero`
+  consumes).
+- `fibre_card_well_defined_at_regular_statement` drops the `∀ C` quantifier.
+- Universally-false `h_C_fin` hypothesis removed from ZZ155 (`FibreCardWellDefinedAtRegular.lean`)
+  and ZZ160 (`HurwitzWellDefinedFromHPath.lean`). Composers now take a
+  per-`f` packaging existential.
+- `degreeFiber_eq_witness_card_at_regular` bridge (`DegreeUnconditional.lean`)
+  updated: `h_choice_reg` is the analytic certificate, not `value ∉ C`.
+
+Remaining chip plan (see below): ZZ176 (compose unconditional discharge of
+the corrected statement), ZZ177 (Basic.lean Pic0.pullback swap), ZZ178
+(items 22/24 fall-out).
+
 ## TL;DR
 
 Items 8/9/22/24 STRICT-CLOSE is blocked on a **provably false theorem statement** in `JacobianChallenge/Manifold/Degree.lean` (commit `4f88a7f7`, ZZ129). The defect surfaced when ZZ170 tried to discharge the composer ZZ155 unconditionally. Fix is multi-file but bounded (~5-8 chips). All the analytic content needed to discharge a *correctly-stated* theorem is in main as of HEAD `8d5e0b6`. The blocker is purely the broken type, not missing math.
