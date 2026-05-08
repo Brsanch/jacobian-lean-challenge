@@ -42,7 +42,7 @@ theorem h_topo_holds_unconditional
   · have hne : (Cᶜ : Set Y).Nonempty := Set.nonempty_iff_ne_empty.mpr h
     have hpath : IsPathConnected (Cᶜ : Set Y) :=
       @isPathConnected_compl_finite_of_connected_chartedSpace_complex
-        Y _ _ _ _ ω _ C hC hne
+        ω Y _ _ _ _ _ C hC hne
     exact hpath.isConnected.isPreconnected
 
 end JacobianChallenge.Manifold
