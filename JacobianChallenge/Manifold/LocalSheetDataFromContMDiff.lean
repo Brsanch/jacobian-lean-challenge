@@ -168,9 +168,9 @@ noncomputable def ofContMDiffMfderivNeZero
   -- Build Vc'.
   have hSφsrc_nhds : S ∩ φ.source ∈ 𝓝 z₀ :=
     Filter.inter_mem (hS_open.mem_nhds hz₀_S) (φ.open_source.mem_nhds hz₀_φsrc)
-  have hVc_φS_pre : (φ.symm : ℂ → ℂ) ⁻¹' (S ∩ φ.source) ∈ 𝓝 w₀ := by
-    have := hφsymm_cont_w₀.preimage_mem_nhds (h := hSφsrc_nhds)
-    rw [hφsymm_w₀] at this; exact this
+  have hVc_φS_pre : (φ.symm : ℂ → ℂ) ⁻¹' (S ∩ φ.source) ∈ 𝓝 w₀ :=
+    ContinuousAt.preimage_mem_nhds hφsymm_cont_w₀
+      (by rw [hφsymm_w₀]; exact hSφsrc_nhds)
   have hφ_target_nhds : φ.target ∈ 𝓝 w₀ := φ.open_target.mem_nhds hw₀_φtgt
   have heY_target_nhds : eY.target ∈ 𝓝 w₀ := eY.open_target.mem_nhds hw₀_target
   have hVc'_nhds_full :
@@ -235,7 +235,7 @@ noncomputable def ofContMDiffMfderivNeZero
   have hV_open : IsOpen V := by
     rw [hV_eq]
     exact eY.continuousOn_toFun.isOpen_inter_preimage eY.open_source hVc'_open
-  have hy₀_V : y₀ ∈ V := ⟨w₀, hw₀_Vc', eY.left_inv hy₀S⟩
+  have hy₀_V : f x₀ ∈ V := ⟨w₀, hw₀_Vc', eY.left_inv hy₀S⟩
   -- MapsTo f U V.
   have hf_mapsTo : MapsTo f U V := by
     rintro x ⟨z, hzUc', hzx⟩
@@ -286,7 +286,7 @@ noncomputable def ofContMDiffMfderivNeZero
     have hφz : (φ : ℂ → ℂ) z = w := φ.right_inv hw_φtgt
     have hz_Uc' : z ∈ Uc' := ⟨⟨hz_φsrc, by show (φ : ℂ → ℂ) z ∈ Vc'; rw [hφz]; exact hwVc'⟩, hz_S⟩
     refine ⟨z, hz_Uc', ?_⟩
-    show eX.symm (φ.symm (eY (eY.symm w))) = eX.symm z
+    show eX.symm z = eX.symm (φ.symm (eY (eY.symm w)))
     rw [eY.right_inv hw_target]
   -- LeftInvOn g f U.
   -- For x ∈ U, x = eX.symm z with z ∈ Uc'. Then f x = f (eX.symm z), and
