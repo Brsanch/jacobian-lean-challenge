@@ -42,12 +42,13 @@ import Mathlib.Geometry.Manifold.ContMDiff.Defs
 import Mathlib.Topology.Connected.PathConnected
 import Mathlib.Topology.Connected.LocPathConnected
 
+open scoped Manifold Topology
+
 noncomputable section
 
 namespace JacobianChallenge.Manifold
 
 open Set unitInterval Topology JacobianChallenge
-open scoped Manifold Topology
 
 /-- **Auxiliary: path-connected piece inside a ball-chart source minus `C`.**
 
