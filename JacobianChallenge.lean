@@ -7,6 +7,7 @@ import JacobianChallenge.Basic
 import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.ChipAliases
 import JacobianChallenge.Divisor.FiberPullback
+import JacobianChallenge.Divisor.FiberPullbackWeighted
 import JacobianChallenge.Divisor.FiberSum
 import JacobianChallenge.Divisor.FiberSumWeighted
 import JacobianChallenge.Divisor.MeromorphicNonzeroGerm
