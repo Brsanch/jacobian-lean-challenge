@@ -38,6 +38,7 @@ import JacobianChallenge.Manifold.PathSubdivisionByBallCharts
 import JacobianChallenge.Manifold.ChartOverlapAvoidanceFull
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Geometry.Manifold.IsManifold.Basic
+import Mathlib.Geometry.Manifold.ContMDiff.Defs
 import Mathlib.Topology.Connected.PathConnected
 import Mathlib.Topology.Connected.LocPathConnected
 
