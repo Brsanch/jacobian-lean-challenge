@@ -3,8 +3,10 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
+import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
+import Mathlib.Analysis.Analytic.Order
 import Mathlib.Analysis.Analytic.IsolatedZeros
-import Mathlib.Geometry.Manifold.IsManifold.Basic
+import Mathlib.Geometry.Manifold.IsManifold.ExtChartAt
 
 /-! # Manifold-side ramification index (ZZ179 starter)
 
