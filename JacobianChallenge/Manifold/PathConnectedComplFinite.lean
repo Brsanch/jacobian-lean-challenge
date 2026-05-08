@@ -236,13 +236,13 @@ finite set is path-connected, provided it is nonempty. -/
 theorem isPathConnected_compl_finite_of_connected_chartedSpace_complex
     {Y : Type*} [TopologicalSpace Y] [ConnectedSpace Y] [T2Space Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
-    {C : Set Y} (hC_fin : C.Finite) (hCᶜ : (Cᶜ : Set Y).Nonempty) :
+    {C : Set Y} (hC_fin : C.Finite) (hC_compl : (Cᶜ : Set Y).Nonempty) :
     IsPathConnected (Cᶜ : Set Y) := by
   -- Path-connectedness of `Y`.
   have : LocPathConnectedSpace Y := locPathConnectedSpace_of_chartedSpace_complex
   have : PathConnectedSpace Y := pathConnectedSpace_of_connectedSpace_locPathConnected
   -- Pick a basepoint in `Cᶜ`.
-  obtain ⟨p, hp_nc⟩ := hCᶜ
+  obtain ⟨p, hp_nc⟩ := hC_compl
   refine ⟨p, hp_nc, ?_⟩
   intro q hq_nc
   -- Get a path from `p` to `q`.
