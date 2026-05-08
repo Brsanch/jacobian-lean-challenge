@@ -21,6 +21,7 @@ import JacobianChallenge.Manifold.PreconnectedFromFiniteComplement
 import JacobianChallenge.Manifold.PathConnectedComplFinite
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Geometry.Manifold.IsManifold.Basic
+import Mathlib.Topology.Connected.PathConnected
 
 open scoped Manifold Topology
 
@@ -33,11 +34,8 @@ theorem h_topo_holds_unconditional
     {Y : Type*} [TopologicalSpace Y] [ConnectedSpace Y] [T2Space Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] :
     ∀ C : Set Y, C.Finite → IsPreconnected (Cᶜ : Set Y) := by
-  intro C hC
-  by_cases h : (Cᶜ : Set Y) = ∅
-  · rw [h]; exact isPreconnected_empty
-  · have hne : (Cᶜ : Set Y).Nonempty := Set.nonempty_iff_ne_empty.mpr h
-    exact (isPathConnected_compl_finite_of_connected_chartedSpace_complex
-      hC hne).isConnected.isPreconnected
+  refine h_topo_of_h_path (Y := Y) ?_
+  intro C hC hne
+  exact isPathConnected_compl_finite_of_connected_chartedSpace_complex hC hne
 
 end JacobianChallenge.Manifold
