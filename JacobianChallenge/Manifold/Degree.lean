@@ -544,88 +544,110 @@ lemma fibre_card_well_defined_of_locallyConstant
 
 end Owed.degree
 
-/-! ## Regular-value strengthened witness (additive)
+/-! ## Regular-value strengthened witness (ZZ172 corrected form)
 
 `RegularValueWitness` carries only `fiber_finite`, which is structurally too
 weak: classical "fibre cardinality is constant" requires the chosen value
-*also* be a regular value (not in the critical-value set). A
-`RegularValueWitness` over a critical point can have a smaller fibre than a
-generic one (counts drop at branch points), so any "constant fibre card"
-statement quantifying over arbitrary `RegularValueWitness` is *false* as
-written.
+*also* be a regular value (no preimage with degenerate chart-pullback
+derivative). A `RegularValueWitness` over a critical point can have a smaller
+fibre than a generic one (counts drop at branch points), so any "constant
+fibre card" statement quantifying over arbitrary `RegularValueWitness` is
+*false* as written.
 
-The fix is **additive**: we introduce a parallel strengthened witness
-`RegularValueWitnessReg`, parameterised by an externally-supplied
-critical-value set `C : Set Y`, that adds a regularity certificate
-`is_regular : value ∉ C`. Old consumers continue to use `RegularValueWitness`
-unchanged. New consumers (e.g. for the truthful "constant card on regular
-witnesses" statement) use the strengthened form.
+`RegularValueWitnessReg f` strengthens `RegularValueWitness f` with a
+**chart-pullback-derivative-nonzero certificate** inlined directly into the
+structure: for every preimage point `x ∈ f ⁻¹' {value}`, the derivative
+of the chart-pullback `(chartAt ℂ value) ∘ f ∘ (chartAt ℂ x).symm` at
+`(chartAt ℂ x) x` is nonzero.
 
-`RegularValueWitnessReg` does **not** assert that `C` is the *true* critical-
-value set (which would require analytic content not available at this pin).
-It is parametric in `C`: callers supply whatever set they wish to certify
-membership-out-of. Specialising `C` to the genuine critical-value set
-recovers the classical statement. -/
+This is the analytic content of "value is a regular value of `f`" and is
+exactly the shape consumed by `LocalSheetData.ofContMDiffMfderivNeZero`
+(`Manifold/LocalSheetDataFromContMDiff.lean`, ZZ169). The old
+`C : Set Y`-parameterised form (ZZ129) was provably-false: a consumer could
+pick `C := ∅` and trivially satisfy `value ∉ C` without any analytic
+regularity, breaking well-definedness. The corrected form here removes the
+`C` parameter and bakes the analytic certificate in. -/
 
-/-- A **regular** regular-value witness for `f`, parameterised by a
-critical-value set `C : Set Y`. Strengthens `RegularValueWitness` with a
-proof that the chosen value is not critical (`value ∉ C`).
+/-- A **regular** regular-value witness for `f`. Strengthens
+`RegularValueWitness` with a chart-pullback-derivative-nonzero certificate:
+for every preimage point `x ∈ f ⁻¹' {value}`, the derivative of the
+chart-pullback `(chartAt ℂ value) ∘ f ∘ (chartAt ℂ x).symm` at
+`(chartAt ℂ x) x` is nonzero.
 
-This is **additive**: it does not modify `RegularValueWitness`. Existing code
-referencing `RegularValueWitness` is unaffected. -/
+This is the analytic content of "`value` is a regular value of `f`",
+inlined into the structure. -/
 structure RegularValueWitnessReg
-    {X : Type u} {Y : Type v} (f : X → Y) (C : Set Y) where
+    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    (f : X → Y) where
   /-- Underlying (cardinality-bearing) witness. -/
   toWitness : RegularValueWitness f
-  /-- The chosen value is regular: not in the critical-value set `C`. -/
-  is_regular : toWitness.value ∉ C
+  /-- The chosen value is regular: at every preimage point, the chart-
+  pullback of `f` has nonzero derivative. -/
+  is_regular : ∀ x ∈ f ⁻¹' {toWitness.value},
+    deriv ((chartAt ℂ toWitness.value) ∘ f ∘ (chartAt ℂ x).symm)
+      ((chartAt ℂ x) x) ≠ 0
 
 namespace RegularValueWitnessReg
 
-variable {X : Type u} {Y : Type v} {f : X → Y} {C : Set Y}
+variable {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+variable {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+variable {f : X → Y}
 
 /-- Cardinality of the chosen finite fibre of a regular witness. -/
-def card (w : RegularValueWitnessReg f C) : ℕ := w.toWitness.card
+def card (w : RegularValueWitnessReg f) : ℕ := w.toWitness.card
 
 /-- The chosen regular value. -/
-def value (w : RegularValueWitnessReg f C) : Y := w.toWitness.value
+def value (w : RegularValueWitnessReg f) : Y := w.toWitness.value
 
 /-- The fibre over the chosen regular value is finite. -/
-def fiber_finite (w : RegularValueWitnessReg f C) :
+def fiber_finite (w : RegularValueWitnessReg f) :
     (f ⁻¹' {w.toWitness.value}).Finite :=
   w.toWitness.fiber_finite
 
 end RegularValueWitnessReg
 
 /-- **Builder.** Promote a plain `RegularValueWitness` to a regular one,
-given a regularity proof against a chosen critical-value set `C`. -/
+given a chart-pullback-derivative-nonzero certificate at every preimage
+point. -/
 def RegularValueWitness.toRegular
-    {X : Type u} {Y : Type v} {f : X → Y}
-    (w : RegularValueWitness f) {C : Set Y} (h_reg : w.value ∉ C) :
-    RegularValueWitnessReg f C :=
+    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    {f : X → Y} (w : RegularValueWitness f)
+    (h_reg : ∀ x ∈ f ⁻¹' {w.value},
+      deriv ((chartAt ℂ w.value) ∘ f ∘ (chartAt ℂ x).symm)
+        ((chartAt ℂ x) x) ≠ 0) :
+    RegularValueWitnessReg f :=
   { toWitness := w, is_regular := h_reg }
 
 /-- Builder card-coherence: the strengthened witness has the same `card` as
 the underlying one. -/
 @[simp] lemma RegularValueWitness.toRegular_card
-    {X : Type u} {Y : Type v} {f : X → Y}
-    (w : RegularValueWitness f) {C : Set Y} (h_reg : w.value ∉ C) :
+    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    {f : X → Y} (w : RegularValueWitness f)
+    (h_reg : ∀ x ∈ f ⁻¹' {w.value},
+      deriv ((chartAt ℂ w.value) ∘ f ∘ (chartAt ℂ x).symm)
+        ((chartAt ℂ x) x) ≠ 0) :
     (w.toRegular h_reg).card = w.card := rfl
 
 /-- Builder value-coherence. -/
 @[simp] lemma RegularValueWitness.toRegular_value
-    {X : Type u} {Y : Type v} {f : X → Y}
-    (w : RegularValueWitness f) {C : Set Y} (h_reg : w.value ∉ C) :
+    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    {f : X → Y} (w : RegularValueWitness f)
+    (h_reg : ∀ x ∈ f ⁻¹' {w.value},
+      deriv ((chartAt ℂ w.value) ∘ f ∘ (chartAt ℂ x).symm)
+        ((chartAt ℂ x) x) ≠ 0) :
     (w.toRegular h_reg).value = w.value := rfl
 
 namespace Owed.degree
 
 /-- (3.reg) **The truthful constant-fibre-card statement.** Quantifies only
-over *regular* witnesses (those whose chosen value avoids a chosen
-critical-value set `C`). This is the form classical covering-space theory
-proves; the original `fibre_card_well_defined_statement` (over arbitrary
-`RegularValueWitness`) is false at branch points and is retained only for
-backward compatibility.
+over *regular* witnesses (those whose chosen value carries the analytic
+chart-pullback-deriv-nonzero certificate). This is the form classical
+covering-space theory proves; the original `fibre_card_well_defined_statement`
+(over arbitrary `RegularValueWitness`) is false at branch points.
 
 **Status:** statement only. No proof is provided. -/
 def fibre_card_well_defined_at_regular_statement
@@ -634,33 +656,36 @@ def fibre_card_well_defined_at_regular_statement
     (Y : Type v) [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] : Prop :=
   ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ JacobianChallenge.IsConstantMap f →
-    ∀ (C : Set Y) (w₁ w₂ : RegularValueWitnessReg f C), w₁.card = w₂.card
+    ∀ (w₁ w₂ : RegularValueWitnessReg f), w₁.card = w₂.card
 
 /-- **Trivial reduction.** Given a `FibreCardData f`, the cardinalities of
 any two *regular* regular-value witnesses agree. (Same proof as the
-unrestricted case — the restriction to regular values is consumed only by
-the data supplier, not by this structural step.) -/
+unrestricted case — the regularity certificate is consumed only by the
+data supplier, not by this structural step.) -/
 lemma fibre_card_eq_of_fibreCardData_reg
-    {X : Type u} {Y : Type v} {f : X → Y} {C : Set Y}
-    (D : FibreCardData f) (w₁ w₂ : RegularValueWitnessReg f C) :
+    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    {f : X → Y}
+    (D : FibreCardData f) (w₁ w₂ : RegularValueWitnessReg f) :
     w₁.card = w₂.card :=
   fibre_card_eq_of_fibreCardData D w₁.toWitness w₂.toWitness
 
 /-- **Sharper reduction (regular form): locally-constant fibre-cardinality on
-a preconnected regular-value subtype.** Same shape as the unrestricted
-`fibre_card_eq_of_locallyConstant_subtype`, but the witness-value support
-hypothesis `h_supp` and the regularity certificate cooperate: every regular
-witness has its value in the regular-value set `R`, supplied by the user. -/
+a preconnected subset.** Same shape as the unrestricted
+`fibre_card_eq_of_locallyConstant_subtype`. The user supplies a regular-
+value subset `R : Set Y` and a proof `h_supp` that every regular witness's
+value lies in `R`. -/
 lemma fibre_card_eq_of_locallyConstant_subtype_reg
-    {X : Type u} {Y : Type v} [TopologicalSpace Y]
-    {f : X → Y} {C : Set Y}
+    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    {f : X → Y}
     {R : Set Y}
     (card_of : Y → ℕ)
     (h_witness : ∀ w : RegularValueWitness f, card_of w.value = w.card)
-    (h_supp : ∀ w : RegularValueWitnessReg f C, w.toWitness.value ∈ R)
+    (h_supp : ∀ w : RegularValueWitnessReg f, w.toWitness.value ∈ R)
     (h_lc_sub : IsLocallyConstant (fun y : R => card_of y.val))
     (h_conn_sub : IsPreconnected (Set.univ : Set R))
-    (w₁ w₂ : RegularValueWitnessReg f C) :
+    (w₁ w₂ : RegularValueWitnessReg f) :
     w₁.card = w₂.card := by
   have hc : card_of w₁.toWitness.value = card_of w₂.toWitness.value := by
     have :=

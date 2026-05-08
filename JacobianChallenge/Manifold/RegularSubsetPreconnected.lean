@@ -30,7 +30,7 @@ via ZZ134) need:
 
     we deliver, for any finite critical-value set `C`, the
     subtype-preconnectedness conclusion in the literal shape
-    `fibre_card_eq_of_locallyConstant_compl` consumes:
+    `fibre_card_eq_of_locallyConstant_subtype_reg` consumes:
     `IsPreconnected (Set.univ : Set (Cᶜ : Set Y))`.
 
 The mathematical content of (2) — that a connected complex 1-manifold
@@ -63,7 +63,7 @@ universe u
 /-- **Subtype-preconnectedness from ambient preconnectedness.** If
 `S : Set Y` is preconnected as an ambient set, then the universe of the
 subtype `↥S` is preconnected. This is the literal shape consumed by
-`fibre_card_eq_of_locallyConstant_compl`. -/
+`fibre_card_eq_of_locallyConstant_subtype_reg`. -/
 lemma isPreconnected_univ_subtype_of_isPreconnected_set_general
     {Y : Type u} [TopologicalSpace Y]
     {S : Set Y} (h : IsPreconnected S) :
@@ -108,7 +108,7 @@ theorem regularSubset_isPreconnected_of_finite_complement_hypothesis
 in the ambient `Set Y` form rather than as a subtype. Both shapes are
 useful: the ambient form composes with `IsLocallyConstant.of_isOpen`
 arguments in `Y`, while the subtype form is what
-`fibre_card_eq_of_locallyConstant_compl` consumes directly. -/
+`fibre_card_eq_of_locallyConstant_subtype_reg` consumes directly. -/
 theorem regularSubset_isPreconnected_ambient_of_finite_complement_hypothesis
     {Y : Type u} [TopologicalSpace Y]
     (h_topo : ∀ C : Set Y, C.Finite → IsPreconnected (Cᶜ : Set Y))
