@@ -128,13 +128,16 @@ identity that compares `ContMDiff.degree f hf` to an explicit fibre count.
 After the swap into `Basic.lean`, callers will read this lemma as
 `ContMDiff.degree f hf = w.card`. -/
 
-/-- **The conditional bridge.** Given:
+/-- **The conditional bridge (ZZ172-corrected).** Given:
 
-* `hnc`        : `f` is not constant,
-* `h_exist`    : a `RegularValueWitness f` exists (`Owed.degree` item 2),
-* `h_wd_at_reg`: any two *regular* witnesses (against a chosen `C`) have the
-                 same `card` (`Owed.degree` item 3.reg), and
-* `w`          : a regular witness against `C`,
+* `hnc`            : `f` is not constant,
+* `h_exist`        : a `RegularValueWitness f` exists (`Owed.degree` item 2),
+* `h_choice_reg`   : the `Classical.choice`-selected witness's value carries
+                     the analytic chart-pullback-deriv-nonzero certificate
+                     (i.e. it is a *regular* value),
+* `w`              : a user-supplied regular-value witness, and
+* `h_wd_at_reg`    : any two *regular* witnesses have the same `card`
+                     (`Owed.degree` item 3.reg),
 
 we have `degreeFiber f hf = w.card`.
 
@@ -145,8 +148,8 @@ statement — whence "swap = strict-closed" reduces to discharging
 
 Note: the `Classical.choice`-selected witness behind `degreeFiber`'s body is
 **not** the same Lean term as `w`. We bridge them through `h_wd_at_reg` by
-converting both to regular witnesses against the *same* `C`, which the
-hypothesis `h_choice_reg` certifies. -/
+converting both to regular witnesses, which the hypothesis `h_choice_reg`
+certifies for the Classical-choice side. -/
 theorem degreeFiber_eq_witness_card_at_regular
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -155,17 +158,18 @@ theorem degreeFiber_eq_witness_card_at_regular
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hnc : ¬ JacobianChallenge.IsConstantMap f)
     (h_exist : Nonempty (RegularValueWitness f))
-    (C : Set Y)
-    (h_choice_reg : (Classical.choice h_exist).value ∉ C)
-    (w : RegularValueWitnessReg f C)
-    (h_wd_at_reg : ∀ (w₁ w₂ : RegularValueWitnessReg f C), w₁.card = w₂.card) :
+    (h_choice_reg : ∀ x ∈ f ⁻¹' {(Classical.choice h_exist).value},
+      deriv ((chartAt ℂ (Classical.choice h_exist).value) ∘ f ∘ (chartAt ℂ x).symm)
+        ((chartAt ℂ x) x) ≠ 0)
+    (w : RegularValueWitnessReg f)
+    (h_wd_at_reg : ∀ (w₁ w₂ : RegularValueWitnessReg f), w₁.card = w₂.card) :
     degreeFiber f hf = w.card := by
   -- Step 1: degreeFiber f hf = (Classical.choice h_exist).card.
   have h_eq : degreeFiber f hf = (Classical.choice h_exist).card :=
     degreeFiber_eq_witness_card f hf hnc h_exist
-  -- Step 2: the Classical-choice witness, promoted to a regular witness
-  -- against `C`, has the same card.
-  let wChoice : RegularValueWitnessReg f C :=
+  -- Step 2: the Classical-choice witness, promoted to a regular witness via
+  -- the analytic certificate, has the same card.
+  let wChoice : RegularValueWitnessReg f :=
     (Classical.choice h_exist).toRegular h_choice_reg
   have h_choice_card : wChoice.card = (Classical.choice h_exist).card := rfl
   -- Step 3: well-definedness on regular witnesses gives wChoice.card = w.card.
