@@ -67,12 +67,14 @@ theorem fibre_card_well_defined_at_regular_holds_of_h_pkg
           (fun y : (Cᶜ : Set Y) => (f ⁻¹' {y.val}).ncard)) :
     ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ JacobianChallenge.IsConstantMap f →
       ∀ (w₁ w₂ : RegularValueWitnessReg f), w₁.card = w₂.card := by
-  apply fibre_card_well_defined_at_regular_holds_of_h_path
-  · -- h_path: unconditional from ZZ165.
-    intro C hC hne
-    exact JacobianChallenge.Manifold.isPathConnected_compl_finite_of_connected_chartedSpace_complex
+  -- Unconditional path-connectedness of finite-complement subsets (ZZ165).
+  have h_path : ∀ C : Set Y, C.Finite → (Cᶜ : Set Y).Nonempty →
+      IsPathConnected (Cᶜ : Set Y) := fun C hC hne =>
+    JacobianChallenge.Manifold.isPathConnected_compl_finite_of_connected_chartedSpace_complex
       hC hne
-  · exact h_pkg
+  -- Apply the corrected ZZ160 with the supplied analytic packaging.
+  intro f hf hnc w₁ w₂
+  exact fibre_card_well_defined_at_regular_holds_of_h_path h_path h_pkg f hf hnc w₁ w₂
 
 end Owed.degree
 
