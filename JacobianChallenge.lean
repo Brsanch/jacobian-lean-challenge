@@ -76,6 +76,7 @@ import JacobianChallenge.Manifold.FibresFiniteAssembly
 import JacobianChallenge.Manifold.FibresFiniteUnconditional
 import JacobianChallenge.Manifold.GlobalChainBoundaryDischarge
 import JacobianChallenge.Manifold.GlobalResidueSum
+import JacobianChallenge.Manifold.HNTotalFromRamificationSum
 import JacobianChallenge.Manifold.HodgeBiholomorphismTransport
 import JacobianChallenge.Manifold.HodgeFiniteDimensional
 import JacobianChallenge.Manifold.HodgeRiemannSphereInstance
