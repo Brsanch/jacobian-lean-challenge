@@ -68,10 +68,14 @@ theorem fibre_card_well_defined_at_regular_holds_of_h_pkg
     ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ JacobianChallenge.IsConstantMap f →
       ∀ (w₁ w₂ : RegularValueWitnessReg f), w₁.card = w₂.card := by
   -- Unconditional path-connectedness of finite-complement subsets (ZZ165).
+  -- Pass `ω` and `Y` explicitly via @-form to match the pattern in
+  -- `HTopoUnconditional.lean`: typeclass inference for `IsManifold 𝓘(ℂ) ω Y`
+  -- otherwise gets stuck because `ω` is auto-bound implicit and the lambda's
+  -- expected type does not pin it.
   have h_path : ∀ C : Set Y, C.Finite → (Cᶜ : Set Y).Nonempty →
       IsPathConnected (Cᶜ : Set Y) := fun C hC hne =>
-    JacobianChallenge.Manifold.isPathConnected_compl_finite_of_connected_chartedSpace_complex
-      hC hne
+    @JacobianChallenge.Manifold.isPathConnected_compl_finite_of_connected_chartedSpace_complex
+      ω Y _ _ _ _ _ C hC hne
   -- Apply the corrected ZZ160 with the supplied analytic packaging.
   intro f hf hnc w₁ w₂
   exact fibre_card_well_defined_at_regular_holds_of_h_path h_path h_pkg f hf hnc w₁ w₂
