@@ -21,9 +21,10 @@ import JacobianChallenge.Manifold.PreconnectedFromFiniteComplement
 import JacobianChallenge.Manifold.PathConnectedComplFinite
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Geometry.Manifold.IsManifold.Basic
+import Mathlib.Geometry.Manifold.ContMDiff.Defs
 import Mathlib.Topology.Connected.PathConnected
 
-open scoped Manifold Topology
+open scoped Manifold Topology ContDiff
 
 namespace JacobianChallenge.Manifold
 
