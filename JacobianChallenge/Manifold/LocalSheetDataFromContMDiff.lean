@@ -83,44 +83,32 @@ noncomputable def ofContMDiffMfderivNeZero
           ((chartAt ℂ x₀) x₀) ≠ 0) :
     LocalSheetData f y₀ x₀ := by
   classical
+  -- Substitute `y₀ := f x₀` everywhere via the hypothesis `hxy : f x₀ = y₀`.
+  -- `cases hxy` would fail (Type-valued goal); we use `subst` on the variable
+  -- `y₀`. Since `hxy : f x₀ = y₀`, `subst y₀` replaces `y₀` with `f x₀`
+  -- throughout the goal and remaining hypotheses.
+  subst y₀
+  -- Now `chartAt ℂ y₀` has become `chartAt ℂ (f x₀)`, matching the bridge output.
   -- Abbreviations.
   set eX : OpenPartialHomeomorph X ℂ := chartAt ℂ x₀ with heX
-  set eY : OpenPartialHomeomorph Y ℂ := chartAt ℂ y₀ with heY
+  set eY : OpenPartialHomeomorph Y ℂ := chartAt ℂ (f x₀) with heY
   have hx₀S : x₀ ∈ eX.source := mem_chart_source ℂ x₀
-  have hy₀S : y₀ ∈ eY.source := mem_chart_source ℂ y₀
-  have hfx₀S : f x₀ ∈ eY.source := by rw [hxy]; exact hy₀S
+  have hy₀S : f x₀ ∈ eY.source := mem_chart_source ℂ (f x₀)
+  have hfx₀S : f x₀ ∈ eY.source := hy₀S
   have hf_cont : ContinuousAt f x₀ := hf.continuousAt
   set F : ℂ → ℂ := (eY) ∘ f ∘ eX.symm with hFdef
   set z₀ : ℂ := eX x₀ with hz₀def
-  set w₀ : ℂ := eY y₀ with hw₀def
+  set w₀ : ℂ := eY (f x₀) with hw₀def
   have hz₀_target : z₀ ∈ eX.target := eX.map_source hx₀S
   have hw₀_target : w₀ ∈ eY.target := eY.map_source hy₀S
   have hFz₀ : F z₀ = w₀ := by
-    show eY (f (eX.symm (eX x₀))) = eY y₀
-    rw [eX.left_inv hx₀S, hxy]
+    show eY (f (eX.symm (eX x₀))) = eY (f x₀)
+    rw [eX.left_inv hx₀S]
   -- Analyticity of `F` at `z₀` via ZZ24's bridge.
-  have hFA_raw : AnalyticAt ℂ
-      ((chartAt ℂ (f x₀)) ∘ f ∘ (chartAt ℂ x₀).symm)
-      ((chartAt ℂ x₀) x₀) :=
+  have hFA : AnalyticAt ℂ F z₀ :=
     JacobianChallenge.ContMDiff.Owed.degree.contMDiffAt_omega_analyticAt_chart_pullback hf
-  have hFA : AnalyticAt ℂ F z₀ := by
-    have hfun : ((chartAt ℂ (f x₀)) ∘ f ∘ (chartAt ℂ x₀).symm)
-        = ((eY : Y → ℂ) ∘ f ∘ (eX : OpenPartialHomeomorph X ℂ).symm) := by
-      funext z
-      show (chartAt ℂ (f x₀)) (f ((chartAt ℂ x₀).symm z))
-        = eY (f (eX.symm z))
-      rw [hxy]; simp [heY, heX]
-    have hpt : ((chartAt ℂ x₀) x₀) = z₀ := by simp [hz₀def, heX]
-    rw [hfun, hpt] at hFA_raw
-    exact hFA_raw
-  -- Non-degenerate derivative of `F` at `z₀`.
-  have h_deriv_F : deriv F z₀ ≠ 0 := by
-    have hfun : ((chartAt ℂ y₀) ∘ f ∘ (chartAt ℂ x₀).symm)
-        = ((eY : Y → ℂ) ∘ f ∘ (eX : OpenPartialHomeomorph X ℂ).symm) := by
-      funext z; simp [heY, heX]
-    have hpt : ((chartAt ℂ x₀) x₀) = z₀ := by simp [hz₀def, heX]
-    rw [hfun, hpt] at h_deriv
-    exact h_deriv
+  -- Non-degenerate derivative of `F` at `z₀` (definitionally identical to `h_deriv`).
+  have h_deriv_F : deriv F z₀ ≠ 0 := h_deriv
   -- Build the biholomorphism `φ : OpenPartialHomeomorph ℂ ℂ` inline.
   have hsd : HasStrictDerivAt F (deriv F z₀) z₀ := hFA.hasStrictDerivAt
   have hsfd : HasStrictFDerivAt F
@@ -139,7 +127,13 @@ noncomputable def ofContMDiffMfderivNeZero
   have hexS_nhd : eX.source ∈ 𝓝 x₀ := eX.open_source.mem_nhds hx₀S
   have hcombined_nhd : eX.source ∩ f ⁻¹' eY.source ∈ 𝓝 x₀ :=
     Filter.inter_mem hexS_nhd hpreimage_nhd
-  obtain ⟨V₀, hV₀_sub, hV₀_open, hxV₀⟩ := mem_nhds_iff.mp hcombined_nhd
+  -- Use `Classical.choose` since the goal `LocalSheetData …` is Type-valued and
+  -- `obtain ⟨…⟩ := mem_nhds_iff.mp …` cannot eliminate `Exists` into a non-Prop motive.
+  let V₀ : Set X := Classical.choose (mem_nhds_iff.mp hcombined_nhd)
+  have hV₀_spec := Classical.choose_spec (mem_nhds_iff.mp hcombined_nhd)
+  have hV₀_sub : V₀ ⊆ eX.source ∩ f ⁻¹' eY.source := hV₀_spec.1
+  have hV₀_open : IsOpen V₀ := hV₀_spec.2.1
+  have hxV₀ : x₀ ∈ V₀ := hV₀_spec.2.2
   have hV₀_subS : V₀ ⊆ eX.source := fun z hz => (hV₀_sub hz).1
   have hV₀_subPre : V₀ ⊆ f ⁻¹' eY.source := fun z hz => (hV₀_sub hz).2
   -- `S := eX '' V₀`.
@@ -182,7 +176,12 @@ noncomputable def ofContMDiffMfderivNeZero
   have hVc'_nhds_full :
       φ.target ∩ eY.target ∩ (φ.symm : ℂ → ℂ) ⁻¹' (S ∩ φ.source) ∈ 𝓝 w₀ :=
     Filter.inter_mem (Filter.inter_mem hφ_target_nhds heY_target_nhds) hVc_φS_pre
-  obtain ⟨Vc', hVc'_sub, hVc'_open, hw₀_Vc'⟩ := mem_nhds_iff.mp hVc'_nhds_full
+  let Vc' : Set ℂ := Classical.choose (mem_nhds_iff.mp hVc'_nhds_full)
+  have hVc'_spec := Classical.choose_spec (mem_nhds_iff.mp hVc'_nhds_full)
+  have hVc'_sub : Vc' ⊆ φ.target ∩ eY.target ∩ (φ.symm : ℂ → ℂ) ⁻¹' (S ∩ φ.source) :=
+    hVc'_spec.1
+  have hVc'_open : IsOpen Vc' := hVc'_spec.2.1
+  have hw₀_Vc' : w₀ ∈ Vc' := hVc'_spec.2.2
   have hVc'_subφT : Vc' ⊆ φ.target := fun w hw => (hVc'_sub hw).1.1
   have hVc'_subeYT : Vc' ⊆ eY.target := fun w hw => (hVc'_sub hw).1.2
   have hVc'_symm_S : ∀ w ∈ Vc', φ.symm w ∈ S := fun w hw => ((hVc'_sub hw).2).1
