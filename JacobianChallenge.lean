@@ -99,6 +99,7 @@ import JacobianChallenge.Manifold.LocalMultiplicity
 import JacobianChallenge.Manifold.LocalMultiplicityChartPullback
 import JacobianChallenge.Manifold.LocalMultiplicityInvariance
 import JacobianChallenge.Manifold.LocalNormalForm
+import JacobianChallenge.Manifold.LocalSheetDataFromContMDiff
 import JacobianChallenge.Manifold.LogDerivLaurent
 import JacobianChallenge.Manifold.LogDerivLaurentDischarge
 import JacobianChallenge.Manifold.LogDiffAnchored
