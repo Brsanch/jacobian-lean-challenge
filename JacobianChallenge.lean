@@ -143,6 +143,7 @@ import JacobianChallenge.Manifold.PoleExtensionFibres
 import JacobianChallenge.Manifold.PreconnectedFromFiniteComplement
 import JacobianChallenge.Manifold.PrincipalDivisorDegreeZero
 import JacobianChallenge.Manifold.R5StackHypothesesDischarge
+import JacobianChallenge.Manifold.RamificationIndex
 import JacobianChallenge.Manifold.RegularSubsetPreconnected
 import JacobianChallenge.Manifold.RegularValueExistsUnconditional
 import JacobianChallenge.Manifold.RegularValueSetConnected
