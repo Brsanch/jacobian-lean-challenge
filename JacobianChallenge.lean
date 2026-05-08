@@ -18,6 +18,7 @@ import JacobianChallenge.Divisor.PrincipalDivisorRange
 import JacobianChallenge.Divisor.Single
 import JacobianChallenge.Divisor.StrictClosurePath
 import JacobianChallenge.Jacobian
+import JacobianChallenge.JacobianPullbackWeighted
 import JacobianChallenge.Manifold.AnalyticContinuationGlobalization
 import JacobianChallenge.Manifold.AnalyticFiberDiscrete
 import JacobianChallenge.Manifold.AnalyticKthRoot
