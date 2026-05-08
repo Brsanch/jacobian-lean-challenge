@@ -1,6 +1,7 @@
 import Mathlib -- compiles with commit 8e3c989104daaa052921bf43de9eef0e1ac9fbf5 (15th April 2026)
 import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.LocalMultiplicity
+import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Jacobian
 
 /-!
@@ -201,13 +202,20 @@ lemma pullback_comp_apply (P : Jacobian Z) :
 /-- The degree of a holomorphic map between compact Riemann surfaces. Equal to
 zero for constant maps, otherwise equal to the usual degree.
 
-**Stub at this pin** — see `JacobianChallenge.Manifold.degreeStub` for the
-constant-vs-non-constant indicator. Returns `1` for any non-constant map
-regardless of actual sheet count; the honest regular-value-cardinality
-definition is owed once chart-independence of `mmeromorphicOrderAt` lands. -/
+**Honest fibre-cardinality definition.** Delegates to
+`JacobianChallenge.ContMDiff.degreeFiber`, which returns `0` for constant
+maps and otherwise extracts a regular fibre cardinality via
+`Classical.choice` on `Nonempty (RegularValueWitness f)`. The
+existence of a regular-value witness for non-constant holomorphic maps is
+discharged unconditionally by ZZ49
+(`Owed.degree.regular_value_exists_statement_holds_unconditional`), so this
+returns a real fibre count rather than a constant-vs-non-constant indicator.
+Independence of the chosen witness (i.e. well-definedness of the fibre count
+across regular values) is the deeper classical fact still owed at this pin
+(see `Manifold/Degree.lean` and ZZ156). -/
 noncomputable def _root_.ContMDiff.degree
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
-  JacobianChallenge.Manifold.degreeStub f hf
+  JacobianChallenge.ContMDiff.degreeFiber f hf
 
 lemma pushforward_pullback (P : Jacobian Y) :
   pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P := sorry
