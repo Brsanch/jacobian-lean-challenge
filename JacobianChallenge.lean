@@ -8,8 +8,6 @@ import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.ChipAliases
 import JacobianChallenge.Divisor.FiberCardComposition
 import JacobianChallenge.Divisor.FiberPullback
-import JacobianChallenge.Divisor.FiberSumWeightedComp
-import JacobianChallenge.Divisor.Pic0PullbackWeightedComp
 import JacobianChallenge.Divisor.FiberPullbackWeighted
 import JacobianChallenge.Divisor.FiberPullbackWitnessIrrelevance
 import JacobianChallenge.Divisor.FiberSum
@@ -155,7 +153,6 @@ import JacobianChallenge.Manifold.PrincipalDivisorDegreeZero
 import JacobianChallenge.Manifold.R5StackHypothesesDischarge
 import JacobianChallenge.Manifold.RamificationIndex
 import JacobianChallenge.Manifold.RamificationIndexChain
-import JacobianChallenge.Manifold.RamificationIndexChartIndep
 import JacobianChallenge.Manifold.RamificationIndexPositive
 import JacobianChallenge.Manifold.RamificationSumEqualsDegree
 import JacobianChallenge.Manifold.RegularSubsetPreconnected
