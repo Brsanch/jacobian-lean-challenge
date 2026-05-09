@@ -86,19 +86,19 @@ private lemma hasFPowerSeriesAt_const_mul_left
     HasFPowerSeriesAt (fun s : ℂ => H (ζ * s)) (smulSeriesPow p ζ) 0 := by
   rw [hasFPowerSeriesAt_iff] at hp ⊢
   -- Pull the eventually-statement back along z ↦ ζ * z (continuous at 0).
-  have hcont : ContinuousAt (fun z : ℂ => ζ * z) 0 := by fun_prop
-  have hat : (fun z : ℂ => ζ * z) 0 = 0 := by simp
+  have htend : Tendsto (fun z : ℂ => ζ * z) (𝓝 0) (𝓝 0) := by
+    have hcont : ContinuousAt (fun z : ℂ => ζ * z) 0 := by fun_prop
+    simpa using hcont.tendsto
   have hpull : ∀ᶠ z in 𝓝 0,
-      HasSum (fun n => (ζ * z) ^ n • p.coeff n) (H (0 + ζ * z)) := by
-    have htend := hcont.tendsto
-    rw [hat] at htend
-    exact htend.eventually hp
+      HasSum (fun n => (ζ * z) ^ n • p.coeff n) (H (0 + ζ * z)) :=
+    htend.eventually hp
   filter_upwards [hpull] with z hz
   -- Reindex: (ζ * z)^n • a_n = z^n • (ζ^n • a_n) = z^n • coeff n.
   have hcoeff_eq : (fun n : ℕ => (ζ * z) ^ n • p.coeff n)
       = (fun n : ℕ => z ^ n • (smulSeriesPow p ζ).coeff n) := by
     funext n
-    rw [smulSeriesPow_coeff, mul_pow, smul_smul]
+    simp only [smulSeriesPow_coeff, mul_pow, smul_eq_mul]
+    ring
   -- Target uses `H (ζ * (0 + z))`; we have `H (0 + ζ * z)`. They're equal.
   have hval : H (0 + ζ * z) = H (ζ * (0 + z)) := by rw [zero_add, zero_add]
   rw [hcoeff_eq, hval] at hz
@@ -108,10 +108,7 @@ private lemma hasFPowerSeriesAt_const_mul_left
 
 /-- Algebraic helper: if `a = ζ * a` and `ζ ≠ 1` (in a field), then `a = 0`. -/
 private lemma eq_zero_of_mul_eq_self {a ζ : ℂ} (h : a = ζ * a) (hζ : ζ ≠ 1) : a = 0 := by
-  have h' : (ζ - 1) * a = 0 := by
-    have : ζ * a - a = 0 := by linarith [h]
-    -- avoid linarith on ℂ; use linear_combination
-    linear_combination -h
+  have h' : (ζ - 1) * a = 0 := by linear_combination -h
   have hne : ζ - 1 ≠ 0 := sub_ne_zero.mpr hζ
   exact (mul_eq_zero.mp h').resolve_left hne
 
@@ -179,7 +176,7 @@ private lemma le_radius_descendedSeries
   rw [norm_descendedSeries]
   have hpow : ((r ^ k : ℝ≥0) : ℝ) ^ m = (r : ℝ) ^ (k * m) := by
     push_cast
-    rw [← pow_mul, mul_comm m k]
+    ring
   rw [hpow]
   exact hC (k * m)
 
@@ -195,8 +192,7 @@ private lemma hasSum_reindex_descended
     HasSum (fun m : ℕ => (s ^ k) ^ m • p.coeff (k * m)) (H s) := by
   have hk_ne : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
   -- Use Function.Injective.hasSum_iff with g m = k*m.
-  have hinj : Function.Injective (fun m : ℕ => k * m) :=
-    Nat.mul_left_injective (Nat.pos_of_ne_zero hk_ne).ne'
+  have hinj : Function.Injective (fun m : ℕ => k * m) := mul_right_injective₀ hk_ne
   have hzero_off : ∀ n : ℕ, n ∉ Set.range (fun m : ℕ => k * m) →
       s ^ n • p.coeff n = 0 := by
     intro n hn
@@ -274,15 +270,16 @@ private lemma descendedFun_pow_eventually_eq
     rw [this] at hs
     exact hasSum_reindex_descended hk hzero hs
   -- The sum equals `descendedFun p k (s^k)`.
+  have hkernels :
+      (fun m : ℕ => descendedSeries p k m fun _ : Fin m => s ^ k)
+        = (fun m : ℕ => (s ^ k) ^ m • p.coeff (k * m)) := by
+    funext m
+    rw [FormalMultilinearSeries.apply_eq_pow_smul_coeff, descendedSeries_coeff]
   have hF : descendedFun p k (s ^ k) = H s := by
-    -- descendedFun p k t = (descendedSeries p k).sum t = ∑' m, (descendedSeries p k) m (fun _ => t).
-    unfold descendedFun FormalMultilinearSeries.sum
-    -- Convert: (descendedSeries p k) m (fun _ => s^k) = (s^k)^m • p.coeff (k*m).
-    rw [show (fun m : ℕ => descendedSeries p k m fun _ : Fin m => s ^ k)
-        = (fun m : ℕ => (s ^ k) ^ m • p.coeff (k * m)) from ?_]
-    · exact hreindex.tsum_eq
-    · funext m
-      rw [FormalMultilinearSeries.apply_eq_pow_smul_coeff, descendedSeries_coeff]
+    show (descendedSeries p k).sum (s ^ k) = H s
+    unfold FormalMultilinearSeries.sum
+    rw [hkernels]
+    exact hreindex.tsum_eq
   exact hF
 
 /-! ### Headline theorem -/
