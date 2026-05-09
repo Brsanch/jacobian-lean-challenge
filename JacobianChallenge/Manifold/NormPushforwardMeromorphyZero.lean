@@ -234,11 +234,11 @@ private lemma auxProdMuK_eventuallyEq_factor
       ζ ^ n * s ^ n * u (ζ * s)
         = (∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), ζ ^ n * s ^ n)
           * ∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), u (ζ * s) := by
-    rw [← Finset.prod_mul_distrib]
+    rw [Finset.prod_mul_distrib]
   -- Step B: ∏ ζ, ζ^n * s^n = (∏ ζ, ζ^n) * (∏ ζ, s^n) = (∏ ζ^n) * (s^n)^k.
   have hB : ∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), ζ ^ n * s ^ n
         = (∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), ζ ^ n) * (s ^ n) ^ k := by
-    rw [← Finset.prod_mul_distrib, Finset.prod_const, h_card]
+    rw [Finset.prod_mul_distrib, Finset.prod_const, h_card]
   -- Step C: (s^n)^k = s^(k*n).
   have hC : (s ^ n) ^ k = s ^ ((k : ℤ) * n) := by
     rw [← zpow_natCast (s ^ n) k, ← zpow_mul]
@@ -246,7 +246,6 @@ private lemma auxProdMuK_eventuallyEq_factor
     ring
   -- Reassemble.
   rw [h_prod_eq, h_prod_split, hA, hB, hC]
-  ring
 
 /-! ### Headline: unconditional meromorphy at `0` -/
 
