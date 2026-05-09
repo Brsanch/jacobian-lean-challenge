@@ -200,19 +200,33 @@ theorem pullback_contMDiff :
 lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P := sorry
 
 -- functoriality
--- Post-ZZ:BasicSwap: `pullback` is now the honest body
--- (`pullbackHonest_of_rsum`). The previous proof delegated to
--- `JacobianChallenge.Jacobian.pullback_comp_apply`, which is a vacuous
--- `0 ∘ 0 = 0` statement about the OLD zero-stub `JacobianChallenge.Jacobian.pullback`
--- — that delegation no longer typechecks against the honest body.
--- A real proof requires a contravariant functoriality lemma for
--- `pullbackHonest_of_rsum` (cases on `IsConstantMap f`/`IsConstantMap g`,
--- delegating non-constant cases to `pullbackWeighted` functoriality on
--- `Div.fiberSum`). That lemma is not yet built; this stays `sorry` until a
--- follow-up chip adds `pullbackHonest_of_rsum_comp` in
--- `JacobianPullbackHonest.lean`.
+-- Post-ZZ:BasicSwap + chip ZZ-PullCompFunc-v2: `pullback` is the honest
+-- body (`pullbackHonest_of_rsum`), and `pullbackHonest_of_rsum_comp`
+-- in `JacobianPullbackHonest.lean` supplies contravariant functoriality.
+-- Three of the four case-split branches collapse to `0` on both sides;
+-- the both-non-constant case delegates to the divisor chain rule
+-- `Div.fiberSumWeighted_comp_apply` with multiplicative weights given by
+-- `manifoldRamificationIndex_comp_unconditional`.
 lemma pullback_comp_apply (P : Jacobian Z) :
-    pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := sorry
+    pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := by
+  classical
+  show JacobianChallenge.Jacobian.pullbackHonest_of_rsum
+        (JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_holds_unconditional X Z)
+        (g.comp f) (hg.comp hf) P
+      = JacobianChallenge.Jacobian.pullbackHonest_of_rsum
+          (JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_holds_unconditional X Y)
+          f hf
+          (JacobianChallenge.Jacobian.pullbackHonest_of_rsum
+            (JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_holds_unconditional Y Z)
+            g hg P)
+  exact JacobianChallenge.Jacobian.pullbackHonest_of_rsum_comp
+    (h_rsum_XY :=
+      JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_holds_unconditional X Y)
+    (h_rsum_YZ :=
+      JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_holds_unconditional Y Z)
+    (h_rsum_XZ :=
+      JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_holds_unconditional X Z)
+    f g hf hg P
 
 /-- The degree of a holomorphic map between compact Riemann surfaces. Equal to
 zero for constant maps, otherwise equal to the usual degree.
