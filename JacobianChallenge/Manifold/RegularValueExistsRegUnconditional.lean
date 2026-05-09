@@ -275,7 +275,8 @@ private lemma deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood
   -- Apply the planar bridge ZZ99.
   have h_planar :
       (¬ ∃ U ∈ 𝓝 (c x), Set.InjOn F U) ↔ deriv F (c x) = 0 :=
-    notInjOn_iff_deriv_zero_of_analytic_of_order hFA_at_x hk_ge_one hk_eq
+    JacobianChallenge.Manifold.notInjOn_iff_deriv_zero_of_analytic_of_order
+      hFA_at_x hk_ge_one hk_eq
   -- We have local injectivity of F at c x; conclude deriv F (c x) ≠ 0.
   have h_neg_iff : ¬ (¬ ∃ U ∈ 𝓝 (c x), Set.InjOn F U) := by
     intro h_neg
