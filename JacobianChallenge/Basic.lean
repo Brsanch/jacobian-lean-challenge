@@ -2,7 +2,9 @@ import Mathlib -- compiles with commit 8e3c989104daaa052921bf43de9eef0e1ac9fbf5 
 import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.LocalMultiplicity
 import JacobianChallenge.Manifold.Degree
+import JacobianChallenge.Manifold.NearbyRegularWitnessUnconditional
 import JacobianChallenge.Jacobian
+import JacobianChallenge.JacobianPullbackHonest
 
 /-!
 
@@ -166,17 +168,24 @@ lemma pushforward_comp_apply (P : Jacobian X) :
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
 Equal to the zero map if the map on curves is constant.
 
-**Stub at this pin** — delegated to `JacobianChallenge.Jacobian.pullback`,
-which is the zero `ContinuousAddMonoidHom`. This satisfies the *signature*
-of item 13, but mathematically the true pullback is the descent of the
-fiber-sum `single y ↦ ∑_{x ∈ f⁻¹(y)} single x`. See the section docstring
-of `JacobianChallenge.Jacobian.pullback` for what is owed before this can
-become honest (a `Div.fiberSum` construction with finite-fiber hypotheses,
-plus degree preservation). -/
+**Honest body (post-ZZ172 swap).** The body delegates to
+`JacobianChallenge.Jacobian.pullbackHonest_of_rsum`, which cases on
+`IsConstantMap f`:
+* constant `f` ⇒ the zero `ContinuousAddMonoidHom`;
+* non-constant `f` ⇒ the multiplicity-weighted divisor pullback
+  `Jacobian.pullbackWeighted` with `e := manifoldRamificationIndex f`
+  and `N := degreeFiber f hf`.
+
+The Riemann-Hurwitz total-weight obligation
+(`Owed.degree.ramificationSumEqualsDegree_statement X Y`) is supplied
+unconditionally by `ramificationSumEqualsDegree_holds_unconditional`. -/
 noncomputable def pullback (f : X → Y)
-    (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    Jacobian Y →ₜ+ Jacobian X :=
-  JacobianChallenge.Jacobian.pullback f
+    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    Jacobian Y →ₜ+ Jacobian X := by
+  classical
+  exact JacobianChallenge.Jacobian.pullbackHonest_of_rsum
+    (JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_holds_unconditional X Y)
+    f hf
 
 -- pullback is holomorphic
 theorem pullback_contMDiff :
