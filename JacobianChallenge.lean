@@ -6,8 +6,10 @@ import JacobianChallenge.Analysis.H1OnManifold
 import JacobianChallenge.Basic
 import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.ChipAliases
+import JacobianChallenge.Divisor.FiberCardComposition
 import JacobianChallenge.Divisor.FiberPullback
 import JacobianChallenge.Divisor.FiberPullbackWeighted
+import JacobianChallenge.Divisor.FiberPullbackWitnessIrrelevance
 import JacobianChallenge.Divisor.FiberSum
 import JacobianChallenge.Divisor.FiberSumWeighted
 import JacobianChallenge.Divisor.MeromorphicNonzeroGerm
@@ -63,6 +65,7 @@ import JacobianChallenge.Manifold.CriticalSetDerivBridge
 import JacobianChallenge.Manifold.CriticalSetDiscrete
 import JacobianChallenge.Manifold.CriticalSetFiniteUnconditional
 import JacobianChallenge.Manifold.CriticalSetWitnessSupplier
+import JacobianChallenge.Manifold.DisjointFibreNbhds
 import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Manifold.FiberCountBridge
 import JacobianChallenge.Manifold.FibreBalance
@@ -149,6 +152,8 @@ import JacobianChallenge.Manifold.PreconnectedFromFiniteComplement
 import JacobianChallenge.Manifold.PrincipalDivisorDegreeZero
 import JacobianChallenge.Manifold.R5StackHypothesesDischarge
 import JacobianChallenge.Manifold.RamificationIndex
+import JacobianChallenge.Manifold.RamificationIndexChain
+import JacobianChallenge.Manifold.RamificationIndexPositive
 import JacobianChallenge.Manifold.RamificationSumEqualsDegree
 import JacobianChallenge.Manifold.RegularSubsetPreconnected
 import JacobianChallenge.Manifold.RegularValueExistsUnconditional
