@@ -6,6 +6,7 @@ Authors: Bryan Sanchez
 import JacobianChallenge.Manifold.RamificationSumEqualsDegree
 import JacobianChallenge.Manifold.DegreeUnconditional
 import JacobianChallenge.Manifold.RegularValueExistsUnconditional
+import JacobianChallenge.Manifold.RegularValueExistsRegUnconditional
 import JacobianChallenge.Manifold.FibreCardWellDefinedAtRegular
 
 set_option diagnostics true
@@ -114,23 +115,54 @@ def NearbyRegularWitnessHypothesis
         (∑ x ∈ (fibres_finite_statement_holds_unconditional f hf hnc y).toFinset,
           JacobianChallenge.Manifold.manifoldRamificationIndex f x)
 
-/-- **The classical-choice regularity certificate (auxiliary input).**
+/-- **The classical-choice regularity certificate (auxiliary input,
+RegFix-deprecated).**
 
-Standard companion to `NearbyRegularWitnessHypothesis`: the
-`Classical.choice`-selected witness behind `degreeFiber`'s body has a
-regular value (zero critical preimages). This is needed to bridge
-`degreeFiber f hf = (Classical.choice h_exist).card` to
-`(Classical.choice h_exist).toRegular _ . card`. -/
+Pre-RegFix this was a needed auxiliary: the `Classical.choice` inside
+`degreeFiber`'s body was over `Nonempty (RegularValueWitness f)`, which
+carries no regularity certificate, so an explicit hypothesis was required
+to assert the chosen value was regular.
+
+Post-RegFix `degreeFiber`'s body chooses from
+`Nonempty (RegularValueWitnessReg f)` directly, so the chosen witness
+*automatically* carries the chart-pullback-deriv-nonzero certificate. This
+hypothesis is therefore now provable as a theorem from
+`RegularValueWitnessReg.is_regular`, but we keep the named `Prop` definition
+for downstream backward compatibility — its discharge is trivial. -/
 def ClassicalChoiceRegularHypothesis
     (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     (Y : Type v) [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] : Prop :=
   ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f → ¬ JacobianChallenge.IsConstantMap f →
-    ∀ (h_exist : Nonempty (RegularValueWitness f)),
+    ∀ (h_exist : Nonempty (RegularValueWitnessReg f)),
       ∀ x ∈ f ⁻¹' {(Classical.choice h_exist).value},
         deriv ((chartAt ℂ (Classical.choice h_exist).value) ∘ f ∘ (chartAt ℂ x).symm)
           ((chartAt ℂ x) x) ≠ 0
+
+/-- **RegFix-trivial discharge of `ClassicalChoiceRegularHypothesis`.**
+Post-RegFix the choice is over `RegularValueWitnessReg f`, whose
+`is_regular` field is exactly the certificate the hypothesis demands. -/
+theorem classicalChoiceRegular_holds_unconditional
+    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] :
+    ClassicalChoiceRegularHypothesis X Y := by
+  intro f _hf _hnc h_exist x hx
+  -- The chosen witness is a RegularValueWitnessReg; its is_regular field
+  -- gives the chart-pullback-deriv-nonzero certificate. The witness's
+  -- RegularValueWitnessReg.value is by definition (Classical.choice h_exist).toWitness.value.
+  have h_value_eq : (Classical.choice h_exist).value =
+      (Classical.choice h_exist).toWitness.value := rfl
+  -- Translate hx through value_eq.
+  have hx' : x ∈ f ⁻¹' {(Classical.choice h_exist).toWitness.value} := by
+    rw [← h_value_eq]; exact hx
+  -- Apply is_regular.
+  have h := (Classical.choice h_exist).is_regular x hx'
+  -- Rewrite the value in the goal.
+  rw [h_value_eq]
+  exact h
 
 /-! ### Regular-witness card well-definedness (item 3.reg).
 
@@ -145,13 +177,12 @@ regular-witness companions, the named obligation follows by
 unfolding both sides and identifying via
 `degreeFiber_eq_witness_card_at_regular`. -/
 
-/-- **Conditional discharge of the ramification-sum identity.**
+/-- **Conditional discharge of the ramification-sum identity (RegFix-corrected).**
 
-From three packaged inputs:
+From two packaged inputs (`h_choice_reg` is now redundant after RegFix):
 
 * `h_near_y` (the analytic Hurwitz output: existence of a near-`y`
-  regular witness whose card equals `∑ k_x`),
-* `h_choice_reg` (the classical-choice regularity companion), and
+  regular witness whose card equals `∑ k_x`), and
 * `h_wd_reg` (`fibre_card_well_defined_at_regular_statement`),
 
 the named obligation `ramificationSumEqualsDegree_statement X Y`
@@ -167,32 +198,26 @@ theorem ramificationSumEqualsDegree_holds_of_nearby_regular_witness
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (h_near_y : NearbyRegularWitnessHypothesis X Y)
-    (h_choice_reg : ClassicalChoiceRegularHypothesis X Y)
     (h_wd_reg : ∀ (f : X → Y), ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f →
       ¬ JacobianChallenge.IsConstantMap f →
       ∀ (w₁ w₂ : RegularValueWitnessReg f), w₁.card = w₂.card) :
     JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_statement X Y := by
   -- Unfold the named obligation.
   intro f hf hnc y
-  -- Step 1: regular-value existence (unconditional at this pin).
-  have h_exist : Nonempty (RegularValueWitness f) :=
-    regular_value_exists_statement_holds_unconditional f hf hnc
+  -- Step 1: regular-value existence (unconditional at this pin, RegFix form).
+  have h_exist : Nonempty (RegularValueWitnessReg f) :=
+    regular_value_exists_reg_holds_unconditional f hf hnc
   -- Step 2: extract the near-y regular witness from the package.
   obtain ⟨w, h_w_card⟩ := h_near_y f hf hnc y
-  -- Step 3: pull the classical-choice regularity certificate.
-  have h_b : ∀ x ∈ f ⁻¹' {(Classical.choice h_exist).value},
-      deriv ((chartAt ℂ (Classical.choice h_exist).value) ∘ f ∘ (chartAt ℂ x).symm)
-        ((chartAt ℂ x) x) ≠ 0 :=
-    h_choice_reg f hf hnc h_exist
-  -- Step 4: pull the well-definedness on regular witnesses.
+  -- Step 3: pull the well-definedness on regular witnesses.
   have h_c : ∀ (w₁ w₂ : RegularValueWitnessReg f), w₁.card = w₂.card :=
     h_wd_reg f hf hnc
-  -- Step 5: identify `degreeFiber f hf = w.card` via the bridge in
-  -- `DegreeUnconditional.lean`.
+  -- Step 4: identify `degreeFiber f hf = w.card` via the bridge in
+  -- `DegreeUnconditional.lean` (no h_choice_reg needed post-RegFix).
   have h_deg :
       JacobianChallenge.ContMDiff.degreeFiber f hf = w.card :=
     JacobianChallenge.ContMDiff.degreeFiber_eq_witness_card_at_regular
-      f hf hnc h_exist h_b w h_c
+      f hf hnc h_exist w h_c
   -- Step 6: combine `w.card = ∑ k_x` (from h_near_y) with
   -- `degreeFiber f hf = w.card` (h_deg) to conclude.
   -- Goal: ∑ ... = degreeFiber f hf
@@ -221,7 +246,10 @@ def RamificationSumPackage
 
 /-- **Bundled-form discharge.** Same content as
 `ramificationSumEqualsDegree_holds_of_nearby_regular_witness`, with all
-three inputs gathered into a single `RamificationSumPackage`. -/
+three inputs gathered into a single `RamificationSumPackage`. The
+`ClassicalChoiceRegularHypothesis` slot in the bundle is now redundant
+(post-RegFix it is provable; we still consume it here for backward
+compatibility). -/
 theorem ramificationSumEqualsDegree_holds_of_package
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -230,7 +258,7 @@ theorem ramificationSumEqualsDegree_holds_of_package
     (h_pkg : RamificationSumPackage X Y) :
     JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_statement X Y :=
   ramificationSumEqualsDegree_holds_of_nearby_regular_witness
-    h_pkg.1 h_pkg.2.1 h_pkg.2.2
+    h_pkg.1 h_pkg.2.2
 
 end Owed.degree
 end ContMDiff
