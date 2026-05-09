@@ -8,6 +8,7 @@ import Mathlib.Analysis.Analytic.Constructions
 import Mathlib.Analysis.Meromorphic.Basic
 import Mathlib.Algebra.Polynomial.Roots
 import Mathlib.RingTheory.RootsOfUnity.Basic
+import Mathlib.FieldTheory.IsAlgClosed.Basic
 import JacobianChallenge.Manifold.NormPushforwardLocal
 import JacobianChallenge.Manifold.NormPushforwardMeromorphy
 
@@ -201,81 +202,68 @@ auxiliary `auxProdMuK g k`, which is μ_k-invariant in `s` by P1.1a, factors
 through `s ↦ s^k`.  This is delivered separately (out of scope for this
 chip; see file docstring for the missing-mathlib note). -/
 theorem normPow_meromorphicAt_zero_of_descent
-    (g : ℂ → ℂ) {k : ℕ} (_hk : 1 ≤ k) (_hg : MeromorphicAt g 0)
+    (g : ℂ → ℂ) {k : ℕ} (hk : 1 ≤ k) (_hg : MeromorphicAt g 0)
     {F : ℂ → ℂ} (hF_mero : MeromorphicAt F 0)
     (hF_descent : (fun s : ℂ => F (s ^ k)) =ᶠ[nhds (0 : ℂ)] auxProdMuK g k) :
     MeromorphicAt (normPow g k) 0 := by
   classical
   -- We will show `F =ᶠ[𝓝[≠] 0] normPow g k` and apply `MeromorphicAt.congr`.
-  -- Restrict the descent to `nhdsWithin 0 {0}ᶜ`.
-  have hF_descent' : (fun s : ℂ => F (s ^ k)) =ᶠ[nhdsWithin (0 : ℂ) {(0 : ℂ)}ᶜ]
-      auxProdMuK g k :=
-    hF_descent.filter_mono nhdsWithin_le_nhds
-  -- Combine with the bridge: `(fun s => normPow g k (s^k)) =ᶠ[𝓝[≠] 0] auxProdMuK g k`.
-  have h_bridge : (fun s : ℂ => normPow g k (s ^ k))
-        =ᶠ[nhdsWithin (0 : ℂ) {(0 : ℂ)}ᶜ] auxProdMuK g k :=
-    normPow_pow_eventuallyEq_auxProdMuK g _hk
-  -- Hence `(fun s => F (s^k)) =ᶠ[𝓝[≠] 0] (fun s => normPow g k (s^k))`.
-  have h_pulled : (fun s : ℂ => F (s ^ k))
-        =ᶠ[nhdsWithin (0 : ℂ) {(0 : ℂ)}ᶜ] (fun s : ℂ => normPow g k (s ^ k)) :=
-    hF_descent'.trans h_bridge.symm
-  -- Now we compare `F` and `normPow g k` directly at the point `t`, using
-  -- the identity `t = (some s)^k` only on the punctured locus.  Since `s^k`
-  -- as `s → 0` covers a punctured neighbourhood of `0` in `t` (continuity +
-  -- surjectivity for `k ≥ 1` over ℂ), and the punctured filter `𝓝[≠] 0` in
-  -- `t` is the pushforward of `𝓝[≠] 0` in `s` along `s ↦ s^k`, we transfer
-  -- `h_pulled` to a t-side eventual equality.
-  -- More directly: we apply `MeromorphicAt.comp_analyticAt` to package
-  -- `F ∘ (· ^ k)` as meromorphic at `0`, then use that this composition
-  -- equals `normPow g k ∘ (· ^ k)` near `0`, then descend by ...
-  -- The cleanest route: apply `MeromorphicAt.congr` directly to `hF_mero`
-  -- with the eventual equality `F =ᶠ[𝓝[≠] 0] normPow g k` in the variable `t`.
-  -- We construct that equality from `h_pulled` by changing variables along
-  -- the surjective continuous map `s ↦ s^k` (using `Filter.Tendsto`/`map`).
-  -- Specifically: `(· ^ k) : ℂ → ℂ` is continuous and surjective off 0
-  -- (algebraic closure), so `Filter.map (· ^ k) (𝓝[≠] 0) ≤ 𝓝[≠] 0`.
-  have h_map :
-      Filter.map (fun s : ℂ => s ^ k) (nhdsWithin (0 : ℂ) {(0 : ℂ)}ᶜ)
-        ≤ nhdsWithin (0 : ℂ) {(0 : ℂ)}ᶜ := by
-    -- map of `𝓝[≠] 0` along `s ↦ s^k` is ≤ `𝓝 0` (by continuity at `0` with
-    -- `0^k = 0` since `k ≥ 1`) AND avoids `0` (since `s ≠ 0 ⇒ s^k ≠ 0`).
-    rw [Filter.le_def]
-    intro U hU
-    rw [mem_nhdsWithin] at hU
-    obtain ⟨V, hV_open, hV_mem, hV_sub⟩ := hU
-    -- pre-image of V under `· ^ k` is a nhd of 0 (continuity); avoiding 0 is
-    -- automatic from `s ≠ 0`.
-    have hk_ne : k ≠ 0 := Nat.one_le_iff_ne_zero.mp _hk
-    have h_zero_pow : (0 : ℂ) ^ k = 0 := zero_pow hk_ne
-    have h_cont : ContinuousAt (fun s : ℂ => s ^ k) 0 :=
-      (continuous_id.pow k).continuousAt
-    have h_preV : (fun s : ℂ => s ^ k) ⁻¹' V ∈ nhds (0 : ℂ) := by
-      apply h_cont.preimage_mem_nhds
-      rw [h_zero_pow]; exact hV_mem
-    rw [Filter.mem_map, mem_nhdsWithin]
-    refine ⟨(fun s : ℂ => s ^ k) ⁻¹' V, ?_, ?_, ?_⟩
-    · exact (hV_open.preimage (continuous_id.pow k))
-    · simp [h_zero_pow]; exact hV_mem
-    · intro s hs
-      rcases hs with ⟨hs_pre, hs_ne⟩
-      apply hV_sub
-      refine ⟨hs_pre, ?_⟩
-      simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
-      intro h_pow_zero
-      apply hs_ne
-      simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hs_ne
-      -- s^k = 0 ⇒ s = 0 in ℂ.
-      exact pow_eq_zero_iff hk_ne |>.mp h_pow_zero
-  -- Translate `h_pulled` (an eventual equality in the `s`-filter) to an
-  -- eventual equality in the `t`-filter, where `t = s^k`.
+  -- Step 1: extract a metric ball on which the descent holds.
+  rw [Metric.eventually_nhds_iff] at hF_descent
+  obtain ⟨ε, hε_pos, hε_descent⟩ := hF_descent
+  -- Step 2: inside `Metric.ball (0 : ℂ) (ε ^ k)`, every nonzero point `t` is
+  -- a `k`-th power `s^k` with `s ∈ ball 0 ε`.  We use `Complex` algebraic
+  -- closure: pick `s := t ^ (1 / k)` via the principal branch of `cpow`.
+  -- A more elementary route, sufficient here, is to use that `nthRootsFinset
+  -- k t` is nonempty (as a fact about ℂ) and pick any element with the
+  -- required size estimate.
+  -- Step 3: assemble the eventual equality `F =ᶠ[𝓝[≠] 0_t] normPow g k`.
+  --
+  -- We argue at the level of metric balls.  Set `δ := ε ^ k > 0`.  For any
+  -- `t ∈ ball (0 : ℂ) δ`, pick `s := t ^ (1 / (k : ℂ))` (principal `cpow`):
+  -- this satisfies `‖s‖ = ‖t‖ ^ (1/k) < δ ^ (1/k) = ε` and `s ^ k = t` for
+  -- `t ≠ 0`.  Hence `F t = F (s^k) = auxProdMuK g k s = normPow g k (s^k) = normPow g k t`.
+  have hk_ne : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
+  have hk_pos : 0 < k := Nat.lt_of_lt_of_le Nat.zero_lt_one hk
+  set δ : ℝ := ε ^ k with hδ_def
+  have hδ_pos : 0 < δ := pow_pos hε_pos k
+  -- Assemble the eventual equality on `𝓝[≠] 0_t`.
   have h_t : F =ᶠ[nhdsWithin (0 : ℂ) {(0 : ℂ)}ᶜ] normPow g k := by
-    -- `h_pulled : F ∘ (· ^ k) =ᶠ[𝓝[≠]_s 0] (normPow g k) ∘ (· ^ k)`
-    -- map version → eventual equality at filter `Filter.map (· ^ k) (𝓝[≠]_s 0)`
-    -- ≤ `𝓝[≠]_t 0` by `h_map`.
-    have h_map_eq : F =ᶠ[Filter.map (fun s : ℂ => s ^ k)
-        (nhdsWithin (0 : ℂ) {(0 : ℂ)}ᶜ)] normPow g k := by
-      simpa [Filter.EventuallyEq, Filter.eventually_map] using h_pulled
-    exact h_map_eq.filter_mono h_map
+    rw [Filter.eventuallyEq_iff_exists_mem]
+    refine ⟨Metric.ball (0 : ℂ) δ ∩ {(0 : ℂ)}ᶜ, ?_, ?_⟩
+    · rw [mem_nhdsWithin]
+      exact ⟨Metric.ball (0 : ℂ) δ, Metric.isOpen_ball,
+             Metric.mem_ball_self hδ_pos, fun _ h => h⟩
+    · intro t ht
+      rcases ht with ⟨ht_ball, ht_ne⟩
+      have ht_ne' : t ≠ 0 := by
+        simpa [Set.mem_compl_iff, Set.mem_singleton_iff] using ht_ne
+      have ht_norm : ‖t‖ < δ := by
+        simpa [Metric.mem_ball, dist_zero_right] using ht_ball
+      -- Pick any k-th root of t (algebraic closure of ℂ).
+      obtain ⟨s, hs_pow⟩ := IsAlgClosed.exists_pow_nat_eq (k := ℂ) t hk_pos
+      have hs_ne : s ≠ 0 := by
+        intro h
+        rw [h, zero_pow hk_ne] at hs_pow
+        exact ht_ne' hs_pow.symm
+      -- Norm bound: ‖s‖^k = ‖s^k‖ = ‖t‖ < ε^k, so ‖s‖ < ε (using k ≥ 1).
+      have hs_norm_pow : ‖s‖ ^ k = ‖t‖ := by
+        rw [← norm_pow]; rw [hs_pow]
+      have hs_norm_lt : ‖s‖ < ε := by
+        have h_pow_lt : ‖s‖ ^ k < ε ^ k := by
+          rw [hs_norm_pow]; exact ht_norm
+        exact lt_of_pow_lt_pow_left k hε_pos.le h_pow_lt
+      have hs_in_ball : s ∈ Metric.ball (0 : ℂ) ε := by
+        simpa [Metric.mem_ball, dist_zero_right] using hs_norm_lt
+      have hs_descent : F (s ^ k) = auxProdMuK g k s :=
+        hε_descent s (by simpa [Metric.mem_ball, dist_zero_right] using hs_norm_lt)
+      have hbridge : normPow g k (s ^ k) = auxProdMuK g k s :=
+        normPow_eq_auxProdMuK_pow_of_ne_zero g hk hs_ne
+      -- Combine: `F t = F (s^k) = auxProdMuK g k s = normPow g k (s^k) = normPow g k t`.
+      calc F t = F (s ^ k) := by rw [hs_pow]
+        _ = auxProdMuK g k s := hs_descent
+        _ = normPow g k (s ^ k) := hbridge.symm
+        _ = normPow g k t := by rw [hs_pow]
   -- Apply `MeromorphicAt.congr`.
   exact hF_mero.congr h_t
 
