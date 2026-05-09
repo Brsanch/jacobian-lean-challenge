@@ -405,6 +405,7 @@ theorem localKFoldMultiplicityOnManifold_genuine_preimage_card
     simp [Function.comp, (chartAt ℂ x).left_inv hx_src]
   -- From `1 ≤ k = (analyticOrderAt (F - F z₀) z₀).toNat`, the order is `(k : ℕ∞)`.
   have hord : analyticOrderAt (fun z => F z - F z₀) z₀ = (k : ℕ∞) := by
+    -- `k = (analyticOrderAt _ _).toNat` by definition of `manifoldRamificationIndex`.
     have hk_eq : k = (analyticOrderAt (fun z => F z - F z₀) z₀).toNat := rfl
     have hk_toNat : 1 ≤ (analyticOrderAt (fun z => F z - F z₀) z₀).toNat := by
       rw [hk_eq] at hpos; exact hpos
@@ -412,15 +413,11 @@ theorem localKFoldMultiplicityOnManifold_genuine_preimage_card
       intro h
       rw [h, ENat.toNat_top] at hk_toNat
       exact absurd hk_toNat (by norm_num)
-    set ord : ℕ∞ := analyticOrderAt (fun z => F z - F z₀) z₀ with hord_def
-    -- Goal: `ord = (k : ℕ∞)`. Use `cases` to expose the underlying nat for `coe`.
-    cases hord_eq : ord with
-    | top => exact absurd hord_eq hord_ne_top
-    | coe n =>
-      -- `ord = (n : ℕ∞)`. We have `k = ord.toNat = n` by `hk_eq` + the case.
-      have hn_eq : (n : ℕ∞).toNat = n := ENat.toNat_coe n
-      have hk_n : k = n := by rw [hk_eq, ← hord_def, hord_eq, hn_eq]
-      rw [hk_n]
+    -- `ord ≠ ⊤ ⇒ ∃ n : ℕ, ord = (n : ℕ∞)`.
+    obtain ⟨n, hn⟩ := ENat.ne_top_iff_exists.mp hord_ne_top
+    -- `hn : ↑n = analyticOrderAt _`. Then `n = ord.toNat = k`.
+    have hk_n : k = n := by rw [hk_eq, ← hn, ENat.toNat_coe]
+    rw [← hn, hk_n]
   -- (i) Chart target containment radius.
   have h_target_open : IsOpen (chartAt ℂ x).target := (chartAt ℂ x).open_target
   have hz₀_target : z₀ ∈ (chartAt ℂ x).target :=
