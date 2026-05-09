@@ -100,7 +100,7 @@ private lemma tendsto_const_mul_nhdsNE_zero {ζ : ℂ} (hζ : ζ ≠ 0) :
 /-- A μ_k root of unity is non-zero (when `k ≥ 1`). -/
 private lemma ne_zero_of_mem_nthRootsFinset_one {k : ℕ} (hk : 1 ≤ k) {ζ : ℂ}
     (hζ : ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ)) : ζ ≠ 0 := by
-  have hζ_pow : ζ ^ k = 1 := (Polynomial.mem_nthRootsFinset hk).mp hζ
+  have hζ_pow : ζ ^ k = 1 := (Polynomial.mem_nthRootsFinset hk (1 : ℂ)).mp hζ
   intro h
   rw [h, zero_pow (Nat.one_le_iff_ne_zero.mp hk)] at hζ_pow
   exact one_ne_zero hζ_pow.symm
@@ -212,11 +212,9 @@ private lemma auxProdMuK_eventuallyEq_factor
   -- For ζ ≠ 0 and s ≠ 0:  (ζ * s)^n = ζ^n * s^n  (zpow on ℂˣ).
   have h_split : ∀ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ),
       (ζ * s) ^ n • u (ζ * s) = ζ ^ n * s ^ n * u (ζ * s) := by
-    intro ζ hζ
-    have hζ_ne : ζ ≠ 0 := ne_zero_of_mem_nthRootsFinset_one hk hζ
-    have h_zpow_mul : (ζ * s) ^ n = ζ ^ n * s ^ n := by
-      exact mul_zpow ζ s n
-    simp [h_zpow_mul, smul_eq_mul, mul_comm, mul_left_comm, mul_assoc]
+    intro ζ _hζ
+    have h_zpow_mul : (ζ * s) ^ n = ζ ^ n * s ^ n := mul_zpow ζ s n
+    rw [smul_eq_mul, h_zpow_mul]
   have h_prod_split :
       ∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), (ζ * s) ^ n • u (ζ * s)
         = ∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ),
@@ -224,46 +222,30 @@ private lemma auxProdMuK_eventuallyEq_factor
     refine Finset.prod_congr rfl ?_
     intro ζ hζ
     exact h_split ζ hζ
-  -- Pull constants out of the product.
-  have h_factor :
-      ∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ),
-          ζ ^ n * s ^ n * u (ζ * s)
-        = (∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), ζ ^ n)
-          * s ^ ((k : ℤ) * n)
+  -- Pull constants out of the product step-by-step.
+  classical
+  have h_card : (Polynomial.nthRootsFinset k (1 : ℂ)).card = k := by
+    have hζ_prim : IsPrimitiveRoot
+        (Complex.exp (2 * Real.pi * Complex.I / k)) k :=
+      Complex.isPrimitiveRoot_exp k hk_ne
+    exact hζ_prim.card_nthRootsFinset
+  -- Step A: ∏ ζ ∈ S, (ζ^n * s^n) * u(ζ*s) = (∏ ζ, ζ^n * s^n) * (∏ ζ, u(ζ*s)).
+  have hA : ∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ),
+      ζ ^ n * s ^ n * u (ζ * s)
+        = (∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), ζ ^ n * s ^ n)
           * ∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), u (ζ * s) := by
-    -- Standard split of `∏ a*b*c = (∏a)*(∏b)*(∏c)` and `∏ a constant = a^card`.
-    classical
-    -- First rewrite each factor as a product of three:  a_ζ * b_ζ * c_ζ where
-    --   a_ζ = ζ^n, b_ζ = s^n, c_ζ = u(ζ s).
-    rw [Finset.prod_congr rfl
-      (fun ζ _ => (rfl : ζ ^ n * s ^ n * u (ζ * s) = ζ ^ n * s ^ n * u (ζ * s)))]
-    -- prod of products: ∏ (a*b*c) = (∏ a) * (∏ b) * (∏ c).
-    rw [show (fun ζ : ℂ => ζ ^ n * s ^ n * u (ζ * s))
-            = (fun ζ : ℂ => ζ ^ n) * (fun ζ : ℂ => s ^ n)
-              * (fun ζ : ℂ => u (ζ * s)) from rfl]
-    rw [Finset.prod_mul_distrib, Finset.prod_mul_distrib]
-    -- ∏ (constant s^n) over μ_k = (s^n)^card μ_k = s^(n * k).  We use the
-    -- general identity `∏ s^n over a finset = s^(n * card)`. With `card μ_k = k`
-    -- (over ℂ for `k ≥ 1`) this is exactly `s^{n*k} = s^{k*n}`.
-    -- Use `Finset.prod_const`.
-    rw [Finset.prod_const]
-    -- Card of nthRootsFinset k 1 = k for ℂ algebraically closed and k ≥ 1.
-    have h_card : (Polynomial.nthRootsFinset k (1 : ℂ)).card = k := by
-      have hζ_prim : IsPrimitiveRoot
-          (Complex.exp (2 * Real.pi * Complex.I / k)) k :=
-        Complex.isPrimitiveRoot_exp k hk_ne
-      exact hζ_prim.card_nthRootsFinset
-    -- Need hk_ne in scope.
-    rw [h_card]
-    -- (s^n)^k = s^(n*k) = s^(k*n) with `n : ℤ`, `k : ℕ`.
-    have h_pow : (s ^ n) ^ k = s ^ ((k : ℤ) * n) := by
-      rw [← zpow_natCast (s ^ n) k, ← zpow_mul]
-      ring_nf
-    rw [h_pow]
+    rw [← Finset.prod_mul_distrib]
+  -- Step B: ∏ ζ, ζ^n * s^n = (∏ ζ, ζ^n) * (∏ ζ, s^n) = (∏ ζ^n) * (s^n)^k.
+  have hB : ∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), ζ ^ n * s ^ n
+        = (∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), ζ ^ n) * (s ^ n) ^ k := by
+    rw [← Finset.prod_mul_distrib, Finset.prod_const, h_card]
+  -- Step C: (s^n)^k = s^(k*n).
+  have hC : (s ^ n) ^ k = s ^ ((k : ℤ) * n) := by
+    rw [← zpow_natCast (s ^ n) k, ← zpow_mul]
+    congr 1
     ring
   -- Reassemble.
-  rw [h_prod_eq, h_prod_split, h_factor]
-  -- The RHS as written is `descentConst * s^{kn} * V s`.
+  rw [h_prod_eq, h_prod_split, hA, hB, hC]
   ring
 
 /-! ### Headline: unconditional meromorphy at `0` -/
@@ -287,7 +269,7 @@ theorem normPow_meromorphicAt_zero
         auxAnalyticFactor u k := by
     intro ζ hζ_pow
     have hζ_mem : ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ) :=
-      (Polynomial.mem_nthRootsFinset hk).mpr hζ_pow
+      (Polynomial.mem_nthRootsFinset hk (1 : ℂ)).mpr hζ_pow
     exact auxAnalyticFactor_mu_k_invariant u hk ζ hζ_mem
   -- Step 3: ZZ203 gives W analytic at 0 with W(s^k) =ᶠ[𝓝 0] V s.
   obtain ⟨W, hW_an, hW_eq⟩ :=
@@ -322,7 +304,7 @@ theorem normPow_meromorphicAt_zero
     -- And V s = W(s^k).  So aux = c * s^{kn} * W(s^k).
     -- And s^{kn} = (s^k)^n.
     have h_pow : s ^ ((k : ℤ) * n) = (s ^ k) ^ n := by
-      rw [mul_comm, zpow_mul, zpow_natCast]
+      rw [zpow_mul, zpow_natCast]
     -- Reassemble F(s^k) = descentConst * (s^k)^n * W(s^k).
     have hF_eval : F (s ^ k) = descentConst k n * (s ^ k) ^ n * W (s ^ k) := rfl
     rw [hs_aux, hF_eval, ← h_pow, hs_W]
