@@ -474,31 +474,15 @@ noncomputable def localDerivCompatibilityData_of_meromorphicNonzero
     hCompat := hCompat
   }
 
-/-- **Corollary.** Per-point `DerivBridgeData (f.toRiemannSphere) x` for every
-`x : X`, by composition of the unconditional supplier with
-`derivBridgeData_of_localCompatibility`. The analyticity of the literal
-chart pullback is supplied unconditionally by ZZ24 via
-`MeromorphicNonzero.toRiemannSphere_contMDiff`. -/
-noncomputable def derivBridgeData_of_meromorphicNonzero
-    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
-    (f : JacobianChallenge.MeromorphicNonzero X)
-    (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere)
-    (x : X) :
-    DerivBridgeData f x := by
-  have D : LocalDerivCompatibilityData f x :=
-    localDerivCompatibilityData_of_meromorphicNonzero f hnc x
-  have hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f.toRiemannSphere :=
-    JacobianChallenge.MeromorphicNonzero.toRiemannSphere_contMDiff f
-  -- The literal chart pullback is the F field of D, and ZZ24 supplies analyticity.
-  have hFA :
-      AnalyticAt ℂ
-        ((chartAt ℂ (f.toRiemannSphere x)) ∘ f.toRiemannSphere ∘ (chartAt ℂ x).symm)
-        ((chartAt ℂ x) x) :=
-    JacobianChallenge.ContMDiff.Owed.degree.contMDiff_omega_analyticAt_chart_pullback
-      hf x
-  -- D.F definitionally equals the literal chart pullback by construction.
-  exact derivBridgeData_of_localCompatibility D hFA
+-- (No standalone `derivBridgeData_of_meromorphicNonzero` corollary is shipped
+-- here. Downstream consumers compose `localDerivCompatibilityData_of_meromorphicNonzero`
+-- with `derivBridgeData_of_localCompatibility` from `DerivBridgeFromNonConstant.lean`
+-- by supplying the analyticity at the basepoint via ZZ24's
+-- `contMDiff_omega_analyticAt_chart_pullback`, applied to the *F-field of the
+-- supplied `LocalDerivCompatibilityData`*. The structure-projection through
+-- this `def` does not reduce automatically; in practice consumers can call
+-- the supplier with `[F := <literal pullback>]` directly via the
+-- `derivBridgeData_of_localCompatibility_literalPullback` constructor.)
 
 end Manifold
 
