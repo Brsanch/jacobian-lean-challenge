@@ -67,6 +67,7 @@ import JacobianChallenge.Manifold.CriticalSetDiscrete
 import JacobianChallenge.Manifold.CriticalSetFiniteUnconditional
 import JacobianChallenge.Manifold.CriticalSetWitnessSupplier
 import JacobianChallenge.Manifold.CriticalValuesFinite
+import JacobianChallenge.Manifold.CriticalValuesFiniteGeneral
 import JacobianChallenge.Manifold.CriticalValuesFiniteUnconditional
 import JacobianChallenge.Manifold.DerivBridgeFromNonConstant
 import JacobianChallenge.Manifold.DisjointFibreNbhds
