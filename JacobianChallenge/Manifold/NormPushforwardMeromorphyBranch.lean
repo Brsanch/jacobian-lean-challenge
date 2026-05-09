@@ -209,8 +209,9 @@ theorem normPow_meromorphicAt_zero_of_descent
   classical
   -- We will show `F =ᶠ[𝓝[≠] 0] normPow g k` and apply `MeromorphicAt.congr`.
   -- Step 1: extract a metric ball on which the descent holds.
-  rw [Metric.eventually_nhds_iff] at hF_descent
-  obtain ⟨ε, hε_pos, hε_descent⟩ := hF_descent
+  have hF_event : ∀ᶠ s in nhds (0 : ℂ), F (s ^ k) = auxProdMuK g k s := hF_descent
+  rw [Metric.eventually_nhds_iff_ball] at hF_event
+  obtain ⟨ε, hε_pos, hε_descent⟩ := hF_event
   -- Step 2: inside `Metric.ball (0 : ℂ) (ε ^ k)`, every nonzero point `t` is
   -- a `k`-th power `s^k` with `s ∈ ball 0 ε`.  We use `Complex` algebraic
   -- closure: pick `s := t ^ (1 / k)` via the principal branch of `cpow`.
@@ -252,7 +253,7 @@ theorem normPow_meromorphicAt_zero_of_descent
       have hs_norm_lt : ‖s‖ < ε := by
         have h_pow_lt : ‖s‖ ^ k < ε ^ k := by
           rw [hs_norm_pow]; exact ht_norm
-        exact lt_of_pow_lt_pow_left k hε_pos.le h_pow_lt
+        exact lt_of_pow_lt_pow_left₀ k hε_pos.le h_pow_lt
       have hs_in_ball : s ∈ Metric.ball (0 : ℂ) ε := by
         simpa [Metric.mem_ball, dist_zero_right] using hs_norm_lt
       have hs_descent : F (s ^ k) = auxProdMuK g k s :=
