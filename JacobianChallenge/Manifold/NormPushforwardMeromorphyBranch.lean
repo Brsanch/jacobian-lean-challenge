@@ -9,6 +9,7 @@ import Mathlib.Analysis.Meromorphic.Basic
 import Mathlib.Algebra.Polynomial.Roots
 import Mathlib.RingTheory.RootsOfUnity.Basic
 import Mathlib.FieldTheory.IsAlgClosed.Basic
+import Mathlib.Analysis.Complex.Polynomial.Basic
 import JacobianChallenge.Manifold.NormPushforwardLocal
 import JacobianChallenge.Manifold.NormPushforwardMeromorphy
 
