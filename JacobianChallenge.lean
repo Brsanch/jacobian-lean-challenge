@@ -159,6 +159,7 @@ import JacobianChallenge.Manifold.RamificationIndex
 import JacobianChallenge.Manifold.RamificationIndexChain
 import JacobianChallenge.Manifold.RamificationIndexEqLocalKFold
 import JacobianChallenge.Manifold.RamificationIndexPositive
+import JacobianChallenge.Manifold.RamificationSumComposer
 import JacobianChallenge.Manifold.RamificationSumEqualsDegree
 import JacobianChallenge.Manifold.RegularSubsetPreconnected
 import JacobianChallenge.Manifold.RegularValueExistsUnconditional
