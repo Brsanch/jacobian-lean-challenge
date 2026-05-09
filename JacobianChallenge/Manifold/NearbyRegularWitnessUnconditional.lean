@@ -1061,7 +1061,7 @@ theorem nearbyRegularWitnessHypothesis_holds_unconditional
       Set.Finite.biUnion (Set.toFinite (FF : Set X))
         (fun x' hx'FF => h_piece_fin x' hx'FF)
     -- Convert the goal to Finset.card.
-    rw [hpre_w_eq, Set.ncard_eq_toFinset_card' _ hbiU_fin]
+    rw [hpre_w_eq, Set.ncard_eq_toFinset_card _ hbiU_fin]
     -- The toFinset of a biUnion of disjoint pieces equals the Finset.biUnion.
     -- Use that explicitly via Finset.card_biUnion + disjointness.
     -- Define: g : X → Finset X := fun x' => (h_piece_fin x' (Classical.byContradiction ...)).toFinset
@@ -1078,7 +1078,7 @@ theorem nearbyRegularWitnessHypothesis_holds_unconditional
       show (if h : x' ∈ FF then (h_piece_fin x' h).toFinset else (∅ : Finset X)).card
         = (f ⁻¹' {w} ∩ D_x x').ncard
       rw [dif_pos hx'FF]
-      exact (Set.ncard_eq_toFinset_card' _ (h_piece_fin x' hx'FF)).symm
+      exact (Set.ncard_eq_toFinset_card _ (h_piece_fin x' hx'FF)).symm
     -- Show toFinset of biUnion = FF.biUnion pieceF.
     have htoFinset_eq :
         hbiU_fin.toFinset = FF.biUnion pieceF := by
@@ -1140,7 +1140,7 @@ theorem nearbyRegularWitnessHypothesis_holds_unconditional
   have h_card_eq : (w_reg.card : ℕ) = (f ⁻¹' {w}).ncard := by
     show w_witness.card = (f ⁻¹' {w}).ncard
     show hpre_w_fin.toFinset.card = (f ⁻¹' {w}).ncard
-    exact (Set.ncard_eq_toFinset_card' _ hpre_w_fin).symm
+    exact (Set.ncard_eq_toFinset_card _ hpre_w_fin).symm
   rw [h_card_eq, h_sum_ncard]
   -- Goal: ∑ x' ∈ FF, (f⁻¹{w} ∩ D_x x').ncard
   --     = ∑ x ∈ (fibres_finite_statement_holds_unconditional f hf hnc y).toFinset,
