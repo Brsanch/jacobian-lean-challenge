@@ -29,22 +29,18 @@ modelled on `ℂ`.
 
 ## What this file ships
 
-* `localKFoldMultiplicity_preimage_card_with_radius_bound` — variant of
-  `localKFoldMultiplicity_preimage_card_fully_unconditional` that accepts a
-  user-supplied upper bound `R` on the output `ε`. Built by shrinking the
-  factorization radius before threading through the substitution count.
-
-* `localKFoldMultiplicityOnManifold_genuine_preimage_card` — the headline.
-  For `f : X → Y` real-analytic and a point `x : X` with `1 ≤
-  manifoldRamificationIndex f x`, there exist an open chart-disc `D_x` around
-  `x` and an open neighbourhood `V` of `f x` in `Y` such that for every
+* `localKFoldMultiplicityOnManifold_genuine_preimage_card` — for `f : X → Y`
+  real-analytic and a point `x : X` with positive ramification index, there
+  exist `ε > 0` and an open neighbourhood `V` of `f x` such that for every
   `w ∈ V \ {f x}`,
-  `(f ⁻¹' {w} ∩ D_x).ncard = manifoldRamificationIndex f x`.
+  `(f ⁻¹' {w} ∩ D_x).ncard = manifoldRamificationIndex f x`,
+  where `D_x = (chartAt ℂ x).source ∩ (chartAt ℂ x) ⁻¹' (ball ((chartAt ℂ x) x) ε)`
+  is an open chart-disc around `x`.
 
-The disc `D_x` is the chart-symm image of an open `ε`-ball in chart
-coordinates, intersected with the chart source. The neighbourhood `V` is
-the chart-symm image of an open `δ`-ball around `(chartAt ℂ (f x)) (f x)`,
-intersected with the chart source at `f x`.
+The proof uses an inlined refinement of the planar
+`localKFoldMultiplicity_preimage_card_fully_unconditional` count that
+admits a user-supplied upper bound on the output `ε`, then transports the
+count via the chart bijection `(chartAt ℂ x).symm`.
 
 ## Anti-cheat
 
@@ -52,8 +48,6 @@ intersected with the chart source at `f x`.
 * No signature changes outside this new file.
 * The chart-bijection transport uses `Set.ncard_image_of_injOn` and the
   partial-homeomorph injectivity / left-inverse from mathlib.
-* The radius-bound helper is a local refinement of the planar fully
-  unconditional count; it does not change any signature outside this file.
 -/
 
 @[expose] public section
@@ -68,16 +62,87 @@ namespace Manifold
 
 universe u v
 
-/-! ## Helper: planar `k`-fold count with a user-supplied radius bound -/
+/-! ## Helper: planar `k`-fold count with a user-supplied radius bound
+
+Reproduces inline the chain
+`analytic_local_factorization` → `analytic_kth_root_of_nonvanishing` →
+ZZ74-style local injectivity (one-to-one open partial homeomorph) →
+substitution-based count, retaining a visible upper bound `ε ≤ R` for any
+user-supplied `R > 0`. -/
+
+/-- **`k = 1` planar count with a radius bound.**
+
+Counts preimages of values near `g x₀` in a metric ball of radius `ε ≤ R`.
+This is the planar uniqueness lemma underlying the substitution count. -/
+private theorem localOneFold_preimage_card_with_radius_bound
+    {g : ℂ → ℂ} {x₀ : ℂ}
+    (h_an : AnalyticAt ℂ g x₀) (hd : deriv g x₀ ≠ 0)
+    {R : ℝ} (hR : 0 < R) :
+    ∃ ε > (0 : ℝ), ε ≤ R ∧ ∃ δ > (0 : ℝ),
+      ∀ w ∈ Metric.ball (g x₀) δ, w ≠ g x₀ →
+        ({z ∈ Metric.ball x₀ ε | g z = w} : Set ℂ).ncard = 1 := by
+  have hsd : HasStrictDerivAt g (deriv g x₀) x₀ := h_an.hasStrictDerivAt
+  have hsfd :
+      HasStrictFDerivAt g
+        (ContinuousLinearEquiv.unitsEquivAut ℂ (Units.mk0 (deriv g x₀) hd) :
+          ℂ →L[ℂ] ℂ) x₀ :=
+    hsd.hasStrictFDerivAt_equiv hd
+  set φ : OpenPartialHomeomorph ℂ ℂ := hsfd.toOpenPartialHomeomorph g with hφ
+  have h_x0_src : x₀ ∈ φ.source := hsfd.mem_toOpenPartialHomeomorph_source
+  have h_w0_tgt : g x₀ ∈ φ.target := hsfd.image_mem_toOpenPartialHomeomorph_target
+  have h_coe : (φ : ℂ → ℂ) = g := hsfd.toOpenPartialHomeomorph_coe
+  have h_src_nhds : φ.source ∈ 𝓝 x₀ := φ.open_source.mem_nhds h_x0_src
+  obtain ⟨ε₀, hε₀_pos, hε₀_sub⟩ := Metric.mem_nhds_iff.mp h_src_nhds
+  set ε : ℝ := min ε₀ R with hε_def
+  have hε_pos : 0 < ε := lt_min hε₀_pos hR
+  have hε_le_R : ε ≤ R := min_le_right _ _
+  have hε_le_ε₀ : ε ≤ ε₀ := min_le_left _ _
+  have hε_sub : Metric.ball x₀ ε ⊆ φ.source := fun z hz =>
+    hε₀_sub (Metric.ball_subset_ball hε_le_ε₀ hz)
+  have h_symm_cont : ContinuousAt φ.symm (g x₀) :=
+    (φ.continuousOn_symm).continuousAt (φ.open_target.mem_nhds h_w0_tgt)
+  have h_symm_w0 : φ.symm (g x₀) = x₀ := by
+    have hpre := φ.left_inv h_x0_src
+    have hφx₀ : (φ : ℂ → ℂ) x₀ = g x₀ := by rw [h_coe]
+    rw [hφx₀] at hpre
+    exact hpre
+  have h_ball_x0_nhds : Metric.ball x₀ ε ∈ 𝓝 x₀ :=
+    Metric.ball_mem_nhds x₀ hε_pos
+  have h_preimage_nhds : φ.symm ⁻¹' (Metric.ball x₀ ε) ∈ 𝓝 (g x₀) := by
+    have ht := h_symm_cont.tendsto
+    rw [h_symm_w0] at ht
+    exact ht h_ball_x0_nhds
+  have h_combo_nhds :
+      φ.target ∩ φ.symm ⁻¹' (Metric.ball x₀ ε) ∈ 𝓝 (g x₀) :=
+    Filter.inter_mem (φ.open_target.mem_nhds h_w0_tgt) h_preimage_nhds
+  obtain ⟨δ, hδ_pos, hδ_sub⟩ := Metric.mem_nhds_iff.mp h_combo_nhds
+  refine ⟨ε, hε_pos, hε_le_R, δ, hδ_pos, ?_⟩
+  intro w hw_ball hw_ne
+  have hw_target : w ∈ φ.target := (hδ_sub hw_ball).1
+  have hw_pre_in_ball : φ.symm w ∈ Metric.ball x₀ ε := (hδ_sub hw_ball).2
+  have h_symm_w_src : φ.symm w ∈ φ.source := φ.map_target hw_target
+  have h_g_symm : g (φ.symm w) = w := by
+    have hr : (φ : ℂ → ℂ) (φ.symm w) = w := φ.right_inv hw_target
+    rw [h_coe] at hr
+    exact hr
+  have h_preimage_eq :
+      {z ∈ Metric.ball x₀ ε | g z = w} = {φ.symm w} := by
+    apply Set.eq_singleton_iff_unique_mem.mpr
+    refine ⟨⟨hw_pre_in_ball, h_g_symm⟩, ?_⟩
+    intro z hz
+    obtain ⟨hz_ball, hz_g⟩ := hz
+    have hz_src : z ∈ φ.source := hε_sub hz_ball
+    have hφz : (φ : ℂ → ℂ) z = w := by rw [h_coe]; exact hz_g
+    have hφ_symm_w : (φ : ℂ → ℂ) (φ.symm w) = w := by
+      rw [h_coe]; exact h_g_symm
+    exact φ.injOn hz_src h_symm_w_src (hφz.trans hφ_symm_w.symm)
+  rw [h_preimage_eq]
+  exact Set.ncard_singleton _
 
 /-- **Planar `k`-fold count with `ε ≤ R`.**
 
 A refinement of `localKFoldMultiplicity_preimage_card_fully_unconditional`
-that lets the caller supply an upper bound `R` on the output `ε`. The proof
-shrinks the factorization radius produced by `analytic_local_factorization`
-to `min` with `R`, then threads through the substitution count which already
-respects the radius bound (the `hε_le_ρ` field of
-`localMultiplicityOne_preimage_card_with_radius`). -/
+that lets the caller supply an upper bound `R` on the output `ε`. -/
 private theorem localKFoldMultiplicity_preimage_card_with_radius_bound
     {g : ℂ → ℂ} {x₀ w₀ : ℂ} {k : ℕ} {R : ℝ}
     (hk : 1 ≤ k) (hR : 0 < R)
@@ -95,7 +160,6 @@ private theorem localKFoldMultiplicity_preimage_card_with_radius_bound
   have hR'_pos : 0 < R' := lt_min hR₀_pos hR
   have hR'_le_R₀ : R' ≤ R₀ := min_le_left _ _
   have hR'_le_R : R' ≤ R := min_le_right _ _
-  -- The factorization restricts to closedBall x₀ R'.
   have hu_an' : AnalyticOnNhd ℂ u (Metric.closedBall x₀ R') :=
     fun z hz => hu_an z (Metric.closedBall_subset_closedBall hR'_le_R₀ hz)
   have hfact' : ∀ z ∈ Metric.closedBall x₀ R',
@@ -104,10 +168,8 @@ private theorem localKFoldMultiplicity_preimage_card_with_radius_bound
   -- Step 3: extract analytic k-th root of `u` directly, retaining the radius bound.
   obtain ⟨r, ρ_v, hρ_v_pos, hρ_v_le, hr_an, hr_pow⟩ :=
     analytic_kth_root_of_nonvanishing hR'_pos hu_an' hu_x₀ hk
-  -- The substitution function we use is `v_actual := fun z => (z - x₀) * r z`
-  -- with substitution radius `ρ_v ≤ R'`.
+  -- Substitution function `v_actual := fun z => (z - x₀) * r z` on `closedBall x₀ ρ_v`.
   set v_actual : ℂ → ℂ := fun z => (z - x₀) * r z with hvact_def
-  -- Verify the substitution bundle properties for `v_actual` on closedBall x₀ ρ_v.
   have hva_an : AnalyticOnNhd ℂ v_actual (Metric.closedBall x₀ ρ_v) := by
     intro z hz
     have h1 : AnalyticAt ℂ (fun ζ : ℂ => ζ - x₀) z :=
@@ -147,21 +209,18 @@ private theorem localKFoldMultiplicity_preimage_card_with_radius_bound
       (Metric.closedBall_subset_closedBall hρ_v_le) hz
     have h1 : g z - w₀ = (z - x₀) ^ k * u z := hfact' z hz_R'
     have h2 : r z ^ k = u z := hr_pow z hz
-    rw [h1, ← h2, mul_pow, hvact_def]
-  -- Apply ZZ74-with-radius (on `v_actual`).
+    show g z - w₀ = ((z - x₀) * r z) ^ k
+    rw [h1, ← h2, mul_pow]
+  -- Apply the inline ZZ74-with-radius helper on `v_actual`.
   have hva_at_x₀ : AnalyticAt ℂ v_actual x₀ :=
     hva_an x₀ (Metric.mem_closedBall_self hρ_v_pos.le)
   obtain ⟨ε, hε_pos, hε_le_ρv, δ₁, hδ₁_pos, hZZ74_v⟩ :=
-    localMultiplicityOne_preimage_card_with_radius hva_at_x₀ hva_d hρ_v_pos
-  -- Ship: ε ≤ ρ_v ≤ R' ≤ R.
+    localOneFold_preimage_card_with_radius_bound hva_at_x₀ hva_d hρ_v_pos
   have hε_le_R : ε ≤ R := hε_le_ρv.trans (hρ_v_le.trans hR'_le_R)
-  -- Build δ. (Mirror the structure of
-  -- `localKFoldMultiplicity_preimage_card_of_substitution`.)
   rw [show v_actual x₀ = 0 from hva_x₀] at hZZ74_v
   set δ : ℝ := (δ₁ / 2) ^ k with hδ_def
   have hδ_pos : 0 < δ := pow_pos (by linarith) k
   refine ⟨ε, hε_pos, hε_le_R, δ, hδ_pos, ?_⟩
-  -- Now mimic the count-from-substitution bookkeeping.
   intro w hw_ball hw_ne
   have hw₀_eq_gx₀ : w₀ = g x₀ := h_w₀.symm
   set w₁ : ℂ := w - w₀ with hw₁_def
@@ -190,12 +249,31 @@ private theorem localKFoldMultiplicity_preimage_card_with_radius_bound
     rw [zero_pow hk0] at hξ
     exact hw₁_ne hξ.symm
   classical
-  -- Bijection bookkeeping: reproduce the standard substitution argument inline.
   set Pre : Set ℂ := {z ∈ Metric.ball x₀ ε | g z = w} with hPre_def
-  set Fset : Finset ℂ := (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ).roots.toFinset
-    with hFset_def
-  -- Bijection `z ↦ v_actual z` between `Pre` and `(Fset : Set ℂ)`.
-  -- `hZZ74_v` gives uniqueness for ξ ∈ ball 0 δ₁ \ {0}.
+  set Fset : Finset ℂ :=
+    (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ).roots.toFinset with hFset_def
+  have hp_ne : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ) ≠ 0 := by
+    intro hh
+    have hdeg : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ).natDegree = k :=
+      Polynomial.natDegree_X_pow_sub_C
+    rw [hh] at hdeg
+    simp at hdeg
+    have hk0 : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
+    exact hk0 hdeg.symm
+  -- Membership in Fset ↔ root of polynomial ↔ ξ^k = w₁.
+  have hFset_iff : ∀ ξ : ℂ, ξ ∈ Fset ↔ ξ ^ k = w₁ := by
+    intro ξ
+    rw [hFset_def, Multiset.mem_toFinset, Polynomial.mem_roots hp_ne]
+    constructor
+    · intro hroot
+      unfold Polynomial.IsRoot at hroot
+      simp [Polynomial.eval_sub, Polynomial.eval_pow, Polynomial.eval_X,
+            Polynomial.eval_C, sub_eq_zero] at hroot
+      exact hroot
+    · intro hpow
+      unfold Polynomial.IsRoot
+      simp [Polynomial.eval_sub, Polynomial.eval_pow, Polynomial.eval_X,
+            Polynomial.eval_C, sub_eq_zero, hpow]
   have h_ball_sub_closed : Metric.ball x₀ ε ⊆ Metric.closedBall x₀ ρ_v := by
     intro z hz
     rw [Metric.mem_ball] at hz
@@ -208,46 +286,15 @@ private theorem localKFoldMultiplicity_preimage_card_with_radius_bound
     have hpow : g z - w₀ = v_actual z ^ k := hva_pow z hz_closed
     rw [hz_g] at hpow
     have hvk : v_actual z ^ k = w₁ := by rw [hw₁_def]; exact hpow.symm
-    -- v_actual z is a root of `X^k - C w₁`.
-    have hroot : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ).IsRoot (v_actual z) := by
-      unfold Polynomial.IsRoot
-      simp [Polynomial.eval_sub, Polynomial.eval_pow, Polynomial.eval_X,
-            Polynomial.eval_C, sub_eq_zero, hvk]
-    -- And the polynomial is nonzero.
-    have hp_ne : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ) ≠ 0 := by
-      intro hh
-      have hdeg : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ).natDegree = k :=
-        Polynomial.natDegree_X_pow_sub_C
-      rw [hh] at hdeg
-      simp at hdeg
-      have hk0 : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
-      exact hk0 hdeg.symm
-    rw [hFset_def, Multiset.mem_toFinset, Polynomial.mem_roots hp_ne]
-    exact hroot
+    exact (hFset_iff (v_actual z)).mpr hvk
   have h_v_count : ∀ ξ ∈ Fset, ({z ∈ Metric.ball x₀ ε | v_actual z = ξ} : Set ℂ).ncard = 1 := by
     intro ξ hξ
-    rw [hFset_def, Multiset.mem_toFinset] at hξ
-    have hp_ne : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ) ≠ 0 := by
-      intro hh
-      have hdeg : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ).natDegree = k :=
-        Polynomial.natDegree_X_pow_sub_C
-      rw [hh] at hdeg
-      simp at hdeg
-      have hk0 : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
-      exact hk0 hdeg.symm
-    rw [Polynomial.mem_roots hp_ne] at hξ
-    have hξk : ξ ^ k = w₁ := by
-      have := hξ
-      unfold Polynomial.IsRoot at this
-      simp [Polynomial.eval_sub, Polynomial.eval_pow, Polynomial.eval_X,
-            Polynomial.eval_C, sub_eq_zero] at this
-      exact this
+    have hξk : ξ ^ k = w₁ := (hFset_iff ξ).mp hξ
     have hξ_ne : ξ ≠ 0 := h_roots_ne ξ hξk
     have hξ_norm : ‖ξ‖ < δ₁ := h_roots_small ξ hξk
     have hξ_ball : ξ ∈ Metric.ball (0 : ℂ) δ₁ := by
       rw [Metric.mem_ball, dist_zero_right]; exact hξ_norm
     exact hZZ74_v ξ hξ_ball hξ_ne
-  -- Existence and injectivity (mirror of the main count proof).
   have h_exists : ∀ ξ ∈ Fset, ∃ z ∈ Pre, v_actual z = ξ := by
     intro ξ hξ
     have h_card1 := h_v_count ξ hξ
@@ -260,22 +307,7 @@ private theorem localKFoldMultiplicity_preimage_card_with_radius_bound
     have hz_closed : z ∈ Metric.closedBall x₀ ρ_v := h_ball_sub_closed hz_ball_mem
     have hpow : g z - w₀ = v_actual z ^ k := hva_pow z hz_closed
     rw [hzv] at hpow
-    rw [hFset_def, Multiset.mem_toFinset] at hξ
-    have hp_ne : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ) ≠ 0 := by
-      intro hh
-      have hdeg : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ).natDegree = k :=
-        Polynomial.natDegree_X_pow_sub_C
-      rw [hh] at hdeg
-      simp at hdeg
-      have hk0 : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
-      exact hk0 hdeg.symm
-    rw [Polynomial.mem_roots hp_ne] at hξ
-    have hξk : ξ ^ k = w₁ := by
-      have := hξ
-      unfold Polynomial.IsRoot at this
-      simp [Polynomial.eval_sub, Polynomial.eval_pow, Polynomial.eval_X,
-            Polynomial.eval_C, sub_eq_zero] at this
-      exact this
+    have hξk : ξ ^ k = w₁ := (hFset_iff ξ).mp hξ
     rw [hξk] at hpow
     have : g z = w₁ + w₀ := by
       have hh : g z = (g z - w₀) + w₀ := by ring
@@ -305,21 +337,12 @@ private theorem localKFoldMultiplicity_preimage_card_with_radius_bound
       have hξF : ξ ∈ Fset := by exact_mod_cast hξ
       obtain ⟨z, hz_pre, hzv⟩ := h_exists ξ hξF
       exact ⟨z, hz_pre, hzv⟩
-  -- Cardinality.
   have hF_card : Fset.card = k := by
-    have hp_ne : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ) ≠ 0 := by
-      intro hh
-      have hdeg : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ).natDegree = k :=
-        Polynomial.natDegree_X_pow_sub_C
-      rw [hh] at hdeg
-      simp at hdeg
-      have hk0 : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
-      exact hk0 hdeg.symm
     have hk0 : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
     have hp_deg : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ).natDegree = k :=
       Polynomial.natDegree_X_pow_sub_C
-    have h_separable : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ).Separable := by
-      exact Polynomial.separable_X_pow_sub_C w₁ (by exact_mod_cast hk0) hw₁_ne
+    have h_separable : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ).Separable :=
+      Polynomial.separable_X_pow_sub_C w₁ (by exact_mod_cast hk0) hw₁_ne
     have h_splits : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ).Splits :=
       IsAlgClosed.splits _
     have h_card_roots : (Polynomial.X ^ k - Polynomial.C w₁ : Polynomial ℂ).roots.card =
@@ -341,8 +364,8 @@ private theorem localKFoldMultiplicity_preimage_card_with_radius_bound
 For a real-analytic map `f : X → Y` between charted spaces over `ℂ` and a
 basepoint `x : X` with positive ramification index, there exist:
 
-* an open chart-disc `D_x` around `x` in `X` (the `(chartAt ℂ x).symm` image
-  of an open `ε`-ball, intersected with the chart source),
+* `ε > 0` defining an open chart-disc `D_x = source ∩ chart⁻¹(ball ((chart) x) ε)`
+  around `x`,
 * an open neighbourhood `V` of `f x` in `Y`,
 
 such that for every `w ∈ V \ {f x}`,
@@ -355,13 +378,9 @@ itself.
 
 Hypotheses:
 
-* `hf` — `f` is real-analytic everywhere (`ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω`). This
-  supplies `AnalyticAt ℂ` of the chart pullback at the chart image of `x`.
-* `hpos` — the ramification index at `x` is at least `1`. This excludes the
-  locally-constant case (`analyticOrderAt = ⊤`) and, together with the
-  definition `manifoldRamificationIndex = .toNat`, lets us identify the
-  `ENat`-valued analytic order with `(k : ℕ∞)` for `k = manifoldRamificationIndex f x`.
-  In the non-constant `f` case this hypothesis is supplied by
+* `hf` — `f` is real-analytic everywhere (`ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω`).
+* `hpos` — the ramification index at `x` is at least `1`. In the
+  non-constant `f` case this is supplied by
   `manifoldRamificationIndex_pos_at_fibre_of_perChartNonConstancy`. -/
 theorem localKFoldMultiplicityOnManifold_genuine_preimage_card
     {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
@@ -374,180 +393,103 @@ theorem localKFoldMultiplicityOnManifold_genuine_preimage_card
           ((chartAt ℂ x).source ∩ (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).ncard
           = manifoldRamificationIndex f x) := by
   classical
-  -- Notation.
   set z₀ : ℂ := (chartAt ℂ x) x with hz₀_def
   set F : ℂ → ℂ := (chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm with hF_def
   set k : ℕ := manifoldRamificationIndex f x with hk_def
-  -- F is analytic at z₀.
   have hF_an : AnalyticAt ℂ F z₀ :=
     JacobianChallenge.ContMDiff.Owed.degree.contMDiff_omega_analyticAt_chart_pullback hf x
-  -- F z₀ = (chartAt (f x)) (f x).
   have hF_z₀_eq : F z₀ = (chartAt ℂ (f x)) (f x) := by
     have hx_src : x ∈ (chartAt ℂ x).source := mem_chart_source ℂ x
     show ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
         = (chartAt ℂ (f x)) (f x)
     simp [Function.comp, (chartAt ℂ x).left_inv hx_src]
-  -- From `1 ≤ k = (analyticOrderAt (F - F z₀) z₀).toNat`, the order is
-  -- `(k : ℕ∞)`. Two cases: order = ⊤ or = (n : ℕ∞).
+  -- From `1 ≤ k = (analyticOrderAt (F - F z₀) z₀).toNat`, the order is `(k : ℕ∞)`.
   have hord : analyticOrderAt (fun z => F z - F z₀) z₀ = (k : ℕ∞) := by
     have hk_eq : k = (analyticOrderAt (fun z => F z - F z₀) z₀).toNat := rfl
-    -- Since 1 ≤ k.toNat, the order must be a finite positive ℕ∞ value.
-    set ord : ℕ∞ := analyticOrderAt (fun z => F z - F z₀) z₀ with hord_def
-    have hk_toNat : 1 ≤ ord.toNat := by rw [hk_eq] at hpos; exact hpos
-    -- ord.toNat ≥ 1 forces ord ≠ 0 and ord ≠ ⊤.
-    have hord_ne_top : ord ≠ ⊤ := by
+    have hk_toNat : 1 ≤ (analyticOrderAt (fun z => F z - F z₀) z₀).toNat := by
+      rw [hk_eq] at hpos; exact hpos
+    have hord_ne_top : analyticOrderAt (fun z => F z - F z₀) z₀ ≠ ⊤ := by
       intro h
       rw [h, ENat.toNat_top] at hk_toNat
       exact absurd hk_toNat (by norm_num)
-    have hord_ne_zero : ord ≠ 0 := by
-      intro h
-      rw [h] at hk_toNat
-      simp at hk_toNat
-    -- ord = (n : ℕ∞) for some n, and that n equals ord.toNat = k.
-    cases hord_eq : ord with
-    | top => exact absurd hord_eq hord_ne_top
-    | coe n =>
-      show ord = (k : ℕ∞)
-      rw [hord_eq]
-      congr 1
-      have hk_n : k = n := by
-        rw [hk_eq, hord_eq, ENat.toNat_coe]
+    -- Set ord and case-split on ENat.
+    rcases hcases : analyticOrderAt (fun z => F z - F z₀) z₀ with _ | n
+    · exact absurd hcases hord_ne_top
+    · -- Now order = (n : ℕ∞). Show n = k.
+      have hk_n : k = n := by rw [hk_eq, hcases, ENat.toNat_coe]
       rw [hk_n]
-  -- Apply the radius-bounded planar count.
-  -- Choose R₀ small enough for chart-target containment AND for f-continuity
-  -- to land in the chart source at f x.
-  -- (i) Chart target containment: there exists R_t > 0 with ball z₀ R_t ⊆ target(chartAt x).
+  -- (i) Chart target containment radius.
   have h_target_open : IsOpen (chartAt ℂ x).target := (chartAt ℂ x).open_target
   have hz₀_target : z₀ ∈ (chartAt ℂ x).target :=
     (chartAt ℂ x).map_source (mem_chart_source ℂ x)
   have h_target_nhds : (chartAt ℂ x).target ∈ 𝓝 z₀ :=
     h_target_open.mem_nhds hz₀_target
   obtain ⟨R_t, hR_t_pos, hR_t_sub⟩ := Metric.mem_nhds_iff.mp h_target_nhds
-  -- (ii) Continuity: there's R_c > 0 such that for all z ∈ ball z₀ R_c ∩ target,
-  -- f((chartAt x).symm z) ∈ source(chartAt(f x)).
-  -- Use: F is continuous (analytic ⇒ continuous) at z₀; F z₀ = (chartAt(fx))(fx)
-  -- ∈ target(chartAt(fx)). But we want `f((chartAt x).symm z) ∈ source(chartAt(fx))`.
-  -- Key fact: at points z ∈ target where (chartAt x).symm z ∈ source ∩
-  -- f⁻¹(source(chartAt(fx))), F z is genuinely the chart of f(...).
-  -- Because (chartAt(fx)).source contains f x, (chartAt x).source contains x,
-  -- and f is continuous, an open set around x lands in f⁻¹(source(chartAt(fx))) ∩ source(chartAt x).
+  -- (ii) Continuity radius: image under symm lands in `source ∩ f⁻¹(source(chart(fx)))`.
   have h_f_cont : Continuous f := hf.continuous
-  -- The set f⁻¹(source(chartAt(fx))) ∩ source(chartAt x) is open and contains x.
   have h_open_x : IsOpen ((chartAt ℂ x).source ∩ f ⁻¹' (chartAt ℂ (f x)).source) :=
     (chartAt ℂ x).open_source.inter ((chartAt ℂ (f x)).open_source.preimage h_f_cont)
   have h_x_mem : x ∈ (chartAt ℂ x).source ∩ f ⁻¹' (chartAt ℂ (f x)).source :=
     ⟨mem_chart_source ℂ x, mem_chart_source ℂ (f x)⟩
-  -- Image under chartAt x is open (chart is open embedding on source).
-  -- Equivalently: by continuity of (chartAt x).symm at z₀, the preimage of
-  -- this open set under symm is in 𝓝 z₀.
   have h_symm_cont : ContinuousAt (chartAt ℂ x).symm z₀ := by
     have h_co : ContinuousOn (chartAt ℂ x).symm (chartAt ℂ x).target :=
       (chartAt ℂ x).continuousOn_invFun
     exact h_co.continuousAt h_target_nhds
   have h_symm_z₀ : (chartAt ℂ x).symm z₀ = x := (chartAt ℂ x).left_inv (mem_chart_source ℂ x)
-  -- The preimage `(chartAt x).symm ⁻¹' open_x` is in 𝓝 z₀.
   have h_pre_nhds :
       (chartAt ℂ x).symm ⁻¹' ((chartAt ℂ x).source ∩ f ⁻¹' (chartAt ℂ (f x)).source) ∈ 𝓝 z₀ := by
     have ht := h_symm_cont.tendsto
     rw [h_symm_z₀] at ht
     exact ht (h_open_x.mem_nhds h_x_mem)
-  -- Combine with target.
   have h_combined :
       (chartAt ℂ x).target ∩
         (chartAt ℂ x).symm ⁻¹' ((chartAt ℂ x).source ∩ f ⁻¹' (chartAt ℂ (f x)).source) ∈ 𝓝 z₀ :=
     Filter.inter_mem h_target_nhds h_pre_nhds
   obtain ⟨R_c, hR_c_pos, hR_c_sub⟩ := Metric.mem_nhds_iff.mp h_combined
-  -- Choose R := min R_t R_c.
   set R : ℝ := min R_t R_c with hR_def
   have hR_pos : 0 < R := lt_min hR_t_pos hR_c_pos
   have hR_le_R_t : R ≤ R_t := min_le_left _ _
   have hR_le_R_c : R ≤ R_c := min_le_right _ _
-  -- Apply the radius-bound planar count.
+  -- Apply the planar count with the radius bound.
   obtain ⟨ε, hε_pos, hε_le_R, δ, hδ_pos, h_count⟩ :=
     localKFoldMultiplicity_preimage_card_with_radius_bound (g := F) (x₀ := z₀)
       (w₀ := F z₀) (k := k) (R := R) hpos hR_pos hF_an rfl hord
-  -- ε ≤ R ≤ R_t and ε ≤ R ≤ R_c.
   have hε_le_R_t : ε ≤ R_t := hε_le_R.trans hR_le_R_t
   have hε_le_R_c : ε ≤ R_c := hε_le_R.trans hR_le_R_c
-  -- Choose V := source(chartAt(fx)) ∩ chartAt(fx) ⁻¹' ball (F z₀) δ.
+  -- V := source(chartAt(fx)) ∩ chartAt(fx) ⁻¹' ball (F z₀) δ.
   set V : Set Y := (chartAt ℂ (f x)).source ∩
     (chartAt ℂ (f x)) ⁻¹' Metric.ball (F z₀) δ with hV_def
   have h_V_open : IsOpen V := by
-    refine (chartAt ℂ (f x)).open_source.inter ?_
-    -- (chartAt (f x)) is continuous on its source. A preimage of an open set
-    -- under a continuous-on map is the intersection of an open set with the source.
-    -- But here V is (source) ∩ (chartAt(fx)⁻¹' ball …). The chart map continuous-on
-    -- gives that on source, the preimage of `ball` is open in source. We want it
-    -- open in Y. Use:
-    --   `ContinuousOn.preimage_isOpen_of_isOpen` would give open in source.
-    -- Cleaner: V = (source) ∩ (chartAt(fx))⁻¹' (open ball). The intersection is
-    -- open iff each piece is open in Y and the intersection makes sense; but
-    -- (chartAt(fx))⁻¹' (open ball) is not necessarily open globally.
-    -- The proper form: V is open iff for each y in V, V is a neighborhood. We
-    -- show V is open as the intersection: source ∩ (preimage). Use the fact
-    -- that on `source`, `chartAt (fx)` is continuous, so the preimage of `ball`
-    -- is open in source, hence open in `Y` (since source is open).
-    -- Standard step: `(chartAt (f x)).continuousOn` gives `ContinuousOn _ source`.
-    -- Restrict: `((chartAt (f x)).continuousOn).isOpen_inter_preimage Met.ball`.
     have hco : ContinuousOn (chartAt ℂ (f x)) (chartAt ℂ (f x)).source :=
       (chartAt ℂ (f x)).continuousOn_toFun
-    have := hco.isOpen_inter_preimage (chartAt ℂ (f x)).open_source
-      (Metric.isOpen_ball (x := F z₀) (ε := δ))
-    -- Refit the shape: `isOpen_inter_preimage` produces
-    -- `IsOpen ((source) ∩ chartAt(fx) ⁻¹' (ball))`.
-    convert this using 1
+    have hball_open : IsOpen (Metric.ball (F z₀) δ) := Metric.isOpen_ball
+    exact hco.isOpen_inter_preimage (chartAt ℂ (f x)).open_source hball_open
   have h_fx_in_V : f x ∈ V := by
     refine ⟨mem_chart_source ℂ (f x), ?_⟩
     show (chartAt ℂ (f x)) (f x) ∈ Metric.ball (F z₀) δ
     rw [hF_z₀_eq]; exact Metric.mem_ball_self hδ_pos
   refine ⟨ε, V, hε_pos, h_V_open, h_fx_in_V, ?_⟩
-  -- Main count.
   intro w hw_V hw_ne
   obtain ⟨hw_src, hw_ball⟩ := hw_V
-  -- Translate: c := chartAt(fx) w. Then c ∈ ball (F z₀) δ.
   set c : ℂ := (chartAt ℂ (f x)) w with hc_def
   have hc_ball : c ∈ Metric.ball (F z₀) δ := hw_ball
   have hc_ne : c ≠ F z₀ := by
     rw [hc_def, hF_z₀_eq]
     intro hc_eq
-    -- chartAt(fx) is injective on source; (fx) ∈ source, w ∈ source.
-    have h_inj := (chartAt ℂ (f x)).injOn hw_src (mem_chart_source ℂ (f x)) hc_eq
-    exact hw_ne h_inj
-  -- Translate the ball-condition from `g x₀` to `F z₀`. Note: `localKFoldMultiplicity_preimage_card_with_radius_bound`
-  -- speaks about `Metric.ball (g x₀) δ`. With g = F and x₀ = z₀, the condition is
-  -- ball (F z₀) δ. So h_count applies directly.
-  have h_planar_count : ({z ∈ Metric.ball z₀ ε | F z = c} : Set ℂ).ncard = k := by
-    have : c ∈ Metric.ball (F z₀) δ := hc_ball
-    have h_F_z₀_eq_g : F z₀ = F z₀ := rfl
-    -- h_count: ∀ w ∈ ball (F z₀) δ, w ≠ F z₀ → ...
-    -- Note h_count uses `F` for `g` and `z₀` for `x₀`, so `g x₀ = F z₀`.
-    have hc_ne' : c ≠ F z₀ := hc_ne
-    have hc_ball' : c ∈ Metric.ball (F z₀) δ := hc_ball
-    -- But h_count is stated as `Metric.ball (g x₀) δ` where `g x₀ = F z₀ = w₀`?
-    -- We instantiated `w₀ = F z₀` and `h_w₀ : g x₀ = w₀` is `rfl`. So both forms agree.
-    exact h_count c hc_ball' hc_ne'
-  -- Now lift via the chart bijection. Define
-  --   PlanarSet := {z ∈ ball z₀ ε | F z = c}, |PlanarSet| = k.
-  --   ManifoldSet := f ⁻¹' {w} ∩ D_x, where D_x = source ∩ chart⁻¹(ball z₀ ε).
-  -- Show (chartAt x).symm '' PlanarSet = ManifoldSet via injectivity of symm
-  -- on target, then apply ncard_image_of_injOn.
+    exact hw_ne ((chartAt ℂ (f x)).injOn hw_src (mem_chart_source ℂ (f x)) hc_eq)
+  have h_planar_count : ({z ∈ Metric.ball z₀ ε | F z = c} : Set ℂ).ncard = k :=
+    h_count c hc_ball hc_ne
+  -- Lift via chart bijection.
   set Planar : Set ℂ := {z ∈ Metric.ball z₀ ε | F z = c} with hPlanar_def
   set D_x : Set X := (chartAt ℂ x).source ∩ (chartAt ℂ x) ⁻¹' Metric.ball z₀ ε with hD_def
   set Manifold : Set X := f ⁻¹' {w} ∩ D_x with hMan_def
-  -- Step A: ball z₀ ε ⊆ target ∩ symm⁻¹ (open_x).
-  have h_ball_sub_target : Metric.ball z₀ ε ⊆ (chartAt ℂ x).target := by
-    intro z hz
-    have hz_R_t : z ∈ Metric.ball z₀ R_t := Metric.ball_subset_ball hε_le_R_t hz
-    exact hR_t_sub hz_R_t
+  have h_ball_sub_target : Metric.ball z₀ ε ⊆ (chartAt ℂ x).target := fun z hz =>
+    hR_t_sub (Metric.ball_subset_ball hε_le_R_t hz)
   have h_ball_sub_combined :
       Metric.ball z₀ ε ⊆
         (chartAt ℂ x).target ∩
-        (chartAt ℂ x).symm ⁻¹' ((chartAt ℂ x).source ∩ f ⁻¹' (chartAt ℂ (f x)).source) := by
-    intro z hz
-    have hz_R_c : z ∈ Metric.ball z₀ R_c := Metric.ball_subset_ball hε_le_R_c hz
-    exact hR_c_sub hz_R_c
-  -- Step B: chart-bijection lemma between Planar and Manifold.
-  -- Forward: φ.symm '' Planar ⊆ Manifold.
+        (chartAt ℂ x).symm ⁻¹' ((chartAt ℂ x).source ∩ f ⁻¹' (chartAt ℂ (f x)).source) :=
+    fun z hz => hR_c_sub (Metric.ball_subset_ball hε_le_R_c hz)
   have h_forward : (chartAt ℂ x).symm '' Planar ⊆ Manifold := by
     rintro x' ⟨z, hz_planar, hz_eq⟩
     obtain ⟨hz_ball, hz_F⟩ := hz_planar
@@ -563,24 +505,21 @@ theorem localKFoldMultiplicityOnManifold_genuine_preimage_card
     have h_F_z : F z = (chartAt ℂ (f x)) (f x') := by
       show ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) z = (chartAt ℂ (f x)) (f x')
       simp [Function.comp, hz_eq]
-    -- F z = c ⇒ chartAt(fx) (f x') = chartAt(fx) w. Both are in source ⇒ equal.
     have hfx'_eq : f x' = w := by
       have h1 : (chartAt ℂ (f x)) (f x') = (chartAt ℂ (f x)) w := by
-        rw [← h_F_z]; rw [hz_F]
+        rw [← h_F_z, hz_F]
       exact (chartAt ℂ (f x)).injOn hf_x'_src hw_src h1
     refine ⟨?_, ?_⟩
     · show f x' ∈ ({w} : Set Y); exact hfx'_eq
     refine ⟨hx'_src, ?_⟩
     show (chartAt ℂ x) x' ∈ Metric.ball z₀ ε
     rw [hx'_chart]; exact hz_ball
-  -- Backward: Manifold ⊆ φ.symm '' Planar.
   have h_backward : Manifold ⊆ (chartAt ℂ x).symm '' Planar := by
     rintro x' ⟨hfx', hD⟩
     obtain ⟨hx'_src, hx'_chart_ball⟩ := hD
     have hfx'_w : f x' = w := hfx'
     set z : ℂ := (chartAt ℂ x) x' with hz_def
     have hz_ball : z ∈ Metric.ball z₀ ε := hx'_chart_ball
-    have hz_target : z ∈ (chartAt ℂ x).target := h_ball_sub_target hz_ball
     have hz_symm : (chartAt ℂ x).symm z = x' := (chartAt ℂ x).left_inv hx'_src
     have h_F_z : F z = (chartAt ℂ (f x)) (f x') := by
       show ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) z = (chartAt ℂ (f x)) (f x')
@@ -589,17 +528,14 @@ theorem localKFoldMultiplicityOnManifold_genuine_preimage_card
     refine ⟨z, ⟨hz_ball, h_F_z_eq_c⟩, hz_symm⟩
   have h_set_eq : Manifold = (chartAt ℂ x).symm '' Planar :=
     Set.Subset.antisymm h_backward h_forward
-  -- Step C: injectivity of symm on Planar (since Planar ⊆ target, where symm is injective).
   have h_injOn : Set.InjOn (chartAt ℂ x).symm Planar := by
     intro a ha b hb hab
     have ha_target : a ∈ (chartAt ℂ x).target := h_ball_sub_target ha.1
     have hb_target : b ∈ (chartAt ℂ x).target := h_ball_sub_target hb.1
-    -- (chartAt x).symm is injective on target.
     have ha_eq : (chartAt ℂ x) ((chartAt ℂ x).symm a) = a := (chartAt ℂ x).right_inv ha_target
     have hb_eq : (chartAt ℂ x) ((chartAt ℂ x).symm b) = b := (chartAt ℂ x).right_inv hb_target
     rw [hab] at ha_eq
     exact ha_eq.symm.trans hb_eq
-  -- Step D: card transport.
   have h_ncard : Manifold.ncard = Planar.ncard := by
     rw [h_set_eq]
     exact Set.ncard_image_of_injOn h_injOn
