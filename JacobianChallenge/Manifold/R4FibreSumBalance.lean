@@ -268,24 +268,22 @@ private lemma not_isConstantMap_toRS_infty
   -- positive), and bounded above by `r/2 < r`.
   have h_ball_inf : (Metric.ball (e x₀) r).Infinite := by
     let g : ℕ → ℂ := fun n => e x₀ + (((r / ((n : ℝ) + 2)) : ℝ) : ℂ)
-    apply Set.infinite_of_injective_forall_mem (f := g)
-    refine ⟨?_, ?_⟩
-    · -- Injectivity.
+    have h_inj : Function.Injective g := by
       intro m n h_eq
       simp only [g, add_right_inj] at h_eq
-      -- `((r/(m+2) : ℝ) : ℂ) = ((r/(n+2) : ℝ) : ℂ)` ⇒ real equality.
       have h_real : (r / ((m : ℝ) + 2)) = (r / ((n : ℝ) + 2)) := by
         exact_mod_cast h_eq
       have hr_ne : r ≠ 0 := ne_of_gt hr_pos
       have hm2 : ((m : ℝ) + 2) ≠ 0 := by positivity
       have hn2 : ((n : ℝ) + 2) ≠ 0 := by positivity
       rw [div_eq_div_iff hm2 hn2] at h_real
-      have : ((m : ℝ) + 2) = ((n : ℝ) + 2) := by
+      have h_eq2 : ((m : ℝ) + 2) = ((n : ℝ) + 2) := by
         have := mul_left_cancel₀ hr_ne h_real.symm
         linarith
-      have : (m : ℝ) = (n : ℝ) := by linarith
-      exact_mod_cast this
-    · intro n
+      have h_eq3 : (m : ℝ) = (n : ℝ) := by linarith
+      exact_mod_cast h_eq3
+    have h_mem : ∀ n, g n ∈ Metric.ball (e x₀) r := by
+      intro n
       simp only [g]
       rw [Metric.mem_ball]
       have h_dist : dist (e x₀ + (((r / ((n : ℝ) + 2)) : ℝ) : ℂ)) (e x₀)
@@ -296,15 +294,13 @@ private lemma not_isConstantMap_toRS_infty
         have h_pos : 0 < r / ((n : ℝ) + 2) := by positivity
         exact abs_of_pos h_pos
       rw [h_dist]
-      -- Show `r / (n + 2) < r`. Since n+2 ≥ 2 > 1 and r > 0.
       have h_n_pos : (0 : ℝ) < (n : ℝ) + 2 := by positivity
       have h_n_gt_one : (1 : ℝ) < (n : ℝ) + 2 := by
         have : (0 : ℝ) ≤ (n : ℝ) := by positivity
         linarith
-      have h_lt : r / ((n : ℝ) + 2) < r := by
-        rw [div_lt_iff₀ h_n_pos]
-        nlinarith [hr_pos]
-      exact h_lt
+      rw [div_lt_iff₀ h_n_pos]
+      nlinarith [hr_pos]
+    exact Set.infinite_of_injective_forall_mem h_inj h_mem
   -- Pull back to source via `e.symm`. `e.symm` is injective on `e.target`.
   have h_inj : Set.InjOn e.symm e.target := by
     intro a ha b hb hab
@@ -363,7 +359,7 @@ private lemma toRS_eq_zero_iff_untop₀_pos
     have h_ord_zero : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x = 0 := by
       have hne_top := f.nonvanishing_germ x
       have h_untop_zero : (mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x).untop₀ = 0 :=
-        h_eq_zero
+        h_eq_zero.symm
       -- For finite WithTop, untop₀ = 0 ↔ the value is 0.
       cases h : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x with
       | top => exact absurd h hne_top
