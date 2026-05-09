@@ -71,7 +71,7 @@ is split off as follow-up chip P1.2b. It will combine
 
 noncomputable section
 
-open scoped Manifold Topology
+open scoped Manifold Topology ContDiff
 open Filter Set
 
 namespace JacobianChallenge
@@ -98,7 +98,7 @@ theorem mmeromorphicAt_finset_prod
         funext y; simp
       rw [h_eq]
       exact MMeromorphicAt.const 1
-  | insert _ a t ha_notin ih =>
+  | insert a t ha_notin ih =>
       have h_eq :
           (fun y : M => ∏ i ∈ insert a t, F i y)
             = (F a) * (fun y : M => ∏ i ∈ t, F i y) := by
@@ -131,7 +131,7 @@ where `(f ⁻¹ {y}).toFinset` is the canonical `Finset` extracted from
 the unconditional fibre-finiteness witness
 `fibres_finite_statement_holds_unconditional`. -/
 noncomputable def NormFM
-    (f : X → Y) (hf : ContMDiff (𝓘(ℂ)) (𝓘(ℂ)) ω f)
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hf_nc : ¬ JacobianChallenge.IsConstantMap f)
     (g : MeromorphicNonzero X) : Y → ℂ :=
   fun y =>
@@ -142,7 +142,7 @@ noncomputable def NormFM
 /-- Unfold lemma: `NormFM f hf hf_nc g y` equals the explicit Finset
 product over the fibre at `y`. -/
 lemma NormFM_apply
-    (f : X → Y) (hf : ContMDiff (𝓘(ℂ)) (𝓘(ℂ)) ω f)
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hf_nc : ¬ JacobianChallenge.IsConstantMap f)
     (g : MeromorphicNonzero X) (y : Y) :
     NormFM f hf hf_nc g y =
@@ -165,7 +165,7 @@ Given a per-point meromorphy hypothesis on the moving-fibre product
 itself, the global `MMeromorphicOn univ` conclusion is the trivial
 unfolding of the `MMeromorphicOn` predicate. -/
 theorem NormFM_mmeromorphicOn_univ_of_pointwise
-    (f : X → Y) (hf : ContMDiff (𝓘(ℂ)) (𝓘(ℂ)) ω f)
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (hf_nc : ¬ JacobianChallenge.IsConstantMap f)
     (g : MeromorphicNonzero X)
     (h_pw : ∀ y₀ : Y, MMeromorphicAt (𝓘(ℂ, ℂ)) (NormFM f hf hf_nc g) y₀) :
