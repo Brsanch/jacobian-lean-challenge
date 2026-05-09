@@ -90,9 +90,9 @@ theorem manifoldRamificationIndex_pos_at_fibre_of_perChartNonConstancy
     -- `((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) z ≠ (chartAt ℂ (f x)) (f x)`.
     -- Note F = that composite, and F z₀ = (chartAt ℂ (f x)) (f x) by chart left-inv.
     have hFz₀_eq : F z₀ = (chartAt ℂ (f x)) (f x) := by
-      show ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) z₀
+      show (chartAt ℂ (f x)) (f ((chartAt ℂ x).symm ((chartAt ℂ x) x)))
           = (chartAt ℂ (f x)) (f x)
-      simp [Function.comp, hz₀, (chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
+      rw [(chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
     rw [hFz₀_eq]
     exact hV_eqOn z hz_V
   -- analyticOrderAt is ⊤ iff eventually 0; not eventually 0 ⇒ not ⊤.
