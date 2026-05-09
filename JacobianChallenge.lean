@@ -176,6 +176,7 @@ import JacobianChallenge.Manifold.RegularValueExistsUnconditional
 import JacobianChallenge.Manifold.RegularValueSetConnected
 import JacobianChallenge.Manifold.ResidueTheorem
 import JacobianChallenge.Manifold.ResidueTheoremAssembly
+import JacobianChallenge.Manifold.ResidueTheoremFromRsum
 import JacobianChallenge.Manifold.ResidueTheoremStokes
 import JacobianChallenge.Manifold.ResidueViaTopologicalDegree
 import JacobianChallenge.Manifold.RiemannSphere
