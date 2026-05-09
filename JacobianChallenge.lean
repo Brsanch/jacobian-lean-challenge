@@ -60,6 +60,7 @@ import JacobianChallenge.Manifold.CotangentBundleSmoothness
 import JacobianChallenge.Manifold.CotangentInCoordinates
 import JacobianChallenge.Manifold.CotangentPullbackBridge
 import JacobianChallenge.Manifold.CotangentTangentBridge
+import JacobianChallenge.Manifold.CriticalSetClosed
 import JacobianChallenge.Manifold.CriticalSetDefinition
 import JacobianChallenge.Manifold.CriticalSetDerivBridge
 import JacobianChallenge.Manifold.CriticalSetDiscrete
