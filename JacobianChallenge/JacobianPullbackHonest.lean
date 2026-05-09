@@ -402,38 +402,40 @@ lemma manifoldRamificationIndex_id
     {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X] (x : X) :
     JacobianChallenge.Manifold.manifoldRamificationIndex (id : X → X) x = 1 := by
   classical
-  unfold JacobianChallenge.Manifold.manifoldRamificationIndex
-  -- Let `z₀ := (chartAt ℂ x) x` and `F z := (chartAt ℂ (id x)) (id ((chartAt ℂ x).symm z))`.
-  -- Since `id x = x`, `F z = (chartAt ℂ x) ((chartAt ℂ x).symm z)`, eventually = z near z₀.
-  set z₀ : ℂ := (chartAt ℂ x) x with hz₀_def
-  -- `F z - F z₀ =ᶠ[𝓝 z₀] z - z₀`.
+  rw [JacobianChallenge.Manifold.manifoldRamificationIndex_eq]
+  -- Goal:
+  --   `(analyticOrderAt (fun z => F z - F z₀) z₀).toNat = 1`
+  -- where `z₀ := (chartAt ℂ x) x` and
+  -- `F z := (chartAt ℂ (id x)) (id ((chartAt ℂ x).symm z))`.
+  -- Compute the order is exactly 1 in `ℕ∞`.
+  have hev : (fun z : ℂ => (chartAt ℂ x) ((chartAt ℂ x).symm z))
+                =ᶠ[nhds ((chartAt ℂ x) x)] id := chart_pullback_id_eventuallyEq x
+  have hF_z₀ :
+      ((chartAt ℂ ((id : X → X) x)) ∘ (id : X → X) ∘ (chartAt ℂ x).symm)
+        ((chartAt ℂ x) x) = (chartAt ℂ x) x := by
+    change (chartAt ℂ x) ((chartAt ℂ x).symm ((chartAt ℂ x) x)) = (chartAt ℂ x) x
+    exact (chartAt ℂ x).right_inv (mem_chart_target (H := ℂ) x)
   have hF_eq :
       (fun z : ℂ =>
           ((chartAt ℂ ((id : X → X) x)) ∘ (id : X → X) ∘ (chartAt ℂ x).symm) z -
-          ((chartAt ℂ ((id : X → X) x)) ∘ (id : X → X) ∘ (chartAt ℂ x).symm) z₀)
-        =ᶠ[nhds z₀] (fun z : ℂ => z - z₀) := by
-    have hev : (fun z : ℂ => (chartAt ℂ x) ((chartAt ℂ x).symm z))
-                  =ᶠ[nhds z₀] id := chart_pullback_id_eventuallyEq x
-    -- Specialize at `z₀` to get `(chartAt …).symm z₀ = x`-style identity (we use the
-    -- function-form: F z = z eventually, and F z₀ = z₀).
-    have hF_z₀ :
-        ((chartAt ℂ ((id : X → X) x)) ∘ (id : X → X) ∘ (chartAt ℂ x).symm) z₀ = z₀ := by
-      change (chartAt ℂ x) ((chartAt ℂ x).symm z₀) = z₀
-      exact (chartAt ℂ x).right_inv (mem_chart_target (H := ℂ) x)
+          ((chartAt ℂ ((id : X → X) x)) ∘ (id : X → X) ∘ (chartAt ℂ x).symm)
+            ((chartAt ℂ x) x))
+        =ᶠ[nhds ((chartAt ℂ x) x)] (fun z : ℂ => z - (chartAt ℂ x) x) := by
     filter_upwards [hev] with z hz
     change (chartAt ℂ x) ((chartAt ℂ x).symm z) -
-            ((chartAt ℂ ((id : X → X) x)) ∘ (id : X → X) ∘ (chartAt ℂ x).symm) z₀
-        = z - z₀
+            ((chartAt ℂ ((id : X → X) x)) ∘ (id : X → X) ∘ (chartAt ℂ x).symm)
+              ((chartAt ℂ x) x)
+        = z - (chartAt ℂ x) x
     rw [hF_z₀]
-    -- `hz : (chartAt ℂ x) ((chartAt ℂ x).symm z) = id z = z`.
     have hz' : (chartAt ℂ x) ((chartAt ℂ x).symm z) = z := hz
     rw [hz']
   rw [analyticOrderAt_congr hF_eq]
-  -- Now: `analyticOrderAt (· - z₀) z₀ = 1`.
-  have h_an : AnalyticAt ℂ (fun z : ℂ => z - z₀) z₀ :=
+  -- Now: `(analyticOrderAt (· - z₀) z₀).toNat = 1` where `z₀ = (chartAt ℂ x) x`.
+  have h_an : AnalyticAt ℂ (fun z : ℂ => z - (chartAt ℂ x) x) ((chartAt ℂ x) x) :=
     analyticAt_id.sub analyticAt_const
-  have h_zero : (fun z : ℂ => z - z₀) z₀ = 0 := sub_self z₀
-  have h_deriv : deriv (fun z : ℂ => z - z₀) z₀ ≠ 0 := by
+  have h_zero : (fun z : ℂ => z - (chartAt ℂ x) x) ((chartAt ℂ x) x) = 0 :=
+    sub_self _
+  have h_deriv : deriv (fun z : ℂ => z - (chartAt ℂ x) x) ((chartAt ℂ x) x) ≠ 0 := by
     rw [deriv_sub_const]
     simp
   rw [h_an.analyticOrderAt_eq_one_of_zero_deriv_ne_zero h_zero h_deriv]
@@ -593,13 +595,13 @@ theorem pullbackHonest_of_rsum_id
     haveI hsub : Subsingleton X := by
       obtain ⟨y, hy⟩ := hc
       refine ⟨fun a b => ?_⟩
-      rw [hy a, hy b]
+      have ha : a = y := hy a
+      have hb : b = y := hy b
+      exact ha.trans hb.symm
     haveI hPic : Subsingleton (Pic0 X) := pic0_subsingleton_of_subsingleton
     -- `Jacobian X` is defined as `Pic0 X`, so `Subsingleton` transfers.
-    have heq :
-        pullbackHonest_of_rsum h_rsum (id : X → X) contMDiff_id P
-          = (P : Pic0 X) := Subsingleton.elim _ _
-    exact heq
+    haveI hJac : Subsingleton (JacobianChallenge.Jacobian X) := hPic
+    exact Subsingleton.elim _ _
   · -- Non-constant. Unfold via `pullbackHonest_of_rsum_eq_pullbackWeighted_of_not_const`.
     rw [pullbackHonest_of_rsum_eq_pullbackWeighted_of_not_const h_rsum
           (id : X → X) contMDiff_id hc]
