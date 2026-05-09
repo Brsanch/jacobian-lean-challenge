@@ -189,8 +189,11 @@ theorem manifoldRamificationIndex_comp_of_finite
     have hF_g_at : AnalyticAt ℂ (fun w => F_g w - F_g w₀) (F_f z₀) := by
       rw [hF_f_z₀]; exact hF_g_shift_an
     exact hF_g_at.analyticOrderAt_comp hF_f_an
-  -- Plug in F_f z₀ = w₀.
-  rw [hF_f_z₀] at h_chain
+  -- Plug in F_f z₀ = w₀ at the *outer* position only (the second arg of
+  -- `analyticOrderAt` in the first factor). The same `F_f z₀` also appears
+  -- inside the lambda body of the second factor as `F_f z - F_f z₀`, and we
+  -- need to leave that alone so it matches `hord_f_ne_top` below.
+  nth_rewrite 1 [hF_f_z₀] at h_chain
   -- All three `manifoldRamificationIndex` invocations definitionally reduce
   -- to `(analyticOrderAt (fun z => F z - F z₀) z₀).toNat` for the matching
   -- chart-pullback `F` and base point `z₀`. Commit to that form via `show`
