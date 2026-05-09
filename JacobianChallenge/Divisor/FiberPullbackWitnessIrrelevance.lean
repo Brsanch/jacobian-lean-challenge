@@ -36,11 +36,11 @@ variable {X Y : Type*}
 /-- **Witness irrelevance for fibre toFinset.** Two finiteness proofs of
 the same set produce equal `toFinset` values. -/
 lemma _root_.Set.Finite.toFinset_eq_of_set_eq
-    {α : Type*} [DecidableEq α]
+    {α : Type*}
     {S T : Set α} (hS : S.Finite) (hT : T.Finite) (hST : S = T) :
     hS.toFinset = hT.toFinset := by
   ext a
-  simp [Set.Finite.mem_toFinset, hST]
+  simp only [Set.Finite.mem_toFinset, hST]
 
 /-- **Witness irrelevance for `Div.fiberSum`.** -/
 lemma _root_.JacobianChallenge.Div.fiberSum_eq_of_witness_irrelevance
@@ -53,7 +53,7 @@ lemma _root_.JacobianChallenge.Div.fiberSum_eq_of_witness_irrelevance
   intro y _
   congr 1
   -- Inner sum over (hf y).toFinset, with same underlying set.
-  refine Finset.sum_congr ?_ (fun _ _ => rfl)
+  congr 1
   exact Set.Finite.toFinset_eq_of_set_eq (hf₁ y) (hf₂ y) rfl
 
 /-- **Witness irrelevance for `Pic0.divPullback`.** -/
@@ -95,8 +95,7 @@ lemma N_eq_of_constFibreCard_witnesses
   have h₂ : (hf₂ y).toFinset.card = N₂ := hN₂ y
   have heq : (hf₁ y).toFinset = (hf₂ y).toFinset :=
     Set.Finite.toFinset_eq_of_set_eq (hf₁ y) (hf₂ y) rfl
-  rw [heq] at h₁
-  exact h₁.symm.trans h₂
+  rw [heq] at h₁; exact h₁.symm.trans h₂
 
 end Pic0
 
