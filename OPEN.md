@@ -19,15 +19,35 @@ spec. Three statuses, with one tag for partial progress:
   placeholders. Not closure; it's a tag indicating the proof is real even
   though the underlying object is a stub.
 
-**Current scoreboard (audited against `Basic.lean` HEAD `3bdce62`):**
+**Current scoreboard (audited against `Basic.lean` HEAD `5e601e8`, 2026-05-09):**
 
-- **STRICT-CLOSED:** 0 / 24 — reaching the first one requires landing
-  honest `PrincDiv` (residue theorem) or honest period lattice (rank 2g),
-  plus for items 14, 22, 24 additional classical inputs.
-- **STUB:** 14 / 24 — of which 3 carry the **PROOF-HONEST** tag (items 15,
-  19, 20: their proof bodies are real and would survive future honest
-  routing).
-- **OPEN:** 10 / 24 (sorries still in `Basic.lean`).
+- **STRICT-CLOSED:** 0 / 24 (under the strict-bar definition above —
+  requires both honest implementation AND the underlying `Jacobian X`
+  being the intended analytic Jacobian).
+- **STUB but with HONEST BODY (Phase 0, 2026-05-09):** items **8, 22, 23,
+  24** (rsum thread). Implementations honest, no `sorry`/`axiom`; auto-flip
+  to STRICT-CLOSED the moment Phase 1 lands honest
+  `Jacobian X = Pic⁰ X / honest PrincDiv`.
+- **PROOF-HONEST stubs (auto-flip after Phase 1):** items 15, 19, 20.
+- **STUB (placeholder topology / target):** items 4, 10.
+- **OPEN (sorry still in `Basic.lean`):** 1, 5, 11, 12, 13, 14, 16, 17,
+  18, 21 = 10 items.
+
+> **`CLOSURE_MAP.md` (authored 2026-05-09, repo root) is now the live
+> source of truth.** It has the per-item map, mathlib status verified
+> against this repo's pin (`8e3c989...`), Phase 1–4 chip plans with
+> per-component LOC ranges, dependency DAG, and verification audit log.
+> Update `CLOSURE_MAP.md`, not this file, when items flip.
+
+**Remaining LOC for full 24/24 STRICT-CLOSED (verified per-component):
+31,500–59,700 LOC.** Phase 1 ~2k (chippable now), Phase 2 ~15.5–29.6k
+(period lattice + Abel-Jacobi, blocked on classical mathlib gaps),
+Phase 3 ~7.1–15k (surface classification, blocked), Phase 4 ~6.9–12.8k
+(Hodge, blocked). See `CLOSURE_MAP.md` section F.
+
+**Phase 0 LOC merged this session (2026-05-09):** ~12,000 LOC (rsum
+thread + residue theorem unconditional + RegFix architectural fix).
+Repo size at end of session: ~49,323 LOC.
 
 Do not regenerate this list from context — query this file. Update this file
 whenever a status changes.
