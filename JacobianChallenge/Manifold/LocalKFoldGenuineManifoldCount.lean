@@ -412,11 +412,15 @@ theorem localKFoldMultiplicityOnManifold_genuine_preimage_card
       intro h
       rw [h, ENat.toNat_top] at hk_toNat
       exact absurd hk_toNat (by norm_num)
-    -- Set ord and case-split on ENat.
-    rcases hcases : analyticOrderAt (fun z => F z - F z₀) z₀ with _ | n
-    · exact absurd hcases hord_ne_top
-    · -- Now order = (n : ℕ∞). Show n = k.
-      have hk_n : k = n := by rw [hk_eq, hcases, ENat.toNat_coe]
+    set ord : ℕ∞ := analyticOrderAt (fun z => F z - F z₀) z₀ with hord_def
+    cases hord_eq : ord with
+    | top => exact absurd hord_eq hord_ne_top
+    | coe n =>
+      show ord = (k : ℕ∞)
+      rw [hord_eq]
+      have hk_n : k = n := by
+        have : ord.toNat = n := by rw [hord_eq, ENat.toNat_coe]
+        rw [hk_eq, ← hord_def, this]
       rw [hk_n]
   -- (i) Chart target containment radius.
   have h_target_open : IsOpen (chartAt ℂ x).target := (chartAt ℂ x).open_target
