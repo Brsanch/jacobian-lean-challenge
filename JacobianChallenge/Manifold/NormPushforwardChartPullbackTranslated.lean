@@ -78,24 +78,18 @@ private lemma normPow_meromorphicAt_translated
     (w₀ : ℂ) :
     MeromorphicAt (fun t : ℂ => normPow g k (t - w₀)) w₀ := by
   -- The translation `T t = t - w₀` is analytic at `w₀` and `T w₀ = 0`.
-  have h_translate_analytic : AnalyticAt ℂ (fun t : ℂ => t - w₀) w₀ :=
+  -- Define the translation explicitly to pin Lean's unifier.
+  let T : ℂ → ℂ := fun t => t - w₀
+  have h_translate_analytic : AnalyticAt ℂ T w₀ :=
     analyticAt_id.fun_sub analyticAt_const
-  have h_translate_apply : (fun t : ℂ => t - w₀) w₀ = 0 := by
-    show w₀ - w₀ = 0
-    exact sub_self w₀
-  -- Planar headline ZZ204 at `0`.
-  have h_planar_zero : MeromorphicAt (normPow g k) 0 :=
-    normPow_meromorphicAt_zero hk hg
-  -- Rewrite the basepoint to match `comp_analyticAt`.
-  have h_planar_at_translated :
-      MeromorphicAt (normPow g k) ((fun t : ℂ => t - w₀) w₀) := by
-    rw [h_translate_apply]; exact h_planar_zero
+  have h_translate_apply : T w₀ = 0 := sub_self w₀
+  -- Planar headline ZZ204 at `0`, transported to `T w₀`.
+  have h_planar_at_T : MeromorphicAt (normPow g k) (T w₀) := by
+    rw [h_translate_apply]; exact normPow_meromorphicAt_zero hk hg
   -- Apply `MeromorphicAt.comp_analyticAt`.
-  have h_comp :
-      MeromorphicAt ((normPow g k) ∘ (fun t : ℂ => t - w₀)) w₀ :=
-    h_planar_at_translated.comp_analyticAt h_translate_analytic
-  -- The composition is definitionally
-  -- `fun t => normPow g k (t - w₀)`.
+  have h_comp : MeromorphicAt ((normPow g k) ∘ T) w₀ :=
+    h_planar_at_T.comp_analyticAt h_translate_analytic
+  -- `(normPow g k) ∘ T = fun t => normPow g k (t - w₀)` definitionally.
   exact h_comp
 
 /-! ### Headline: translated chart-pullback meromorphy. -/
