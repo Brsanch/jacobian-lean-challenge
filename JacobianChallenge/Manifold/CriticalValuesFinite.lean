@@ -8,6 +8,7 @@ import JacobianChallenge.Manifold.AnalyticFiberDiscrete
 import JacobianChallenge.Manifold.CriticalSetDiscrete
 import JacobianChallenge.Manifold.CriticalSetDefinition
 import JacobianChallenge.Manifold.CriticalSetFiniteUnconditional
+import JacobianChallenge.Manifold.CriticalSetWitnessSupplier
 
 set_option diagnostics true
 set_option diagnostics.threshold 100
