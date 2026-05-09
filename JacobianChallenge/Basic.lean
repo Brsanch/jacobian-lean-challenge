@@ -247,6 +247,31 @@ noncomputable def _root_.ContMDiff.degree
   JacobianChallenge.ContMDiff.degreeFiber f hf
 
 lemma pushforward_pullback (P : Jacobian Y) :
-  pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P := sorry
+  pushforward f hf (pullback f hf P) = (ContMDiff.degree f hf) • P := by
+  classical
+  letI : DecidableEq X := Classical.decEq X
+  letI : DecidableEq Y := Classical.decEq Y
+  -- `pushforward f hf = JacobianChallenge.Jacobian.pushforward f` (the `_hf`
+  -- argument is dropped at `Basic.lean.pushforward`), and `pullback f hf P =
+  -- JacobianChallenge.Jacobian.pullbackHonest_of_rsum _ f hf P` (same body
+  -- swap as in `pullback_comp_apply` above).
+  show JacobianChallenge.Jacobian.pushforward f
+        (JacobianChallenge.Jacobian.pullbackHonest_of_rsum
+          (JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_holds_unconditional X Y)
+          f hf P)
+      = (ContMDiff.degree f hf) • P
+  -- `ContMDiff.degree f hf = JacobianChallenge.ContMDiff.degreeFiber f hf`
+  -- by definition; convert the `ℕ`-smul on the RHS to the `ℤ`-cast smul,
+  -- matching the shape of `pushforward_pullbackHonest_of_rsum`.
+  have hZ : ∀ (m : ℕ) (Q : Jacobian Y), ((m : ℤ) • Q) = m • Q := by
+    intro m Q
+    induction m with
+    | zero => simp
+    | succ k ih =>
+      rw [succ_nsmul, Nat.cast_succ, add_zsmul, one_zsmul, ih]
+  rw [← hZ (ContMDiff.degree f hf) P]
+  exact JacobianChallenge.Jacobian.pushforward_pullbackHonest_of_rsum
+    (JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_holds_unconditional X Y)
+    f hf P
 
 end Jacobian
