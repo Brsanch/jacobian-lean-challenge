@@ -35,7 +35,7 @@ No `sorry`, no `axiom`. -/
 noncomputable section
 
 open scoped Manifold Topology ContDiff
-open Filter Set
+open Filter Set OnePoint
 
 namespace JacobianChallenge
 
@@ -81,7 +81,6 @@ lemma toFun_eq_zero_of_toRiemannSphere_eq_zero
   have h_eq : (OnePoint.some (f.toFun x) : RiemannSphere) =
       (OnePoint.some (0 : ℂ) : RiemannSphere) := by
     rw [← h_some, hx_zero]
-    rfl
   exact OnePoint.coe_injective h_eq
 
 /-- **Helper.** At a zero of `f`, the codomain chart selected by the
@@ -212,31 +211,33 @@ theorem mmeromorphicOrderAt_eq_ramificationIndex_at_zero
       mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x
         = (analyticOrderAt (f.toFun ∘ (chartAt ℂ x).symm) z₀).map (↑· : ℕ → ℤ) := by
     rw [h_mmero, h_mero_eq]
-  -- Case-split on the analytic order: it cannot be `⊤` (else
-  -- `mmeromorphicOrderAt = ⊤`, contradicting `nonvanishing_germ`).
-  cases h_top : analyticOrderAt (f.toFun ∘ (chartAt ℂ x).symm) z₀ with
-  | top =>
-    exfalso
-    rw [h_top] at h_combined
-    -- `(⊤ : ℕ∞).map _ = ⊤`, hence `mmeromorphicOrderAt = ⊤`, contradiction.
+  -- Case-split on the analytic order via explicit `match` semantics:
+  -- introduce a name for it, then `rcases` on the `WithTop` constructor.
+  set α : ℕ∞ := analyticOrderAt (f.toFun ∘ (chartAt ℂ x).symm) z₀ with hα
+  -- It cannot be `⊤` (else `mmeromorphicOrderAt = ⊤`, contradicting
+  -- `nonvanishing_germ`).
+  have h_α_ne_top : α ≠ ⊤ := by
+    intro h_top
     have h_top_int : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x = ⊤ := by
-      rw [h_combined]
+      rw [h_combined, h_top]
       simp
     exact f.nonvanishing_germ x h_top_int
-  | coe n =>
-    -- LHS: `(↑n : ℕ∞).toNat = n`.
-    -- RHS: `mmeromorphicOrderAt = ((n : ℤ) : WithTop ℤ)`, hence `.untop₀ = (n : ℤ)`,
-    -- and `(n : ℤ).natAbs = n`.
-    rw [h_top]
-    -- Now LHS goal: `((n : ℕ∞)).toNat`, expand RHS via `h_combined` and `h_top`.
-    have h_mmero_val :
-        mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x = ((n : ℤ) : WithTop ℤ) := by
-      rw [h_combined, h_top]
-      simp [ENat.map_coe]
-    rw [h_mmero_val]
-    -- Goal: `((n : ℕ∞)).toNat = (((n : ℤ) : WithTop ℤ)).untop₀.natAbs`.
-    -- Both sides reduce to `n`.
-    simp
+  -- Extract the underlying `ℕ` value: `α = (n : ℕ∞)` for some `n : ℕ`.
+  obtain ⟨n, hn⟩ : ∃ n : ℕ, α = (n : ℕ∞) := by
+    cases h : α with
+    | top => exact absurd h h_α_ne_top
+    | coe m => exact ⟨m, rfl⟩
+  -- Substitute `α = (n : ℕ∞)` everywhere we need it.
+  rw [hn]
+  -- Goal: `((n : ℕ∞)).toNat = (mmeromorphicOrderAt 𝓘(ℂ,ℂ) f.toFun x).untop₀.natAbs`.
+  -- Compute `mmeromorphicOrderAt = ((n : ℤ) : WithTop ℤ)` via `h_combined`.
+  have h_mmero_val :
+      mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x = ((n : ℤ) : WithTop ℤ) := by
+    rw [h_combined, hn]
+    simp [ENat.map_coe]
+  rw [h_mmero_val]
+  -- Both sides reduce to `n` via `simp`.
+  simp
 
 end Manifold
 
