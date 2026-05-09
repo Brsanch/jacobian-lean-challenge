@@ -2,7 +2,9 @@ import Mathlib -- compiles with commit 8e3c989104daaa052921bf43de9eef0e1ac9fbf5 
 import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.LocalMultiplicity
 import JacobianChallenge.Manifold.Degree
+import JacobianChallenge.Manifold.NearbyRegularWitnessUnconditional
 import JacobianChallenge.Jacobian
+import JacobianChallenge.JacobianPullbackHonest
 
 /-!
 
@@ -166,17 +168,24 @@ lemma pushforward_comp_apply (P : Jacobian X) :
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
 Equal to the zero map if the map on curves is constant.
 
-**Stub at this pin** — delegated to `JacobianChallenge.Jacobian.pullback`,
-which is the zero `ContinuousAddMonoidHom`. This satisfies the *signature*
-of item 13, but mathematically the true pullback is the descent of the
-fiber-sum `single y ↦ ∑_{x ∈ f⁻¹(y)} single x`. See the section docstring
-of `JacobianChallenge.Jacobian.pullback` for what is owed before this can
-become honest (a `Div.fiberSum` construction with finite-fiber hypotheses,
-plus degree preservation). -/
+**Honest body (post-ZZ172 swap).** The body delegates to
+`JacobianChallenge.Jacobian.pullbackHonest_of_rsum`, which cases on
+`IsConstantMap f`:
+* constant `f` ⇒ the zero `ContinuousAddMonoidHom`;
+* non-constant `f` ⇒ the multiplicity-weighted divisor pullback
+  `Jacobian.pullbackWeighted` with `e := manifoldRamificationIndex f`
+  and `N := degreeFiber f hf`.
+
+The Riemann-Hurwitz total-weight obligation
+(`Owed.degree.ramificationSumEqualsDegree_statement X Y`) is supplied
+unconditionally by `ramificationSumEqualsDegree_holds_unconditional`. -/
 noncomputable def pullback (f : X → Y)
-    (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    Jacobian Y →ₜ+ Jacobian X :=
-  JacobianChallenge.Jacobian.pullback f
+    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    Jacobian Y →ₜ+ Jacobian X := by
+  classical
+  exact JacobianChallenge.Jacobian.pullbackHonest_of_rsum
+    (JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_holds_unconditional X Y)
+    f hf
 
 -- pullback is holomorphic
 theorem pullback_contMDiff :
@@ -191,13 +200,19 @@ theorem pullback_contMDiff :
 lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P := sorry
 
 -- functoriality
--- For the zero-stub `pullback`, both sides reduce to `0`, so the statement
--- holds. When `pullback` becomes honest this lemma will need a real proof;
--- the statement itself, however, is exactly the strict-reader check and is
--- preserved.
+-- Post-ZZ:BasicSwap: `pullback` is now the honest body
+-- (`pullbackHonest_of_rsum`). The previous proof delegated to
+-- `JacobianChallenge.Jacobian.pullback_comp_apply`, which is a vacuous
+-- `0 ∘ 0 = 0` statement about the OLD zero-stub `JacobianChallenge.Jacobian.pullback`
+-- — that delegation no longer typechecks against the honest body.
+-- A real proof requires a contravariant functoriality lemma for
+-- `pullbackHonest_of_rsum` (cases on `IsConstantMap f`/`IsConstantMap g`,
+-- delegating non-constant cases to `pullbackWeighted` functoriality on
+-- `Div.fiberSum`). That lemma is not yet built; this stays `sorry` until a
+-- follow-up chip adds `pullbackHonest_of_rsum_comp` in
+-- `JacobianPullbackHonest.lean`.
 lemma pullback_comp_apply (P : Jacobian Z) :
-    pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) :=
-  JacobianChallenge.Jacobian.pullback_comp_apply f g P
+    pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := sorry
 
 /-- The degree of a holomorphic map between compact Riemann surfaces. Equal to
 zero for constant maps, otherwise equal to the usual degree.
