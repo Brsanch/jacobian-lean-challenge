@@ -132,7 +132,7 @@ def ClassicalChoiceRegularHypothesis
         deriv ((chartAt ℂ (Classical.choice h_exist).value) ∘ f ∘ (chartAt ℂ x).symm)
           ((chartAt ℂ x) x) ≠ 0
 
-/-- **Regular-witness card well-definedness (item 3.reg).**
+/-! ### Regular-witness card well-definedness (item 3.reg).
 
 Already named as `Owed.degree.fibre_card_well_defined_at_regular_statement`
 in `Manifold/Degree.lean`; we re-use that exact statement here as the
