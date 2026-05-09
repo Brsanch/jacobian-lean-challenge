@@ -67,7 +67,7 @@ satisfies:
 * for every `y ∈ V` with `y ≠ y₀` and every `x ∈ FF`,
   `(f ⁻¹' {y} ∩ D_x).ncard = manifoldRamificationIndex f x`.
 -/
-open scoped Classical in
+open Classical in
 theorem fibre_disjoint_chart_radius_decomposition
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
