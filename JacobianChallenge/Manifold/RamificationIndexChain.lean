@@ -59,7 +59,7 @@ lemma chart_pullback_comp_eventuallyEq
     {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
     {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
     {Z : Type w} [TopologicalSpace Z] [ChartedSpace ℂ Z]
-    (f : X → Y) (g : Y → Z) (hf_cont : ContinuousAt f x) (x : X) :
+    (f : X → Y) (g : Y → Z) (x : X) (hf_cont : ContinuousAt f x) :
     (fun z : ℂ =>
         ((chartAt ℂ (g (f x))) ∘ (g ∘ f) ∘ (chartAt ℂ x).symm) z)
       =ᶠ[𝓝 ((chartAt ℂ x) x)]
@@ -121,12 +121,11 @@ theorem manifoldRamificationIndex_comp_of_finite
     {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
     {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
     {Z : Type w} [TopologicalSpace Z] [ChartedSpace ℂ Z]
-    {f : X → Y} {g : Y → Z}
+    {f : X → Y} {g : Y → Z} (x : X)
     (hf_an : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f x)
     (hg_an : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω g (f x))
     (hf_pos : 1 ≤ manifoldRamificationIndex f x)
-    (hg_pos : 1 ≤ manifoldRamificationIndex g (f x))
-    (x : X) :
+    (hg_pos : 1 ≤ manifoldRamificationIndex g (f x)) :
     manifoldRamificationIndex (g ∘ f) x =
       manifoldRamificationIndex g (f x) * manifoldRamificationIndex f x := by
   -- Set up the three chart pullbacks: F_f, F_g, F_{g∘f}.
