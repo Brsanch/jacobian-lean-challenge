@@ -96,7 +96,7 @@ theorem manifoldRamificationIndex_pos_at_fibre_of_perChartNonConstancy
       show ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
           = (chartAt ℂ (f x)) (f x)
       simp [Function.comp, hsymm]
-    rw [hFz₀_eq]
+    rw [← hFz₀_eq]
     exact hV_eqOn z hz_V
   -- analyticOrderAt is ⊤ iff eventually 0; not eventually 0 ⇒ not ⊤.
   have h_order_ne_top :
