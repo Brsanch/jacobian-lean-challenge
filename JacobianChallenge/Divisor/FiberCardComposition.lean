@@ -7,20 +7,7 @@ import JacobianChallenge.Divisor.FiberPullback
 
 set_option diagnostics.threshold 100
 
-/-! # Fibre cardinality and finiteness through composition
-
-For composable maps `f : X → Y` and `g : Y → Z`:
-
-- The fibre `(g ∘ f) ⁻¹' {z}` decomposes as the disjoint union, over
-  `y ∈ g ⁻¹' {z}`, of `f ⁻¹' {y}`.
-- If `f` and `g` both have finite fibres of constant card (`Nf`, `Ng`),
-  then `g ∘ f` has finite fibres of constant card `Ng * Nf`.
-
-Used in the multiplicity-weighted body of `Jacobian.pullback` to derive
-`hgf` from `hf` and `hg` (composition is closed under the
-constant-fibre-cardinality predicate).
-
-No `sorry`, no `axiom`. -/
+/-! # Fibre cardinality and finiteness through composition -/
 
 namespace JacobianChallenge
 
@@ -34,10 +21,7 @@ lemma comp_fibre_eq_biUnion (f : X → Y) (g : Y → Z) (z : Z) :
   ext x
   simp only [Set.mem_preimage, Set.mem_singleton_iff, Function.comp,
              Set.mem_iUnion, exists_prop]
-  constructor
-  · intro h; exact ⟨f x, h, rfl⟩
-  · rintro ⟨y, hy, hxy⟩
-    rw [hxy]; exact hy
+  exact ⟨fun h => ⟨f x, h, rfl⟩, fun ⟨y, hy, hxy⟩ => hxy ▸ hy⟩
 
 /-- **Composition of finite fibres is finite.** -/
 lemma comp_fibre_finite
@@ -68,12 +52,13 @@ lemma comp_fibre_card
       rw [comp_fibre_eq_biUnion] at hx
       simp only [Set.mem_iUnion, exists_prop] at hx
       obtain ⟨y, hy_z, hx_y⟩ := hx
-      exact ⟨y, by rw [Set.Finite.mem_toFinset]; exact hy_z,
-             by rw [Set.Finite.mem_toFinset]; exact hx_y⟩
+      refine ⟨y, ?_, ?_⟩
+      · simp only [Set.Finite.mem_toFinset]; exact hy_z
+      · simp only [Set.Finite.mem_toFinset]; exact hx_y
     · rintro ⟨y, hy, hx⟩
+      simp only [Set.Finite.mem_toFinset] at hy hx
       rw [comp_fibre_eq_biUnion]
       simp only [Set.mem_iUnion, exists_prop]
-      rw [Set.Finite.mem_toFinset] at hy hx
       exact ⟨y, hy, hx⟩
   rw [heq_finset]
   -- Apply Finset.card_biUnion with disjointness.
@@ -83,13 +68,12 @@ lemma comp_fibre_card
       intros y _
       exact hNf y
     rw [Finset.sum_congr rfl heach]
-    rw [Finset.sum_const, smul_eq_mul]
-    rw [hNg z]
+    rw [Finset.sum_const, smul_eq_mul, hNg z]
   · -- Disjointness: f-fibres over distinct y are disjoint.
-    intro y₁ hy₁ y₂ hy₂ hne
+    intro y₁ _ y₂ _ hne
     rw [Finset.disjoint_left]
     intro x hx₁ hx₂
-    rw [Set.Finite.mem_toFinset] at hx₁ hx₂
+    simp only [Set.Finite.mem_toFinset] at hx₁ hx₂
     -- hx₁ : f x = y₁, hx₂ : f x = y₂.
     apply hne
     rw [← hx₁, ← hx₂]
