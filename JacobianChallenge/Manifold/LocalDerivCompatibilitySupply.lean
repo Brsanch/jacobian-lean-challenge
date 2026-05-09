@@ -92,7 +92,7 @@ The neighbourhood `V` is `(chartAt ℂ x).source ∩ f.toRiemannSphere ⁻¹'
 (chartAt ℂ (f.toRiemannSphere x)).source` — open, contains `x`, and on it
 the chart-transition argument relates the fixed-chart pullback at `x` to
 the canonical-chart pullback at every `x' ∈ V`. -/
-theorem localDerivCompatibilityData_of_meromorphicNonzero
+noncomputable def localDerivCompatibilityData_of_meromorphicNonzero
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
     (f : JacobianChallenge.MeromorphicNonzero X)
@@ -396,6 +396,8 @@ theorem localDerivCompatibilityData_of_meromorphicNonzero
     have h_F_evEq : F =ᶠ[𝓝 (c x')] ((d ∘ d'.symm) ∘ F' ∘ (c' ∘ c.symm)) :=
       Filter.eventuallyEq_iff_exists_mem.mpr ⟨W, hW_nhds, h_F_eq_comp⟩
     -- Differentiability at the relevant points (for chain rule).
+    have h_atlas_x : chartAt ℂ x ∈ atlas ℂ X := chart_mem_atlas ℂ x
+    have h_atlas_x' : chartAt ℂ x' ∈ atlas ℂ X := chart_mem_atlas ℂ x'
     have h_an_c'_c : AnalyticAt ℂ (c' ∘ c.symm) (c x') :=
       JacobianChallenge.analyticAt_chart_transition_of_isManifold
         h_atlas_x h_atlas_x' hx'c hx'c'
@@ -438,11 +440,16 @@ theorem localDerivCompatibilityData_of_meromorphicNonzero
         deriv F (c x') = deriv ((d ∘ d'.symm) ∘ F' ∘ (c' ∘ c.symm)) (c x') :=
       h_F_evEq.deriv_eq
     -- Combine.
+    have h_pt_inner_comp : (F' ∘ (c' ∘ c.symm)) (c x') = F' (c' x') := by
+      show F' ((c' ∘ c.symm) (c x')) = F' (c' x')
+      rw [h_pt_inner]
     have h_F_deriv_factored :
         deriv F (c x') =
           deriv (d ∘ d'.symm) (d' (f.toRiemannSphere x'))
             * (deriv F' (c' x') * deriv (c' ∘ c.symm) (c x')) := by
-      rw [h_F_deriv, h_chain_outer, h_pt_F', h_chain_inner, h_pt_inner]
+      rw [h_F_deriv, h_chain_outer, h_chain_inner, h_pt_inner_comp, h_pt_inner]
+      -- Goal now: deriv (d ∘ d'.symm) (F' (c' x')) * (deriv F' (c' x') * ...) = ...
+      rw [hF'cx']
     -- Conclude: deriv F (c x') = 0 ↔ deriv F' (c' x') = 0.
     have h_deriv_iff : deriv F (c x') = 0 ↔ deriv F' (c' x') = 0 := by
       rw [h_F_deriv_factored]
@@ -472,7 +479,7 @@ theorem localDerivCompatibilityData_of_meromorphicNonzero
 `derivBridgeData_of_localCompatibility`. The analyticity of the literal
 chart pullback is supplied unconditionally by ZZ24 via
 `MeromorphicNonzero.toRiemannSphere_contMDiff`. -/
-theorem derivBridgeData_of_meromorphicNonzero
+noncomputable def derivBridgeData_of_meromorphicNonzero
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
     (f : JacobianChallenge.MeromorphicNonzero X)
@@ -484,13 +491,13 @@ theorem derivBridgeData_of_meromorphicNonzero
   have hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f.toRiemannSphere :=
     JacobianChallenge.MeromorphicNonzero.toRiemannSphere_contMDiff f
   -- The literal chart pullback is the F field of D, and ZZ24 supplies analyticity.
-  have hFA : AnalyticAt ℂ D.F ((chartAt ℂ x) x) := by
-    -- Unfold D.F: it equals the literal chart pullback by construction.
-    show AnalyticAt ℂ
-      ((chartAt ℂ (f.toRiemannSphere x)) ∘ f.toRiemannSphere ∘ (chartAt ℂ x).symm)
-      ((chartAt ℂ x) x)
-    exact JacobianChallenge.ContMDiff.Owed.degree.contMDiff_omega_analyticAt_chart_pullback
+  have hFA :
+      AnalyticAt ℂ
+        ((chartAt ℂ (f.toRiemannSphere x)) ∘ f.toRiemannSphere ∘ (chartAt ℂ x).symm)
+        ((chartAt ℂ x) x) :=
+    JacobianChallenge.ContMDiff.Owed.degree.contMDiff_omega_analyticAt_chart_pullback
       hf x
+  -- D.F definitionally equals the literal chart pullback by construction.
   exact derivBridgeData_of_localCompatibility D hFA
 
 end Manifold
