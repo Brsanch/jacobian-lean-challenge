@@ -1061,7 +1061,8 @@ theorem nearbyRegularWitnessHypothesis_holds_unconditional
       Set.Finite.biUnion (Set.toFinite (FF : Set X))
         (fun x' hx'FF => h_piece_fin x' hx'FF)
     -- Convert the goal to Finset.card.
-    rw [hpre_w_eq, Set.ncard_eq_toFinset_card _ hbiU_fin]
+    conv_lhs => rw [hpre_w_eq]
+    rw [Set.ncard_eq_toFinset_card _ hbiU_fin]
     -- The toFinset of a biUnion of disjoint pieces equals the Finset.biUnion.
     -- Use that explicitly via Finset.card_biUnion + disjointness.
     -- Define: g : X → Finset X := fun x' => (h_piece_fin x' (Classical.byContradiction ...)).toFinset
