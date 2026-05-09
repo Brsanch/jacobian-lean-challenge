@@ -45,9 +45,10 @@ spec. Three statuses, with one tag for partial progress:
 Phase 3 ~7.1–15k (surface classification, blocked), Phase 4 ~6.9–12.8k
 (Hodge, blocked). See `CLOSURE_MAP.md` section F.
 
-**Phase 0 LOC merged this session (2026-05-09):** ~12,000 LOC (rsum
-thread + residue theorem unconditional + RegFix architectural fix).
-Repo size at end of session: ~49,323 LOC.
+**Phase 0 LOC merged this session (2026-05-09):** net **+9,200** total
+(11,310 added / 2,108 deleted, including doc files; .lean-only net +8,776).
+Repo size at end of session: **49,526 LOC** total in `*.lean` files
+(49,323 inside `JacobianChallenge/` + 203-line top-level import manifest).
 
 Do not regenerate this list from context — query this file. Update this file
 whenever a status changes.

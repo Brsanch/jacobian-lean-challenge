@@ -367,7 +367,7 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 
 **Total LOC remaining for 24/24 STRICT-CLOSED**: **31,550–59,650 LOC**.
 
-The repo currently sits at ~50,000 LOC. **Final-state projection**: ~80,000–110,000 LOC for full closure.
+The repo currently sits at **49,526 LOC** (`*.lean` files, all of `JacobianChallenge/` + top-level import manifest). **Final-state projection**: ~81,000–109,000 LOC for full closure.
 
 Calibration buffer (today's pattern: ~1.5x estimates exceeded due to architectural defect surfacing during attempts): **realistic upper bound ~90,000 LOC remaining**, **realistic lower bound ~30,000 LOC remaining**.
 
