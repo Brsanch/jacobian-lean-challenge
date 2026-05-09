@@ -6,6 +6,7 @@ import JacobianChallenge.Analysis.H1OnManifold
 import JacobianChallenge.Basic
 import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.ChipAliases
+import JacobianChallenge.Divisor.FiberCardComposition
 import JacobianChallenge.Divisor.FiberPullback
 import JacobianChallenge.Divisor.FiberPullbackWeighted
 import JacobianChallenge.Divisor.FiberPullbackWitnessIrrelevance
