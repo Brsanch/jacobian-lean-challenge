@@ -163,6 +163,7 @@ import JacobianChallenge.Manifold.PoleExtensionFibres
 import JacobianChallenge.Manifold.PreconnectedFromFiniteComplement
 import JacobianChallenge.Manifold.PreimageEventualContainment
 import JacobianChallenge.Manifold.PrincipalDivisorDegreeZero
+import JacobianChallenge.Manifold.R4FibreSumBalance
 import JacobianChallenge.Manifold.R5StackHypothesesDischarge
 import JacobianChallenge.Manifold.RamificationIndex
 import JacobianChallenge.Manifold.RamificationIndexChain
