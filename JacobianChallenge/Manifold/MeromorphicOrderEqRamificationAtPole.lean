@@ -224,7 +224,9 @@ theorem mmeromorphicOrderAt_eq_ramificationIndex_at_pole
   have h_shift : (fun z => F z - F z₀) =ᶠ[𝓝 z₀] F := by
     rw [hFz₀]
     refine Filter.Eventually.of_forall ?_
-    intro z; rw [sub_zero]
+    intro z
+    show F z - 0 = F z
+    rw [sub_zero]
   rw [analyticOrderAt_congr h_shift]
   -- Now: `(analyticOrderAt F z₀).toNat = ...`.
   -- Bridge: `meromorphicOrderAt F z₀ = (analyticOrderAt F z₀).map (↑ : ℕ → ℤ)`.
@@ -260,60 +262,58 @@ theorem mmeromorphicOrderAt_eq_ramificationIndex_at_pole
       (analyticOrderAt F z₀).map (↑· : ℕ → ℤ)
         = -mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x := by
     rw [← h_mero_eq, h_meroF_inv, h_inv_neg]
-  -- Extract `analyticOrderAt F z₀ = (n : ℕ∞)` for some `n : ℕ`.
-  set α : ℕ∞ := analyticOrderAt F z₀ with hα
-  -- `α ≠ ⊤`: else `-mmeromorphicOrderAt = ⊤`, but `mmeromorphicOrderAt < 0` is finite.
-  have h_α_ne_top : α ≠ ⊤ := by
-    intro h_top
-    have h_lhs : α.map (↑· : ℕ → ℤ) = (⊤ : WithTop ℤ) := by
-      rw [h_top]; rfl
-    have h_rhs_top : -mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x = (⊤ : WithTop ℤ) := by
-      rw [← h_combined]; exact h_lhs
-    -- But `-mmeromorphicOrderAt _ x` finite (since the order is finite at a pole):
-    -- `mmeromorphicOrderAt _ _ x < 0` ⇒ it's `≠ ⊤`.
-    have h_finite : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x ≠ ⊤ := by
-      intro h_eq_top
-      rw [h_eq_top] at hx_neg
-      exact absurd hx_neg (not_lt.mpr le_top)
-    -- From `-a = ⊤` with `a ≠ ⊤` we derive a contradiction.
-    rcases h_a : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x with _ | a
-    · exact h_finite h_a
-    · rw [h_a] at h_rhs_top
-      -- `-((a : ℤ) : WithTop ℤ) = (-a : ℤ)` is a finite coe, not ⊤.
-      have h_coe : (-((a : ℤ) : WithTop ℤ)) = ((-a : ℤ) : WithTop ℤ) := by
-        rfl
-      rw [h_coe] at h_rhs_top
-      exact absurd h_rhs_top WithTop.coe_ne_top
-  -- Extract `α = (n : ℕ∞)`.
-  obtain ⟨n, hn⟩ : ∃ n : ℕ, α = (n : ℕ∞) := by
-    cases h : α with
-    | top => exact absurd h h_α_ne_top
+  -- `mmeromorphicOrderAt _ _ x` is a finite negative integer at a pole.
+  have h_mmero_finite : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x ≠ ⊤ := by
+    intro h_eq_top
+    rw [h_eq_top] at hx_neg
+    exact absurd hx_neg (not_lt.mpr le_top)
+  -- Extract `mmeromorphicOrderAt = ((k : ℤ) : WithTop ℤ)` for some `k : ℤ` with `k < 0`.
+  obtain ⟨k, hk⟩ : ∃ k : ℤ, mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x =
+      ((k : ℤ) : WithTop ℤ) := by
+    cases h : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x with
+    | top => exact absurd h h_mmero_finite
     | coe m => exact ⟨m, rfl⟩
-  rw [hn]
-  -- Now: `((n : ℕ∞)).toNat = (mmeromorphicOrderAt _ _ x).untop₀.natAbs`.
-  -- Compute `mmeromorphicOrderAt _ _ x = ((-n : ℤ) : WithTop ℤ)`.
-  have h_mmero_val :
-      mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x = ((-n : ℤ) : WithTop ℤ) := by
-    -- From `h_combined`: `α.map (↑) = -mmeromorphicOrderAt`.
-    -- `α = n` ⇒ `α.map (↑) = ((n : ℤ) : WithTop ℤ)`.
-    -- So `((n : ℤ) : WithTop ℤ) = -mmeromorphicOrderAt`, hence
-    -- `mmeromorphicOrderAt = -((n : ℤ) : WithTop ℤ) = ((-n : ℤ) : WithTop ℤ)`.
-    have h_lhs : α.map (↑· : ℕ → ℤ) = ((n : ℤ) : WithTop ℤ) := by
-      rw [hn]
-      simp [ENat.map_coe]
-    have h_eq : ((n : ℤ) : WithTop ℤ) = -mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x := by
-      rw [← h_lhs]; exact h_combined
-    -- Solve for `mmeromorphicOrderAt`.
-    have h_neg_eq :
-        -((n : ℤ) : WithTop ℤ) = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x := by
-      rw [h_eq]; ring
-    rw [← h_neg_eq]
-    rfl
-  rw [h_mmero_val]
-  -- Both sides reduce to `n`.
-  -- LHS: `((n : ℕ∞)).toNat = n`.
-  -- RHS: `(((-n : ℤ) : WithTop ℤ)).untop₀.natAbs = (-n : ℤ).natAbs = n`.
-  simp
+  have hk_neg : k < 0 := by
+    have hx' := hx_neg
+    rw [hk] at hx'
+    exact_mod_cast hx'
+  -- Set `n := -k` (a positive natural).
+  set n : ℕ := k.natAbs with hn_def
+  have hk_eq : k = -(n : ℤ) := by
+    have h_abs : (n : ℤ) = -k := by
+      rw [hn_def]
+      exact_mod_cast (Int.natAbs_of_neg hk_neg)
+    linarith
+  -- Set α and show `α = (n : ℕ∞)` via `h_combined`.
+  set α : ℕ∞ := analyticOrderAt F z₀ with hα
+  have h_combined' :
+      α.map (↑· : ℕ → ℤ) = ((n : ℤ) : WithTop ℤ) := by
+    have h_neg_mmero :
+        -mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x = ((n : ℤ) : WithTop ℤ) := by
+      rw [hk, hk_eq]
+      show -(((-(n : ℤ)) : ℤ) : WithTop ℤ) = ((n : ℤ) : WithTop ℤ)
+      norm_cast
+    rw [h_combined, h_neg_mmero]
+  -- α has finite value n.
+  have h_α_eq : α = (n : ℕ∞) := by
+    cases h : α with
+    | top =>
+      rw [h] at h_combined'
+      -- LHS: `(⊤ : ℕ∞).map (↑·) = ⊤`. RHS: `((n : ℤ) : WithTop ℤ)` finite.
+      simp at h_combined'
+    | coe m =>
+      rw [h] at h_combined'
+      -- LHS: `((m : ℕ∞)).map (↑·) = ((m : ℤ) : WithTop ℤ)`.
+      -- So `((m : ℤ) : WithTop ℤ) = ((n : ℤ) : WithTop ℤ)`, hence `m = n`.
+      have : ((m : ℤ) : WithTop ℤ) = ((n : ℤ) : WithTop ℤ) := by
+        rw [← h_combined']; rfl
+      have h_mn : (m : ℤ) = (n : ℤ) := by exact_mod_cast this
+      have : m = n := by exact_mod_cast h_mn
+      rw [this]
+  rw [h_α_eq, hk]
+  -- Goal: `((n : ℕ∞)).toNat = (((k : ℤ) : WithTop ℤ)).untop₀.natAbs`.
+  -- LHS = n; RHS = k.natAbs = n (by hn_def).
+  simp [hn_def]
 
 end Manifold
 
