@@ -178,4 +178,147 @@ noncomputable def pullbackWeighted
 
 end Pic0
 
+/-! ### `pushforward ∘ pullbackWeighted` is multiplication by the (constant)
+total fibre weight `N`
+
+Weighted analog of `Div.singletonMap_fiberSum` (in `FiberPullback.lean`). Used
+to discharge challenge item 24 (`Basic.lean.pushforward_pullback`) on the
+non-constant branch of the honest `pullback`. -/
+
+namespace Div
+
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+  [DecidableEq X] [DecidableEq Y]
+
+/-- The composition `singletonMap f ∘ fiberSumWeighted f hf e` collapses each
+    fibre back to its image with multiplicity-weighted contribution, and so
+    multiplies divisor multiplicities by the (constant) total fibre weight
+    `N := ∑_{x ∈ f⁻¹{y}} e x`. -/
+lemma singletonMap_fiberSumWeighted
+    (f : X → Y) (hf : ∀ y, (f ⁻¹' {y}).Finite)
+    (e : X → ℕ) (N : ℕ)
+    (hN_total : ∀ y, (∑ x ∈ (hf y).toFinset, e x) = N)
+    (D : Div Y) :
+    Div.singletonMap f (Div.fiberSumWeighted f hf e D) = (N : ℤ) • D := by
+  classical
+  -- Step 1: rewrite `fiberSumWeighted f hf e D` as its sum-of-smul form.
+  have hfs : Div.fiberSumWeighted f hf e D
+      = ∑ y ∈ D.supportFinset,
+          D y • (∑ x ∈ (hf y).toFinset, (e x : ℤ) • (Div.single x : Div X)) := by
+    show Div.fiberSumWeightedFun f hf e D = _
+    rfl
+  rw [hfs, map_sum]
+  -- Step 2: for each `y ∈ supp D`, push `singletonMap f` through the
+  -- ℤ-smul and the inner sum, simplify each `single (f x) = single y`,
+  -- then collapse the constant sum to `N · single y`.
+  have hterm : ∀ y ∈ D.supportFinset,
+      Div.singletonMap f
+          (D y • (∑ x ∈ (hf y).toFinset, (e x : ℤ) • (Div.single x : Div X)))
+        = D y • ((N : ℤ) • (Div.single y : Div Y)) := by
+    intro y _hy
+    -- Push `singletonMap f` through the outer ℤ-smul.
+    rw [map_zsmul]
+    -- Push `singletonMap f` through the inner sum.
+    rw [map_sum]
+    -- Strip the common `D y • ·` by `congr 1`.
+    congr 1
+    -- Goal: `∑ x ∈ (hf y).toFinset, singletonMap f ((e x : ℤ) • single x)
+    --        = (N : ℤ) • single y`.
+    -- Each summand: `singletonMap f ((e x : ℤ) • single x)
+    --              = (e x : ℤ) • singletonMap f (single x)
+    --              = (e x : ℤ) • single (f x) = (e x : ℤ) • single y`.
+    have hsumm : ∀ x ∈ (hf y).toFinset,
+        Div.singletonMap f ((e x : ℤ) • (Div.single x : Div X))
+          = (e x : ℤ) • (Div.single y : Div Y) := by
+      intro x hx
+      rw [Set.Finite.mem_toFinset] at hx
+      have hfx : f x = y := hx
+      rw [map_zsmul, Div.singletonMap_single, hfx]
+    rw [Finset.sum_congr rfl hsumm]
+    -- Pull `(· : ℤ) • single y` out of the sum:
+    -- `∑ x, (e x : ℤ) • single y = (∑ x, (e x : ℤ)) • single y
+    --                            = ((∑ x, e x : ℕ) : ℤ) • single y
+    --                            = (N : ℤ) • single y`.
+    rw [← Finset.sum_smul]
+    -- Now: `(∑ x ∈ (hf y).toFinset, (e x : ℤ)) • single y
+    --      = (N : ℤ) • single y`. Cast the natural-number sum.
+    have hcast : (∑ x ∈ (hf y).toFinset, (e x : ℤ))
+        = ((∑ x ∈ (hf y).toFinset, e x : ℕ) : ℤ) := by
+      push_cast
+      rfl
+    rw [hcast, hN_total y]
+  rw [Finset.sum_congr rfl hterm]
+  -- Step 3: pull `(N : ℤ) • ·` outside the outer sum and identify the
+  -- remaining sum with `D` (same identity used in `singletonMap_fiberSum`).
+  have hswap : ∀ y ∈ D.supportFinset,
+      D y • ((N : ℤ) • (Div.single y : Div Y))
+        = (N : ℤ) • (D y • (Div.single y : Div Y)) := by
+    intro y _
+    rw [smul_comm]
+  rw [Finset.sum_congr rfl hswap]
+  rw [← Finset.smul_sum]
+  -- Identify `∑ y ∈ supp D, D y • single y = D` via `singletonMap_id_apply`.
+  have hD : (∑ y ∈ D.supportFinset, D y • (Div.single y : Div Y)) = D := by
+    have h := Div.singletonMap_id_apply (X := Y) D
+    have hexp : Div.singletonMap (id : Y → Y) D
+        = ∑ y ∈ D.supportFinset, D y • (Div.single y : Div Y) := by
+      show Div.singletonMapFun (id : Y → Y) D = _
+      rfl
+    rw [hexp] at h
+    exact h
+  rw [hD]
+
+end Div
+
+namespace Pic0
+
+variable {X Y : Type*}
+  [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+  [DecidableEq X] [DecidableEq Y]
+
+/-- The composite `pushforward ∘ pullbackWeighted` is multiplication by the
+(constant) total fibre weight `N`. Weighted analog of
+`Pic0.pushforward_pullback` in `FiberPullback.lean`; used by
+`Basic.lean.pushforward_pullback` (challenge item 24) on the non-constant
+branch. -/
+lemma pushforward_pullbackWeighted
+    (f : X → Y) (hf : ∀ y, (f ⁻¹' {y}).Finite)
+    (e : X → ℕ) (N : ℕ)
+    (hN_total : ∀ y, (∑ x ∈ (hf y).toFinset, e x) = N)
+    (P : Pic0 Y) :
+    Pic0.pushforward f (Pic0.pullbackWeighted f hf e N hN_total P) = (N : ℤ) • P := by
+  -- Match the `Classical.decEq Y` instance used inside `divPushforwardHom`.
+  letI : DecidableEq Y := Classical.decEq Y
+  refine QuotientAddGroup.induction_on P ?_
+  intro D
+  -- Rewrite LHS through `pullbackWeighted_mk` and `pushforward_mk`.
+  rw [Pic0.pullbackWeighted_mk, Pic0.pushforward_mk]
+  -- Equality of quotient classes ⇐ equality of `Div0 Y` representatives.
+  change (QuotientAddGroup.mk
+            (Pic0.divPushforward f
+              (Pic0.divPullbackWeighted f hf e N hN_total D))
+              : Pic0 Y)
+      = (QuotientAddGroup.mk ((N : ℤ) • D) : Pic0 Y)
+  refine congrArg
+    (QuotientAddGroup.mk (s := (PrincDiv Y).addSubgroupOf (Div0 Y))) ?_
+  apply Subtype.ext
+  -- Reduce to `Div Y` equality.
+  show ((Pic0.divPushforward f
+            (Pic0.divPullbackWeighted f hf e N hN_total D) : Div0 Y) : Div Y)
+      = (((N : ℤ) • D : Div0 Y) : Div Y)
+  rw [Pic0.divPushforward_coe, Pic0.divPullbackWeighted_coe]
+  -- Unfold `divPushforwardHom` to `singletonMap`.
+  change Div.singletonMap (Y := Y) f
+            (Div.fiberSumWeighted f hf e (D : Div Y))
+      = (((N : ℤ) • D : Div0 Y) : Div Y)
+  -- Apply the weighted divisor-level identity.
+  rw [Div.singletonMap_fiberSumWeighted (Y := Y) f hf e N hN_total (D : Div Y)]
+  -- ℤ-smul on `Div0 Y` is the underlying ℤ-smul on `Div Y`.
+  rfl
+
+end Pic0
+
 end JacobianChallenge
