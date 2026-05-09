@@ -154,6 +154,7 @@ import JacobianChallenge.Manifold.PrincipalDivisorDegreeZero
 import JacobianChallenge.Manifold.R5StackHypothesesDischarge
 import JacobianChallenge.Manifold.RamificationIndex
 import JacobianChallenge.Manifold.RamificationIndexChain
+import JacobianChallenge.Manifold.RamificationIndexChartIndep
 import JacobianChallenge.Manifold.RamificationIndexPositive
 import JacobianChallenge.Manifold.RamificationSumEqualsDegree
 import JacobianChallenge.Manifold.RegularSubsetPreconnected
