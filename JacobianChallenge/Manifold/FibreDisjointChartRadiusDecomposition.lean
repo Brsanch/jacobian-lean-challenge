@@ -20,7 +20,7 @@ For a non-constant `C^ω` map `f : X → Y` between compact connected complex
 1-manifolds and any `y₀ : Y`, this file packages a fibre-disjoint chart-radius
 decomposition at `y₀`:
 
-* For each preimage point `x ∈ (f ⁻¹' {y₀}).toFinset`, an open chart-disk
+* For each preimage point `x ∈ (f ⁻¹' {y₀}).toFinset`, an open chart-disk.
   `D_x = (chartAt ℂ x).source ∩ (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε_x`
   with `ε_x > 0`.
 * The chart-disks `(D_x)_x` are pairwise disjoint.
@@ -67,6 +67,7 @@ satisfies:
 * for every `y ∈ V` with `y ≠ y₀` and every `x ∈ FF`,
   `(f ⁻¹' {y} ∩ D_x).ncard = manifoldRamificationIndex f x`.
 -/
+open scoped Classical in
 theorem fibre_disjoint_chart_radius_decomposition
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
@@ -100,7 +101,8 @@ theorem fibre_disjoint_chart_radius_decomposition
   classical
   -- Step 1: fibre F over y₀ is finite.
   have hF_fin : (f ⁻¹' {y₀}).Finite :=
-    fibres_finite_statement_holds_unconditional f hf hnc y₀
+    JacobianChallenge.ContMDiff.Owed.degree.fibres_finite_statement_holds_unconditional
+      f hf hnc y₀
   set F : Set X := f ⁻¹' {y₀} with hF_def
   set FF : Finset X := hF_fin.toFinset with hFF_def
   -- Step 2: t2-separator W on the finite F.
