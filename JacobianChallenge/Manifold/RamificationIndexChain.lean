@@ -232,7 +232,6 @@ theorem manifoldRamificationIndex_comp_of_finite
   rw [← hn_g, ← hn_f]
   rw [← ENat.coe_mul]
   simp [ENat.toNat_coe]
-  ring
 
 end Manifold
 
