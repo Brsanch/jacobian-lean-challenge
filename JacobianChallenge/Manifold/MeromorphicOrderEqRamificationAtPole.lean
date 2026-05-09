@@ -282,7 +282,8 @@ theorem mmeromorphicOrderAt_eq_ramificationIndex_at_pole
   have hk_eq : k = -(n : ℤ) := by
     have h_abs : (n : ℤ) = -k := by
       rw [hn_def]
-      exact_mod_cast (Int.natAbs_of_neg hk_neg)
+      have hk_nonpos : k ≤ 0 := le_of_lt hk_neg
+      omega
     linarith
   -- Set α and show `α = (n : ℕ∞)` via `h_combined`.
   set α : ℕ∞ := analyticOrderAt F z₀ with hα
@@ -292,7 +293,8 @@ theorem mmeromorphicOrderAt_eq_ramificationIndex_at_pole
         -mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x = ((n : ℤ) : WithTop ℤ) := by
       rw [hk, hk_eq]
       show -(((-(n : ℤ)) : ℤ) : WithTop ℤ) = ((n : ℤ) : WithTop ℤ)
-      norm_cast
+      push_cast
+      rw [neg_neg]
     rw [h_combined, h_neg_mmero]
   -- α has finite value n.
   have h_α_eq : α = (n : ℕ∞) := by
