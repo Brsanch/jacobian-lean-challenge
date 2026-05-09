@@ -289,8 +289,9 @@ private lemma not_isConstantMap_toRS_infty
       have h_dist : dist (e x₀ + (((r / ((n : ℝ) + 2)) : ℝ) : ℂ)) (e x₀)
           = r / ((n : ℝ) + 2) := by
         rw [dist_eq_norm]
-        ring_nf
-        rw [Complex.norm_real]
+        have h_simp : e x₀ + (((r / ((n : ℝ) + 2)) : ℝ) : ℂ) - e x₀
+            = (((r / ((n : ℝ) + 2)) : ℝ) : ℂ) := by ring
+        rw [h_simp, Complex.norm_real]
         have h_pos : 0 < r / ((n : ℝ) + 2) := by positivity
         exact abs_of_pos h_pos
       rw [h_dist]
@@ -367,7 +368,8 @@ private lemma toRS_eq_zero_iff_untop₀_pos
         rw [h] at h_untop_zero
         -- `((k : ℤ) : WithTop ℤ).untop₀ = k`, so `k = 0`.
         have hk : k = 0 := by simpa [WithTop.untop₀_coe] using h_untop_zero
-        rw [h, hk]; rfl
+        -- Goal: `((k : ℤ) : WithTop ℤ) = 0`. Substitute hk.
+        simp [hk]
     -- Chart pullback is analytic at z₀ (ord ≥ 0 + regular_continuousAt).
     set z₀ : ℂ := (chartAt ℂ x) x
     have h_g_mero : MeromorphicAt (f.toFun ∘ (chartAt ℂ x).symm) z₀ :=
@@ -406,14 +408,14 @@ private lemma toRS_eq_zero_iff_untop₀_pos
       | coe m =>
         rw [h] at h_ord_zero
         -- h_ord_zero : ((m : ℕ∞).map (↑· : ℕ → ℤ)) = 0
-        -- Equivalently (after simp): m = 0.
         have hm : m = 0 := by
           have h_map : ((m : ℕ∞).map (↑· : ℕ → ℤ)) = ((m : ℤ) : WithTop ℤ) := by
             simp [ENat.map_coe]
           rw [h_map] at h_ord_zero
           have h_int : (m : ℤ) = 0 := by exact_mod_cast h_ord_zero
           exact_mod_cast h_int
-        rw [h, hm]; rfl
+        -- Goal: `(m : ℕ∞) = 0`. Substitute hm.
+        simp [hm]
     have h_g_ne : (f.toFun ∘ (chartAt ℂ x).symm) z₀ ≠ 0 :=
       (h_g_an.analyticOrderAt_eq_zero).mp h_an_ord_zero
     apply h_g_ne
