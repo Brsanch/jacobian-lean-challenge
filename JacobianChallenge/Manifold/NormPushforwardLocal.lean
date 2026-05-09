@@ -154,6 +154,7 @@ theorem prod_nthRootsFinset_mulLeft_invariant
       exact one_ne_zero hζ.symm
     have hζinv_pow : ζ⁻¹ ^ k = 1 := by rw [inv_pow, hζ, inv_one]
     refine ⟨ζ⁻¹ * η, mulLeft_mem_nthRootsFinset hk hζinv_pow hη, ?_⟩
+    show ζ * (ζ⁻¹ * η) = η
     rw [← mul_assoc, mul_inv_cancel₀ hζ_ne, one_mul]
   · intro η _hη
     rfl
@@ -204,7 +205,8 @@ theorem normPow_pow (g : ℂ → ℂ) {k : ℕ} (hk : 1 ≤ k) {s : ℂ} (hs : s
     refine ⟨η * s⁻¹, ?_, ?_⟩
     · rw [Polynomial.mem_nthRootsFinset hk]
       rw [mul_pow, hη, ← mul_pow, mul_inv_cancel₀ hs, one_pow]
-    · rw [mul_assoc, inv_mul_cancel₀ hs, mul_one]
+    · show η * s⁻¹ * s = η
+      rw [mul_assoc, inv_mul_cancel₀ hs, mul_one]
   · intro ζ _; rfl
 
 /-- **μ_k-symmetry of the rotation form of `normPow`.** For `s ≠ 0` and
@@ -220,7 +222,7 @@ theorem prod_mu_k_rotation_invariant
     ∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), g (ζ * (ζ₀ * s))
       = ∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), g (ζ * s) := by
   classical
-  have hζ₀_pow : ζ₀ ^ k = 1 := (Polynomial.mem_nthRootsFinset hk).mp hζ₀
+  have hζ₀_pow : ζ₀ ^ k = 1 := (Polynomial.mem_nthRootsFinset hk (1 : ℂ)).mp hζ₀
   -- Apply `prod_nthRootsFinset_mulLeft_invariant` with the auxiliary
   -- function `g'(η) := g (η * s)`. The LHS rewrites:
   --   `g (ζ * (ζ₀ * s)) = g ((ζ * ζ₀) * s) = g' (ζ * ζ₀)`,
@@ -267,7 +269,7 @@ theorem prod_mu_k_indep_of_root
   have hζ₀_pow : ζ₀ ^ k = 1 := by
     rw [hζ₀_def, div_pow, ← h_pow, div_self (pow_ne_zero k hs₁)]
   have hζ₀_mem : ζ₀ ∈ Polynomial.nthRootsFinset k (1 : ℂ) :=
-    (Polynomial.mem_nthRootsFinset hk).mpr hζ₀_pow
+    (Polynomial.mem_nthRootsFinset hk (1 : ℂ)).mpr hζ₀_pow
   have hs₂_eq : s₂ = ζ₀ * s₁ := by
     rw [hζ₀_def, div_mul_cancel₀ _ hs₁]
   rw [hs₂_eq]
