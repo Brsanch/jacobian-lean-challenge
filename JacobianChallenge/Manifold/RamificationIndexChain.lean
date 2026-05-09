@@ -191,14 +191,13 @@ theorem manifoldRamificationIndex_comp_of_finite
     exact hF_g_at.analyticOrderAt_comp hF_f_an
   -- Plug in F_f z₀ = w₀.
   rw [hF_f_z₀] at h_chain
-  -- Unfold manifoldRamificationIndex on all three places.
-  unfold manifoldRamificationIndex
-  -- Now goal is .toNat formulas in terms of analyticOrderAt of chart-pullbacks.
-  -- Rewrite the LHS analyticOrderAt via hOrd_lift then via h_chain.
-  rw [show (analyticOrderAt (fun z => ((chartAt ℂ ((g ∘ f) x)) ∘ (g ∘ f) ∘
-        (chartAt ℂ x).symm) z - ((chartAt ℂ ((g ∘ f) x)) ∘ (g ∘ f) ∘
-        (chartAt ℂ x).symm) ((chartAt ℂ x) x)) ((chartAt ℂ x) x)) =
-    analyticOrderAt (fun z => F_gf z - F_gf z₀) z₀ from rfl]
+  -- All three `manifoldRamificationIndex` invocations definitionally reduce
+  -- to `(analyticOrderAt (fun z => F z - F z₀) z₀).toNat` for the matching
+  -- chart-pullback `F` and base point `z₀`. Commit to that form via `show`
+  -- (the def-eq goes through `(g ∘ f) x = g (f x)` and the `set` aliases).
+  show (analyticOrderAt (fun z => F_gf z - F_gf z₀) z₀).toNat =
+      (analyticOrderAt (fun w => F_g w - F_g w₀) w₀).toNat *
+      (analyticOrderAt (fun z => F_f z - F_f z₀) z₀).toNat
   rw [hOrd_lift, h_chain]
   -- Need: 0 < (order_g .toNat) and 0 < (order_f .toNat) ⇒ both orders are finite ⇒
   --   (order_g * order_f).toNat = order_g.toNat * order_f.toNat.
