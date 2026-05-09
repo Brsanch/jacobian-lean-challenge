@@ -200,13 +200,19 @@ theorem pullback_contMDiff :
 lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P := sorry
 
 -- functoriality
--- For the zero-stub `pullback`, both sides reduce to `0`, so the statement
--- holds. When `pullback` becomes honest this lemma will need a real proof;
--- the statement itself, however, is exactly the strict-reader check and is
--- preserved.
+-- Post-ZZ:BasicSwap: `pullback` is now the honest body
+-- (`pullbackHonest_of_rsum`). The previous proof delegated to
+-- `JacobianChallenge.Jacobian.pullback_comp_apply`, which is a vacuous
+-- `0 ∘ 0 = 0` statement about the OLD zero-stub `JacobianChallenge.Jacobian.pullback`
+-- — that delegation no longer typechecks against the honest body.
+-- A real proof requires a contravariant functoriality lemma for
+-- `pullbackHonest_of_rsum` (cases on `IsConstantMap f`/`IsConstantMap g`,
+-- delegating non-constant cases to `pullbackWeighted` functoriality on
+-- `Div.fiberSum`). That lemma is not yet built; this stays `sorry` until a
+-- follow-up chip adds `pullbackHonest_of_rsum_comp` in
+-- `JacobianPullbackHonest.lean`.
 lemma pullback_comp_apply (P : Jacobian Z) :
-    pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) :=
-  JacobianChallenge.Jacobian.pullback_comp_apply f g P
+    pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) := sorry
 
 /-- The degree of a holomorphic map between compact Riemann surfaces. Equal to
 zero for constant maps, otherwise equal to the usual degree.
