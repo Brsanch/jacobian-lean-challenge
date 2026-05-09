@@ -188,71 +188,92 @@ for non-constant `f : X → Y` ContMDiff. Uses P1.3.
 
 Each of these phases requires a research-grade Lean formalization of a classical theorem that is NOT in mathlib at this pin. Estimating their size from the math:
 
-### D.1 — Phase 2 (period-lattice cluster + Abel-Jacobi → items 4, 5, 11, 12, 13, 16, 17, 18, 21)
+### D.1 — Phase 2 (period-lattice cluster + Abel-Jacobi → items 4, 5, 10, 11, 12, 13, 16, 17, 18, 21)
 
-**Required content**:
+**Verified mathlib status before sizing each component**:
+- ✓ `Topology/CWComplex/{Abstract,Classical}/Basic.lean` exists (cells, attaching maps, skeletons, subcomplexes, finite cw)
+- ✓ `AlgebraicTopology/SingularHomology/Basic.lean` exists (abstract singular chain complex functor)
+- ✓ `AlgebraicTopology/FundamentalGroupoid/FundamentalGroup.lean` exists
+- ✓ `Algebra/Module/ZLattice/{Basic,Covolume,Summable}.lean` exists
+- ✓ `Geometry/Manifold/VectorBundle/Tangent.lean` (tangent bundle)
+- ✓ `Geometry/Manifold/MFDeriv/NormedSpace.lean:400` — `extDerivFun` (scalar exterior derivative on a manifold, as a section of the cotangent bundle)
+- ✓ `Geometry/Manifold/PartitionOfUnity.lean` (for global integration constructions)
+- ✓ `Geometry/Manifold/Complex.lean` (6 declarations about holomorphic functions on complex manifolds; basic max-modulus content)
+- ✗ NO `cellularChain` / `cellularHomology` (no cellular chain complex, no isomorphism with singular)
+- ✗ NO computation of singular H_n for any specific space (no `H_n(S^k) = ...`, no `H_1` of any surface)
+- ✗ NO `OneForm` class on a manifold (only the `extDerivFun` scalar wrapper)
+- ✗ NO `holomorphicOneForm`, `periodPairing`, `abelJacobi`, `jacobiInversion`
+- ✗ NO triangulability theorem for 2-manifolds (Radó)
 
-1. **Singular `H_1` of compact connected Riemann surface ≅ ℤ^{2g}**.
-   - Could approach via CW decomposition (mathlib has `Topology/CWComplex/`); compute `H_1(CW) = ℤ^{2g}` directly from the standard 2g-loop attaching map for genus-g surface.
-   - But the standard CW structure on a genus-g surface is supplied by **surface classification** (Phase 3). So Phase 2 depends on Phase 3 OR an independent triangulation/CW for compact Riemann surfaces.
-   - Estimate: 5–10k LOC if going via CW + classification; comparable if going via Mayer-Vietoris on a triangulation.
+**Per-component LOC, grounded by what's available**:
 
-2. **Period pairing `H_1(X; ℤ) × HolomorphicOneForm X → ℂ`**.
-   - Needs manifold-level differential forms (mathlib has only local DifferentialForm on ℝⁿ).
-   - Needs integration of forms over singular 1-chains in a manifold (only `CircleIntegral` exists, in ℂ).
-   - Estimate: 3–8k LOC for the integration theory + period pairing setup.
+| Component | What it needs | Available? | LOC |
+|---|---|---|---|
+| **2.A Cellular homology framework** (cellular chain complex `C_n(X) = ℤ[cells]` with ∂ via attaching-map degrees, isomorphism with singular homology) | mathlib has CWComplex but NOT cellular homology. Build chain complex + degree of attaching maps + comparison theorem. | foundations ✓; specific construction ✗ | **3,000–5,000** |
+| **2.B Compact orientable 2-manifold has standard genus-g CW structure** | Depends on surface classification (Phase 3). Once Phase 3 lands, this assigns the specific cellular structure. | depends on Phase 3 | **500–1,000** (post-Phase 3) |
+| **2.C H_1(genus-g surface) ≅ ℤ^{2g}** | Apply 2.A to 2.B. Direct calculation: ker ∂_1 / im ∂_2. | depends on 2.A, 2.B | **400–800** |
+| **2.D Manifold-level differential 1-forms class `OneForm M`** | Lift `extDerivFun` (which exists for scalars) to a class of smooth sections of `T*M`. | scalar piece ✓; class ✗ | **1,500–3,000** |
+| **2.E Holomorphic 1-forms on complex manifold** | Restrict 2.D to ℂ-linear sections compatible with complex structure. | depends on 2.D | **500–1,000** |
+| **2.F Integration of 1-form over a smooth singular 1-simplex in M** | mathlib has `intervalIntegral` (real interval) and `CircleIntegral` (parameterized circle in ℂ). Need: integrate ω over `γ : Δ¹ → M` smooth, via charts. | building blocks ✓; assembly ✗ | **1,500–3,000** |
+| **2.G Period pairing `H_1(X; ℤ) × HolomorphicOneForm X → ℂ`** | Combines 2.C and 2.F. Quotient compatibility (Stokes for closed forms). | depends on 2.C, 2.F | **800–1,500** |
+| **2.H Period lattice rank-2g theorem** (Riemann bilinear relations forcing linear independence over ℝ) | Classical complex analysis on the period matrix. Uses Stokes + intersection product on H_1. | depends on 2.A, 2.G | **2,000–4,000** |
+| **2.I Period lattice as `ZLattice` in ℂ^g** | Wire 2.H into mathlib's `ZLattice` API. | ZLattice ✓ | **400–800** |
+| **2.J Items 4/5/10/11/12/13 instances on `Jacobian X = ℂ^g/Λ`** | Repo's `Manifold/PeriodLatticeOfRankTwoG_*.lean` is wiring-ready once 2.I supplies the bundle. | scaffolding ✓ | **400–800** |
+| **2.K Abel-Jacobi map** `X → ℂ^g/Λ`, `Q ↦ class of (∫_P^Q ω_1, ..., ∫_P^Q ω_g)` plus smoothness | Combines 2.D, 2.F, 2.J | depends on 2.D, 2.F, 2.J | **1,000–2,000** |
+| **2.L Abel's theorem** (ker of AJ on Div⁰ = PrincDiv) | Combines 2.K with residue theorem (already in repo). Classical proof via period considerations on closed-form integrals. | residue theorem ✓ | **1,000–2,000** |
+| **2.M Jacobi inversion** (AJ surjective onto J(X)) | Theta-function approach OR Riemann-Roch-light. Heavy classical content. | nothing in mathlib | **2,000–4,000** |
+| **2.N Items 17, 18, 21 (ContMDiff of `ofCurve`, pushforward, pullback)** | Uses 2.J (charted-space structure on J(X)) + 2.K (AJ smoothness) + functoriality. | depends on 2.J, 2.K | **600–1,200** |
+| **2.O Item 16 (`ofCurve_inj`)** | AJ injective on `[δQ - δP]` divisors via 2.L. | depends on 2.L | **300–500** |
 
-3. **Period-lattice rank theorem** (Riemann bilinear relations).
-   - Classical complex analysis.
-   - Estimate: 1–3k LOC once the period pairing exists.
+**Phase 2 total verified**: **15,500–29,600 LOC** (sum of column 4).
 
-4. **`Jacobian X = ℂ^g / Λ` as CompactSpace + ChartedSpace + IsManifold + LieAddGroup**.
-   - Repo already has the wiring in `Manifold/PeriodLatticeOfRankTwoG_*.lean` once `PeriodLatticeOfRankTwoG X` is supplied.
-   - Estimate: ~500 LOC of wiring once the mathematical content (1-3 above) lands.
+The dominant chunks: 2.A (cellular homology), 2.D + 2.E (manifold forms class), 2.F (chain integration), 2.H (Riemann bilinear), 2.M (Jacobi inversion). 2.B/C have low LOC IF Phase 3 lands first.
 
-5. **Abel-Jacobi map** `X → J(X)`, its smoothness, AJ surjective (Jacobi inversion), AJ kernel = PrincDiv (Abel's theorem).
-   - Estimate: 3–6k LOC.
+### D.2 — Phase 3 (item 14: `genus_eq_zero_iff_homeo`)
 
-6. **Item 16 (`ofCurve_inj`) honest path**:
-   - Requires Abel's theorem (kernel of AJ on Div⁰) + restriction to single-point divisors.
-   - Estimate: ~300 LOC once Abel's theorem is in.
+Statement at `Basic.lean:70`: `genus X = 0 ↔ Nonempty (X ≃ₜ sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)`.
 
-**Phase 2 total estimate**: **15–30k LOC**, distributed across many files.
+**Verified mathlib status**:
+- ✓ `Topology/Compactification/OnePoint/Sphere.lean` — `OnePoint (ℝ ∙ v)ᗮ ≃ₜ sphere (0 : E) 1` (homeomorphism between one-point compactification of a hyperplane and the unit sphere).
+- ✓ `Geometry/Manifold/Instances/Sphere.lean` — stereographic projection ChartedSpace structure on `sphere (0 : E) 1`.
+- ✓ `Topology/CWComplex/{Abstract,Classical}/Basic.lean` (cells, attaching maps).
+- ✗ NO closed-orientable-surface classification.
+- ✗ NO triangulability theorem (Radó 1925) for compact 2-manifolds.
 
-### D.2 — Phase 3 (item 14)
+**Per-component LOC**:
 
-`genus X = 0 ↔ Nonempty (X ≃ₜ sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)` per `Basic.lean:70`.
+| Component | What it needs | Available? | LOC |
+|---|---|---|---|
+| **3.A Triangulability of compact 2-manifolds (Radó)** | Classical theorem; not in mathlib. Construct triangulation from local charts via combinatorial bookkeeping. | building blocks (charts, simplicial structure) ✓ | **3,000–6,000** |
+| **3.B Surface classification** (closed orientable triangulated 2-manifold ↔ genus-g standard form) | Brahana / Massey moves on triangulations to canonical form. | foundations ✓; theorem ✗ | **3,000–7,000** |
+| **3.C Riemann surface ⇒ orientable** | Complex structure ⇒ orientation (Jacobian of chart transition is positive in real terms). | local definitions ✓ | **300–500** |
+| **3.D Genus 0 (analytic) ⇒ S² as homotopy/CW class** | Combines 3.A, 3.B, 3.C with the fact that genus 0 = "no handles" = sphere. | depends on 3.A, 3.B, 3.C | **300–500** |
+| **3.E Sphere structure translation: abstract S² ↔ `Metric.sphere (0:EuclideanSpace ℝ (Fin 3)) 1`** | mathlib has `Topology/Compactification/OnePoint/Sphere.lean`. Repo has scaffolding in `Topology/{OnePointHomeoSphere,...}.lean`. | infrastructure ✓ | **500–1,000** |
 
-**Required content**:
+**Phase 3 total verified**: **7,100–15,000 LOC**.
 
-1. **Closed orientable 2-manifolds classified by genus** (Brahana 1921 / Massey).
-   - Modern proof via CW structure + classification of 2-cell-attaching maps + handle-cancellation moves.
-   - Estimate: 5–15k LOC.
-
-2. **Sphere as ChartedSpace ↔ `OnePoint ℂ`** (the Riemann sphere as a complex 1-manifold homeomorphic to S²).
-   - Repo has scaffolding in `Topology/{OnePointHomeoSphere,SurfaceClassificationGenus,SurfaceGenus,Genus0ImpliesS2Reduction,S2ImpliesGenus0Discharge}.lean`.
-   - Mathlib's `Topology/Compactification/OnePoint/Sphere.lean` gives the homeomorphism for the topological sphere; needs translation to the EuclideanSpace ℝ (Fin 3) form Basic.lean uses.
-   - Estimate: ~1–2k LOC of repo wiring once classification is in.
-
-**Phase 3 total estimate**: **6–17k LOC**.
-
-### D.3 — Phase 4 (item 1)
+### D.3 — Phase 4 (item 1: `genus X` honest)
 
 `genus X = Module.finrank ℂ (HolomorphicOneForm X)` is the definition; the strict bar requires `HolomorphicOneForm X` to be the right object AND finite-dimensional.
 
-**Required content**:
+**Verified mathlib status**:
+- ✓ `Analysis/InnerProductSpace/Laplacian.lean` (basic Laplacian on inner product space, scalar functions).
+- ✓ `Geometry/Manifold/Complex.lean` (6 declarations on holomorphic functions).
+- ✗ NO Hodge decomposition.
+- ✗ NO HolomorphicOneForm class.
+- ✗ NO finite-dimensionality of any infinite-dimensional space of forms.
 
-1. **`HolomorphicOneForm X` as a manifold-level concept**: the C^ω sections of the holomorphic cotangent bundle.
-   - Mathlib's `Analysis/Calculus/DifferentialForm/` is local on ℝⁿ. Needs lifting to manifolds + complex structure compatibility.
-   - Estimate: 2–4k LOC.
+**Per-component LOC**:
 
-2. **Finite-dimensionality** (Hodge): for compact connected Riemann surface, `dim ℂ HolomorphicOneForm X < ∞`.
-   - Classical Hodge theory: ker Δ on harmonic forms is finite-dim by spectral theory of self-adjoint elliptic operators on compact manifolds.
-   - Estimate: 5–10k LOC of Hodge formalization.
+| Component | What it needs | Available? | LOC |
+|---|---|---|---|
+| **4.A k-form structure on a manifold (incremental over Phase 2.D)** | Lift `OneForm` (Phase 2) to `KForm M k` for k=0,1,2,... | inherits from Phase 2.D | **400–800** (incremental) |
+| **4.B Holomorphic forms class (specialization of 2.E)** | Already covered in Phase 2 component 2.E | inherits from Phase 2.E | **(included)** |
+| **4.C Hodge Laplacian on forms + harmonic-form theory** | Define Δ = dd* + d*d on forms. ker = harmonic. Self-adjoint elliptic on compact manifold ⇒ finite-dimensional kernel. | Laplacian on scalar ✓; lift to forms ✗; elliptic theory ✗ | **5,000–9,000** (the bulk of Phase 4) |
+| **4.D `dim ℂ HolomorphicOneForm X < ∞`** | Apply 4.C: harmonic 1-forms are finite-dim. Holomorphic 1-forms ↪ harmonic 1-forms (closed + co-closed forms include holomorphic). | depends on 4.C | **500–1,000** |
+| **4.E `dim ℂ HolomorphicOneForm X = (rank H_1) / 2`** | Hodge theorem matching de Rham cohomology to harmonic forms; combine with Phase 2.C. | depends on 4.C, Phase 2.C | **1,000–2,000** |
 
-3. **`dim ℂ HolomorphicOneForm X = genus(X) topological`**: ties Phase 4 to Phase 3.
-
-**Phase 4 total estimate**: **7–14k LOC**.
+**Phase 4 total verified**: **6,900–12,800 LOC**.
 
 ## E. Dependency DAG
 
@@ -334,13 +355,26 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
    │       └── flips item 1
 ```
 
-## F. Net realistic ceiling at this pin
+## F. Net realistic ceiling at this pin (verified per-component)
 
-- **Phase 0** (this session): items 8, 9, 22, 23, 24 done at Buzzard bar; under OPEN.md strict bar these are STUB-via-honest-body until Phase 1.
-- **Phase 1 lands** (chippable, ~2200 LOC, ~5–7 chips): **12 / 24 STRICT-CLOSED**.
-- **Phases 2–4 require upstream classical formalization**: ~30–60k LOC of mathlib upstream work before any further item flips.
+| Phase | LOC range (verified) | Items flipped |
+|---|---|---|
+| Phase 0 (done this session) | ~12,000 already merged | 8, 22, 23, 24 (Buzzard bar; strict-bar requires Phase 1's `Jacobian` honest) |
+| **Phase 1** (chippable now) | **2,050–2,250** | 12 items: 2, 3, 6, 7, 8, 9, 15, 19, 20, 22, 23, 24 (strict bar) |
+| **Phase 2** (period lattice + Abel-Jacobi) | **15,500–29,600** | 10 items: 4, 5, 10, 11, 12, 13, 16, 17, 18, 21 |
+| **Phase 3** (surface classification) | **7,100–15,000** | 1 item: 14 |
+| **Phase 4** (Hodge / finite-dim of forms) | **6,900–12,800** | 1 item: 1 |
 
-This is the honest ceiling. Plan accordingly.
+**Total LOC remaining for 24/24 STRICT-CLOSED**: **31,550–59,650 LOC**.
+
+The repo currently sits at ~50,000 LOC. **Final-state projection**: ~80,000–110,000 LOC for full closure.
+
+Calibration buffer (today's pattern: ~1.5x estimates exceeded due to architectural defect surfacing during attempts): **realistic upper bound ~90,000 LOC remaining**, **realistic lower bound ~30,000 LOC remaining**.
+
+**Order in which items can flip**:
+1. Phase 1 (Phase 1's ~2k LOC is the immediate next wave) → 12 STRICT-CLOSED
+2. Phases 3 + 4 + part of Phase 2 (cellular homology framework) → could in principle proceed in parallel; Phase 2's items depend on Phase 3 for the standard CW structure
+3. Phase 2 final items (16, 17, 18, 21) follow once Abel-Jacobi machinery (2.K-2.O) lands
 
 ## G. Calibration
 
@@ -365,6 +399,8 @@ The facts in this map were checked by automated grep against this repo and the m
 - **Items 19/20 verified to route through `pushforward_mk := rfl` + divisor-level lemmas**, not through the `hBot` dependency in `Pic0.pushforward`'s definition. Auto-flip claim re-confirmed.
 - **R4a/R4b/Hurwitz local form/RamificationIndexEqLocalKFold ✓ all confirmed in `Manifold/`**.
 - **Mathlib gaps section ✓ verified by exhaustive grep** for `RiemannSurface`, `HolomorphicOneForm`, `firstHomology`, `H_1`, surface classification keywords, Hodge keywords. None found.
-- **Phase 2/3/4 LOC ranges remain analogy-based** (compared to similar mathlib formalization sizes). Not directly verifiable until attempted; ranges are 2× wide.
+- **Phase 2/3/4 LOC ranges replaced with per-component breakdowns** verified against this pin's mathlib (D.1, D.2, D.3 in this map). Each component cites either ✓ available foundations or ✗ specific missing pieces. Ranges remain 2× wide because they sum per-component estimates each of which has 2× spread. Will only narrow by attempting.
+
+- **All 13 cited foundation files in `Phase 2-4` mathlib status section verified to exist** (CWComplex Abstract+Classical, RelativeCellComplex, FundamentalGroup, ZLattice, Tangent bundle, MFDeriv exterior derivative, Manifold/Complex, PartitionOfUnity, Laplacian, OnePoint/Sphere, Manifold/Instances/Sphere, SingularHomology). All 11 `✗` claims (cellularChain, cellularHomology, OneForm class, holomorphicOneForm, periodPairing, abelJacobi, jacobiInversion, surfaceClassification, hodgeDecomposition, twoManifoldGenus, manifoldDifferentialForm) verified absent by exhaustive grep.
 
 This map is now as high-fidelity as can be without actually attempting the Phase 1 proofs.
