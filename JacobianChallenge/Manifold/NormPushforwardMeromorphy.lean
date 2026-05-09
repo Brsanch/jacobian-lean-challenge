@@ -223,7 +223,7 @@ theorem normPow_meromorphicAt_of_regular
     rw [h, zero_pow (Nat.one_le_iff_ne_zero.mp hk)] at hs₀
     exact ht₀ hs₀.symm
   have hζr_pow : ζr ^ k = 1 := by
-    rw [hζr_def, mul_pow, inv_pow, hr_t0_pow, hs₀, mul_inv_cancel₀ (pow_ne_zero k hs₀_ne)]
+    rw [hζr_def, mul_pow, inv_pow, hr_t0_pow, hs₀, mul_inv_cancel₀ ht₀]
   have hζr_mem : ζr ∈ Polynomial.nthRootsFinset k (1 : ℂ) :=
     (Polynomial.mem_nthRootsFinset hk (1 : ℂ)).mpr hζr_pow
   have hr_t0_eq : r t₀ = ζr * s₀ := by
@@ -269,7 +269,7 @@ theorem normPow_meromorphicAt_of_regular
   have h_ball_eventually : ∀ᶠ t in nhds t₀, t ∈ Metric.ball t₀ ρ' :=
     h_ball_open.mem_nhds ht₀_mem_int
   -- For t ∈ ball t₀ ρ' ⊂ closedBall t₀ ρ', r t is a k-th root of t (from hr_pow).
-  have h_eq : ∀ᶠ t in nhds t₀, normPow g k t = F t := by
+  have h_eq : (normPow g k) =ᶠ[nhds t₀] F := by
     filter_upwards [h_ball_eventually, h_ne_zero_eventually] with t ht_ball ht_ne
     have ht_cb : t ∈ Metric.closedBall t₀ ρ' := Metric.ball_subset_closedBall ht_ball
     have hrt_pow : r t ^ k = t := hr_pow t ht_cb
