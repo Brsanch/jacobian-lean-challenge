@@ -139,15 +139,22 @@ private lemma R4_balance_of_const_toFun
     mmeromorphicOrderAt_const X f hw_const hw_ne
   -- Both summed sets are empty.
   have hZ_empty : hZ.toFinset = ∅ := by
-    ext x
-    simp only [Set.Finite.mem_toFinset, Set.mem_setOf_eq, Finset.not_mem_empty,
-      iff_false, not_lt]
-    rw [h_all_zero x]; rfl
+    apply Finset.eq_empty_iff_forall_notMem.2
+    intro x hx
+    rw [Set.Finite.mem_toFinset, Set.mem_setOf_eq] at hx
+    rw [h_all_zero x] at hx
+    -- hx : 0 < ((0 : WithTop ℤ).untop₀ : ℤ) = 0; contradiction.
+    have : (((0 : WithTop ℤ)).untop₀ : ℤ) = 0 := by simp
+    rw [this] at hx
+    exact lt_irrefl 0 hx
   have hP_empty : hP.toFinset = ∅ := by
-    ext x
-    simp only [Set.Finite.mem_toFinset, Set.mem_setOf_eq, Finset.not_mem_empty,
-      iff_false, not_lt]
-    rw [h_all_zero x]; rfl
+    apply Finset.eq_empty_iff_forall_notMem.2
+    intro x hx
+    rw [Set.Finite.mem_toFinset, Set.mem_setOf_eq] at hx
+    rw [h_all_zero x] at hx
+    have : (((0 : WithTop ℤ)).untop₀ : ℤ) = 0 := by simp
+    rw [this] at hx
+    exact lt_irrefl 0 hx
   rw [hZ_empty, hP_empty]
   simp
 
@@ -239,7 +246,9 @@ private lemma not_isConstantMap_toRS_infty
   have h_univ_fin : (Set.univ : Set X).Finite :=
     hP_fin.subset (fun x _ => h_poles x)
   -- Hence X has a Finite instance.
-  have hX_fin : Finite X := h_univ_fin.to_subtype.finite
+  have hX_fin : Finite X := by
+    rw [← Set.finite_univ_iff]
+    exact h_univ_fin
   -- Pick a point x₀ from `ConnectedSpace.toNonempty`.
   have hX_nonempty : Nonempty X := inferInstance
   -- Now use the chart at x₀ to derive infinitude.
@@ -254,20 +263,54 @@ private lemma not_isConstantMap_toRS_infty
   have h_ex0_target : e x₀ ∈ e.target := e.map_source hx₀_src
   obtain ⟨r, hr_pos, hr_sub⟩ := Metric.isOpen_iff.mp h_target_open _ h_ex0_target
   -- `Metric.ball (e x₀) r ⊆ e.target` and is infinite (open ball in ℂ).
+  -- Inject ℕ into the ball via `n ↦ e x₀ + (((r/(n+2) : ℝ)) : ℂ)`. The values
+  -- `(r/(n+2) : ℝ)` for `n : ℕ` are all distinct (strictly decreasing in n,
+  -- positive), and bounded above by `r/2 < r`.
   have h_ball_inf : (Metric.ball (e x₀) r).Infinite := by
-    -- Open ball of positive radius in `ℂ` is infinite.
-    have : ¬ (Metric.ball (e x₀) r).Finite := by
-      intro h_fin
-      have : (Metric.ball (e x₀) r).Countable := h_fin.countable
-      -- An open ball of positive radius in ℂ contains a real interval homeomorph,
-      -- hence is uncountable.
-      apply absurd this
-      exact Set.not_countable_of_isOpen_of_nonempty
-        Metric.isOpen_ball ⟨e x₀, Metric.mem_ball_self hr_pos⟩
-    exact Set.not_finite.mp this
-  -- Pull back to source via `e.symm`. `e.symm '' (ball ⊆ target) ⊆ e.source ⊆ X`
-  -- is also infinite (since `e.symm` is injective on `e.target`).
-  have h_inj : Set.InjOn e.symm e.target := e.injOn_symm
+    let g : ℕ → ℂ := fun n => e x₀ + (((r / ((n : ℝ) + 2)) : ℝ) : ℂ)
+    apply Set.infinite_of_injective_forall_mem (f := g)
+    refine ⟨?_, ?_⟩
+    · -- Injectivity.
+      intro m n h_eq
+      simp only [g, add_right_inj] at h_eq
+      -- `((r/(m+2) : ℝ) : ℂ) = ((r/(n+2) : ℝ) : ℂ)` ⇒ real equality.
+      have h_real : (r / ((m : ℝ) + 2)) = (r / ((n : ℝ) + 2)) := by
+        exact_mod_cast h_eq
+      have hr_ne : r ≠ 0 := ne_of_gt hr_pos
+      have hm2 : ((m : ℝ) + 2) ≠ 0 := by positivity
+      have hn2 : ((n : ℝ) + 2) ≠ 0 := by positivity
+      rw [div_eq_div_iff hm2 hn2] at h_real
+      have : ((m : ℝ) + 2) = ((n : ℝ) + 2) := by
+        have := mul_left_cancel₀ hr_ne h_real.symm
+        linarith
+      have : (m : ℝ) = (n : ℝ) := by linarith
+      exact_mod_cast this
+    · intro n
+      simp only [g]
+      rw [Metric.mem_ball]
+      have h_dist : dist (e x₀ + (((r / ((n : ℝ) + 2)) : ℝ) : ℂ)) (e x₀)
+          = r / ((n : ℝ) + 2) := by
+        rw [dist_eq_norm]
+        ring_nf
+        rw [Complex.norm_real]
+        have h_pos : 0 < r / ((n : ℝ) + 2) := by positivity
+        exact abs_of_pos h_pos
+      rw [h_dist]
+      -- Show `r / (n + 2) < r`. Since n+2 ≥ 2 > 1 and r > 0.
+      have h_n_pos : (0 : ℝ) < (n : ℝ) + 2 := by positivity
+      have h_n_gt_one : (1 : ℝ) < (n : ℝ) + 2 := by
+        have : (0 : ℝ) ≤ (n : ℝ) := by positivity
+        linarith
+      have h_lt : r / ((n : ℝ) + 2) < r := by
+        rw [div_lt_iff₀ h_n_pos]
+        nlinarith [hr_pos]
+      exact h_lt
+  -- Pull back to source via `e.symm`. `e.symm` is injective on `e.target`.
+  have h_inj : Set.InjOn e.symm e.target := by
+    intro a ha b hb hab
+    have hsa : e (e.symm a) = a := e.right_inv ha
+    have hsb : e (e.symm b) = b := e.right_inv hb
+    rw [← hsa, ← hsb, hab]
   have h_inj_on_ball : Set.InjOn e.symm (Metric.ball (e x₀) r) :=
     h_inj.mono hr_sub
   have h_image_inf : (e.symm '' Metric.ball (e x₀) r).Infinite :=
@@ -319,13 +362,15 @@ private lemma toRS_eq_zero_iff_untop₀_pos
     -- `untop₀ = 0` and `nonvanishing_germ` ⇒ `ord = 0`.
     have h_ord_zero : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x = 0 := by
       have hne_top := f.nonvanishing_germ x
+      have h_untop_zero : (mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x).untop₀ = 0 :=
+        h_eq_zero
+      -- For finite WithTop, untop₀ = 0 ↔ the value is 0.
       cases h : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x with
       | top => exact absurd h hne_top
       | coe k =>
-        rw [h] at h_eq_zero
-        have hk : k = 0 := by
-          have : (((k : ℤ) : WithTop ℤ)).untop₀ = 0 := h_eq_zero
-          simpa using this
+        rw [h] at h_untop_zero
+        -- `((k : ℤ) : WithTop ℤ).untop₀ = k`, so `k = 0`.
+        have hk : k = 0 := by simpa [WithTop.untop₀_coe] using h_untop_zero
         rw [h, hk]; rfl
     -- Chart pullback is analytic at z₀ (ord ≥ 0 + regular_continuousAt).
     set z₀ : ℂ := (chartAt ℂ x) x
@@ -361,15 +406,17 @@ private lemma toRS_eq_zero_iff_untop₀_pos
     have h_an_ord_zero :
         analyticOrderAt (f.toFun ∘ (chartAt ℂ x).symm) z₀ = 0 := by
       cases h : analyticOrderAt (f.toFun ∘ (chartAt ℂ x).symm) z₀ with
-      | top =>
-        rw [h] at h_ord_zero; simp at h_ord_zero
+      | top => rw [h] at h_ord_zero; simp at h_ord_zero
       | coe m =>
         rw [h] at h_ord_zero
-        have hm_eq : (m : ℤ) = 0 := by
-          have : ((m : ℤ) : WithTop ℤ) = ((0 : ℤ) : WithTop ℤ) := by
-            rw [← h_ord_zero]; rfl
-          exact_mod_cast this
-        have hm : m = 0 := by exact_mod_cast hm_eq
+        -- h_ord_zero : ((m : ℕ∞).map (↑· : ℕ → ℤ)) = 0
+        -- Equivalently (after simp): m = 0.
+        have hm : m = 0 := by
+          have h_map : ((m : ℕ∞).map (↑· : ℕ → ℤ)) = ((m : ℤ) : WithTop ℤ) := by
+            simp [ENat.map_coe]
+          rw [h_map] at h_ord_zero
+          have h_int : (m : ℤ) = 0 := by exact_mod_cast h_ord_zero
+          exact_mod_cast h_int
         rw [h, hm]; rfl
     have h_g_ne : (f.toFun ∘ (chartAt ℂ x).symm) z₀ ≠ 0 :=
       (h_g_an.analyticOrderAt_eq_zero).mp h_an_ord_zero
@@ -473,15 +520,6 @@ theorem R4_fibreSum_balance_statement_holds :
             (∞ : RiemannSphere)).toFinset,
             (JacobianChallenge.Manifold.manifoldRamificationIndex
               f.toRiemannSphere x : ℤ)) := by
-    have h_lhs := (Finset.sum_natCast (s := (fibresFinUncond X f hf_RS hRS_const
-            (((0 : ℂ) : RiemannSphere))).toFinset)
-            (f := fun x => JacobianChallenge.Manifold.manifoldRamificationIndex
-              f.toRiemannSphere x))
-    have h_rhs := (Finset.sum_natCast (s := (fibresFinUncond X f hf_RS hRS_const
-            (∞ : RiemannSphere)).toFinset)
-            (f := fun x => JacobianChallenge.Manifold.manifoldRamificationIndex
-              f.toRiemannSphere x))
-    rw [← h_lhs, ← h_rhs]
     exact_mod_cast h_zero_eq_pole_nat
   -- Identify `(fibresFinUncond ...).toFinset` with `hZ.toFinset` / `hP.toFinset`.
   have h_zero_fibre_eq :
@@ -523,7 +561,10 @@ theorem R4_fibreSum_balance_statement_holds :
       (JacobianChallenge.ResidueTheoremFromRsum.untop₀_nonneg_iff_nonneg
         (f.nonvanishing_germ x)).mpr hx_nonneg
     rw [h_R4a]
-    exact Int.natAbs_of_nonneg h_untop_nonneg
+    -- ((untop₀).natAbs : ℤ) = untop₀ when untop₀ ≥ 0.
+    show ((mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x).untop₀.natAbs : ℤ)
+        = (mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x).untop₀
+    omega
   have h_pole_side : (∑ x ∈ hP.toFinset,
         (JacobianChallenge.Manifold.manifoldRamificationIndex
           f.toRiemannSphere x : ℤ))
@@ -545,7 +586,7 @@ theorem R4_fibreSum_balance_statement_holds :
     have hk_neg : k < 0 := hx
     have hk_nonpos : k ≤ 0 := le_of_lt hk_neg
     show (k.natAbs : ℤ) = -k
-    rw [Int.ofNat_natAbs, abs_of_nonpos hk_nonpos]
+    omega
   rw [h_zero_side, h_pole_side] at h_zero_eq_pole_int
   linarith [h_zero_eq_pole_int]
 
