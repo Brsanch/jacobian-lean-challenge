@@ -225,7 +225,7 @@ theorem R3_localMultiplicity_statement_holds :
     JacobianChallenge.ResidueTheorem.R3_localMultiplicity_statement X := by
   intro f x hx
   -- `hx : (order x).untop₀ ≠ 0`. So the integer is nonzero ⇒ `natAbs ≥ 1`.
-  exact Int.one_le_iff_ne_zero.mpr fun h => hx (Int.natAbs_eq_zero.mp h)
+  exact Nat.one_le_iff_ne_zero.mpr fun h => hx (Int.natAbs_eq_zero.mp h)
 
 /-! ## R5 from R4: principal divisor has degree zero -/
 
