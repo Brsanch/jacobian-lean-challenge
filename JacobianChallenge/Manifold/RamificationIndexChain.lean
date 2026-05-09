@@ -151,7 +151,7 @@ theorem manifoldRamificationIndex_comp_of_finite
   -- F_gf =ᶠ F_g ∘ F_f near z₀.
   have h_eventually_eq : F_gf =ᶠ[𝓝 z₀] (F_g ∘ F_f) := by
     have hf_cont : ContinuousAt f x := hf_an.continuousAt
-    exact chart_pullback_comp_eventuallyEq f g hf_cont x
+    exact chart_pullback_comp_eventuallyEq f g x hf_cont
   -- Use analyticOrderAt_congr to swap F_gf for F_g ∘ F_f in the order.
   have h_shift_eq :
       (fun z => F_gf z - F_gf z₀) =ᶠ[𝓝 z₀] (fun z => (F_g ∘ F_f) z - F_g w₀) := by
@@ -191,12 +191,15 @@ theorem manifoldRamificationIndex_comp_of_finite
     exact hF_g_at.analyticOrderAt_comp hF_f_an
   -- Plug in F_f z₀ = w₀.
   rw [hF_f_z₀] at h_chain
-  -- Combine.
-  rw [hOrd_lift, h_chain]
-  -- Goal now: ((order_g · order_f).toNat) = order_g.toNat * order_f.toNat.
-  -- This holds when both orders are finite (= when ramification indices are
-  -- positive). Use that finite ENat .toNat is a multiplicative.
+  -- Unfold manifoldRamificationIndex on all three places.
   unfold manifoldRamificationIndex
+  -- Now goal is .toNat formulas in terms of analyticOrderAt of chart-pullbacks.
+  -- Rewrite the LHS analyticOrderAt via hOrd_lift then via h_chain.
+  rw [show (analyticOrderAt (fun z => ((chartAt ℂ ((g ∘ f) x)) ∘ (g ∘ f) ∘
+        (chartAt ℂ x).symm) z - ((chartAt ℂ ((g ∘ f) x)) ∘ (g ∘ f) ∘
+        (chartAt ℂ x).symm) ((chartAt ℂ x) x)) ((chartAt ℂ x) x)) =
+    analyticOrderAt (fun z => F_gf z - F_gf z₀) z₀ from rfl]
+  rw [hOrd_lift, h_chain]
   -- Need: 0 < (order_g .toNat) and 0 < (order_f .toNat) ⇒ both orders are finite ⇒
   --   (order_g * order_f).toNat = order_g.toNat * order_f.toNat.
   -- Both 1 ≤ ramification ⇒ orders ≠ ⊤.
