@@ -107,11 +107,9 @@ theorem exists_open_nbhd_preimage_in_of_compact
   -- For x with f x ∉ f(Uᶜ): in particular f x ≠ f x' for any x' ∈ Uᶜ;
   -- equivalently x ∉ Uᶜ, i.e. x ∈ U.
   intro x hxW
-  -- hxW : f x ∉ f(Uᶜ).
+  -- hxW : f x ∈ (f '' Uᶜ)ᶜ, i.e. f x ∉ f '' Uᶜ.
   by_contra hxU
   -- hxU : x ∉ U, i.e. x ∈ Uᶜ.
-  push_neg at hxU
-  -- x ∈ Uᶜ, so f x ∈ f(Uᶜ).
   apply hxW
   exact ⟨x, hxU, rfl⟩
 

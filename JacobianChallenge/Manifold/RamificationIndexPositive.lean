@@ -100,9 +100,9 @@ theorem manifoldRamificationIndex_pos_at_fibre_of_perChartNonConstancy
       analyticOrderAt (fun z => F z - F z₀) z₀ ≠ ⊤ := by
     intro h_top
     apply h_not_eventually_zero
-    -- analyticOrderAt = ⊤ ⇒ eventually 0 (mathlib: analyticOrderAt_eq_top).
-    rw [analyticOrderAt_eq_top] at h_top
-    exact h_top
+    -- analyticOrderAt = ⊤ ⇒ eventually 0.
+    have := analyticOrderAt_eq_top.mp h_top
+    exact this
   -- analyticOrderAt is at least 1 because the function vanishes at z₀
   -- (which forces order ≠ 0).
   have h_order_ne_zero :
@@ -111,10 +111,9 @@ theorem manifoldRamificationIndex_pos_at_fibre_of_perChartNonConstancy
     -- analyticOrderAt = 0 ⇒ value at z₀ is nonzero (contradicting hF_z₀).
     have hF_an : AnalyticAt ℂ (fun z => F z - F z₀) z₀ :=
       hFA.sub (analyticAt_const)
-    have := hF_an.analyticOrderAt_ne_zero.mp (h_zero ▸ rfl : (0 : ℕ∞) = 0).symm
-    -- Hmm this gets convoluted. Simpler: analyticOrderAt_eq_zero ↔ value ≠ 0.
-    rw [hF_an.analyticOrderAt_eq_zero] at h_zero
-    exact h_zero hF_z₀
+    have hne : (fun z => F z - F z₀) z₀ ≠ 0 :=
+      (hF_an.analyticOrderAt_eq_zero).mp h_zero
+    exact hne hF_z₀
   -- Now: analyticOrderAt is some n : ℕ∞ with n ≠ 0 and n ≠ ⊤. So n is a
   -- positive nat. Its toNat is the same positive nat, hence ≥ 1.
   unfold manifoldRamificationIndex
@@ -131,7 +130,8 @@ theorem manifoldRamificationIndex_pos_at_fibre_of_perChartNonConstancy
     | succ m =>
       show 1 ≤ ord.toNat
       rw [hord_eq]
-      simp [ENat.toNat_coe]
+      show 1 ≤ ((↑(m + 1) : ℕ∞)).toNat
+      rw [ENat.toNat_coe]
       omega
 
 end Manifold
