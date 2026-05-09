@@ -46,7 +46,7 @@ count via the chart bijection `(chartAt ℂ x).symm`.
 
 * No `axiom`, no `sorry`.
 * No signature changes outside this new file.
-* The chart-bijection transport uses `Set.ncard_image_of_injOn` and the
+* The chart-bijection transport uses `Set.InjOn.ncard_image` and the
   partial-homeomorph injectivity / left-inverse from mathlib.
 -/
 
@@ -353,7 +353,7 @@ private theorem localKFoldMultiplicity_preimage_card_with_radius_bound
     rw [hFset_def, Multiset.toFinset_card_of_nodup h_nodup, h_card_roots, hp_deg]
   have hPre_ncard : Pre.ncard = Fset.card := by
     have h1 : Pre.ncard = (v_actual '' Pre).ncard :=
-      (Set.ncard_image_of_injOn h_v_injOn).symm
+      (Set.InjOn.ncard_image h_v_injOn).symm
     rw [h1, h_image_eq, Set.ncard_coe_finset]
   rw [hPre_ncard, hF_card]
 
@@ -413,14 +413,13 @@ theorem localKFoldMultiplicityOnManifold_genuine_preimage_card
       rw [h, ENat.toNat_top] at hk_toNat
       exact absurd hk_toNat (by norm_num)
     set ord : ℕ∞ := analyticOrderAt (fun z => F z - F z₀) z₀ with hord_def
+    -- Goal: `ord = (k : ℕ∞)`. Use `cases` to expose the underlying nat for `coe`.
     cases hord_eq : ord with
     | top => exact absurd hord_eq hord_ne_top
     | coe n =>
-      show ord = (k : ℕ∞)
-      rw [hord_eq]
-      have hk_n : k = n := by
-        have : ord.toNat = n := by rw [hord_eq, ENat.toNat_coe]
-        rw [hk_eq, ← hord_def, this]
+      -- `ord = (n : ℕ∞)`. We have `k = ord.toNat = n` by `hk_eq` + the case.
+      have hn_eq : (n : ℕ∞).toNat = n := ENat.toNat_coe n
+      have hk_n : k = n := by rw [hk_eq, ← hord_def, hord_eq, hn_eq]
       rw [hk_n]
   -- (i) Chart target containment radius.
   have h_target_open : IsOpen (chartAt ℂ x).target := (chartAt ℂ x).open_target
@@ -542,7 +541,7 @@ theorem localKFoldMultiplicityOnManifold_genuine_preimage_card
     exact ha_eq.symm.trans hb_eq
   have h_ncard : Manifold.ncard = Planar.ncard := by
     rw [h_set_eq]
-    exact Set.ncard_image_of_injOn h_injOn
+    exact Set.InjOn.ncard_image h_injOn
   rw [h_ncard, h_planar_count]
 
 end Manifold
