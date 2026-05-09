@@ -366,6 +366,70 @@ theorem pullbackHonest_of_rsum_comp
       exact JacobianChallenge.Manifold.manifoldRamificationIndex_comp_unconditional
         f g hf hg hfc hgc x
 
+/-! ### `pushforward ∘ pullback` is multiplication by degree (challenge item 24)
+
+The headline degree formula at the `Jacobian` level. Cases on
+`IsConstantMap f`:
+* **Constant `f`**: both sides are `0` — LHS via `pullbackHonest = 0` and
+  `pushforward 0 = 0`; RHS via `degreeFiber f hf = 0` (constant case).
+* **Non-constant `f`**: reduces to the divisor-level
+  `Pic0.pushforward_pullbackWeighted` with `N := degreeFiber f hf` and the
+  `hN_total` certificate carried by `h_rsum`. -/
+
+theorem pushforward_pullbackHonest_of_rsum
+    {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [DecidableEq X]
+    {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] [DecidableEq Y]
+    (h_rsum : JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_statement X Y)
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (P : Jacobian Y) :
+    Jacobian.pushforward f
+        (pullbackHonest_of_rsum h_rsum f hf P)
+      = (JacobianChallenge.ContMDiff.degreeFiber f hf : ℤ) • P := by
+  classical
+  by_cases hc : JacobianChallenge.IsConstantMap f
+  · -- Constant case: LHS = pushforward f 0 = 0; RHS = 0 • P = 0.
+    have hpb_zero : pullbackHonest_of_rsum h_rsum f hf = 0 :=
+      pullbackHonest_of_rsum_eq_zero_of_const h_rsum f hf hc
+    have hpb_zero_apply :
+        pullbackHonest_of_rsum h_rsum f hf P = 0 := by
+      rw [hpb_zero]; rfl
+    rw [hpb_zero_apply, map_zero]
+    -- RHS: `(degreeFiber f hf : ℤ) • P = 0 • P = 0`.
+    -- Constant `f` ⇒ `degreeFiber f hf = 0`. Use `IsConstantMap.elim` to
+    -- get a constant value `c` and `hf_eq : f = fun _ => c`, then apply
+    -- `degreeFiber_const`.
+    obtain ⟨c, hc_eq⟩ := hc
+    have hf_fun : f = (fun _ : X => c) := funext hc_eq
+    have hdeg : JacobianChallenge.ContMDiff.degreeFiber f hf = 0 := by
+      subst hf_fun
+      exact JacobianChallenge.ContMDiff.degreeFiber_const c hf
+    rw [hdeg]
+    exact (zero_smul ℤ P).symm
+  · -- Non-constant case: rewrite both sides through their `Pic0` form.
+    rw [pullbackHonest_of_rsum_eq_pullbackWeighted_of_not_const
+          h_rsum f hf hc]
+    -- Now: `Jacobian.pushforward f (Jacobian.pullbackWeighted f ... P)
+    --        = (degreeFiber f hf : ℤ) • P`.
+    -- Both `Jacobian.pushforward` and `Jacobian.pullbackWeighted` carry
+    -- `Pic0`-level additive maps via their `→ₜ+` `toAddMonoidHom` field,
+    -- so the goal reduces to a `Pic0` statement.
+    show (Pic0.pushforward (X := X) (Y := Y) f
+            ((Pic0.pullbackWeighted f
+              (JacobianChallenge.ContMDiff.Owed.degree.fibres_finite_statement_holds_unconditional
+                f hf hc)
+              (JacobianChallenge.Manifold.manifoldRamificationIndex f)
+              (JacobianChallenge.ContMDiff.degreeFiber f hf)
+              (fun y => h_rsum f hf hc y) :
+                Pic0 Y →+ Pic0 X) (P : Pic0 Y)) : Pic0 Y)
+        = (JacobianChallenge.ContMDiff.degreeFiber f hf : ℤ) • (P : Pic0 Y)
+    exact Pic0.pushforward_pullbackWeighted (X := X) (Y := Y) f
+      (JacobianChallenge.ContMDiff.Owed.degree.fibres_finite_statement_holds_unconditional
+        f hf hc)
+      (JacobianChallenge.Manifold.manifoldRamificationIndex f)
+      (JacobianChallenge.ContMDiff.degreeFiber f hf)
+      (fun y => h_rsum f hf hc y) P
+
 end Jacobian
 
 end JacobianChallenge
