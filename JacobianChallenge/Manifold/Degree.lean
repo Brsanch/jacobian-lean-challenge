@@ -113,10 +113,103 @@ def RegularValueWitness.card {X : Type u} {Y : Type v} {f : X → Y}
     (w : RegularValueWitness f) : ℕ :=
   w.fiber_finite.toFinset.card
 
+/-! ## Regular-value strengthened witness (ZZ172 corrected form)
+
+`RegularValueWitness` carries only `fiber_finite`, which is structurally too
+weak: classical "fibre cardinality is constant" requires the chosen value
+*also* be a regular value (no preimage with degenerate chart-pullback
+derivative). A `RegularValueWitness` over a critical point can have a smaller
+fibre than a generic one (counts drop at branch points), so any "constant
+fibre card" statement quantifying over arbitrary `RegularValueWitness` is
+*false* as written.
+
+`RegularValueWitnessReg f` strengthens `RegularValueWitness f` with a
+**chart-pullback-derivative-nonzero certificate** inlined directly into the
+structure: for every preimage point `x ∈ f ⁻¹' {value}`, the derivative
+of the chart-pullback `(chartAt ℂ value) ∘ f ∘ (chartAt ℂ x).symm` at
+`(chartAt ℂ x) x` is nonzero.
+
+This is the analytic content of "value is a regular value of `f`" and is
+exactly the shape consumed by `LocalSheetData.ofContMDiffMfderivNeZero`
+(`Manifold/LocalSheetDataFromContMDiff.lean`, ZZ169). -/
+
+/-- A **regular** regular-value witness for `f`. Strengthens
+`RegularValueWitness` with a chart-pullback-derivative-nonzero certificate:
+for every preimage point `x ∈ f ⁻¹' {value}`, the derivative of the
+chart-pullback `(chartAt ℂ value) ∘ f ∘ (chartAt ℂ x).symm` at
+`(chartAt ℂ x) x` is nonzero.
+
+This is the analytic content of "`value` is a regular value of `f`",
+inlined into the structure. -/
+structure RegularValueWitnessReg
+    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    (f : X → Y) where
+  /-- Underlying (cardinality-bearing) witness. -/
+  toWitness : RegularValueWitness f
+  /-- The chosen value is regular: at every preimage point, the chart-
+  pullback of `f` has nonzero derivative. -/
+  is_regular : ∀ x ∈ f ⁻¹' {toWitness.value},
+    deriv ((chartAt ℂ toWitness.value) ∘ f ∘ (chartAt ℂ x).symm)
+      ((chartAt ℂ x) x) ≠ 0
+
+namespace RegularValueWitnessReg
+
+variable {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+variable {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+variable {f : X → Y}
+
+/-- Cardinality of the chosen finite fibre of a regular witness. -/
+def card (w : RegularValueWitnessReg f) : ℕ := w.toWitness.card
+
+/-- The chosen regular value. -/
+def value (w : RegularValueWitnessReg f) : Y := w.toWitness.value
+
+/-- The fibre over the chosen regular value is finite. -/
+def fiber_finite (w : RegularValueWitnessReg f) :
+    (f ⁻¹' {w.toWitness.value}).Finite :=
+  w.toWitness.fiber_finite
+
+end RegularValueWitnessReg
+
+/-- **Builder.** Promote a plain `RegularValueWitness` to a regular one,
+given a chart-pullback-derivative-nonzero certificate at every preimage
+point. -/
+def RegularValueWitness.toRegular
+    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    {f : X → Y} (w : RegularValueWitness f)
+    (h_reg : ∀ x ∈ f ⁻¹' {w.value},
+      deriv ((chartAt ℂ w.value) ∘ f ∘ (chartAt ℂ x).symm)
+        ((chartAt ℂ x) x) ≠ 0) :
+    RegularValueWitnessReg f :=
+  { toWitness := w, is_regular := h_reg }
+
+/-- Builder card-coherence: the strengthened witness has the same `card` as
+the underlying one. -/
+@[simp] lemma RegularValueWitness.toRegular_card
+    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    {f : X → Y} (w : RegularValueWitness f)
+    (h_reg : ∀ x ∈ f ⁻¹' {w.value},
+      deriv ((chartAt ℂ w.value) ∘ f ∘ (chartAt ℂ x).symm)
+        ((chartAt ℂ x) x) ≠ 0) :
+    (w.toRegular h_reg).card = w.card := rfl
+
+/-- Builder value-coherence. -/
+@[simp] lemma RegularValueWitness.toRegular_value
+    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    {f : X → Y} (w : RegularValueWitness f)
+    (h_reg : ∀ x ∈ f ⁻¹' {w.value},
+      deriv ((chartAt ℂ w.value) ∘ f ∘ (chartAt ℂ x).symm)
+        ((chartAt ℂ x) x) ≠ 0) :
+    (w.toRegular h_reg).value = w.value := rfl
+
 /-! ## The degree
 
-A drop-in replacement for `degreeStub` that, when a `RegularValueWitness` is
-classically available, returns a *real* fibre cardinality rather than an
+A drop-in replacement for `degreeStub` that, when a `RegularValueWitnessReg`
+is classically available, returns a *real* fibre cardinality rather than an
 indicator. -/
 
 /-- The **degree** of an analytic map `f : X → Y` between compact Riemann
@@ -125,12 +218,24 @@ surfaces, as a fibre cardinality.
 * For constant `f`, returns `0` (matching the convention in challenge item 9
   and `degreeStub`).
 * For non-constant `f`, returns the cardinality of *some* regular fibre,
-  selected via `Classical.choice` on the existence of a `RegularValueWitness`.
-  If no witness is classically available at this pin, falls back to `0`.
+  selected via `Classical.choice` on the existence of a `RegularValueWitnessReg`
+  (a witness whose chosen value carries a chart-pullback-derivative-nonzero
+  certificate at every preimage; this is the analytic content of "regular
+  value"). If no such regular witness is classically available, falls back
+  to `0`.
 
 The well-definedness — independence of the chosen witness — is the deep
 classical input that is **not** discharged here. See file docstring items
-(2)–(3) for what is owed. -/
+(2)–(3) for what is owed.
+
+**ZZ-RegFix correction.** Earlier the `Classical.choice` was on
+`Nonempty (RegularValueWitness f)`, which carries no regularity certificate;
+`Classical.choice` could pick a branch-point witness whose fibre cardinality
+is strictly smaller than the topological degree. Switching to
+`RegularValueWitnessReg f` bakes the analytic regularity in, so the choice
+is always at a regular value. Existence of a regular witness for
+non-constant analytic `f` is discharged unconditionally in
+`Manifold/RegularValueExistsRegUnconditional.lean`. -/
 def degreeFiber
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
@@ -140,7 +245,7 @@ def degreeFiber
   open Classical in
   if IsConstantMap f then 0
   else
-    if h : Nonempty (RegularValueWitness f) then
+    if h : Nonempty (RegularValueWitnessReg f) then
       (Classical.choice h).card
     else 0
 
@@ -155,32 +260,34 @@ lemma degreeFiber_const
   unfold degreeFiber
   simp [isConstantMap_const]
 
-/-- If no regular-value witness exists for a non-constant map at this pin,
-the fibre-degree falls back to `0`. (This is the same value `degreeStub`
-returns in the constant case, so callers that only know "degree = 0 ⇒ ..."
-remain correct.) -/
+/-- If no *regular* regular-value witness exists for a non-constant map at
+this pin, the fibre-degree falls back to `0`. (This is the same value
+`degreeStub` returns in the constant case, so callers that only know
+"degree = 0 ⇒ ..." remain correct.) -/
 lemma degreeFiber_eq_zero_of_no_witness
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnc : ¬ IsConstantMap f) (hno : ¬ Nonempty (RegularValueWitness f)) :
+    (hnc : ¬ IsConstantMap f) (hno : ¬ Nonempty (RegularValueWitnessReg f)) :
     degreeFiber f hf = 0 := by
   unfold degreeFiber
   simp [hnc, hno]
 
-/-- When a regular-value witness *does* exist (non-constant case, `Classical`
-mode), the fibre-degree equals the cardinality of *some* witness. The
-particular witness is `Classical.choice`-selected; independence of choice is
-the deep classical input that is not formalised at this pin. -/
+/-- When a *regular* regular-value witness *does* exist (non-constant case,
+`Classical` mode), the fibre-degree equals the cardinality of *some* such
+witness. The particular witness is `Classical.choice`-selected; independence
+of choice is the deep classical input. Because the choice is now over
+`RegularValueWitnessReg f` (whose `is_regular` is built in), the chosen
+witness is always at a regular value. -/
 lemma degreeFiber_eq_witness_card
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
-    (hnc : ¬ IsConstantMap f) (h : Nonempty (RegularValueWitness f)) :
+    (hnc : ¬ IsConstantMap f) (h : Nonempty (RegularValueWitnessReg f)) :
     degreeFiber f hf = (Classical.choice h).card := by
   unfold degreeFiber
   simp [hnc, h]
@@ -541,107 +648,6 @@ lemma fibre_card_well_defined_of_locallyConstant
   obtain ⟨R, card_of, h_w, h_supp, h_lcs, h_conn⟩ := h_lc f hf hnc
   exact fibre_card_eq_of_locallyConstant_subtype
     (R := R) card_of h_w h_supp h_lcs h_conn w₁ w₂
-
-end Owed.degree
-
-/-! ## Regular-value strengthened witness (ZZ172 corrected form)
-
-`RegularValueWitness` carries only `fiber_finite`, which is structurally too
-weak: classical "fibre cardinality is constant" requires the chosen value
-*also* be a regular value (no preimage with degenerate chart-pullback
-derivative). A `RegularValueWitness` over a critical point can have a smaller
-fibre than a generic one (counts drop at branch points), so any "constant
-fibre card" statement quantifying over arbitrary `RegularValueWitness` is
-*false* as written.
-
-`RegularValueWitnessReg f` strengthens `RegularValueWitness f` with a
-**chart-pullback-derivative-nonzero certificate** inlined directly into the
-structure: for every preimage point `x ∈ f ⁻¹' {value}`, the derivative
-of the chart-pullback `(chartAt ℂ value) ∘ f ∘ (chartAt ℂ x).symm` at
-`(chartAt ℂ x) x` is nonzero.
-
-This is the analytic content of "value is a regular value of `f`" and is
-exactly the shape consumed by `LocalSheetData.ofContMDiffMfderivNeZero`
-(`Manifold/LocalSheetDataFromContMDiff.lean`, ZZ169). The old
-`C : Set Y`-parameterised form (ZZ129) was provably-false: a consumer could
-pick `C := ∅` and trivially satisfy `value ∉ C` without any analytic
-regularity, breaking well-definedness. The corrected form here removes the
-`C` parameter and bakes the analytic certificate in. -/
-
-/-- A **regular** regular-value witness for `f`. Strengthens
-`RegularValueWitness` with a chart-pullback-derivative-nonzero certificate:
-for every preimage point `x ∈ f ⁻¹' {value}`, the derivative of the
-chart-pullback `(chartAt ℂ value) ∘ f ∘ (chartAt ℂ x).symm` at
-`(chartAt ℂ x) x` is nonzero.
-
-This is the analytic content of "`value` is a regular value of `f`",
-inlined into the structure. -/
-structure RegularValueWitnessReg
-    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
-    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
-    (f : X → Y) where
-  /-- Underlying (cardinality-bearing) witness. -/
-  toWitness : RegularValueWitness f
-  /-- The chosen value is regular: at every preimage point, the chart-
-  pullback of `f` has nonzero derivative. -/
-  is_regular : ∀ x ∈ f ⁻¹' {toWitness.value},
-    deriv ((chartAt ℂ toWitness.value) ∘ f ∘ (chartAt ℂ x).symm)
-      ((chartAt ℂ x) x) ≠ 0
-
-namespace RegularValueWitnessReg
-
-variable {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
-variable {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
-variable {f : X → Y}
-
-/-- Cardinality of the chosen finite fibre of a regular witness. -/
-def card (w : RegularValueWitnessReg f) : ℕ := w.toWitness.card
-
-/-- The chosen regular value. -/
-def value (w : RegularValueWitnessReg f) : Y := w.toWitness.value
-
-/-- The fibre over the chosen regular value is finite. -/
-def fiber_finite (w : RegularValueWitnessReg f) :
-    (f ⁻¹' {w.toWitness.value}).Finite :=
-  w.toWitness.fiber_finite
-
-end RegularValueWitnessReg
-
-/-- **Builder.** Promote a plain `RegularValueWitness` to a regular one,
-given a chart-pullback-derivative-nonzero certificate at every preimage
-point. -/
-def RegularValueWitness.toRegular
-    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
-    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
-    {f : X → Y} (w : RegularValueWitness f)
-    (h_reg : ∀ x ∈ f ⁻¹' {w.value},
-      deriv ((chartAt ℂ w.value) ∘ f ∘ (chartAt ℂ x).symm)
-        ((chartAt ℂ x) x) ≠ 0) :
-    RegularValueWitnessReg f :=
-  { toWitness := w, is_regular := h_reg }
-
-/-- Builder card-coherence: the strengthened witness has the same `card` as
-the underlying one. -/
-@[simp] lemma RegularValueWitness.toRegular_card
-    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
-    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
-    {f : X → Y} (w : RegularValueWitness f)
-    (h_reg : ∀ x ∈ f ⁻¹' {w.value},
-      deriv ((chartAt ℂ w.value) ∘ f ∘ (chartAt ℂ x).symm)
-        ((chartAt ℂ x) x) ≠ 0) :
-    (w.toRegular h_reg).card = w.card := rfl
-
-/-- Builder value-coherence. -/
-@[simp] lemma RegularValueWitness.toRegular_value
-    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
-    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
-    {f : X → Y} (w : RegularValueWitness f)
-    (h_reg : ∀ x ∈ f ⁻¹' {w.value},
-      deriv ((chartAt ℂ w.value) ∘ f ∘ (chartAt ℂ x).symm)
-        ((chartAt ℂ x) x) ≠ 0) :
-    (w.toRegular h_reg).value = w.value := rfl
-
-namespace Owed.degree
 
 /-- (3.reg) **The truthful constant-fibre-card statement.** Quantifies only
 over *regular* witnesses (those whose chosen value carries the analytic
