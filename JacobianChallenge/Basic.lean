@@ -193,11 +193,16 @@ theorem pullback_contMDiff :
       (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) := sorry
 
 -- functoriality
--- This lemma is **false** for the current zero-stub `pullback` (we would
--- need `0 P = P`, which fails for `P ≠ 0`). It stays `sorry` until
--- `pullback` becomes honest. See `JacobianChallenge.Jacobian.pullback`
--- docstring for the construction that is owed.
-lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P := sorry
+-- Post-ZZ:BasicSwap (honest `pullback` body) and `pullbackHonest_of_rsum_id`
+-- (item 22 chip): the honest pullback is the identity on `Jacobian X`.
+-- The proof case-splits on `IsConstantMap (id : X → X)`. Constant `id`
+-- forces `Subsingleton X`, hence `Subsingleton (Pic0 X)`, so any element
+-- equals any other. Non-constant `id` activates the divisor-pullback
+-- machinery with singleton fibres `id ⁻¹' {y} = {y}` and weights
+-- `manifoldRamificationIndex id y = 1`, collapsing to the identity.
+lemma pullback_id_apply (P : Jacobian X) : pullback id contMDiff_id P = P := by
+  classical
+  exact JacobianChallenge.Jacobian.pullbackHonest_of_rsum_id _ P
 
 -- functoriality
 -- Post-ZZ:BasicSwap + chip ZZ-PullCompFunc-v2: `pullback` is the honest
