@@ -234,7 +234,7 @@ The structural meat: at every `y ∉ criticalValuesGeneral f` and every preimage
 `x`, we can build a `LocalSheetData f y x` from the chart-pullback derivative
 nonzero certificate (which holds because `f` is locally injective at `x`). -/
 
-private lemma localSheetData_off_criticalValuesGeneral
+private noncomputable def localSheetData_off_criticalValuesGeneral
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
