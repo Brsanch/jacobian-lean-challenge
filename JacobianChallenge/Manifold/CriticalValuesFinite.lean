@@ -96,7 +96,7 @@ The hypothesis "`F` not eventually `F z₀`" forces the right-hand side
 to be ≠ ⊤ (otherwise `F z = F z₀` on a neighbourhood, contradiction).
 Hence the left-hand side is ≠ ⊤, i.e. `deriv F` is not eventually 0
 (via `analyticOrderAt_eq_top`). -/
-lemma AnalyticAt.deriv_not_eventually_zero_of_not_eventually_const
+lemma deriv_not_eventually_zero_of_analyticAt_not_eventually_const
     {F : ℂ → ℂ} {z₀ : ℂ}
     (hF : AnalyticAt ℂ F z₀)
     (hne : ¬ ∀ᶠ z in 𝓝 z₀, F z = F z₀) :
@@ -134,7 +134,7 @@ Either `deriv F z₀ = 0` (in which case the conclusion strengthens to
 `U ∩ {z | deriv F z = 0} = {z₀}`) or `deriv F z₀ ≠ 0` (in which case
 the conclusion strengthens to `U ∩ {z | deriv F z = 0} = ∅`). The
 weaker `⊆` form is what downstream chart-pullback data consumes. -/
-lemma AnalyticAt.isolated_critical_of_not_eventually_const
+lemma isolated_critical_of_analyticAt_not_eventually_const
     {F : ℂ → ℂ} {z₀ : ℂ}
     (hF : AnalyticAt ℂ F z₀)
     (hne : ¬ ∀ᶠ z in 𝓝 z₀, F z = F z₀) :
@@ -143,7 +143,7 @@ lemma AnalyticAt.isolated_critical_of_not_eventually_const
   -- `deriv F` is analytic at `z₀` and not eventually 0.
   have hdF : AnalyticAt ℂ (deriv F) z₀ := hF.deriv
   have hdne : ¬ ∀ᶠ z in 𝓝 z₀, deriv F z = 0 :=
-    hF.deriv_not_eventually_zero_of_not_eventually_const hne
+    deriv_not_eventually_zero_of_analyticAt_not_eventually_const hF hne
   -- Dichotomy from mathlib: either eventually 0, or `≠ 0` on a punctured nbhd.
   rcases hdF.eventually_eq_zero_or_eventually_ne_zero with h_ev0 | h_punc
   · exact (hdne h_ev0).elim
@@ -187,7 +187,7 @@ build the `CriticalChartBridgeBundle` whose `F'` is `deriv F`. -/
 structure DerivBridgeData
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
-    (f : MeromorphicNonzero X) (x : X) where
+    (f : JacobianChallenge.MeromorphicNonzero X) (x : X) where
   /-- Open neighbourhood of `x`, contained in the source-chart. -/
   V : Set X
   hV_open : IsOpen V
@@ -212,16 +212,17 @@ The bundle's `F'` is set to `deriv F`. The "not eventually zero" field
 noncomputable def criticalChartBridgeBundle_of_derivBridge
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
-    {f : MeromorphicNonzero X} {x : X}
+    {f : JacobianChallenge.MeromorphicNonzero X} {x : X}
     (D : DerivBridgeData f x) :
-    MeromorphicNonzero.CriticalChartBridgeBundle f x where
+    JacobianChallenge.MeromorphicNonzero.CriticalChartBridgeBundle f x where
   V := D.V
   hV_open := D.hV_open
   hxV := D.hxV
   hV_subS := D.hV_subS
   F' := deriv D.F
   hF'A := D.hFA.deriv
-  hF'ne := D.hFA.deriv_not_eventually_zero_of_not_eventually_const D.hFne
+  hF'ne :=
+    deriv_not_eventually_zero_of_analyticAt_not_eventually_const D.hFA D.hFne
   hCompat := D.hCompat
 
 /-- **Chart-pullback data from `DerivBridgeData`.** Composes the bundle
@@ -229,11 +230,11 @@ constructor with `criticalChartPullbackData_of_bridge`. -/
 noncomputable def criticalChartPullbackData_of_derivBridge
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
-    {f : MeromorphicNonzero X} {x : X}
+    {f : JacobianChallenge.MeromorphicNonzero X} {x : X}
     (D : DerivBridgeData f x) :
-    ContMDiff.Owed.degree.CriticalChartPullbackData
+    JacobianChallenge.ContMDiff.Owed.degree.CriticalChartPullbackData
       f.toRiemannSphere f.criticalSet x :=
-  MeromorphicNonzero.criticalChartPullbackData_of_bridge f
+  JacobianChallenge.MeromorphicNonzero.criticalChartPullbackData_of_bridge f
     (criticalChartBridgeBundle_of_derivBridge D)
 
 /-- **Globalised: `CriticalSetWitness` from per-point `DerivBridgeData`
@@ -241,11 +242,11 @@ and closedness.** -/
 noncomputable def criticalSetWitness_of_derivBridge
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
-    {f : MeromorphicNonzero X}
+    {f : JacobianChallenge.MeromorphicNonzero X}
     (h_closed : IsClosed f.criticalSet)
     (h : ∀ x ∈ f.criticalSet, DerivBridgeData f x) :
-    MeromorphicNonzero.CriticalSetWitness f :=
-  MeromorphicNonzero.criticalSetWitness_of_bridge f h_closed
+    JacobianChallenge.MeromorphicNonzero.CriticalSetWitness f :=
+  JacobianChallenge.MeromorphicNonzero.criticalSetWitness_of_bridge f h_closed
     (fun x hx => criticalChartBridgeBundle_of_derivBridge (h x hx))
 
 /-- **Headline (conditional on `DerivBridgeData` per critical point and
@@ -253,22 +254,22 @@ noncomputable def criticalSetWitness_of_derivBridge
 theorem criticalSet_finite_of_derivBridge
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
-    (f : MeromorphicNonzero X)
+    (f : JacobianChallenge.MeromorphicNonzero X)
     (h_closed : IsClosed f.criticalSet)
     (h : ∀ x ∈ f.criticalSet, DerivBridgeData f x) :
     f.criticalSet.Finite :=
-  MeromorphicNonzero.criticalSet_finite_of_witness f
+  JacobianChallenge.MeromorphicNonzero.criticalSet_finite_of_witness f
     (criticalSetWitness_of_derivBridge h_closed h)
 
 /-- **Headline (corollary): critical values finite.** -/
 theorem criticalValues_finite_of_derivBridge
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
     [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
-    (f : MeromorphicNonzero X)
+    (f : JacobianChallenge.MeromorphicNonzero X)
     (h_closed : IsClosed f.criticalSet)
     (h : ∀ x ∈ f.criticalSet, DerivBridgeData f x) :
     f.criticalValues.Finite :=
-  MeromorphicNonzero.criticalValues_finite_of_criticalSet_finite f
+  JacobianChallenge.MeromorphicNonzero.criticalValues_finite_of_criticalSet_finite f
     (criticalSet_finite_of_derivBridge f h_closed h)
 
 end Manifold
