@@ -9,6 +9,7 @@ import JacobianChallenge.Divisor.ChipAliases
 import JacobianChallenge.Divisor.FiberCardComposition
 import JacobianChallenge.Divisor.FiberPullback
 import JacobianChallenge.Divisor.FiberSumWeightedComp
+import JacobianChallenge.Divisor.Pic0PullbackWeightedComp
 import JacobianChallenge.Divisor.FiberPullbackWeighted
 import JacobianChallenge.Divisor.FiberPullbackWitnessIrrelevance
 import JacobianChallenge.Divisor.FiberSum
