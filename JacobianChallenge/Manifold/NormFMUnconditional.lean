@@ -309,6 +309,46 @@ theorem hurwitz_local_form_at_fibre_with_injectivity
   · -- Hurwitz equation at smaller radius.
     intro z hz; exact hψ_eq z (h_closedBall_sub_ρ₀ hz)
 
+/-! ## Step 6: Hurwitz form with both local injectivity AND fibre count. -/
+
+/-- Combines step 5's `InjOn ψ` (at radius `ρ`) with
+`localKFoldMultiplicityOnManifold_genuine_with_radius` (at the same radius `ρ`,
+chosen via `R₀ := ρ`), yielding a single witness with both. -/
+theorem hurwitz_local_form_with_count_and_injectivity
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) :
+    ∃ ε : ℝ, 0 < ε ∧ ∃ V : Set Y, IsOpen V ∧ f x ∈ V ∧
+      ∃ ψ : ℂ → ℂ,
+        AnalyticOnNhd ℂ ψ (Metric.closedBall ((chartAt ℂ x) x) ε) ∧
+        ψ ((chartAt ℂ x) x) = 0 ∧
+        deriv ψ ((chartAt ℂ x) x) ≠ 0 ∧
+        Set.InjOn ψ (Metric.closedBall ((chartAt ℂ x) x) ε) ∧
+        (∀ z ∈ Metric.closedBall ((chartAt ℂ x) x) ε,
+          ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) z =
+            (chartAt ℂ (f x)) (f x) + (ψ z) ^ (manifoldRamificationIndex f x)) ∧
+        ∀ w ∈ V, w ≠ f x →
+          (f ⁻¹' {w} ∩
+            ((chartAt ℂ x).source ∩
+              (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).ncard
+            = manifoldRamificationIndex f x := by
+  classical
+  -- Step 5 gives ρ with both AnalyticOnNhd and InjOn at radius ρ.
+  obtain ⟨ρ, hρ_pos, ψ, hψ_an_on, hψ_z₀, hψ_deriv, hψ_inj, hψ_eq⟩ :=
+    hurwitz_local_form_at_fibre_with_injectivity hf hnc x h_pos
+  -- Now invoke localKFoldMultiplicityOnManifold_genuine_with_radius at R₀ := ρ.
+  obtain ⟨ε, V, hε_pos, hε_le_ρ, hV_open, hfx_V, h_count⟩ :=
+    JacobianChallenge.Manifold.localKFoldMultiplicityOnManifold_genuine_with_radius
+      hf x h_pos hρ_pos
+  -- ε ≤ ρ, so closedBall z₀ ε ⊆ closedBall z₀ ρ; ψ data carries over.
+  have h_sub : Metric.closedBall ((chartAt ℂ x) x) ε ⊆
+      Metric.closedBall ((chartAt ℂ x) x) ρ :=
+    Metric.closedBall_subset_closedBall hε_le_ρ
+  refine ⟨ε, hε_pos, V, hV_open, hfx_V, ψ, ?_, hψ_z₀, hψ_deriv, ?_, ?_, h_count⟩
+  · intro z hz; exact hψ_an_on z (h_sub hz)
+  · intro a ha b hb hab; exact hψ_inj (h_sub ha) (h_sub hb) hab
+  · intro z hz; exact hψ_eq z (h_sub hz)
+
 end Manifold
 end JacobianChallenge
 
