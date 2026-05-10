@@ -976,6 +976,29 @@ lemma fibre_inter_chart_disk_shrink_eq
     exact Metric.ball_subset_ball hε_le hz.2.2
   · exact h_count_eq.symm.le
 
+/-! ## Step 12 (ZZ219): Helper — `NormFM` at a regular value collapses to the
+plain product `∏ g(z)` (no ramification weights), since every preimage `z` of
+a non-critical value `y` has `manifoldRamificationIndex f z = 1`. -/
+
+lemma NormFM_at_regular_value
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X) {y : Y}
+    (hy : y ∉ criticalValuesGeneral f) :
+    NormFM f hf hnc g y =
+      ∏ z ∈ (JacobianChallenge.ContMDiff.Owed.degree.fibres_finite_statement_holds_unconditional
+                f hf hnc y).toFinset, g.toFun z := by
+  classical
+  rw [NormFM_apply]
+  apply Finset.prod_congr rfl
+  intro z hz
+  have hz_fibre : z ∈ f ⁻¹' {y} :=
+    (JacobianChallenge.ContMDiff.Owed.degree.fibres_finite_statement_holds_unconditional
+      f hf hnc y).mem_toFinset.mp hz
+  have h_ramif : manifoldRamificationIndex f z = 1 :=
+    manifoldRamificationIndex_eq_one_at_regular_value_preimage hf hnc hy hz_fibre
+  rw [h_ramif, pow_one]
+
 end Manifold
 end JacobianChallenge
 
