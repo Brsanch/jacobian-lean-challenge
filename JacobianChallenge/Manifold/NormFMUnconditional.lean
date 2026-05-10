@@ -841,6 +841,36 @@ private theorem normFM_per_x_at_coord_radius
       hψ_an_on_ε hψ_z₀ hψ_deriv hψ_inj_ε hψ_eq_ε h_left_inv
   exact ⟨ε, hε_pos, hε_le_R₀, V, hV_open, hfx_V, g_x, hg_x_mero, h_prod⟩
 
+/-! ## Step 11c: NormFM_mmeromorphicAt y₀ — full headline assembly. -/
+
+/-- Existence of a planar germ `g_x` (any one will do) at radius ε ≤ R₀.
+Used to define `headline_g_x` cleanly via Classical.choose on a single layer. -/
+private theorem headline_g_x_exists
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X)
+    (x : X) (h_pos : 1 ≤ manifoldRamificationIndex f x)
+    {R₀ : ℝ} (hR₀ : 0 < R₀) :
+    ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 := by
+  obtain ⟨_, _, _, _, _, _, g_x, hg_x, _⟩ :=
+    normFM_per_x_at_coord_radius hf hnc g x h_pos R₀ hR₀
+  exact ⟨g_x, hg_x⟩
+
+/-- The per-`x` planar germ `g_x` for the headline. -/
+private noncomputable def headline_g_x
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X)
+    (x : X) (h_pos : 1 ≤ manifoldRamificationIndex f x)
+    {R₀ : ℝ} (hR₀ : 0 < R₀) : ℂ → ℂ :=
+  Classical.choose (headline_g_x_exists hf hnc g x h_pos hR₀)
+
+private theorem headline_g_x_meromorphicAt
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X)
+    (x : X) (h_pos : 1 ≤ manifoldRamificationIndex f x)
+    {R₀ : ℝ} (hR₀ : 0 < R₀) :
+    MeromorphicAt (headline_g_x hf hnc g x h_pos hR₀) 0 :=
+  Classical.choose_spec (headline_g_x_exists hf hnc g x h_pos hR₀)
+
 end Manifold
 end JacobianChallenge
 
