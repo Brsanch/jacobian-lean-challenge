@@ -1075,8 +1075,7 @@ lemma prod_finite_eq_prod_biUnion_inter
     simp only [Finset.mem_biUnion, hT_def, Set.Finite.mem_toFinset]
     constructor
     · intro ha_S
-      obtain ⟨_, ⟨i, rfl⟩, hi_inner⟩ := Set.mem_iUnion.mp (h_cov ha_S)
-      obtain ⟨hi_FF, ha_Di⟩ := Set.mem_iUnion.mp hi_inner
+      obtain ⟨i, hi_FF, ha_Di⟩ := Set.mem_iUnion₂.mp (h_cov ha_S)
       exact ⟨i, hi_FF, ha_S, ha_Di⟩
     · rintro ⟨_, _, ha_S, _⟩
       exact ha_S
