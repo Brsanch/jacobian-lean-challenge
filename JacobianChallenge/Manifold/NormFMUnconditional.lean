@@ -83,7 +83,8 @@ theorem manifoldRamificationIndex_eq_one_of_inj_on_neighbourhood
   have h_deriv_ne :
       deriv ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm)
         ((chartAt ℂ x) x) ≠ 0 :=
-    deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood hf hnc x h_inj
+    JacobianChallenge.ContMDiff.Owed.degree.deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood
+      hf hnc x h_inj
   have h_ord :
       analyticOrderAt
         (fun z =>
