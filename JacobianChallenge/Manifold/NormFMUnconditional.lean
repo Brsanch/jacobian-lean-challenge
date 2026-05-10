@@ -1505,6 +1505,51 @@ lemma mmeromorphicOrderAt_finset_prod
   rw [h_eq]
   exact meromorphicOrderAt_fun_prod (fun i hi => hF i hi)
 
+/-- Order of a chart-translated `normPow` at `y₀` reduces to the planar
+order of `fun u, normPow g k u` at `0`. Composes chart-pullback unfolding,
+target eventual-equality, and translation via mathlib's
+`meromorphicOrderAt_comp_of_deriv_ne_zero`. -/
+
+lemma mmeromorphicOrderAt_normPow_chart_translated
+    (y₀ : Y) (g_x : ℂ → ℂ) (k : ℕ) :
+    mmeromorphicOrderAt (𝓘(ℂ, ℂ))
+      (fun y : Y => normPow g_x k ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)) y₀
+      = meromorphicOrderAt (fun u : ℂ => normPow g_x k u) 0 := by
+  classical
+  show meromorphicOrderAt
+      ((fun y : Y => normPow g_x k ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀))
+        ∘ (chartAt ℂ y₀).symm) ((chartAt ℂ y₀) y₀)
+    = meromorphicOrderAt (fun u : ℂ => normPow g_x k u) 0
+  -- Step 1: on (chartAt ℂ y₀).target, the chart-pulled LHS equals
+  -- `fun t => normPow g_x k (t - (chartAt ℂ y₀) y₀)`.
+  have h_target_nhds : (chartAt ℂ y₀).target ∈ 𝓝 ((chartAt ℂ y₀) y₀) :=
+    (chartAt ℂ y₀).open_target.mem_nhds
+      ((chartAt ℂ y₀).map_source (mem_chart_source ℂ y₀))
+  have h_ev :
+      ((fun y : Y => normPow g_x k ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀))
+        ∘ (chartAt ℂ y₀).symm)
+        =ᶠ[𝓝 ((chartAt ℂ y₀) y₀)]
+      (fun t : ℂ => normPow g_x k (t - (chartAt ℂ y₀) y₀)) := by
+    filter_upwards [h_target_nhds] with t ht
+    show normPow g_x k ((chartAt ℂ y₀) ((chartAt ℂ y₀).symm t) - (chartAt ℂ y₀) y₀)
+       = normPow g_x k (t - (chartAt ℂ y₀) y₀)
+    rw [(chartAt ℂ y₀).right_inv ht]
+  rw [meromorphicOrderAt_congr h_ev.filter_mono nhdsWithin_le_nhds]
+  -- Step 2: translation via meromorphicOrderAt_comp_of_deriv_ne_zero.
+  -- (fun t, normPow g_x k (t - chart y₀)) = (normPow g_x k) ∘ (· - chart y₀).
+  have h_comp_eq :
+      (fun t : ℂ => normPow g_x k (t - (chartAt ℂ y₀) y₀))
+        = (fun u : ℂ => normPow g_x k u) ∘ (fun t : ℂ => t - (chartAt ℂ y₀) y₀) := by
+    funext t; rfl
+  rw [h_comp_eq]
+  have h_an : AnalyticAt ℂ (fun t : ℂ => t - (chartAt ℂ y₀) y₀) ((chartAt ℂ y₀) y₀) := by
+    fun_prop
+  have h_deriv : deriv (fun t : ℂ => t - (chartAt ℂ y₀) y₀) ((chartAt ℂ y₀) y₀) ≠ 0 := by
+    simp
+  have h_value : (fun t : ℂ => t - (chartAt ℂ y₀) y₀) ((chartAt ℂ y₀) y₀) = 0 := by
+    simp
+  rw [meromorphicOrderAt_comp_of_deriv_ne_zero h_an h_deriv, h_value]
+
 end Manifold
 end JacobianChallenge
 
