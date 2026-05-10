@@ -1534,7 +1534,7 @@ lemma mmeromorphicOrderAt_normPow_chart_translated
     show normPow g_x k ((chartAt ℂ y₀) ((chartAt ℂ y₀).symm t) - (chartAt ℂ y₀) y₀)
        = normPow g_x k (t - (chartAt ℂ y₀) y₀)
     rw [(chartAt ℂ y₀).right_inv ht]
-  rw [meromorphicOrderAt_congr h_ev.filter_mono nhdsWithin_le_nhds]
+  rw [meromorphicOrderAt_congr (h_ev.filter_mono nhdsWithin_le_nhds)]
   -- Step 2: translation via meromorphicOrderAt_comp_of_deriv_ne_zero.
   -- (fun t, normPow g_x k (t - chart y₀)) = (normPow g_x k) ∘ (· - chart y₀).
   have h_comp_eq :
