@@ -1203,9 +1203,7 @@ Given an external assignment of per-x planar germs `g_x_fn x hx` (each
 to `y₀`, the chart-translated finite product is `MMeromorphicAt y₀`. -/
 
 lemma headlineG_mmeromorphicAt
-    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
-    (y₀ : Y) (FF : Finset X)
-    (hfx_y₀ : ∀ x ∈ FF, f x = y₀)
+    (f : X → Y) (y₀ : Y) (FF : Finset X)
     (h_pos_fn : ∀ x ∈ FF, 1 ≤ manifoldRamificationIndex f x)
     (g_x_fn : ∀ x ∈ FF, ℂ → ℂ)
     (g_x_mero : ∀ (x : X) (hx : x ∈ FF), MeromorphicAt (g_x_fn x hx) 0) :
@@ -1217,12 +1215,8 @@ lemma headlineG_mmeromorphicAt
   classical
   apply mmeromorphicAt_finset_prod
   intro x _hx
-  have h_pos_x : 1 ≤ manifoldRamificationIndex f x.val :=
-    h_pos_fn x.val x.property
-  have h := normPow_mmeromorphicAt_chartPullback_translated
-    h_pos_x (g_x_mero x.val x.property)
-  rw [hfx_y₀ x.val x.property] at h
-  exact h
+  exact normPow_mmeromorphicAt_chartPullback_translated
+    (h_pos_fn x.val x.property) (g_x_mero x.val x.property)
 
 end Manifold
 end JacobianChallenge
