@@ -1418,6 +1418,17 @@ theorem NormFM_mmeromorphicAt
       exact h_per_y ((chartAt ℂ y₀).symm w) hw_in_punct hw_ne_y₀
   exact (MeromorphicAt.meromorphicAt_congr h_evEq_chart).mpr hG_mero'
 
+/-- **P1.2 corollary** — global `MMeromorphicOn` of `NormFM`. Trivial composition
+of the headline `NormFM_mmeromorphicAt` with the conditional
+`NormFM_mmeromorphicOn_univ_of_pointwise`. -/
+theorem NormFM_mmeromorphicOn_univ
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X) :
+    MMeromorphicOn (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) Set.univ :=
+  NormFM_mmeromorphicOn_univ_of_pointwise f hf hnc g
+    (fun y₀ => NormFM_mmeromorphicAt hf hnc g y₀)
+
 end Manifold
 end JacobianChallenge
 
