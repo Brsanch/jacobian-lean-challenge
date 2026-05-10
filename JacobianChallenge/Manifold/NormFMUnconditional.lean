@@ -239,6 +239,76 @@ theorem normFM_local_factor_mmeromorphicAt
       ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀), ?_⟩
   exact normPow_mmeromorphicAt_chartPullback_translated h_pos hg_x_mero
 
+/-! ## Step 5: Hurwitz form refined with local injectivity of `ψ`. -/
+
+/-- A refinement of `hurwitz_local_form_at_fibre` that additionally provides
+`Set.InjOn ψ (closedBall z₀ ρ)`. Local injectivity comes from the
+`HasStrictFDerivAt.toOpenPartialHomeomorph` of the strict derivative + non-zero
+derivative; we shrink the Hurwitz radius to fit inside the homeomorph's source. -/
+theorem hurwitz_local_form_at_fibre_with_injectivity
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) :
+    ∃ ρ : ℝ, 0 < ρ ∧ ∃ ψ : ℂ → ℂ,
+      AnalyticOnNhd ℂ ψ (Metric.closedBall ((chartAt ℂ x) x) ρ) ∧
+      ψ ((chartAt ℂ x) x) = 0 ∧
+      deriv ψ ((chartAt ℂ x) x) ≠ 0 ∧
+      Set.InjOn ψ (Metric.closedBall ((chartAt ℂ x) x) ρ) ∧
+      ∀ z ∈ Metric.closedBall ((chartAt ℂ x) x) ρ,
+        ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) z =
+          (chartAt ℂ (f x)) (f x) + (ψ z) ^ (manifoldRamificationIndex f x) := by
+  classical
+  obtain ⟨ρ₀, hρ₀_pos, ψ, hψ_an_on, hψ_z₀, hψ_deriv, hψ_eq⟩ :=
+    hurwitz_local_form_at_fibre hf hnc x h_pos
+  set z₀ : ℂ := (chartAt ℂ x) x with hz₀_def
+  -- Lift to HasStrictFDerivAt and grab the OpenPartialHomeomorph source.
+  have hψ_an_at : AnalyticAt ℂ ψ z₀ :=
+    hψ_an_on _ (Metric.mem_closedBall_self hρ₀_pos.le)
+  have hψ_strictFD :
+      HasStrictFDerivAt ψ
+        ((ContinuousLinearEquiv.unitsEquivAut ℂ
+          (Units.mk0 (deriv ψ z₀) hψ_deriv)).toContinuousLinearMap) z₀ :=
+    hψ_an_at.hasStrictDerivAt.hasStrictFDerivAt_equiv hψ_deriv
+  set H : OpenPartialHomeomorph ℂ ℂ := hψ_strictFD.toOpenPartialHomeomorph ψ with hH_def
+  have hz₀_in_source : z₀ ∈ H.source :=
+    hψ_strictFD.mem_toOpenPartialHomeomorph_source
+  have hH_open_source : IsOpen H.source := H.open_source
+  -- Source is an open nbhd of z₀; extract a closed-ball radius δ.
+  have h_src_nhds : H.source ∈ 𝓝 z₀ := hH_open_source.mem_nhds hz₀_in_source
+  obtain ⟨δ, hδ_pos, hδ_sub⟩ := Metric.mem_nhds_iff.mp h_src_nhds
+  -- Shrink Hurwitz radius to ρ := min ρ₀ (δ/2) (closed ball ⊂ open ball ⊂ H.source).
+  set ρ : ℝ := min ρ₀ (δ/2) with hρ_def
+  have hρ_pos : 0 < ρ := lt_min hρ₀_pos (by positivity)
+  have hρ_le_ρ₀ : ρ ≤ ρ₀ := min_le_left _ _
+  have hρ_le_half_δ : ρ ≤ δ/2 := min_le_right _ _
+  have h_closedBall_sub_source :
+      Metric.closedBall z₀ ρ ⊆ H.source := by
+    intro z hz
+    have h_lt : dist z z₀ < δ := by
+      have h_le : dist z z₀ ≤ ρ := hz
+      have h_strict : ρ < δ := by linarith [hδ_pos.le]
+      exact lt_of_le_of_lt h_le h_strict
+    exact hδ_sub h_lt
+  -- Closed ball at smaller radius is inside the original Hurwitz domain.
+  have h_closedBall_sub_ρ₀ :
+      Metric.closedBall z₀ ρ ⊆ Metric.closedBall z₀ ρ₀ :=
+    Metric.closedBall_subset_closedBall hρ_le_ρ₀
+  -- Re-package the Hurwitz claims at the smaller radius.
+  refine ⟨ρ, hρ_pos, ψ, ?_, hψ_z₀, hψ_deriv, ?_, ?_⟩
+  · -- AnalyticOnNhd at smaller radius.
+    intro z hz; exact hψ_an_on z (h_closedBall_sub_ρ₀ hz)
+  · -- InjOn ψ on closedBall z₀ ρ via H's homeomorph injectivity.
+    intro a ha b hb hab
+    have ha_src : a ∈ H.source := h_closedBall_sub_source ha
+    have hb_src : b ∈ H.source := h_closedBall_sub_source hb
+    -- H.coe = ψ on H.source.
+    have h_eq : (H : ℂ → ℂ) a = (H : ℂ → ℂ) b := by
+      show ψ a = ψ b
+      exact hab
+    exact H.injOn ha_src hb_src h_eq
+  · -- Hurwitz equation at smaller radius.
+    intro z hz; exact hψ_eq z (h_closedBall_sub_ρ₀ hz)
+
 end Manifold
 end JacobianChallenge
 
