@@ -1475,6 +1475,18 @@ lemma eventuallyEq_chart_pulled_of_punctured
       rw [← h_inv, h_eq]
     exact hS_eq (hU_sub ⟨hw_in_U, hw_ne⟩)
 
+/-- Order congruence on a punctured nbhd: if `f₁ =ᶠ[𝓝[≠] y₀] f₂`, then
+`mmeromorphicOrderAt I f₁ y₀ = mmeromorphicOrderAt I f₂ y₀`. Composition
+of `eventuallyEq_chart_pulled_of_punctured` with mathlib's
+`meromorphicOrderAt_congr`. -/
+
+lemma mmeromorphicOrderAt_congr_punctured
+    {y₀ : Y} {f₁ f₂ : Y → ℂ}
+    (h_ev : f₁ =ᶠ[𝓝[≠] y₀] f₂) :
+    mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f₁ y₀ = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f₂ y₀ := by
+  unfold mmeromorphicOrderAt
+  exact meromorphicOrderAt_congr (eventuallyEq_chart_pulled_of_punctured h_ev)
+
 end Manifold
 end JacobianChallenge
 
