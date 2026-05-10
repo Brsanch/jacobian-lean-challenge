@@ -767,6 +767,11 @@ private theorem normFM_per_x_at_coord_radius
     (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X) (x : X)
     (h_pos : 1 ≤ manifoldRamificationIndex f x) (R₀ : ℝ) (hR₀ : 0 < R₀) :
     ∃ ε : ℝ, 0 < ε ∧ ε ≤ R₀ ∧ ∃ V : Set Y, IsOpen V ∧ f x ∈ V ∧
+    (∀ w ∈ V, w ≠ f x →
+      (f ⁻¹' {w} ∩
+        ((chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).ncard
+        = manifoldRamificationIndex f x) ∧
     ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 ∧
       ∀ y : Y,
       ∀ (hMan_fin :
@@ -839,7 +844,7 @@ private theorem normFM_per_x_at_coord_radius
   obtain ⟨g_x, hg_x_mero, h_prod⟩ :=
     normFM_local_product_eq_normPow_at_radius hf hnc g x h_pos hε_pos
       hψ_an_on_ε hψ_z₀ hψ_deriv hψ_inj_ε hψ_eq_ε h_left_inv
-  exact ⟨ε, hε_pos, hε_le_R₀, V, hV_open, hfx_V, g_x, hg_x_mero, h_prod⟩
+  exact ⟨ε, hε_pos, hε_le_R₀, V, hV_open, hfx_V, h_count, g_x, hg_x_mero, h_prod⟩
 
 /-! ## Step 11c: NormFM_mmeromorphicAt y₀ — full headline assembly. -/
 
@@ -851,7 +856,7 @@ private theorem headline_g_x_exists
     (x : X) (h_pos : 1 ≤ manifoldRamificationIndex f x)
     {R₀ : ℝ} (hR₀ : 0 < R₀) :
     ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 := by
-  obtain ⟨_, _, _, _, _, _, g_x, hg_x, _⟩ :=
+  obtain ⟨_, _, _, _, _, _, _, g_x, hg_x, _⟩ :=
     normFM_per_x_at_coord_radius hf hnc g x h_pos R₀ hR₀
   exact ⟨g_x, hg_x⟩
 
