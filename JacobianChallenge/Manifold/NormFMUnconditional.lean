@@ -174,6 +174,51 @@ theorem hurwitz_local_form_at_fibre
     rw [← hF_z₀_eq]; exact h_ord_eq
   exact analytic_local_normal_form h_pos hF_an hF_z₀_eq h_ord_eq_subst
 
+/-! ## Step 3: per-`x` planar germ `g_x` is `MeromorphicAt 0`. -/
+
+/-- At a fibre point `x` of `y₀`, the composition `g.toFun ∘ chart_x.symm ∘ φ_x`
+is `MeromorphicAt 0`, where `φ_x` is the analytic local inverse of the Hurwitz
+`ψ_x` at `0`. This is the per-`x` "planar germ representing g through the
+local biholomorphism," used downstream as the `g`-argument of `normPow`. -/
+theorem normFM_local_germ_meromorphicAt_zero
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) :
+    ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 := by
+  classical
+  -- Hurwitz local form gives ψ analytic with deriv ψ z₀ ≠ 0 and ψ z₀ = 0.
+  obtain ⟨ρ, hρ_pos, ψ, hψ_an_on, hψ_z₀, hψ_deriv, _hψ_eq⟩ :=
+    hurwitz_local_form_at_fibre hf hnc x h_pos
+  set z₀ : ℂ := (chartAt ℂ x) x with hz₀_def
+  -- AnalyticAt at the centre of the closed ball.
+  have hψ_an_at : AnalyticAt ℂ ψ z₀ := by
+    have hmem : z₀ ∈ Metric.closedBall z₀ ρ := Metric.mem_closedBall_self hρ_pos.le
+    exact hψ_an_on _ hmem
+  -- The local inverse, as a function ℂ → ℂ.
+  let φ : ℂ → ℂ :=
+    hψ_an_at.hasStrictDerivAt.localInverse _ _ _ hψ_deriv
+  -- φ is analytic at ψ z₀ = 0.
+  have hφ_an_ψz₀ : AnalyticAt ℂ φ (ψ z₀) :=
+    hψ_an_at.analyticAt_localInverse hψ_deriv
+  have hφ_an_zero : AnalyticAt ℂ φ 0 := by rw [← hψ_z₀]; exact hφ_an_ψz₀
+  -- φ (ψ z₀) = z₀ from the planar HasStrictFDerivAt.localInverse_apply_image.
+  -- Since `hψ_an_at.hasStrictDerivAt` is HasStrictDerivAt, lift to HasStrictFDerivAt
+  -- via `hasStrictFDerivAt_equiv`.
+  have hφ_zero : φ 0 = z₀ := by
+    have h_im :
+        φ (ψ z₀) = z₀ :=
+      HasStrictFDerivAt.localInverse_apply_image
+        (hψ_an_at.hasStrictDerivAt.hasStrictFDerivAt_equiv hψ_deriv)
+    rw [← hψ_z₀]; exact h_im
+  -- g pulled back through chart_x is meromorphic at z₀.
+  have hg_pulled : MeromorphicAt (g.toFun ∘ (chartAt ℂ x).symm) z₀ :=
+    g.meromorphic x trivial
+  -- Compose: (g ∘ chart.symm) ∘ φ is MeromorphicAt 0.
+  have hg_at_φ0 :
+      MeromorphicAt (g.toFun ∘ (chartAt ℂ x).symm) (φ 0) := by
+    rw [hφ_zero]; exact hg_pulled
+  exact ⟨_, hg_at_φ0.comp_analyticAt hφ_an_zero⟩
+
 end Manifold
 end JacobianChallenge
 
