@@ -349,6 +349,46 @@ theorem hurwitz_local_form_with_count_and_injectivity
   · intro a ha b hb hab; exact hψ_inj (h_sub ha) (h_sub hb) hab
   · intro z hz; exact hψ_eq z (h_sub hz)
 
+/-! ## Step 7: ψ ∘ chart_x maps fibre points into `nthRootsFinset`. -/
+
+/-- For `y` near `f x` with `y ≠ f x`, every `z ∈ f⁻¹{y}` lying in the
+chart-disk of radius `ε` (where ε comes from `hurwitz_local_form_with_count_and_injectivity`)
+satisfies `ψ (chart_x z) ∈ nthRootsFinset k_x ((chart_y₀ y) - (chart_y₀ y₀))`. -/
+theorem normFM_local_psi_in_nthRootsFinset
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x)
+    {ε : ℝ} (hε_pos : 0 < ε)
+    {ψ : ℂ → ℂ}
+    (hψ_eq : ∀ z ∈ Metric.closedBall ((chartAt ℂ x) x) ε,
+      ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) z =
+        (chartAt ℂ (f x)) (f x) + (ψ z) ^ (manifoldRamificationIndex f x))
+    {y : Y} {z : X}
+    (hz_mem :
+      z ∈ f ⁻¹' {y} ∩
+        ((chartAt ℂ x).source ∩ (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)) :
+    ψ ((chartAt ℂ x) z) ∈
+      Polynomial.nthRootsFinset (manifoldRamificationIndex f x)
+        ((chartAt ℂ (f x)) y - (chartAt ℂ (f x)) (f x)) := by
+  classical
+  obtain ⟨hfz, hz_src, hz_ball⟩ := hz_mem
+  have hfz_eq : f z = y := hfz
+  have h_chart_z_closed : (chartAt ℂ x) z ∈ Metric.closedBall ((chartAt ℂ x) x) ε :=
+    Metric.ball_subset_closedBall hz_ball
+  have h_eq := hψ_eq ((chartAt ℂ x) z) h_chart_z_closed
+  have h_inv : (chartAt ℂ x).symm ((chartAt ℂ x) z) = z := (chartAt ℂ x).left_inv hz_src
+  have h_pull : ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) z)
+      = (chartAt ℂ (f x)) y := by
+    show (chartAt ℂ (f x)) (f ((chartAt ℂ x).symm ((chartAt ℂ x) z))) = _
+    rw [h_inv, hfz_eq]
+  rw [h_pull] at h_eq
+  have h_pow :
+      (ψ ((chartAt ℂ x) z)) ^ (manifoldRamificationIndex f x)
+        = (chartAt ℂ (f x)) y - (chartAt ℂ (f x)) (f x) := by
+    rw [h_eq]; ring
+  rw [Polynomial.mem_nthRootsFinset h_pos]
+  exact h_pow
+
 end Manifold
 end JacobianChallenge
 
