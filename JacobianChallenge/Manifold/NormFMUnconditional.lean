@@ -876,6 +876,72 @@ private theorem headline_g_x_meromorphicAt
     MeromorphicAt (headline_g_x hf hnc g x h_pos hR₀) 0 :=
   Classical.choose_spec (headline_g_x_exists hf hnc g x h_pos hR₀)
 
+/-- The per-`x` factor function `F_x : Y → ℂ` for the headline assembly,
+re-centred at the **target basepoint `y₀`** (not at `f x`). The chart used
+to compare to `y₀` is `chartAt ℂ y₀`; the planar germ is `headline_g_x`.
+
+For `x ∈ f⁻¹{y₀}` (so `f x = y₀`), this coincides with `normFM_F_x` after
+an `f x = y₀` substitution. We use `y₀` as the chart basepoint here so the
+final headline can stitch all per-`x` factors together at the same `y₀`. -/
+noncomputable def headline_F_x
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X)
+    (x : X) (h_pos : 1 ≤ manifoldRamificationIndex f x)
+    {R₀ : ℝ} (hR₀ : 0 < R₀) (y₀ : Y) : Y → ℂ :=
+  fun y =>
+    normPow (headline_g_x hf hnc g x h_pos hR₀)
+      (manifoldRamificationIndex f x)
+      ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)
+
+/-- The per-`x` factor `headline_F_x` is `MMeromorphicAt y₀`. Direct corollary
+of `normPow_mmeromorphicAt_chartPullback_translated` (ZZ210) applied to the
+planar germ `headline_g_x`. -/
+theorem headline_F_x_mmeromorphicAt
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X)
+    (x : X) (h_pos : 1 ≤ manifoldRamificationIndex f x)
+    {R₀ : ℝ} (hR₀ : 0 < R₀) (y₀ : Y) :
+    MMeromorphicAt (𝓘(ℂ, ℂ)) (headline_F_x hf hnc g x h_pos hR₀ y₀) y₀ :=
+  normPow_mmeromorphicAt_chartPullback_translated h_pos
+    (headline_g_x_meromorphicAt hf hnc g x h_pos hR₀)
+
+/-- The finite product of per-`x` factors over the fibre `f ⁻¹' {y₀}` is
+`MMeromorphicAt y₀`. Pure consequence of `mmeromorphicAt_finset_prod` and
+`headline_F_x_mmeromorphicAt`.
+
+This is the right-hand side of the eventual equality used in the final
+`NormFM_mmeromorphicAt` assembly: on a punctured neighbourhood of `y₀`
+consisting of regular values inside the ZZ211 decomposition, the fibre
+product `NormFM y` agrees with this finite product (one factor per fibre
+point). The eventual-equality discharge is the residual content that
+will be wired in to close the headline. -/
+theorem headline_finset_prod_F_x_mmeromorphicAt
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X)
+    (y₀ : Y)
+    (hF_fin : (f ⁻¹' {y₀}).Finite)
+    (h_pos_fn : ∀ x ∈ hF_fin.toFinset, 1 ≤ manifoldRamificationIndex f x)
+    {R₀_fn : ∀ x ∈ hF_fin.toFinset, ℝ}
+    (hR₀_pos_fn : ∀ x (hx : x ∈ hF_fin.toFinset), 0 < R₀_fn x hx) :
+    MMeromorphicAt (𝓘(ℂ, ℂ))
+      (fun y : Y => ∏ x ∈ hF_fin.toFinset.attach,
+        headline_F_x hf hnc g x.val (h_pos_fn x.val x.property)
+          (hR₀_pos_fn x.val x.property) y₀ y) y₀ := by
+  classical
+  apply mmeromorphicAt_finset_prod
+  intro x _hx
+  exact headline_F_x_mmeromorphicAt hf hnc g x.val
+    (h_pos_fn x.val x.property) (hR₀_pos_fn x.val x.property) y₀
+
+/-! ### Partial headline (Step B, ZZ216): per-`x` factors and their finite
+product are meromorphic at `y₀`. The remaining content for the full
+headline `NormFM_mmeromorphicAt` is the eventual equality
+`NormFM f hf hnc g =ᶠ[𝓝[≠] y₀] (fun y => ∏ x, headline_F_x x y y₀)` on a
+punctured open neighbourhood of `y₀` (built from the ZZ211 chart-radius
+decomposition restricted to regular values via `criticalValues_finite_general`).
+Once that equality is in place, `MeromorphicAt.congr` applied to
+`headline_finset_prod_F_x_mmeromorphicAt` closes the headline. -/
+
 end Manifold
 end JacobianChallenge
 
