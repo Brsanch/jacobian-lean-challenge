@@ -430,8 +430,8 @@ theorem normFM_local_image_eq_nthRootsFinset
       (hε_pos := hε_pos) (hψ_eq := hψ_eq) (y := y) (z := z) hz_set
     rw [← hz_eq]; exact h7
   have h_card_manifold_finset : hMan_fin.toFinset.card = k := by
-    have := hMan_fin.toFinset_eq_toFinset ▸ h_count
-    rwa [Set.ncard_eq_toFinset_card', ← hMan_fin.toFinset_eq_toFinset] at h_count
+    rw [Set.ncard_eq_toFinset_card _ hMan_fin] at h_count
+    exact h_count
   have h_inj_on_finset :
       Set.InjOn (fun z : X => ψ ((chartAt ℂ x) z))
         (hMan_fin.toFinset : Set X) := by
