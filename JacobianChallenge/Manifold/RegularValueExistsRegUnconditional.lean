@@ -149,7 +149,7 @@ clopenness-of-locally-const machinery for non-constant `f`).
 This packages the planar bridge ZZ99 specialised to the situation we are
 in: at a non-critical preimage of a non-critical-value `y`, both
 analyticity and non-eventual-constancy hold. -/
-private lemma deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood
+lemma deriv_chart_pullback_ne_zero_of_inj_on_neighbourhood
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
     [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
     {Y : Type v} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
