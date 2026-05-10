@@ -398,7 +398,7 @@ theorem normFM_local_image_eq_nthRootsFinset
     {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
     (hnc : ¬ JacobianChallenge.IsConstantMap f) (x : X)
     (h_pos : 1 ≤ manifoldRamificationIndex f x)
-    {ε : ℝ} (hε_pos : 0 < ε)
+    {ε : ℝ} (hε_pos : 0 < ε) (y : Y)
     {ψ : ℂ → ℂ}
     (hψ_inj : Set.InjOn ψ (Metric.closedBall ((chartAt ℂ x) x) ε))
     (hψ_eq : ∀ z ∈ Metric.closedBall ((chartAt ℂ x) x) ε,
@@ -410,8 +410,7 @@ theorem normFM_local_image_eq_nthRootsFinset
       (f ⁻¹' {y} ∩
         ((chartAt ℂ x).source ∩
           (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).ncard
-        = manifoldRamificationIndex f x)
-    {y : Y} :
+        = manifoldRamificationIndex f x) :
     Finset.image (fun z => ψ ((chartAt ℂ x) z))
         hMan_fin.toFinset
       = Polynomial.nthRootsFinset (manifoldRamificationIndex f x)
@@ -420,26 +419,27 @@ theorem normFM_local_image_eq_nthRootsFinset
   set k : ℕ := manifoldRamificationIndex f x with hk_def
   set t : ℂ := (chartAt ℂ (f x)) y - (chartAt ℂ (f x)) (f x) with ht_def
   set rootsT : Finset ℂ := Polynomial.nthRootsFinset k t with hroots_def
-  -- Forward inclusion via step 7.
   have h_subset :
       Finset.image (fun z => ψ ((chartAt ℂ x) z)) hMan_fin.toFinset ⊆ rootsT := by
     intro v hv
     rcases Finset.mem_image.mp hv with ⟨z, hz, hz_eq⟩
-    rw [Set.Finite.mem_toFinset] at hz
+    have hz_set : z ∈ (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
+        (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)) :=
+      hMan_fin.mem_toFinset.mp hz
     have h7 := normFM_local_psi_in_nthRootsFinset (f := f) hf hnc x h_pos
-      (hε_pos := hε_pos) (hψ_eq := hψ_eq) (y := y) (z := z) hz
+      (hε_pos := hε_pos) (hψ_eq := hψ_eq) (y := y) (z := z) hz_set
     rw [← hz_eq]; exact h7
-  -- Manifold'.toFinset.card = k.
   have h_card_manifold_finset : hMan_fin.toFinset.card = k := by
-    rw [Set.ncard_eq_toFinset_card' _ hMan_fin] at h_count
-    exact h_count
-  -- image card = Manifold'.toFinset.card via injectivity.
+    have := hMan_fin.toFinset_eq_toFinset ▸ h_count
+    rwa [Set.ncard_eq_toFinset_card', ← hMan_fin.toFinset_eq_toFinset] at h_count
   have h_inj_on_finset :
-      Set.InjOn (fun z : X => ψ ((chartAt ℂ x) z)) hMan_fin.toFinset := by
+      Set.InjOn (fun z : X => ψ ((chartAt ℂ x) z))
+        (hMan_fin.toFinset : Set X) := by
     intro a ha b hb hab
-    rw [Set.Finite.mem_toFinset] at ha hb
-    obtain ⟨_, ha_src, ha_ball⟩ := ha
-    obtain ⟨_, hb_src, hb_ball⟩ := hb
+    have ha_set : a ∈ _ := hMan_fin.mem_toFinset.mp (Finset.mem_coe.mp ha)
+    have hb_set : b ∈ _ := hMan_fin.mem_toFinset.mp (Finset.mem_coe.mp hb)
+    obtain ⟨_, ha_src, ha_ball⟩ := ha_set
+    obtain ⟨_, hb_src, hb_ball⟩ := hb_set
     have ha_closed :
         (chartAt ℂ x) a ∈ Metric.closedBall ((chartAt ℂ x) x) ε :=
       Metric.ball_subset_closedBall ha_ball
@@ -453,12 +453,10 @@ theorem normFM_local_image_eq_nthRootsFinset
       (Finset.image (fun z => ψ ((chartAt ℂ x) z)) hMan_fin.toFinset).card =
         hMan_fin.toFinset.card :=
     Finset.card_image_of_injOn h_inj_on_finset
-  -- rootsT.card ≤ k via Polynomial.card_nthRoots.
   have h_card_rootsT_le : rootsT.card ≤ k := by
     have h_mset := Polynomial.card_nthRoots k t
     rw [hroots_def, Polynomial.nthRootsFinset]
     exact (Multiset.toFinset_card_le _).trans h_mset
-  -- image.card = k.
   have h_card_image_eq : (Finset.image (fun z => ψ ((chartAt ℂ x) z))
       hMan_fin.toFinset).card = k := by
     rw [h_card_image, h_card_manifold_finset]
