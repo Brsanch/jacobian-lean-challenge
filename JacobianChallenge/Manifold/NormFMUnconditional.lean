@@ -1487,6 +1487,24 @@ lemma mmeromorphicOrderAt_congr_punctured
   unfold mmeromorphicOrderAt
   exact meromorphicOrderAt_congr (eventuallyEq_chart_pulled_of_punctured h_ev)
 
+/-- Order is additive over a finite product, manifold-level version. -/
+lemma mmeromorphicOrderAt_finset_prod
+    {y₀ : Y} {ι : Type*} (s : Finset ι) (F : ι → Y → ℂ)
+    (hF : ∀ i ∈ s, MMeromorphicAt (𝓘(ℂ, ℂ)) (F i) y₀) :
+    mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (fun y : Y => ∏ i ∈ s, F i y) y₀ =
+      ∑ i ∈ s, mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (F i) y₀ := by
+  classical
+  show meromorphicOrderAt
+      ((fun y : Y => ∏ i ∈ s, F i y) ∘ (chartAt ℂ y₀).symm) ((chartAt ℂ y₀) y₀)
+    = ∑ i ∈ s, meromorphicOrderAt (F i ∘ (chartAt ℂ y₀).symm) ((chartAt ℂ y₀) y₀)
+  have h_eq :
+      ((fun y : Y => ∏ i ∈ s, F i y) ∘ (chartAt ℂ y₀).symm)
+        = fun t => ∏ i ∈ s, (F i ∘ (chartAt ℂ y₀).symm) t := by
+    funext t
+    rfl
+  rw [h_eq]
+  exact meromorphicOrderAt_fun_prod (fun i hi => hF i hi)
+
 end Manifold
 end JacobianChallenge
 
