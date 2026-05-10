@@ -463,6 +463,144 @@ theorem normFM_local_image_eq_nthRootsFinset
   apply Finset.eq_of_subset_of_card_le h_subset
   rw [h_card_image_eq]; exact h_card_rootsT_le
 
+/-! ## Step 9: per-`x` product equality. -/
+
+/-- For `y` near `f x` with `y ≠ f x`, the product of `g.toFun` over the
+chart-disk fibre equals `normPow g_x k_x (chart y - chart (f x))`, where
+`g_x s := g.toFun ((chart_x).symm (φ s))` and `φ` is the analytic local
+inverse of the Hurwitz `ψ` at `0`. -/
+theorem normFM_local_product_eq_normPow
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) :
+    ∃ ε : ℝ, 0 < ε ∧ ∃ V : Set Y, IsOpen V ∧ f x ∈ V ∧
+      ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 ∧
+        ∀ y ∈ V, y ≠ f x →
+          ∀ (hMan_fin :
+            (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
+              (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).Finite),
+            (f ⁻¹' {y} ∩
+              ((chartAt ℂ x).source ∩
+                (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).ncard
+              = manifoldRamificationIndex f x →
+            (∏ z ∈ hMan_fin.toFinset, g.toFun z) =
+              normPow g_x (manifoldRamificationIndex f x)
+                ((chartAt ℂ (f x)) y - (chartAt ℂ (f x)) (f x)) := by
+  classical
+  obtain ⟨ε₆, hε₆_pos, V, hV_open, hfx_V, ψ, hψ_an_on, hψ_z₀, hψ_deriv,
+    hψ_inj, hψ_eq, h_count⟩ :=
+    hurwitz_local_form_with_count_and_injectivity hf hnc x h_pos
+  set z₀ : ℂ := (chartAt ℂ x) x with hz₀_def
+  have hψ_an_at : AnalyticAt ℂ ψ z₀ :=
+    hψ_an_on _ (Metric.mem_closedBall_self hε₆_pos.le)
+  let φ : ℂ → ℂ :=
+    hψ_an_at.hasStrictDerivAt.localInverse _ _ _ hψ_deriv
+  have hφ_an_zero : AnalyticAt ℂ φ 0 := by
+    have := hψ_an_at.analyticAt_localInverse hψ_deriv
+    rwa [hψ_z₀] at this
+  have hφψ_id :
+      ∀ᶠ w in 𝓝 z₀, φ (ψ w) = w :=
+    hψ_an_at.hasStrictDerivAt.eventually_left_inverse hψ_deriv
+  obtain ⟨δ, hδ_pos, hδ_sub⟩ :
+      ∃ δ > 0, Metric.ball z₀ δ ⊆ {w | φ (ψ w) = w} :=
+    Metric.eventually_nhds_iff_ball.mp hφψ_id
+  set ε : ℝ := min ε₆ (δ / 2) with hε_def
+  have hε_pos : 0 < ε := lt_min hε₆_pos (by positivity)
+  have hε_le_ε₆ : ε ≤ ε₆ := min_le_left _ _
+  have hε_lt_δ : ε < δ := by
+    have h1 : ε ≤ δ / 2 := min_le_right _ _
+    linarith
+  have h_sub_ε₆ : Metric.closedBall z₀ ε ⊆ Metric.closedBall z₀ ε₆ :=
+    Metric.closedBall_subset_closedBall hε_le_ε₆
+  have h_left_inv :
+      ∀ w ∈ Metric.closedBall z₀ ε, φ (ψ w) = w := by
+    intro w hw
+    have hw_ball : w ∈ Metric.ball z₀ δ := by
+      have h_le : dist w z₀ ≤ ε := hw
+      exact lt_of_le_of_lt h_le hε_lt_δ
+    exact hδ_sub hw_ball
+  obtain ⟨ε', V', hε'_pos, hε'_le_ε, hV'_open, hfx_V', h_count'⟩ :=
+    JacobianChallenge.Manifold.localKFoldMultiplicityOnManifold_genuine_with_radius
+      hf x h_pos hε_pos
+  refine ⟨ε', hε'_pos, V', hV'_open, hfx_V',
+    fun s => g.toFun ((chartAt ℂ x).symm (φ s)), ?_, ?_⟩
+  · have hg_pulled : MeromorphicAt (g.toFun ∘ (chartAt ℂ x).symm) z₀ :=
+      g.meromorphic x trivial
+    have hφ_zero : φ 0 = z₀ := by
+      have h_im :
+          φ (ψ z₀) = z₀ :=
+        HasStrictFDerivAt.localInverse_apply_image
+          (hψ_an_at.hasStrictDerivAt.hasStrictFDerivAt_equiv hψ_deriv)
+      rw [← hψ_z₀]; exact h_im
+    have hg_at_φ0 :
+        MeromorphicAt (g.toFun ∘ (chartAt ℂ x).symm) (φ 0) := by
+      rw [hφ_zero]; exact hg_pulled
+    show MeromorphicAt (fun s => g.toFun ((chartAt ℂ x).symm (φ s))) 0
+    exact hg_at_φ0.comp_analyticAt hφ_an_zero
+  · intro y hy_V hy_ne hMan_fin h_count_y
+    have h_image := normFM_local_image_eq_nthRootsFinset
+      (f := f) hf hnc x h_pos (hε_pos := hε'_pos) y
+      (hψ_inj := fun a ha b hb hab => hψ_inj
+        (h_sub_ε₆ (Metric.closedBall_subset_closedBall hε'_le_ε ha))
+        (h_sub_ε₆ (Metric.closedBall_subset_closedBall hε'_le_ε hb)) hab)
+      (hψ_eq := fun z hz => hψ_eq z
+        (h_sub_ε₆ (Metric.closedBall_subset_closedBall hε'_le_ε hz)))
+      (hMan_fin := hMan_fin)
+      (h_count := h_count_y)
+    have h_inj_finset :
+        Set.InjOn (fun z : X => ψ ((chartAt ℂ x) z))
+          (hMan_fin.toFinset : Set X) := by
+      intro a ha b hb hab
+      have ha_set := hMan_fin.mem_toFinset.mp (Finset.mem_coe.mp ha)
+      have hb_set := hMan_fin.mem_toFinset.mp (Finset.mem_coe.mp hb)
+      obtain ⟨_, ha_src, ha_ball⟩ := ha_set
+      obtain ⟨_, hb_src, hb_ball⟩ := hb_set
+      have ha_closed :
+          (chartAt ℂ x) a ∈ Metric.closedBall z₀ ε :=
+        Metric.ball_subset_closedBall (Metric.ball_subset_ball hε'_le_ε ha_ball)
+      have hb_closed :
+          (chartAt ℂ x) b ∈ Metric.closedBall z₀ ε :=
+        Metric.ball_subset_closedBall (Metric.ball_subset_ball hε'_le_ε hb_ball)
+      have h_chart_eq : (chartAt ℂ x) a = (chartAt ℂ x) b :=
+        hψ_inj (h_sub_ε₆ ha_closed) (h_sub_ε₆ hb_closed) hab
+      exact (chartAt ℂ x).injOn ha_src hb_src h_chart_eq
+    have h_fn_val : ∀ z ∈ hMan_fin.toFinset,
+        g.toFun z = g.toFun ((chartAt ℂ x).symm (φ (ψ ((chartAt ℂ x) z)))) := by
+      intro z hz
+      have hz_set := hMan_fin.mem_toFinset.mp hz
+      obtain ⟨_, hz_src, hz_ball⟩ := hz_set
+      have h_chart_z_closed :
+          (chartAt ℂ x) z ∈ Metric.closedBall z₀ ε :=
+        Metric.ball_subset_closedBall (Metric.ball_subset_ball hε'_le_ε hz_ball)
+      have h_li : φ (ψ ((chartAt ℂ x) z)) = (chartAt ℂ x) z :=
+        h_left_inv _ h_chart_z_closed
+      rw [h_li]
+      have h_inv : (chartAt ℂ x).symm ((chartAt ℂ x) z) = z := (chartAt ℂ x).left_inv hz_src
+      rw [h_inv]
+    -- Define F : ℂ → ℂ as the per-x planar germ.
+    set F : ℂ → ℂ := fun s => g.toFun ((chartAt ℂ x).symm (φ s)) with hF_def
+    -- Rewrite ∏ z g(z) = ∏ z F(ψ(chart_x z)) using h_fn_val.
+    have h_step1 :
+        (∏ z ∈ hMan_fin.toFinset, g.toFun z)
+          = ∏ z ∈ hMan_fin.toFinset, F (ψ ((chartAt ℂ x) z)) := by
+      apply Finset.prod_congr rfl
+      intro z hz
+      exact h_fn_val z hz
+    -- Use Finset.prod_image to re-index by the image map.
+    have h_step2 :
+        (∏ z ∈ hMan_fin.toFinset, F (ψ ((chartAt ℂ x) z)))
+          = ∏ ζ ∈ Finset.image (fun z => ψ ((chartAt ℂ x) z)) hMan_fin.toFinset, F ζ :=
+      (Finset.prod_image h_inj_finset).symm
+    -- Substitute the image equality from step 8.
+    have h_step3 :
+        (∏ ζ ∈ Finset.image (fun z => ψ ((chartAt ℂ x) z)) hMan_fin.toFinset, F ζ)
+          = ∏ ζ ∈ Polynomial.nthRootsFinset (manifoldRamificationIndex f x)
+              ((chartAt ℂ (f x)) y - (chartAt ℂ (f x)) (f x)), F ζ := by
+      rw [h_image]
+    rw [h_step1, h_step2, h_step3]
+    -- normPow's body is exactly this product.
+    rfl
+
 end Manifold
 end JacobianChallenge
 
