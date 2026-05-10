@@ -13,6 +13,11 @@ import JacobianChallenge.Manifold.RegularValueExistsRegUnconditional
 import JacobianChallenge.Manifold.CriticalValuesFiniteGeneral
 import JacobianChallenge.Manifold.CriticalSetClosed
 import JacobianChallenge.Manifold.RamificationIndex
+import JacobianChallenge.Manifold.RamificationIndexPositive
+import JacobianChallenge.Manifold.AnalyticLocalNormalForm
+import JacobianChallenge.Manifold.PerChartNonConstancyReduction
+import JacobianChallenge.Manifold.ClopennessOfLocallyConstDischarge
+import JacobianChallenge.Manifold.ChartPullbackNotEventuallyConstDischarge
 
 set_option diagnostics true
 set_option diagnostics.threshold 100
@@ -115,6 +120,59 @@ theorem manifoldRamificationIndex_eq_one_at_regular_value_preimage
   apply hx_not_crit
   show ¬ ∃ U ∈ 𝓝 x, Set.InjOn f U
   exact h
+
+/-! ## Step 2: Hurwitz local normal form at a fibre point of `y₀`. -/
+
+/-- At a fibre point `x` of `y₀ = f x`, the chart pullback of `f` admits a
+**Hurwitz local normal form**: there exist `ρ > 0` and an analytic ψ on
+`closedBall (chart_x x) ρ` with `ψ (chart_x x) = 0`, `deriv ψ (chart_x x) ≠ 0`,
+and `(chart-pullback of f) z = (chart_y₀ y₀) + (ψ z) ^ k`, where
+`k = manifoldRamificationIndex f x`.
+
+Just packages `analytic_local_normal_form` (already in repo) at the right
+chart-shifted hypotheses, after extracting the analytic-order-equals-`k`
+identity from the definition of `manifoldRamificationIndex` and the
+non-eventual-constancy of the chart pullback. -/
+theorem hurwitz_local_form_at_fibre
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) :
+    ∃ ρ : ℝ, 0 < ρ ∧ ∃ ψ : ℂ → ℂ,
+      AnalyticOnNhd ℂ ψ (Metric.closedBall ((chartAt ℂ x) x) ρ) ∧
+      ψ ((chartAt ℂ x) x) = 0 ∧
+      deriv ψ ((chartAt ℂ x) x) ≠ 0 ∧
+      ∀ z ∈ Metric.closedBall ((chartAt ℂ x) x) ρ,
+        ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) z =
+          (chartAt ℂ (f x)) (f x) + (ψ z) ^ (manifoldRamificationIndex f x) := by
+  classical
+  set z₀ : ℂ := (chartAt ℂ x) x with hz₀_def
+  set F : ℂ → ℂ := (chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm with hF_def
+  set k : ℕ := manifoldRamificationIndex f x with hk_def
+  have hF_an : AnalyticAt ℂ F z₀ :=
+    JacobianChallenge.ContMDiff.Owed.degree.contMDiff_omega_analyticAt_chart_pullback
+      hf x
+  have hF_z₀_eq : F z₀ = (chartAt ℂ (f x)) (f x) := by
+    have hx_src : x ∈ (chartAt ℂ x).source := mem_chart_source ℂ x
+    show ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+        = (chartAt ℂ (f x)) (f x)
+    simp [Function.comp, (chartAt ℂ x).left_inv hx_src]
+  have h_pos' : 1 ≤ (analyticOrderAt (fun z => F z - F z₀) z₀).toNat := by
+    rw [show (analyticOrderAt (fun z => F z - F z₀) z₀).toNat = k from rfl]
+    exact h_pos
+  have h_ord_ne_top :
+      analyticOrderAt (fun z => F z - F z₀) z₀ ≠ ⊤ := by
+    intro h
+    rw [h, ENat.toNat_top] at h_pos'
+    exact absurd h_pos' (by norm_num)
+  have h_ord_eq : analyticOrderAt (fun z => F z - F z₀) z₀ = (k : ℕ∞) := by
+    obtain ⟨n, hn⟩ := ENat.ne_top_iff_exists.mp h_ord_ne_top
+    have hk_n : k = n := by
+      rw [hk_def, manifoldRamificationIndex_eq, ← hn, ENat.toNat_coe]
+    rw [← hn, hk_n]
+  have h_ord_eq_subst :
+      analyticOrderAt (fun z => F z - (chartAt ℂ (f x)) (f x)) z₀ = (k : ℕ∞) := by
+    rw [← hF_z₀_eq]; exact h_ord_eq
+  exact analytic_local_normal_form h_pos hF_an hF_z₀_eq h_ord_eq_subst
 
 end Manifold
 end JacobianChallenge
