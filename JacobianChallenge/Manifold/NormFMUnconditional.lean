@@ -1429,6 +1429,52 @@ theorem NormFM_mmeromorphicOn_univ
   NormFM_mmeromorphicOn_univ_of_pointwise f hf hnc g
     (fun y₀ => NormFM_mmeromorphicAt hf hnc g y₀)
 
+/-! ## Step 12 (ZZ224): chart-pulled EventuallyEq lift.
+
+Given two functions on `Y` agreeing on a punctured nbhd of `y₀`, their
+chart pullbacks `· ∘ (chartAt ℂ y₀).symm` agree on a punctured nbhd of
+`(chartAt ℂ y₀) y₀`. Reusable building block for any congr-style
+manifold-meromorphic transport. -/
+
+lemma eventuallyEq_chart_pulled_of_punctured
+    {y₀ : Y} {f₁ f₂ : Y → ℂ}
+    (h_ev : f₁ =ᶠ[𝓝[≠] y₀] f₂) :
+    (f₁ ∘ (chartAt ℂ y₀).symm)
+      =ᶠ[𝓝[≠] ((chartAt ℂ y₀) y₀)]
+    (f₂ ∘ (chartAt ℂ y₀).symm) := by
+  classical
+  have h_chart_symm_y₀ : (chartAt ℂ y₀).symm ((chartAt ℂ y₀) y₀) = y₀ :=
+    (chartAt ℂ y₀).left_inv (mem_chart_source ℂ y₀)
+  have h_target_nhds : (chartAt ℂ y₀).target ∈ 𝓝 ((chartAt ℂ y₀) y₀) :=
+    (chartAt ℂ y₀).open_target.mem_nhds
+      ((chartAt ℂ y₀).map_source (mem_chart_source ℂ y₀))
+  have h_chart_cont : ContinuousAt (chartAt ℂ y₀).symm ((chartAt ℂ y₀) y₀) :=
+    ((chartAt ℂ y₀).continuousOn_invFun).continuousAt h_target_nhds
+  rw [Filter.eventuallyEq_iff_exists_mem] at h_ev
+  obtain ⟨S, hS_nhds, hS_eq⟩ := h_ev
+  rw [mem_nhdsWithin_iff_exists_mem_nhds_inter] at hS_nhds
+  obtain ⟨U, hU_nhds, hU_sub⟩ := hS_nhds
+  rw [Filter.eventuallyEq_iff_exists_mem]
+  refine ⟨((chartAt ℂ y₀).target ∩ (chartAt ℂ y₀).symm ⁻¹' U)
+            \ {(chartAt ℂ y₀) y₀}, ?_, ?_⟩
+  · rw [mem_nhdsWithin_iff_exists_mem_nhds_inter]
+    refine ⟨(chartAt ℂ y₀).target ∩ (chartAt ℂ y₀).symm ⁻¹' U, ?_, ?_⟩
+    · exact Filter.inter_mem h_target_nhds
+        (h_chart_cont.preimage_mem_nhds (by rw [h_chart_symm_y₀]; exact hU_nhds))
+    · intro w hw
+      exact ⟨hw.1, hw.2⟩
+  · intro w hw
+    have hw_target : w ∈ (chartAt ℂ y₀).target := hw.1.1
+    have hw_in_U : (chartAt ℂ y₀).symm w ∈ U := hw.1.2
+    have hw_ne : (chartAt ℂ y₀).symm w ≠ y₀ := by
+      intro h_eq
+      apply hw.2
+      rw [Set.mem_singleton_iff]
+      have h_inv : (chartAt ℂ y₀) ((chartAt ℂ y₀).symm w) = w :=
+        (chartAt ℂ y₀).right_inv hw_target
+      rw [← h_inv, h_eq]
+    exact hS_eq (hU_sub ⟨hw_in_U, hw_ne⟩)
+
 end Manifold
 end JacobianChallenge
 
