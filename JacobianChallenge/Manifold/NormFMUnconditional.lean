@@ -374,7 +374,7 @@ theorem normFM_local_psi_in_nthRootsFinset
   obtain ⟨hfz, hz_src, hz_ball⟩ := hz_mem
   have hfz_eq : f z = y := hfz
   have h_chart_z_closed : (chartAt ℂ x) z ∈ Metric.closedBall ((chartAt ℂ x) x) ε :=
-    le_of_lt hz_ball
+    Metric.ball_subset_closedBall hz_ball
   have h_eq := hψ_eq ((chartAt ℂ x) z) h_chart_z_closed
   have h_inv : (chartAt ℂ x).symm ((chartAt ℂ x) z) = z := (chartAt ℂ x).left_inv hz_src
   have h_pull : ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) z)
