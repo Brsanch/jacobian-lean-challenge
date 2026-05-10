@@ -601,6 +601,40 @@ theorem normFM_local_product_eq_normPow
     -- normPow's body is exactly this product.
     rfl
 
+/-! ## Step 10: per-`x` factor function `F_x : Y → ℂ`. -/
+
+/-- The per-`x` factor function for the headline `NormFM_mmeromorphicAt`. Uses
+`Classical.choose` to extract the planar germ `g_x` from step 9's existential. -/
+noncomputable def normFM_F_x
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) : Y → ℂ :=
+  let h := normFM_local_product_eq_normPow hf hnc g x h_pos
+  let g_x := Classical.choose
+    (Classical.choose_spec (Classical.choose_spec (Classical.choose_spec
+      (Classical.choose_spec h).2)).2.2
+  fun y =>
+    normPow g_x (manifoldRamificationIndex f x)
+      ((chartAt ℂ (f x)) y - (chartAt ℂ (f x)) (f x))
+
+/-- `normFM_F_x` is `MMeromorphicAt y₀` (where `y₀ = f x`). -/
+theorem normFM_F_x_mmeromorphicAt
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) :
+    MMeromorphicAt (𝓘(ℂ, ℂ)) (normFM_F_x hf hnc g x h_pos) (f x) := by
+  unfold normFM_F_x
+  have h := normFM_local_product_eq_normPow hf hnc g x h_pos
+  set g_x := Classical.choose
+    (Classical.choose_spec (Classical.choose_spec (Classical.choose_spec
+      (Classical.choose_spec h).2)).2.2 with hg_x_def
+  have hg_x_mero : MeromorphicAt g_x 0 := by
+    have := Classical.choose_spec
+      (Classical.choose_spec (Classical.choose_spec (Classical.choose_spec
+        (Classical.choose_spec h).2)).2.2
+    exact this.1
+  exact normPow_mmeromorphicAt_chartPullback_translated h_pos hg_x_mero
+
 end Manifold
 end JacobianChallenge
 
