@@ -1130,6 +1130,72 @@ private theorem perXEps_spec
               ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀) :=
   Classical.choose_spec (normFM_per_x_at_y₀ hf hnc g x y₀ hxy h_pos R₀ hR₀)
 
+/-! ## Step 12 (ZZ222b): per-x data structure with clean field projections.
+
+Wraps the `normFM_per_x_at_y₀` existential output as a single structure
+so downstream chips access fields by name rather than chained
+`Classical.choose_spec` lookups. -/
+
+structure NormFMPerXData
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X)
+    (x : X) (y₀ : Y) (R₀ : ℝ) where
+  ε : ℝ
+  ε_pos : 0 < ε
+  ε_le : ε ≤ R₀
+  V : Set Y
+  V_open : IsOpen V
+  y₀_V : y₀ ∈ V
+  count : ∀ w ∈ V, w ≠ y₀ →
+    (f ⁻¹' {w} ∩
+      ((chartAt ℂ x).source ∩
+        (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).ncard
+      = manifoldRamificationIndex f x
+  g_x : ℂ → ℂ
+  g_x_mero : MeromorphicAt g_x 0
+  prod_eq : ∀ y : Y,
+    ∀ (hMan_fin :
+      (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
+        (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).Finite),
+      (f ⁻¹' {y} ∩
+        ((chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).ncard
+        = manifoldRamificationIndex f x →
+      (∏ z ∈ hMan_fin.toFinset, g.toFun z) =
+        normPow g_x (manifoldRamificationIndex f x)
+          ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)
+
+/-- Build a `NormFMPerXData` from the existential `normFM_per_x_at_y₀`. -/
+noncomputable def NormFMPerXData.ofExistential
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X)
+    (x : X) (y₀ : Y) (hxy : f x = y₀)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x)
+    (R₀ : ℝ) (hR₀ : 0 < R₀) :
+    NormFMPerXData hf hnc g x y₀ R₀ :=
+  let h := normFM_per_x_at_y₀ hf hnc g x y₀ hxy h_pos R₀ hR₀
+  let ε := h.choose
+  let h_ε := h.choose_spec
+  let ε_pos := h_ε.1
+  let h_ε' := h_ε.2
+  let ε_le := h_ε'.1
+  let h_V := h_ε'.2
+  let V := h_V.choose
+  let h_V' := h_V.choose_spec
+  let V_open := h_V'.1
+  let h_V'' := h_V'.2
+  let y₀_V := h_V''.1
+  let h_V''' := h_V''.2
+  let count := h_V'''.1
+  let h_g := h_V'''.2
+  let g_x := h_g.choose
+  let h_g_x := h_g.choose_spec
+  let g_x_mero := h_g_x.1
+  let prod_eq := h_g_x.2
+  { ε := ε, ε_pos := ε_pos, ε_le := ε_le,
+    V := V, V_open := V_open, y₀_V := y₀_V, count := count,
+    g_x := g_x, g_x_mero := g_x_mero, prod_eq := prod_eq }
+
 end Manifold
 end JacobianChallenge
 
