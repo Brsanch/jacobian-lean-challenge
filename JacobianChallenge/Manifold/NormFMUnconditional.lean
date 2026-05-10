@@ -1546,9 +1546,7 @@ lemma mmeromorphicOrderAt_normPow_chart_translated
     fun_prop
   have h_deriv : deriv (fun t : ℂ => t - (chartAt ℂ y₀) y₀) ((chartAt ℂ y₀) y₀) ≠ 0 := by
     simp
-  have h_value : (fun t : ℂ => t - (chartAt ℂ y₀) y₀) ((chartAt ℂ y₀) y₀) = 0 := by
-    simp
-  rw [meromorphicOrderAt_comp_of_deriv_ne_zero h_an h_deriv, h_value]
+  rw [meromorphicOrderAt_comp_of_deriv_ne_zero h_an h_deriv, sub_self]
 
 end Manifold
 end JacobianChallenge
