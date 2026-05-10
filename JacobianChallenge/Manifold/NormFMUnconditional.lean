@@ -999,6 +999,49 @@ lemma NormFM_at_regular_value
     manifoldRamificationIndex_eq_one_at_regular_value_preimage hf hnc hy hz_fibre
   rw [h_ramif, pow_one]
 
+/-! ## Step 12 (ZZ220): per-x existential rephrased with `y₀` in place of
+`f x`. For `x ∈ f⁻¹{y₀}`, this is just `normFM_per_x_at_coord_radius`
+with `f x` replaced by `y₀` everywhere it appears (in the membership
+`f x ∈ V`, the witness exception `w ≠ f x`, and the chart difference
+`chart_{f x} y - chart_{f x} (f x)`). The g_x is preserved verbatim. -/
+
+theorem normFM_per_x_at_y₀
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X)
+    (x : X) (y₀ : Y) (hxy : f x = y₀)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x)
+    (R₀ : ℝ) (hR₀ : 0 < R₀) :
+    ∃ ε : ℝ, 0 < ε ∧ ε ≤ R₀ ∧ ∃ V : Set Y, IsOpen V ∧ y₀ ∈ V ∧
+    (∀ w ∈ V, w ≠ y₀ →
+      (f ⁻¹' {w} ∩
+        ((chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).ncard
+        = manifoldRamificationIndex f x) ∧
+    ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 ∧
+      ∀ y : Y,
+      ∀ (hMan_fin :
+        (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).Finite),
+        (f ⁻¹' {y} ∩
+          ((chartAt ℂ x).source ∩
+            (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).ncard
+          = manifoldRamificationIndex f x →
+        (∏ z ∈ hMan_fin.toFinset, g.toFun z) =
+          normPow g_x (manifoldRamificationIndex f x)
+            ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀) := by
+  classical
+  obtain ⟨ε, hε_pos, hε_le, V, hV_open, hfx_V, h_count, g_x, hg_x_mero, h_prod⟩ :=
+    normFM_per_x_at_coord_radius hf hnc g x h_pos R₀ hR₀
+  refine ⟨ε, hε_pos, hε_le, V, hV_open, ?_, ?_, g_x, hg_x_mero, ?_⟩
+  · rw [← hxy]; exact hfx_V
+  · intro w hw_V hw_ne_y₀
+    have hw_ne_fx : w ≠ f x := by rw [hxy]; exact hw_ne_y₀
+    exact h_count w hw_V hw_ne_fx
+  · intro y hMan_fin h_count_y
+    have h := h_prod y hMan_fin h_count_y
+    rw [hxy] at h
+    exact h
+
 end Manifold
 end JacobianChallenge
 
