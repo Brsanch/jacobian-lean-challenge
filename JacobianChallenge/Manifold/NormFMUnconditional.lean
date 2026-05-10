@@ -828,22 +828,13 @@ private theorem normFM_per_x_at_coord_radius
     intro z hz; exact hψ_eq z (h_sub_ρ hz)
   have h_left_inv :
       ∀ w ∈ Metric.closedBall z₀ ε,
-        (let φ' : ℂ → ℂ :=
-          (hψ_an_on_ε z₀ (Metric.mem_closedBall_self hε_pos.le)).hasStrictDerivAt.localInverse
-            _ _ _ hψ_deriv
-         φ' (ψ w) = w) := by
+        (hψ_an_on_ε z₀ (Metric.mem_closedBall_self hε_pos.le)).hasStrictDerivAt.localInverse
+            _ _ _ hψ_deriv (ψ w) = w := by
     intro w hw
     have hw_ball : w ∈ Metric.ball z₀ δ := by
       have : dist w z₀ ≤ ε := hw
       exact lt_of_le_of_lt this hε_lt_δ
-    -- The two φ's (one from hψ_an_at and one re-derived) coincide because the
-    -- localInverse depends only on the point and derivative.
-    show _ = w
-    -- Use hδ_sub: w ∈ ball z₀ δ ⇒ φ (ψ w) = w.
-    have h_orig := hδ_sub hw_ball
-    -- Both `φ`'s reduce to the same function via definitional equality of the
-    -- Classical.choose-style localInverse construction.
-    convert h_orig using 2
+    exact hδ_sub hw_ball
   -- Apply step 11a with ε, ψ.
   obtain ⟨g_x, hg_x_mero, h_prod⟩ :=
     normFM_local_product_eq_normPow_at_radius hf hnc g x h_pos hε_pos
