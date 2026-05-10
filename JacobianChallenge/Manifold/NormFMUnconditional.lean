@@ -219,6 +219,26 @@ theorem normFM_local_germ_meromorphicAt_zero
     rw [hφ_zero]; exact hg_pulled
   exact ⟨_, hg_at_φ0.comp_analyticAt hφ_an_zero⟩
 
+/-! ## Step 4: per-`x` factor `F_x : Y → ℂ` is `MMeromorphicAt y₀`. -/
+
+/-- At a fibre point `x` of `y₀`, there exists a function `F_x : Y → ℂ` of the
+form `fun y => normPow g_x k_x ((chart y₀ y) - (chart y₀ y₀))` that is
+`MMeromorphicAt y₀`, where `k_x = manifoldRamificationIndex f x` and `g_x` is
+the planar germ representing `g` through the local biholomorphism.
+
+Direct corollary of `normFM_local_germ_meromorphicAt_zero` (step 3) plus
+`normPow_mmeromorphicAt_chartPullback_translated` (ZZ210). -/
+theorem normFM_local_factor_mmeromorphicAt
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) (y₀ : Y) :
+    ∃ F_x : Y → ℂ, MMeromorphicAt (𝓘(ℂ, ℂ)) F_x y₀ := by
+  obtain ⟨g_x, hg_x_mero⟩ := normFM_local_germ_meromorphicAt_zero hf hnc g x h_pos
+  refine ⟨fun y =>
+    normPow g_x (manifoldRamificationIndex f x)
+      ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀), ?_⟩
+  exact normPow_mmeromorphicAt_chartPullback_translated h_pos hg_x_mero
+
 end Manifold
 end JacobianChallenge
 
