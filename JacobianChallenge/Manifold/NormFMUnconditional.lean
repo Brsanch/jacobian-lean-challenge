@@ -942,6 +942,40 @@ decomposition restricted to regular values via `criticalValues_finite_general`).
 Once that equality is in place, `MeromorphicAt.congr` applied to
 `headline_finset_prod_F_x_mmeromorphicAt` closes the headline. -/
 
+/-! ## Step 12: Helper — shrink-radius preserves the per-x intersection.
+
+If `f⁻¹{y} ∩ D_x_small` and `f⁻¹{y} ∩ D_x_large` both have the same finite
+ncard `k`, and `D_x_small ⊆ D_x_large`, then the two intersections coincide
+as sets. -/
+
+lemma fibre_inter_chart_disk_shrink_eq
+    {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {Y : Type v} {f : X → Y} {y : Y} {x : X} {ε_small ε_large : ℝ}
+    (hε_le : ε_small ≤ ε_large)
+    (h_finite_large :
+      (f ⁻¹' {y} ∩
+        ((chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε_large)).Finite)
+    (h_count_eq :
+      (f ⁻¹' {y} ∩
+        ((chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε_small)).ncard
+        = (f ⁻¹' {y} ∩
+            ((chartAt ℂ x).source ∩
+              (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε_large)).ncard) :
+    (f ⁻¹' {y} ∩
+        ((chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε_small))
+      = (f ⁻¹' {y} ∩
+        ((chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε_large)) := by
+  classical
+  refine Set.eq_of_subset_of_ncard_le ?_ ?_ h_finite_large
+  · intro z hz
+    refine ⟨hz.1, hz.2.1, ?_⟩
+    exact Metric.ball_subset_ball hε_le hz.2.2
+  · exact h_count_eq.symm.le
+
 end Manifold
 end JacobianChallenge
 
