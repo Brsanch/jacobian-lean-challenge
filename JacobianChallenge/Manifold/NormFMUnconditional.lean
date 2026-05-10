@@ -758,6 +758,89 @@ theorem normFM_local_product_eq_normPow_at_radius
     rw [h_step1, h_step2, h_step3]
     rfl
 
+/-! ## Step 11b: pre-headline — per-`x` g_x and InjOn ψ at coordinated radius. -/
+
+/-- For each `x ∈ f⁻¹{y₀}`, package step 5's Hurwitz form + InjOn together with
+the planar germ `g_x` at a single radius. Existential output. -/
+private theorem normFM_per_x_at_coord_radius
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) (R₀ : ℝ) (hR₀ : 0 < R₀) :
+    ∃ ε : ℝ, 0 < ε ∧ ε ≤ R₀ ∧ ∃ V : Set Y, IsOpen V ∧ f x ∈ V ∧
+    ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 ∧
+      ∀ y : Y,
+      ∀ (hMan_fin :
+        (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).Finite),
+        (f ⁻¹' {y} ∩
+          ((chartAt ℂ x).source ∩
+            (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).ncard
+          = manifoldRamificationIndex f x →
+        (∏ z ∈ hMan_fin.toFinset, g.toFun z) =
+          normPow g_x (manifoldRamificationIndex f x)
+            ((chartAt ℂ (f x)) y - (chartAt ℂ (f x)) (f x)) := by
+  classical
+  -- Step 5: Hurwitz form with InjOn at radius ρ.
+  obtain ⟨ρ, hρ_pos, ψ, hψ_an_on, hψ_z₀, hψ_deriv, hψ_inj, hψ_eq⟩ :=
+    hurwitz_local_form_at_fibre_with_injectivity hf hnc x h_pos
+  set z₀ : ℂ := (chartAt ℂ x) x with hz₀_def
+  have hψ_an_at : AnalyticAt ℂ ψ z₀ :=
+    hψ_an_on _ (Metric.mem_closedBall_self hρ_pos.le)
+  -- Left-inverse holds in some nbhd of z₀.
+  let φ : ℂ → ℂ :=
+    hψ_an_at.hasStrictDerivAt.localInverse _ _ _ hψ_deriv
+  have hφψ_id :
+      ∀ᶠ w in 𝓝 z₀, φ (ψ w) = w :=
+    hψ_an_at.hasStrictDerivAt.eventually_left_inverse hψ_deriv
+  obtain ⟨δ, hδ_pos, hδ_sub⟩ :
+      ∃ δ > 0, Metric.ball z₀ δ ⊆ {w | φ (ψ w) = w} :=
+    Metric.eventually_nhds_iff_ball.mp hφψ_id
+  -- Coordinated radius ε := min(R₀, ρ, δ/2).
+  set ε_coord : ℝ := min R₀ (min ρ (δ / 2)) with hε_coord_def
+  have hε_coord_pos : 0 < ε_coord := by
+    refine lt_min hR₀ (lt_min hρ_pos ?_)
+    positivity
+  have hε_coord_le_R₀ : ε_coord ≤ R₀ := min_le_left _ _
+  have hε_coord_le_ρ : ε_coord ≤ ρ := (min_le_right _ _).trans (min_le_left _ _)
+  have hε_coord_le_half_δ : ε_coord ≤ δ / 2 :=
+    (min_le_right _ _).trans (min_le_right _ _)
+  have hε_coord_lt_δ : ε_coord < δ := by linarith
+  -- Apply localKFoldMultiplicityOnManifold_genuine_with_radius at R₀ := ε_coord
+  -- to get count radius ε ≤ ε_coord.
+  obtain ⟨ε, V, hε_pos, hε_le_ε_coord, hV_open, hfx_V, h_count⟩ :=
+    JacobianChallenge.Manifold.localKFoldMultiplicityOnManifold_genuine_with_radius
+      hf x h_pos hε_coord_pos
+  have hε_le_R₀ : ε ≤ R₀ := hε_le_ε_coord.trans hε_coord_le_R₀
+  have hε_le_ρ : ε ≤ ρ := hε_le_ε_coord.trans hε_coord_le_ρ
+  have hε_lt_δ : ε < δ := lt_of_le_of_lt hε_le_ε_coord hε_coord_lt_δ
+  -- Re-derive the radius-shrunk hypotheses on closedBall ε.
+  have h_sub_ρ : Metric.closedBall z₀ ε ⊆ Metric.closedBall z₀ ρ :=
+    Metric.closedBall_subset_closedBall hε_le_ρ
+  have hψ_an_on_ε :
+      AnalyticOnNhd ℂ ψ (Metric.closedBall z₀ ε) := by
+    intro z hz; exact hψ_an_on z (h_sub_ρ hz)
+  have hψ_inj_ε : Set.InjOn ψ (Metric.closedBall z₀ ε) :=
+    hψ_inj.mono h_sub_ρ
+  have hψ_eq_ε :
+      ∀ z ∈ Metric.closedBall z₀ ε,
+        ((chartAt ℂ (f x)) ∘ f ∘ (chartAt ℂ x).symm) z =
+          (chartAt ℂ (f x)) (f x) + (ψ z) ^ (manifoldRamificationIndex f x) := by
+    intro z hz; exact hψ_eq z (h_sub_ρ hz)
+  have h_left_inv :
+      ∀ w ∈ Metric.closedBall z₀ ε,
+        (hψ_an_on_ε z₀ (Metric.mem_closedBall_self hε_pos.le)).hasStrictDerivAt.localInverse
+            _ _ _ hψ_deriv (ψ w) = w := by
+    intro w hw
+    have hw_ball : w ∈ Metric.ball z₀ δ := by
+      have : dist w z₀ ≤ ε := hw
+      exact lt_of_le_of_lt this hε_lt_δ
+    exact hδ_sub hw_ball
+  -- Apply step 11a with ε, ψ.
+  obtain ⟨g_x, hg_x_mero, h_prod⟩ :=
+    normFM_local_product_eq_normPow_at_radius hf hnc g x h_pos hε_pos
+      hψ_an_on_ε hψ_z₀ hψ_deriv hψ_inj_ε hψ_eq_ε h_left_inv
+  exact ⟨ε, hε_pos, hε_le_R₀, V, hV_open, hfx_V, g_x, hg_x_mero, h_prod⟩
+
 end Manifold
 end JacobianChallenge
 
