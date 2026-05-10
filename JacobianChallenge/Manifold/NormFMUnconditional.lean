@@ -500,7 +500,7 @@ theorem normFM_local_product_eq_normPow
     rwa [hψ_z₀] at this
   have hφψ_id :
       ∀ᶠ w in 𝓝 z₀, φ (ψ w) = w :=
-    HasStrictDerivAt.eventually_left_inverse _ _ _ hψ_an_at.hasStrictDerivAt hψ_deriv
+    hψ_an_at.hasStrictDerivAt.eventually_left_inverse hψ_deriv
   obtain ⟨δ, hδ_pos, hδ_sub⟩ :
       ∃ δ > 0, Metric.ball z₀ δ ⊆ {w | φ (ψ w) = w} :=
     Metric.eventually_nhds_iff_ball.mp hφψ_id
@@ -577,12 +577,28 @@ theorem normFM_local_product_eq_normPow
       rw [h_li]
       have h_inv : (chartAt ℂ x).symm ((chartAt ℂ x) z) = z := (chartAt ℂ x).left_inv hz_src
       rw [h_inv]
-    rw [show (∏ z ∈ hMan_fin.toFinset, g.toFun z)
-        = ∏ z ∈ hMan_fin.toFinset,
-            g.toFun ((chartAt ℂ x).symm (φ (ψ ((chartAt ℂ x) z))))
-      from Finset.prod_congr rfl h_fn_val]
-    rw [← Finset.prod_image h_inj_finset]
-    rw [h_image]
+    -- Define F : ℂ → ℂ as the per-x planar germ.
+    set F : ℂ → ℂ := fun s => g.toFun ((chartAt ℂ x).symm (φ s)) with hF_def
+    -- Rewrite ∏ z g(z) = ∏ z F(ψ(chart_x z)) using h_fn_val.
+    have h_step1 :
+        (∏ z ∈ hMan_fin.toFinset, g.toFun z)
+          = ∏ z ∈ hMan_fin.toFinset, F (ψ ((chartAt ℂ x) z)) := by
+      apply Finset.prod_congr rfl
+      intro z hz
+      exact h_fn_val z hz
+    -- Use Finset.prod_image to re-index by the image map.
+    have h_step2 :
+        (∏ z ∈ hMan_fin.toFinset, F (ψ ((chartAt ℂ x) z)))
+          = ∏ ζ ∈ Finset.image (fun z => ψ ((chartAt ℂ x) z)) hMan_fin.toFinset, F ζ :=
+      (Finset.prod_image h_inj_finset).symm
+    -- Substitute the image equality from step 8.
+    have h_step3 :
+        (∏ ζ ∈ Finset.image (fun z => ψ ((chartAt ℂ x) z)) hMan_fin.toFinset, F ζ)
+          = ∏ ζ ∈ Polynomial.nthRootsFinset (manifoldRamificationIndex f x)
+              ((chartAt ℂ (f x)) y - (chartAt ℂ (f x)) (f x)), F ζ := by
+      rw [h_image]
+    rw [h_step1, h_step2, h_step3]
+    -- normPow's body is exactly this product.
     rfl
 
 end Manifold
