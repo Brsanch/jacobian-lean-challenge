@@ -1042,6 +1042,47 @@ theorem normFM_per_x_at_y₀
     rw [hxy] at h
     exact h
 
+/-! ## Step 12 (ZZ221): generic finite-set partition product lemma.
+
+Given a finite set `S`, a finite family `(D i)_{i ∈ FF}` of pairwise
+disjoint sets that cover `S`, the product over `S` factors through the
+product over `i` of the product over `S ∩ D i`. -/
+
+lemma prod_finite_eq_prod_biUnion_inter
+    {α β : Type*} [CommMonoid β] [DecidableEq α]
+    {S : Set α} (hS : S.Finite)
+    {ι : Type*} (FF : Finset ι) (D : ι → Set α)
+    (h_disj : (FF : Set ι).PairwiseDisjoint D)
+    (h_cov : S ⊆ ⋃ i ∈ FF, D i)
+    (φ : α → β) :
+    ∏ z ∈ hS.toFinset, φ z =
+      ∏ i ∈ FF, ∏ z ∈ (hS.inter_of_left (D i)).toFinset, φ z := by
+  classical
+  set T : ι → Finset α := fun i => (hS.inter_of_left (D i)).toFinset with hT_def
+  have hT_disj : (FF : Set ι).PairwiseDisjoint T := by
+    intro i hi j hj hij
+    have hD_disj : Disjoint (D i) (D j) := h_disj hi hj hij
+    refine Finset.disjoint_left.mpr ?_
+    intro a hai haj
+    have hai_set : a ∈ S ∩ D i :=
+      (hS.inter_of_left (D i)).mem_toFinset.mp hai
+    have haj_set : a ∈ S ∩ D j :=
+      (hS.inter_of_left (D j)).mem_toFinset.mp haj
+    exact (Set.disjoint_left.mp hD_disj hai_set.2 haj_set.2)
+  have h_eq : hS.toFinset = FF.biUnion T := by
+    apply Finset.ext
+    intro a
+    simp only [Finset.mem_biUnion, hT_def, Set.Finite.mem_toFinset]
+    constructor
+    · intro ha_S
+      obtain ⟨_, ⟨i, rfl⟩, hi_inner⟩ := Set.mem_iUnion.mp (h_cov ha_S)
+      obtain ⟨hi_FF, ha_Di⟩ := Set.mem_iUnion.mp hi_inner
+      exact ⟨i, hi_FF, ha_S, ha_Di⟩
+    · rintro ⟨_, _, ha_S, _⟩
+      exact ha_S
+  rw [h_eq]
+  exact Finset.prod_biUnion hT_disj
+
 end Manifold
 end JacobianChallenge
 
