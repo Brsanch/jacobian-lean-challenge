@@ -1196,6 +1196,34 @@ noncomputable def NormFMPerXData.ofExistential
     V := V, V_open := V_open, y₀_V := y₀_V, count := count,
     g_x := g_x, g_x_mero := g_x_mero, prod_eq := prod_eq }
 
+/-! ## Step 12 (ZZ222c): generic G-product MMeromorphicAt lemma.
+
+Given an external assignment of per-x planar germs `g_x_fn x hx` (each
+`MeromorphicAt 0`) for `x` in some `Finset X` whose every element maps
+to `y₀`, the chart-translated finite product is `MMeromorphicAt y₀`. -/
+
+lemma headlineG_mmeromorphicAt
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (y₀ : Y) (FF : Finset X)
+    (hfx_y₀ : ∀ x ∈ FF, f x = y₀)
+    (h_pos_fn : ∀ x ∈ FF, 1 ≤ manifoldRamificationIndex f x)
+    (g_x_fn : ∀ x ∈ FF, ℂ → ℂ)
+    (g_x_mero : ∀ (x : X) (hx : x ∈ FF), MeromorphicAt (g_x_fn x hx) 0) :
+    MMeromorphicAt (𝓘(ℂ, ℂ))
+      (fun y : Y => ∏ x ∈ FF.attach,
+        normPow (g_x_fn x.val x.property)
+          (manifoldRamificationIndex f x.val)
+          ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)) y₀ := by
+  classical
+  apply mmeromorphicAt_finset_prod
+  intro x _hx
+  have h_pos_x : 1 ≤ manifoldRamificationIndex f x.val :=
+    h_pos_fn x.val x.property
+  have h := normPow_mmeromorphicAt_chartPullback_translated
+    h_pos_x (g_x_mero x.val x.property)
+  rw [hfx_y₀ x.val x.property] at h
+  exact h
+
 end Manifold
 end JacobianChallenge
 
