@@ -601,6 +601,51 @@ theorem normFM_local_product_eq_normPow
     -- normPow's body is exactly this product.
     rfl
 
+/-! ## Step 10: per-`x` factor function `F_x : Y → ℂ`. -/
+
+/-- Existence of a planar germ representing `g` at the fibre point, with
+`MeromorphicAt 0`. Cleaner factorisation of step 9's existential output. -/
+private theorem normFM_local_germ_exists
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) :
+    ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 := by
+  obtain ⟨_, _, _, _, _, g_x, hg_x_mero, _⟩ :=
+    normFM_local_product_eq_normPow hf hnc g x h_pos
+  exact ⟨g_x, hg_x_mero⟩
+
+/-- The planar germ `g_x` for the fibre point `x`, extracted via Classical.choose. -/
+noncomputable def normFM_g_x
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) : ℂ → ℂ :=
+  Classical.choose (normFM_local_germ_exists hf hnc g x h_pos)
+
+theorem normFM_g_x_meromorphicAt
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) :
+    MeromorphicAt (normFM_g_x hf hnc g x h_pos) 0 :=
+  Classical.choose_spec (normFM_local_germ_exists hf hnc g x h_pos)
+
+/-- The per-`x` factor function for the headline `NormFM_mmeromorphicAt`. -/
+noncomputable def normFM_F_x
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) : Y → ℂ :=
+  fun y =>
+    normPow (normFM_g_x hf hnc g x h_pos) (manifoldRamificationIndex f x)
+      ((chartAt ℂ (f x)) y - (chartAt ℂ (f x)) (f x))
+
+/-- `normFM_F_x` is `MMeromorphicAt (f x)`. -/
+theorem normFM_F_x_mmeromorphicAt
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) (g : MeromorphicNonzero X) (x : X)
+    (h_pos : 1 ≤ manifoldRamificationIndex f x) :
+    MMeromorphicAt (𝓘(ℂ, ℂ)) (normFM_F_x hf hnc g x h_pos) (f x) :=
+  normPow_mmeromorphicAt_chartPullback_translated h_pos
+    (normFM_g_x_meromorphicAt hf hnc g x h_pos)
+
 end Manifold
 end JacobianChallenge
 
