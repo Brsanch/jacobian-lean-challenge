@@ -4,8 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.NormFMUnconditional
+import JacobianChallenge.Manifold.NormFMPrincipalDivisor
 import JacobianChallenge.Manifold.LocalBiholomorphism
 import JacobianChallenge.Manifold.NormPushforwardGlobal
+import Mathlib.Topology.Perfect
+import Mathlib.Topology.Algebra.Module.PerfectSpace
 
 set_option diagnostics true
 set_option diagnostics.threshold 100
@@ -586,6 +589,73 @@ lemma NormFM_mmeromorphicOrderAt_nonneg_of_no_poles
   apply Finset.sum_nonneg
   intro x _
   exact hg_nonpole x.val (show x.val ∈ f ⁻¹' {y} from h_fibre x.val x.property)
+
+/-- **Punctured neighbourhood is `NeBot` on a `ChartedSpace ℂ`.**
+
+The chart at `y` is an open partial homeomorphism into the perfect
+space `ℂ`. Lifting `PerfectSpace.not_isolated` for `c y ∈ ℂ` through
+`c.symm` (continuous on `c.target`) gives that `𝓝[≠] y` is `NeBot` in
+`Y`. -/
+lemma nhdsWithin_compl_singleton_neBot
+    {Z : Type*} [TopologicalSpace Z] [T1Space Z] [ChartedSpace ℂ Z]
+    (z : Z) : Filter.NeBot (𝓝[≠] z) := by
+  rw [← mem_closure_iff_nhdsWithin_neBot]
+  -- Show z ∈ closure ({z}ᶜ): every open nbhd of z contains a point ≠ z.
+  rw [mem_closure_iff]
+  intro V hV_open hzV
+  set c : OpenPartialHomeomorph Z ℂ := chartAt ℂ z
+  have hzs : z ∈ c.source := mem_chart_source ℂ z
+  have hczt : c z ∈ c.target := c.map_source hzs
+  have h_open_img : IsOpen (c '' (V ∩ c.source) ∩ c.target) := by
+    have h_inter_open : IsOpen (V ∩ c.source) := hV_open.inter c.open_source
+    exact (c.isOpen_image_of_subset_source h_inter_open Set.inter_subset_right).inter
+      c.open_target
+  have hcz_in : c z ∈ c '' (V ∩ c.source) ∩ c.target :=
+    ⟨⟨z, ⟨hzV, hzs⟩, rfl⟩, hczt⟩
+  -- ℂ is perfect: every open nbhd of (c z) contains a w ≠ c z.
+  haveI : Filter.NeBot (𝓝[≠] (c z)) := PerfectSpace.not_isolated _
+  have hcz_closure : c z ∈ closure ({c z}ᶜ) := mem_closure_iff_nhdsWithin_neBot.mpr (by infer_instance)
+  rw [mem_closure_iff] at hcz_closure
+  obtain ⟨w, ⟨⟨z', ⟨hz'_V, hz'_s⟩, hz'_eq⟩, hw_t⟩, hw_ne_singleton⟩ :=
+    hcz_closure (c '' (V ∩ c.source) ∩ c.target) h_open_img hcz_in
+  have hw_ne : w ≠ c z := hw_ne_singleton
+  refine ⟨z', ⟨hz'_V, ?_⟩⟩
+  intro h_eq
+  apply hw_ne
+  rw [← hz'_eq, h_eq]
+
+/-- **At a regular value with no preimage poles, `NormFM_regularized = NormFM`.**
+
+Composes:
+* `NormFM_mmeromorphicOrderAt_nonneg_of_no_poles` (ZZ245) → the
+  `0 ≤ mmero NormFM y` branch of `NormFM_regularized` fires.
+* `NormFM_continuousAt_of_regular_and_no_poles` (ZZ244) → `NormFM` is
+  continuous at `y`, so its limit over `𝓝[≠] y` (which is `NeBot` by
+  `nhdsWithin_compl_singleton_neBot`) equals `NormFM y`.
+
+Hence the regularization override at `y` produces the literal value.
+This is the unfold the framework needs to identify the regularized
+function with `NormFM` on the open dense set of regular no-pole
+points. -/
+lemma NormFM_regularized_eq_NormFM_at_regular_no_poles
+    [Nonempty Y]
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X)
+    {y : Y} (hy_reg : y ∉ criticalValuesGeneral f)
+    (hg_nonpole : ∀ x ∈ f ⁻¹' {y},
+        0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x) :
+    NormFM_regularized hf hnc g y = NormFM f hf hnc g y := by
+  have h_nonneg :=
+    NormFM_mmeromorphicOrderAt_nonneg_of_no_poles hf hnc g hg_nonpole
+  rw [NormFM_regularized_of_nonneg hf hnc g h_nonneg]
+  haveI : Filter.NeBot (𝓝[≠] y) := nhdsWithin_compl_singleton_neBot y
+  have h_cont : ContinuousAt (NormFM f hf hnc g) y :=
+    NormFM_continuousAt_of_regular_and_no_poles hf hnc g hy_reg hg_nonpole
+  have h_tendsto :
+      Tendsto (NormFM f hf hnc g) (𝓝[≠] y) (𝓝 (NormFM f hf hnc g y)) :=
+    h_cont.tendsto.mono_left nhdsWithin_le_nhds
+  exact h_tendsto.limUnder_eq
 
 end Manifold
 end JacobianChallenge
