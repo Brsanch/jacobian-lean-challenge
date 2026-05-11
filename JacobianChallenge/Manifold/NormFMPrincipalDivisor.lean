@@ -110,5 +110,30 @@ theorem divPushforwardHom_principalDivisor_eq_NormFM_orderFun
   -- Now: ∑ x ∈ L, (mmero g x).untop₀ = ∑ x ∈ FF, (mmero g x).untop₀ via sum_subset.
   exact Finset.sum_subset hL_sub_FF hFF_minus_L_zero
 
+/-- **Nonvanishing germ of `NormFM`.** For non-constant `f` and
+`g : MeromorphicNonzero X`, the pushed-down norm `NormFM f hf hnc g` has
+no germ identically zero at any `y₀ : Y`.
+
+Proof: if `mmeromorphicOrderAt I (NormFM f hf hnc g) y₀ = ⊤`, the
+fibre-sum identity forces `∑_{x ∈ fibre} mmero(g, x) = ⊤`, which by
+`WithTop.sum_eq_top` requires some `mmero(g, x) = ⊤` — contradicting
+`g.nonvanishing_germ`. -/
+theorem NormFM_nonvanishing_germ
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : JacobianChallenge.MeromorphicNonzero X) :
+    ∀ y₀ : Y, mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀ ≠ ⊤ := by
+  intro y₀ h_top
+  obtain ⟨FF, _h_fibre, h_eq⟩ :=
+    NormFM_mmeromorphicOrderAt_eq_fibre_sum hf hnc g y₀
+  rw [h_top] at h_eq
+  -- h_eq : ⊤ = ∑ x ∈ FF.attach, mmero(g, x.val).
+  have h_sum_top :
+      (∑ x ∈ FF.attach, mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x.val) = ⊤ :=
+    h_eq.symm
+  rw [WithTop.sum_eq_top] at h_sum_top
+  obtain ⟨x, _hx_mem, hx_top⟩ := h_sum_top
+  exact g.nonvanishing_germ x.val hx_top
+
 end Manifold
 end JacobianChallenge
