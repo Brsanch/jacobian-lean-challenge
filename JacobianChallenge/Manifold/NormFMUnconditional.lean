@@ -1749,6 +1749,18 @@ lemma headlineG_mmeromorphicOrderAt_eq_sum
     exact normPow_mmeromorphicAt_chartPullback_translated
       (h_pos_fn x.val x.property) (g_x_mero x.val x.property)
 
+/-- Analytic order of `(·^k)` at `0` equals `k`. Direct application of
+mathlib's `analyticOrderAt_pow` to the identity function (analytic order 1).
+Building block for the planar `normPow`-order rule. -/
+
+lemma analyticOrderAt_pow_id (k : ℕ) :
+    analyticOrderAt (fun s : ℂ => s ^ k) 0 = (k : ℕ∞) := by
+  classical
+  have h_fun_eq : (fun s : ℂ => s ^ k) = (id : ℂ → ℂ) ^ k := by
+    funext s; rfl
+  rw [h_fun_eq, analyticOrderAt_pow analyticAt_id, analyticOrderAt_id]
+  simp
+
 end Manifold
 end JacobianChallenge
 
