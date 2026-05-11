@@ -2170,6 +2170,56 @@ theorem NormFM_mmeromorphicOrderAt_eq_fibre_sum
   intro x _hx
   exact g_x_order x.val x.property
 
+/-- Helper: `.untop₀` distributes over a finset sum of `WithTop ℤ` values
+when each summand is finite (≠ ⊤). -/
+lemma untop₀_sum_of_ne_top {ι : Type*} (S : Finset ι) (f : ι → WithTop ℤ)
+    (hf : ∀ i ∈ S, f i ≠ ⊤) :
+    (∑ i ∈ S, f i).untop₀ = ∑ i ∈ S, (f i).untop₀ := by
+  classical
+  induction S using Finset.induction_on with
+  | empty => simp
+  | insert i s his ih =>
+    rw [Finset.sum_insert his, Finset.sum_insert his]
+    have hi : f i ≠ ⊤ := hf i (Finset.mem_insert_self i s)
+    have hs : ∀ j ∈ s, f j ≠ ⊤ := fun j hj =>
+      hf j (Finset.mem_insert_of_mem hj)
+    have h_sum_fin : (∑ j ∈ s, f j) ≠ ⊤ := WithTop.sum_ne_top.mpr hs
+    -- Step 1: split LHS via case analysis on f i and ∑ j ∈ s, f j.
+    have h_split : (f i + ∑ j ∈ s, f j).untop₀
+        = (f i).untop₀ + (∑ j ∈ s, f j).untop₀ := by
+      rcases hiv : f i with _ | a
+      · exact absurd hiv hi
+      · rcases hsv : ∑ j ∈ s, f j with _ | b
+        · exact absurd hsv h_sum_fin
+        · simp [WithTop.untop₀]
+    rw [h_split, ih hs]
+
+/-- Pointwise integer form of `NormFM_mmeromorphicOrderAt_eq_fibre_sum`.
+The `.untop₀` distributes over the fibre sum because each summand is finite
+(MeromorphicNonzero g forbids `mmeromorphicOrderAt _ g.toFun x = ⊤`).
+This is the form `principalDivisorMap` sees pointwise. -/
+theorem NormFM_principalDivisor_apply_at_y₀
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X) (y₀ : Y) :
+    ∃ (FF : Finset X),
+      (∀ x ∈ FF, f x = y₀) ∧
+      (mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀).untop₀
+        = ∑ x ∈ FF.attach,
+          (mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x.val).untop₀ := by
+  classical
+  obtain ⟨FF, h_fibre, h_eq⟩ :=
+    NormFM_mmeromorphicOrderAt_eq_fibre_sum hf hnc g y₀
+  refine ⟨FF, h_fibre, ?_⟩
+  rw [h_eq]
+  -- Distribute .untop₀ over the sum, using nonvanishing_germ to avoid ⊤.
+  have h_finite : ∀ x ∈ FF.attach,
+      mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x.val ≠ ⊤ :=
+    fun x _hx => g.nonvanishing_germ x.val
+  -- Generic helper: untop₀ distributes over a Finset sum of finite WithTop ℤ.
+  exact untop₀_sum_of_ne_top FF.attach
+    (fun x => mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x.val) h_finite
+
 end Manifold
 end JacobianChallenge
 
