@@ -562,6 +562,31 @@ theorem NormFM_continuousAt_of_regular_and_no_poles
   -- Transfer continuity via EventuallyEq.
   exact h_prod.congr h_eventually.symm
 
+/-- **Non-negativity of `NormFM`'s order under no-pole preimages.**
+
+If every preimage `x ∈ f⁻¹{y}` of `y` is a non-pole point of `g`
+(`0 ≤ mmero g x`), then `0 ≤ mmero NormFM y`.
+
+Proof: the fibre sum identity
+`mmero NormFM y = ∑ x ∈ FF, mmero g x` reduces non-negativity to
+`Finset.sum_nonneg`. This is the order-side of the no-pole hypothesis
+that fed `regular_continuousAt` in the framework: the regularized
+form's `if 0 ≤ mmero ...` branch fires precisely when this lemma's
+hypothesis holds. -/
+lemma NormFM_mmeromorphicOrderAt_nonneg_of_no_poles
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X)
+    {y : Y} (hg_nonpole : ∀ x ∈ f ⁻¹' {y},
+        0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x) :
+    0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y := by
+  classical
+  obtain ⟨FF, h_fibre, h_eq⟩ := NormFM_mmeromorphicOrderAt_eq_fibre_sum hf hnc g y
+  rw [h_eq]
+  apply Finset.sum_nonneg
+  intro x _
+  exact hg_nonpole x.val (show x.val ∈ f ⁻¹' {y} from h_fibre x.val x.property)
+
 end Manifold
 end JacobianChallenge
 
