@@ -1878,6 +1878,50 @@ lemma withTop_int_mul_right_cancel {k : ℕ} (hk : 1 ≤ k)
       have : a' = b' := mul_right_cancel₀ hk_ne_int h
       rw [this]
 
+/-- **Order-of-composition with `(·^k)`** for meromorphic functions.
+For `f : ℂ → ℂ` meromorphic at `0` and `k ≥ 1`,
+`meromorphicOrderAt (fun s => f (s^k)) 0 = meromorphicOrderAt f 0 * k`.
+Wraps `MeromorphicAt.meromorphicOrderAt_comp` + ZZ231a. -/
+lemma meromorphicOrderAt_comp_pow_zero
+    {f : ℂ → ℂ} {k : ℕ} (hk : 1 ≤ k) (hf : MeromorphicAt f 0) :
+    meromorphicOrderAt (fun s : ℂ => f (s ^ k)) 0
+      = meromorphicOrderAt f 0 * (k : WithTop ℤ) := by
+  classical
+  have hk_ne : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
+  have h_pow_an : AnalyticAt ℂ (fun s : ℂ => s ^ k) 0 := by
+    have h_eq : (fun s : ℂ => s ^ k) = (id : ℂ → ℂ) ^ k := by funext s; rfl
+    rw [h_eq]
+    exact (analyticAt_id (E := ℂ)).pow k
+  have h_pow_zero : (fun s : ℂ => s ^ k) (0:ℂ) = (0:ℂ) := by
+    simp [zero_pow hk_ne]
+  have h_f_at : MeromorphicAt f ((fun s : ℂ => s ^ k) (0:ℂ)) := by
+    rw [h_pow_zero]; exact hf
+  have h_not_const : ¬EventuallyConst (fun s : ℂ => s ^ k) (𝓝 (0 : ℂ)) :=
+    pow_not_eventuallyConst hk
+  have h_comp := h_f_at.meromorphicOrderAt_comp h_pow_an h_not_const
+  -- h_comp uses `npowRec k` after Lean's instance reduction. Use rfl
+  -- to bridge `(fun s => s^k) ↔ npowRec k`, then standard rewrites apply.
+  rw [show (npowRec k : ℂ → ℂ) = (fun s : ℂ => s ^ k) from rfl] at h_comp
+  -- h_comp : ord((f) ∘ (fun s => s^k), 0)
+  --        = ord(f, (fun s=>s^k) 0)
+  --          * ENat.map Nat.cast (analyticOrderAt (fun x => (fun s=>s^k) x - (fun s=>s^k) 0) 0)
+  have h_sub_simp :
+      (fun x : ℂ => (fun s : ℂ => s^k) x - (fun s : ℂ => s^k) (0:ℂ))
+        = (fun s : ℂ => s ^ k) := by
+    funext s
+    show s ^ k - (0:ℂ) ^ k = s ^ k
+    rw [zero_pow hk_ne, sub_zero]
+  rw [h_sub_simp] at h_comp
+  rw [show ((fun s : ℂ => s ^ k) (0:ℂ)) = (0:ℂ) from h_pow_zero] at h_comp
+  rw [analyticOrderAt_pow_id k] at h_comp
+  -- h_comp : ord(f ∘ (s^k), 0)
+  --        = ord(f, 0) * ENat.map Nat.cast (k : ℕ∞).
+  -- Now ENat.map (Nat.cast : ℕ → ℤ) (k : ℕ∞) = (k : WithTop ℤ) via map_coe.
+  simp only [ENat.map_coe] at h_comp
+  -- After simp: ENat.map Nat.cast (k : ℕ∞) = ((k : ℤ) : WithTop ℤ).
+  -- Match with our target's `(k : WithTop ℤ)`.
+  exact_mod_cast h_comp
+
 end Manifold
 end JacobianChallenge
 
