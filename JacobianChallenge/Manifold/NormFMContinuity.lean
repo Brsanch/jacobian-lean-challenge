@@ -657,6 +657,140 @@ lemma NormFM_regularized_eq_NormFM_at_regular_no_poles
     h_cont.tendsto.mono_left nhdsWithin_le_nhds
   exact h_tendsto.limUnder_eq
 
+/-! ## Pole-cancellation infrastructure for `NormFM_regularized`
+
+The framework's `regular_continuousAt` field needs `NormFM_regularized`
+continuous at every `y₀` with `0 ≤ mmero NormFM_regularized y₀`, including
+the harder case where `y₀` has some preimage poles whose orders cancel
+in the fibre sum.
+
+The chain (ZZ247→ZZ250→ZZ252) establishes:
+* ZZ247 — manifold lift of `tendsto_nhds_of_meromorphicOrderAt_nonneg`.
+* ZZ248 — order stability: `0 ≤ mmero g x` ⇒ `g` is analytic on a chart
+  ball around `x`, hence `mmero g x' = 0` on the punctured ball.
+* ZZ249/250 — for `y` in a punctured nbhd of `y₀`, every preimage of `y`
+  via the local section is non-pole, so `mmero NormFM y = 0`.
+* ZZ252 — combines to get `NormFM_regularized` continuous at `y₀`. -/
+
+/-- **Manifold version of `tendsto_nhds_of_meromorphicOrderAt_nonneg`.**
+
+If `f : Z → ℂ` is meromorphic at `z` (in the manifold sense) with
+non-negative order, then `f` has a limit along the punctured
+neighbourhood `𝓝[≠] z`.
+
+Proof: unfold both hypotheses to the chart-pullback `f ∘ c.symm` at
+`c z`, apply mathlib's planar `tendsto_nhds_of_meromorphicOrderAt_nonneg`,
+and push the conclusion back through `c` (continuous + injective on
+`c.source`). -/
+lemma tendsto_nhds_of_mmeromorphicOrderAt_nonneg
+    {Z : Type*} [TopologicalSpace Z] [ChartedSpace ℂ Z]
+    (I : ModelWithCorners ℂ ℂ ℂ) {fZ : Z → ℂ} {z : Z}
+    (hfZ : MMeromorphicAt I fZ z)
+    (ho : 0 ≤ mmeromorphicOrderAt I fZ z) :
+    ∃ L, Tendsto fZ (𝓝[≠] z) (𝓝 L) := by
+  classical
+  set c : OpenPartialHomeomorph Z ℂ := chartAt ℂ z with hc_def
+  have hz_src : z ∈ c.source := mem_chart_source ℂ z
+  have hF : MeromorphicAt (fZ ∘ c.symm) (c z) := hfZ
+  have hF_ord : 0 ≤ meromorphicOrderAt (fZ ∘ c.symm) (c z) := ho
+  obtain ⟨L, hL⟩ := tendsto_nhds_of_meromorphicOrderAt_nonneg hF hF_ord
+  refine ⟨L, ?_⟩
+  -- Tendsto c (𝓝[≠] z) (𝓝[≠] (c z)).
+  have hc_cont : ContinuousAt c z :=
+    c.continuousOn_toFun.continuousAt (c.open_source.mem_nhds hz_src)
+  have h_src_nhds : c.source ∈ 𝓝 z := c.open_source.mem_nhds hz_src
+  have hc_tendsto_punctured : Tendsto c (𝓝[≠] z) (𝓝[≠] (c z)) := by
+    rw [tendsto_nhdsWithin_iff]
+    refine ⟨hc_cont.tendsto.mono_left nhdsWithin_le_nhds, ?_⟩
+    have h_src_W : c.source ∈ 𝓝[≠] z := nhdsWithin_le_nhds h_src_nhds
+    filter_upwards [h_src_W, self_mem_nhdsWithin] with z' hz'_src hz'_ne h_eq
+    apply hz'_ne
+    exact c.injOn hz'_src hz_src h_eq
+  -- Compose with hL.
+  have h_comp : Tendsto ((fZ ∘ c.symm) ∘ c) (𝓝[≠] z) (𝓝 L) :=
+    hL.comp hc_tendsto_punctured
+  -- Eventually on c.source, (f ∘ c.symm) ∘ c = f.
+  apply h_comp.congr'
+  have h_src_W : c.source ∈ 𝓝[≠] z := nhdsWithin_le_nhds h_src_nhds
+  filter_upwards [h_src_W] with z' hz'_src
+  show fZ (c.symm (c z')) = fZ z'
+  rw [c.left_inv hz'_src]
+
+/-- **σ-stability of non-negativity of `mmero g`.**
+
+For a local section `σ : Y → X` with `σ y₀ = x₀` and `f (σ y) = y` on a
+nbhd of `y₀`, the order `mmero g (σ y)` is non-negative on a punctured
+neighbourhood of `y₀`, regardless of whether `g` has a pole at `x₀`.
+
+Proof: `g.toFun` is meromorphic at `x₀` (`g.meromorphic`), so by
+`MeromorphicAt.eventually_analyticAt` for the chart pullback at `x₀`,
+the chart pullback is analytic in a punctured chart ball. The section
+`σ` maps `y₀` to `x₀` and is continuous; for `y ≠ y₀`, the section
+property `f ∘ σ = id` forces `σ y ≠ x₀` (else `y = f x₀ = y₀`). Hence
+`σ y` enters the punctured chart ball where `g` is analytic; combined
+with chart independence of `mmero` and `AnalyticAt.meromorphicOrderAt_nonneg`,
+this gives `0 ≤ mmero g (σ y)`. -/
+lemma eventually_zero_le_mmero_at_section
+    {f : X → Y} (g : MeromorphicNonzero X)
+    {x₀ : X} {y₀ : Y} (hx₀_y₀ : f x₀ = y₀)
+    {σ : Y → X}
+    (hσ_y₀ : σ y₀ = x₀) (hσ_cont : ContinuousAt σ y₀)
+    (hf_σ : ∀ᶠ y in 𝓝 y₀, f (σ y) = y) :
+    ∀ᶠ y in 𝓝[≠] y₀, 0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun (σ y) := by
+  classical
+  set c : OpenPartialHomeomorph X ℂ := chartAt ℂ x₀ with hc_def
+  have hx₀_src : x₀ ∈ c.source := mem_chart_source ℂ x₀
+  have hg_mero : MMeromorphicAt (𝓘(ℂ, ℂ)) g.toFun x₀ := g.meromorphic x₀ trivial
+  have hF_mero : MeromorphicAt (g.toFun ∘ c.symm) (c x₀) := hg_mero
+  have h_eventually_an :
+      ∀ᶠ w in 𝓝[≠] (c x₀), AnalyticAt ℂ (g.toFun ∘ c.symm) w :=
+    hF_mero.eventually_analyticAt
+  have hc_cont : ContinuousAt c x₀ :=
+    c.continuousOn_toFun.continuousAt (c.open_source.mem_nhds hx₀_src)
+  have h_σ_src : ∀ᶠ y in 𝓝 y₀, σ y ∈ c.source := by
+    have h_src_at_x₀ : c.source ∈ 𝓝 (σ y₀) := by
+      rw [hσ_y₀]; exact c.open_source.mem_nhds hx₀_src
+    exact hσ_cont.preimage_mem_nhds h_src_at_x₀
+  -- (c ∘ σ) y₀ = c x₀.
+  have h_cσ_y₀ : (c ∘ σ) y₀ = c x₀ := by show c (σ y₀) = c x₀; rw [hσ_y₀]
+  have h_cσ_cont : ContinuousAt (c ∘ σ) y₀ := by
+    have h_at_x₀ : ContinuousAt c (σ y₀) := by rw [hσ_y₀]; exact hc_cont
+    exact h_at_x₀.comp hσ_cont
+  -- Tendsto (c ∘ σ) (𝓝[≠] y₀) (𝓝[≠] (c x₀)).
+  have h_cσ_tendsto_punc : Tendsto (c ∘ σ) (𝓝[≠] y₀) (𝓝[≠] (c x₀)) := by
+    rw [tendsto_nhdsWithin_iff]
+    refine ⟨?_, ?_⟩
+    · have h_tend : Tendsto (c ∘ σ) (𝓝 y₀) (𝓝 (c x₀)) := by
+        rw [← h_cσ_y₀]; exact h_cσ_cont.tendsto
+      exact h_tend.mono_left nhdsWithin_le_nhds
+    · -- Eventually c (σ y) ≠ c x₀: use f σ y = y, y ≠ y₀, σ y ∈ c.source.
+      have h_σ_src_W : ∀ᶠ y in 𝓝[≠] y₀, σ y ∈ c.source :=
+        h_σ_src.filter_mono nhdsWithin_le_nhds
+      have hf_σ_W : ∀ᶠ y in 𝓝[≠] y₀, f (σ y) = y :=
+        hf_σ.filter_mono nhdsWithin_le_nhds
+      filter_upwards [h_σ_src_W, hf_σ_W, self_mem_nhdsWithin]
+        with y hy_src hfy_eq hy_ne h_eq
+      -- h_eq : (c ∘ σ) y = c x₀, i.e. c (σ y) = c x₀.
+      apply hy_ne
+      -- c injective on source: c (σ y) = c x₀ + σ y ∈ source + x₀ ∈ source → σ y = x₀.
+      have h_σy_eq : σ y = x₀ := c.injOn hy_src hx₀_src h_eq
+      -- Then y = f (σ y) = f x₀ = y₀.
+      show y ∈ ({y₀} : Set Y)
+      rw [Set.mem_singleton_iff, ← hfy_eq, h_σy_eq, hx₀_y₀]
+  -- Pull back analyticity.
+  have h_pulled :
+      ∀ᶠ y in 𝓝[≠] y₀, AnalyticAt ℂ (g.toFun ∘ c.symm) ((c ∘ σ) y) :=
+    h_cσ_tendsto_punc h_eventually_an
+  have h_σ_src_W : ∀ᶠ y in 𝓝[≠] y₀, σ y ∈ c.source :=
+    h_σ_src.filter_mono nhdsWithin_le_nhds
+  filter_upwards [h_pulled, h_σ_src_W] with y h_an h_src
+  have h_ord_eq :
+      mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun (σ y)
+        = meromorphicOrderAt (g.toFun ∘ c.symm) (c (σ y)) :=
+    mmeromorphicOrderAt_eq_of_isManifold (chart_mem_atlas ℂ x₀) h_src
+  rw [h_ord_eq]
+  exact h_an.meromorphicOrderAt_nonneg
+
 end Manifold
 end JacobianChallenge
 
