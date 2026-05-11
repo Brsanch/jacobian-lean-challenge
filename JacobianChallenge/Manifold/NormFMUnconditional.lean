@@ -1922,6 +1922,87 @@ lemma meromorphicOrderAt_comp_pow_zero
   -- Match with our target's `(k : WithTop ℤ)`.
   exact_mod_cast h_comp
 
+/-- Helper: `k • a = a * (k : WithTop ℤ)` for `k : ℕ` and `a : WithTop ℤ`.
+Convert nsmul (default repeated addition) to right multiplication so that
+`withTop_int_mul_right_cancel` applies. -/
+lemma withTop_int_nsmul_eq_mul (k : ℕ) (a : WithTop ℤ) :
+    (k : ℕ) • a = a * (k : WithTop ℤ) := by
+  induction a with
+  | top =>
+    rcases Nat.eq_zero_or_pos k with hk0 | hkpos
+    · subst hk0; simp
+    · have hk_ne : (k : WithTop ℤ) ≠ 0 := by
+        have : (k : ℤ) ≠ 0 := by exact_mod_cast Nat.pos_iff_ne_zero.mp hkpos
+        exact_mod_cast this
+      rw [WithTop.top_mul hk_ne]
+      -- k • ⊤ = ⊤ for k ≥ 1.
+      induction k with
+      | zero => omega
+      | succ n _ => rw [succ_nsmul]; simp
+  | coe c =>
+    -- (k : ℕ) • ((c : ℤ) : WithTop ℤ) = ((c * k : ℤ) : WithTop ℤ).
+    induction k with
+    | zero => simp
+    | succ n ih =>
+      rw [succ_nsmul, ih]
+      -- Goal: c * n + c = c * (n+1) (WithTop ℤ).
+      -- Push to ℤ via coe.
+      have h_coe_n : ((n : ℤ) : WithTop ℤ) = (n : WithTop ℤ) := by norm_cast
+      have h_coe_succ : (((n + 1 : ℕ) : ℤ) : WithTop ℤ) = ((n + 1 : ℕ) : WithTop ℤ) := by
+        push_cast; rfl
+      rw [show ((c : WithTop ℤ)) = ((c : ℤ) : WithTop ℤ) from rfl]
+      rw [show ((n : WithTop ℤ)) = ((n : ℤ) : WithTop ℤ) by norm_cast]
+      rw [show (((n + 1 : ℕ) : WithTop ℤ)) = (((n + 1 : ℕ) : ℤ) : WithTop ℤ) by norm_cast]
+      rw [← WithTop.coe_mul, ← WithTop.coe_mul, ← WithTop.coe_add]
+      congr 1
+      push_cast; ring
+
+/-- **Planar order rule for `normPow`.** For `g : ℂ → ℂ` meromorphic at `0`
+and `k ≥ 1`,
+`meromorphicOrderAt (fun u => normPow g k u) 0 = meromorphicOrderAt g 0`.
+
+Strategy. Compose `normPow g k` with `s ↦ s^k`:
+* By `meromorphicOrderAt_comp_pow_zero`: `ord(normPow g k, 0) * k`.
+* By `normPow_pow` + `meromorphicOrderAt_rotationProd`: `k • ord(g, 0)`.
+Convert smul → mul then cancel `k ≥ 1`. -/
+lemma meromorphicOrderAt_normPow_zero
+    (g : ℂ → ℂ) {k : ℕ} (hk : 1 ≤ k) (hg : MeromorphicAt g 0) :
+    meromorphicOrderAt (fun u : ℂ => normPow g k u) 0
+      = meromorphicOrderAt g 0 := by
+  classical
+  have h_npow_mero : MeromorphicAt (fun u : ℂ => normPow g k u) 0 :=
+    normPow_meromorphicAt_zero hk hg
+  -- Step 1: comp form via wrapper.
+  have h_lhs_comp : meromorphicOrderAt
+      (fun s : ℂ => (fun u : ℂ => normPow g k u) (s ^ k)) 0
+      = meromorphicOrderAt (fun u : ℂ => normPow g k u) 0
+          * (k : WithTop ℤ) :=
+    meromorphicOrderAt_comp_pow_zero hk h_npow_mero
+  -- Step 2: rotProd form via normPow_pow + ZZ231b.
+  have h_evEq : (fun s : ℂ => (fun u : ℂ => normPow g k u) (s ^ k))
+      =ᶠ[nhdsWithin (0 : ℂ) {0}ᶜ] (fun s : ℂ =>
+        ∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), g (ζ * s)) := by
+    rw [Filter.eventuallyEq_iff_exists_mem]
+    refine ⟨{s : ℂ | s ≠ 0}, ?_, ?_⟩
+    · rw [mem_nhdsWithin]
+      refine ⟨Set.univ, isOpen_univ, by trivial, ?_⟩
+      intro s hs; exact hs.2
+    · intro s hs
+      exact normPow_pow g hk hs
+  have h_rhs_rot : meromorphicOrderAt
+      (fun s : ℂ => (fun u : ℂ => normPow g k u) (s ^ k)) 0
+      = (k : ℕ) • meromorphicOrderAt g 0 := by
+    rw [meromorphicOrderAt_congr h_evEq]
+    exact meromorphicOrderAt_rotationProd g hk hg
+  -- Step 3: combine.
+  have h_eq : meromorphicOrderAt (fun u : ℂ => normPow g k u) 0
+        * (k : WithTop ℤ)
+      = (k : ℕ) • meromorphicOrderAt g 0 := by
+    rw [← h_lhs_comp, h_rhs_rot]
+  rw [withTop_int_nsmul_eq_mul k] at h_eq
+  -- h_eq : ord(normPow g k, 0) * k = ord(g, 0) * k.
+  exact withTop_int_mul_right_cancel hk h_eq
+
 end Manifold
 end JacobianChallenge
 
