@@ -7,6 +7,7 @@ import JacobianChallenge.Manifold.NormFMUnconditional
 import JacobianChallenge.Manifold.NormFMPrincipalDivisor
 import JacobianChallenge.Manifold.LocalBiholomorphism
 import JacobianChallenge.Manifold.NormPushforwardGlobal
+import JacobianChallenge.Divisor.PrincipalDivisorRange
 import Mathlib.Topology.Perfect
 import Mathlib.Topology.Algebra.Module.PerfectSpace
 
@@ -1323,6 +1324,139 @@ lemma NormFM_regularized_continuousAt_of_order_nonneg
   intro V hV
   rw [h_reg_val]
   exact mem_of_mem_nhds hV
+
+/-- **`NormFM_regularized` as a `MeromorphicNonzero Y`.**
+
+Packages the regularized norm pushforward into the structure required
+by `principalDivisorAddHom : Additive (MeromorphicNonzero Y) →+ Div Y`.
+Three fields:
+
+* `meromorphic`: `NormFM` is meromorphic on `Set.univ` (existing
+  `NormFM_mmeromorphicAt`); `NormFM_regularized` is too, via the
+  universal punctured EventuallyEq (ZZ253) and `MeromorphicAt.congr`.
+* `nonvanishing_germ`: orders agree across the EventuallyEq, so
+  `NormFM_nonvanishing_germ` transfers.
+* `regular_continuousAt`: `NormFM_regularized_continuousAt_of_order_nonneg`
+  (ZZ253). -/
+noncomputable def NormFM_meromorphicNonzero
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X) : MeromorphicNonzero Y where
+  toFun := NormFM_regularized hf hnc g
+  meromorphic := by
+    intro y _
+    -- MMeromorphicAt = MeromorphicAt of chart pullback.
+    have h_ev :
+        NormFM_regularized hf hnc g =ᶠ[𝓝[≠] y] NormFM f hf hnc g :=
+      NormFM_regularized_eventuallyEq_NormFM_punctured_universal hf hnc g y
+    have h_NormFM : MMeromorphicAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y :=
+      NormFM_mmeromorphicAt hf hnc g y
+    -- Pull through chart and apply MeromorphicAt.congr.
+    show MeromorphicAt
+      ((NormFM_regularized hf hnc g) ∘ (chartAt ℂ y).symm)
+      ((chartAt ℂ y) y)
+    have h_pulled_ev :
+        (NormFM f hf hnc g ∘ (chartAt ℂ y).symm)
+          =ᶠ[𝓝[≠] ((chartAt ℂ y) y)]
+        (NormFM_regularized hf hnc g ∘ (chartAt ℂ y).symm) :=
+      eventuallyEq_chart_pulled_of_punctured h_ev.symm
+    exact (h_NormFM : MeromorphicAt _ _).congr h_pulled_ev
+  nonvanishing_germ := by
+    intro y h_top
+    -- Orders agree: mmero NormFM_regularized y = mmero NormFM y.
+    have h_ev :
+        NormFM_regularized hf hnc g =ᶠ[𝓝[≠] y] NormFM f hf hnc g :=
+      NormFM_regularized_eventuallyEq_NormFM_punctured_universal hf hnc g y
+    have h_ord_eq :
+        mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM_regularized hf hnc g) y
+          = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y :=
+      mmeromorphicOrderAt_congr_punctured h_ev
+    rw [h_ord_eq] at h_top
+    exact NormFM_nonvanishing_germ hf hnc g y h_top
+  regular_continuousAt := fun y ho =>
+    NormFM_regularized_continuousAt_of_order_nonneg hf hnc g ho
+
+/-- **Principal divisor of the packaged `NormFM_meromorphicNonzero` equals
+the bypass `NormFM_principalDivisor`.** Orders agree pointwise (via the
+punctured EventuallyEq), so the divisors agree. -/
+lemma principalDivisorMap_NormFM_meromorphicNonzero_eq_NormFM_principalDivisor
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X) :
+    JacobianChallenge.principalDivisorMap (NormFM_meromorphicNonzero hf hnc g)
+      = NormFM_principalDivisor hf hnc g := by
+  refine DFunLike.ext _ _ (fun y => ?_)
+  show JacobianChallenge.MMeromorphicOn.orderFun (𝓘(ℂ, ℂ))
+        (NormFM_regularized hf hnc g) y
+      = JacobianChallenge.MMeromorphicOn.orderFun (𝓘(ℂ, ℂ))
+        (NormFM f hf hnc g) y
+  unfold JacobianChallenge.MMeromorphicOn.orderFun
+  rw [mmeromorphicOrderAt_congr_punctured
+    (NormFM_regularized_eventuallyEq_NormFM_punctured_universal hf hnc g y)]
+
+/-! ## P1.4 — `PrincDiv`-pushforward closure
+
+The structural descent obligation for swapping `PrincDiv` from `⊥` to
+the honest `PrincDivHonestCandidate = AddSubgroup.closure
+(range principalDivisorMap)`: `divPushforwardHom f` carries the honest
+principal-divisor subgroup of `X` into that of `Y`. -/
+
+/-- **P1.4 — divisor-level subgroup descent.** For non-constant
+`ContMDiff ω f : X → Y`, the honest principal-divisor subgroup of `X`
+maps into the honest principal-divisor subgroup of `Y` under
+`divPushforwardHom f`.
+
+Proof: by `AddSubgroup.closure_le`, suffices to show every generator
+`principalDivisorMap g` (for `g : MeromorphicNonzero X`) maps into
+`PrincDivHonestCandidate Y`. By P1.3 (ZZ239
+`divPushforwardHom_principalDivisor_eq_NormFM_principalDivisor`), the
+image is `NormFM_principalDivisor hf hnc g`; by ZZ254
+(`principalDivisorMap_NormFM_meromorphicNonzero_eq_NormFM_principalDivisor`),
+this equals `principalDivisorMap (NormFM_meromorphicNonzero hf hnc g)`,
+which is a generator of `PrincDivHonestCandidate Y`. -/
+theorem PrincDivHonestCandidate_le_comap_divPushforwardHom
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) :
+    JacobianChallenge.PrincDivHonestCandidate X ≤
+      (JacobianChallenge.PrincDivHonestCandidate Y).comap
+        (JacobianChallenge.Pic0.divPushforwardHom f) := by
+  classical
+  unfold JacobianChallenge.PrincDivHonestCandidate
+  rw [AddSubgroup.closure_le]
+  rintro D ⟨g, hg⟩
+  -- D = principalDivisorMap g.
+  rw [SetLike.mem_coe, AddSubgroup.mem_comap]
+  show JacobianChallenge.Pic0.divPushforwardHom f D
+    ∈ JacobianChallenge.PrincDivHonestCandidate Y
+  rw [← hg]
+  -- divPushforwardHom f (principalDivisorMap g) = NormFM_principalDivisor.
+  rw [divPushforwardHom_principalDivisor_eq_NormFM_principalDivisor hf hnc g]
+  -- = principalDivisorMap (NormFM_meromorphicNonzero hf hnc g).
+  rw [← principalDivisorMap_NormFM_meromorphicNonzero_eq_NormFM_principalDivisor hf hnc g]
+  -- which is a generator.
+  exact JacobianChallenge.principalDivisorMap_mem_PrincDivHonestCandidate _
+
+/-- **P1.4 lifted to the `Div0`-restricted subgroup.** The standard
+mechanical step from the unrestricted `PrincDiv` containment: under
+the `.addSubgroupOf (Div0 _)` restriction, the containment lifts to
+`(PrincDivHonestCandidate Y).addSubgroupOf (Div0 Y)`. -/
+theorem PrincDivHonestCandidate_addSubgroupOf_Div0_le_comap_divPushforward
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f) :
+    (JacobianChallenge.PrincDivHonestCandidate X).addSubgroupOf
+      (JacobianChallenge.Div0 X) ≤
+      ((JacobianChallenge.PrincDivHonestCandidate Y).addSubgroupOf
+        (JacobianChallenge.Div0 Y)).comap
+        (JacobianChallenge.Pic0.divPushforward f) := by
+  classical
+  intro D hD
+  -- D : Div0 X with D.val ∈ PrincDivHonestCandidate X.
+  rw [AddSubgroup.mem_addSubgroupOf] at hD
+  rw [AddSubgroup.mem_comap, AddSubgroup.mem_addSubgroupOf]
+  show (JacobianChallenge.Pic0.divPushforward f D : JacobianChallenge.Div Y)
+    ∈ JacobianChallenge.PrincDivHonestCandidate Y
+  rw [JacobianChallenge.Pic0.divPushforward_coe]
+  exact PrincDivHonestCandidate_le_comap_divPushforwardHom hf hnc hD
 
 end Manifold
 end JacobianChallenge
