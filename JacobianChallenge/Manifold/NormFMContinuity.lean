@@ -205,8 +205,90 @@ theorem exists_local_section_at_regular_preimage
   have := d.injOn hfσy_dsource hy_dsource h_d_fσy
   exact this
 
+/-- **Coherent local sections at a regular value.**
+
+At a regular value `y₀ ∉ criticalValuesGeneral f`, package one local
+section per fibre point on a common open neighbourhood `V` of `y₀`.
+
+Built by applying `exists_local_section_at_regular_preimage` at each
+`x ∈ (f⁻¹{y₀}).toFinset` and intersecting the per-`x` neighbourhoods.
+-/
+theorem exists_coherent_local_sections_at_regular_value
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    {y₀ : Y} (hy₀ : y₀ ∉ criticalValuesGeneral f) :
+    ∃ (hF₀ : (f ⁻¹' {y₀}).Finite)
+      (σ : X → Y → X)
+      (V : Set Y),
+      IsOpen V ∧ y₀ ∈ V ∧
+      (∀ x ∈ hF₀.toFinset, σ x y₀ = x) ∧
+      (∀ x ∈ hF₀.toFinset, ContinuousAt (σ x) y₀) ∧
+      (∀ x ∈ hF₀.toFinset, ∀ y ∈ V, f (σ x y) = y) := by
+  classical
+  have hF₀ : (f ⁻¹' {y₀}).Finite :=
+    JacobianChallenge.ContMDiff.Owed.degree.fibres_finite_statement_holds_unconditional
+      f hf hnc y₀
+  set FF₀ : Finset X := hF₀.toFinset with hFF₀_def
+  -- Per-x existential.
+  have h_each : ∀ x ∈ FF₀, ∃ V : Set Y, IsOpen V ∧ y₀ ∈ V ∧
+      ∃ σ : Y → X, σ y₀ = x ∧ ContinuousAt σ y₀ ∧ ∀ y ∈ V, f (σ y) = y := by
+    intro x hx
+    have hx_fibre : x ∈ f ⁻¹' {y₀} := hF₀.mem_toFinset.mp hx
+    have hxy : f x = y₀ := hx_fibre
+    exact exists_local_section_at_regular_preimage hf hnc hy₀ x hxy
+  choose V_fn hV_open hy₀V σ_fn hσ_y₀ hσ_cont hf_σ using h_each
+  -- Build non-dependent V_fn' and σ_fn' over X.
+  set V_fn' : X → Set Y := fun x =>
+    if h : x ∈ FF₀ then V_fn x h else Set.univ with hV_fn'_def
+  set σ_fn' : X → Y → X := fun x =>
+    if h : x ∈ FF₀ then σ_fn x h else fun _ => x with hσ_fn'_def
+  -- V := ⋂ x ∈ FF₀, V_fn' x.
+  set V : Set Y := ⋂ x ∈ FF₀, V_fn' x with hV_def
+  -- IsOpen V.
+  have hV_open' : IsOpen V := by
+    refine isOpen_biInter_finset ?_
+    intro x hx
+    show IsOpen (V_fn' x)
+    rw [hV_fn'_def]
+    show IsOpen (if h : x ∈ FF₀ then V_fn x h else (Set.univ : Set Y))
+    rw [dif_pos hx]; exact hV_open x hx
+  -- y₀ ∈ V.
+  have hy₀_V : y₀ ∈ V := by
+    rw [hV_def, Set.mem_iInter₂]
+    intro x hx
+    show y₀ ∈ V_fn' x
+    rw [hV_fn'_def]
+    show y₀ ∈ (if h : x ∈ FF₀ then V_fn x h else (Set.univ : Set Y))
+    rw [dif_pos hx]; exact hy₀V x hx
+  refine ⟨hF₀, σ_fn', V, hV_open', hy₀_V, ?_, ?_, ?_⟩
+  · intro x hx
+    show σ_fn' x y₀ = x
+    rw [hσ_fn'_def]
+    show (if h : x ∈ FF₀ then σ_fn x h else fun _ => x) y₀ = x
+    rw [dif_pos hx]; exact hσ_y₀ x hx
+  · intro x hx
+    show ContinuousAt (σ_fn' x) y₀
+    rw [hσ_fn'_def]
+    show ContinuousAt (if h : x ∈ FF₀ then σ_fn x h else fun _ => x) y₀
+    rw [dif_pos hx]; exact hσ_cont x hx
+  · intro x hx y hyV
+    have hy_Vfn' : y ∈ V_fn' x := by
+      have h_mem : y ∈ ⋂ x' ∈ FF₀, V_fn' x' := hyV
+      rw [Set.mem_iInter₂] at h_mem
+      exact h_mem x hx
+    have hy_Vfn : y ∈ V_fn x hx := by
+      have heq : V_fn' x = V_fn x hx := by
+        show (if h : x ∈ FF₀ then V_fn x h else (Set.univ : Set Y)) = V_fn x hx
+        rw [dif_pos hx]
+      rw [heq] at hy_Vfn'; exact hy_Vfn'
+    have : σ_fn' x = σ_fn x hx := by
+      show (if h : x ∈ FF₀ then σ_fn x h else fun _ => x) = σ_fn x hx
+      rw [dif_pos hx]
+    rw [this]
+    exact hf_σ x hx y hy_Vfn
+
 /-! Continuity of `NormFM` at a regular value (next chip) builds on
-`exists_local_section_at_regular_preimage` plus
+`exists_coherent_local_sections_at_regular_value` plus
 `g.regular_continuousAt` at each non-pole preimage to obtain continuity
 of the finite product. -/
 
