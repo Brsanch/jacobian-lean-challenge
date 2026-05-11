@@ -976,6 +976,217 @@ lemma eventually_zero_le_mmero_NormFM_punctured
   rw [hz_in_singleton]
   exact h_y_stab x hxFF
 
+/-- **Eventual per-preimage non-pole on punctured nbhd of a regular value.**
+
+Stronger pointwise companion to ZZ250: at every `y` in a punctured
+neighbourhood of a regular `y₀`, every preimage of `y` is a non-pole
+of `g`. Same proof template as ZZ250 with a per-z output instead of
+the fibre sum. -/
+lemma eventually_all_preimages_non_pole
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X)
+    {y₀ : Y} (hy₀ : y₀ ∉ criticalValuesGeneral f) :
+    ∀ᶠ y in 𝓝[≠] y₀,
+      (y ∉ criticalValuesGeneral f) ∧
+      (∀ z ∈ f ⁻¹' {y},
+        0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun z) := by
+  classical
+  obtain ⟨hF₀, σ, V_sec, hVsec_open, hy₀_Vsec, hσ_y₀, hσ_cont, hf_σ_id, h_σ_stab⟩ :=
+    eventually_zero_le_mmero_at_all_sections hf hnc g hy₀
+  set FF₀ : Finset X := hF₀.toFinset with hFF₀_def
+  obtain ⟨hF₀', εFn, V_disj, hVdisj_open, hy₀_Vdisj, hε_pos,
+          hD_pwd, hVdisj_pre_sub, h_count⟩ :=
+    fibre_disjoint_chart_radius_decomposition f hf hnc y₀
+  have hFF_eq : hF₀'.toFinset = FF₀ :=
+    (Set.Finite.toFinset_inj).mpr rfl
+  set D : X → Set X := fun x =>
+    (chartAt ℂ x).source ∩
+      (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x)
+        (if h : x ∈ hF₀'.toFinset then εFn x h else 0) with hD_def
+  have hD_open : ∀ x ∈ FF₀, IsOpen (D x) := by
+    intro x hx
+    have hx' : x ∈ hF₀'.toFinset := by rw [hFF_eq]; exact hx
+    show IsOpen ((chartAt ℂ x).source ∩
+        (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x)
+          (if h : x ∈ hF₀'.toFinset then εFn x h else 0))
+    rw [show (if h : x ∈ hF₀'.toFinset then εFn x h else 0) = εFn x hx'
+        from dif_pos hx']
+    have hco : ContinuousOn (chartAt ℂ x) (chartAt ℂ x).source :=
+      (chartAt ℂ x).continuousOn_toFun
+    exact hco.isOpen_inter_preimage (chartAt ℂ x).open_source Metric.isOpen_ball
+  have hxD : ∀ x ∈ FF₀, x ∈ D x := by
+    intro x hx
+    have hx' : x ∈ hF₀'.toFinset := by rw [hFF_eq]; exact hx
+    show x ∈ (chartAt ℂ x).source ∩
+      (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x)
+        (if h : x ∈ hF₀'.toFinset then εFn x h else 0)
+    rw [show (if h : x ∈ hF₀'.toFinset then εFn x h else 0) = εFn x hx'
+        from dif_pos hx']
+    refine ⟨mem_chart_source ℂ x, ?_⟩
+    show (chartAt ℂ x) x ∈ Metric.ball ((chartAt ℂ x) x) (εFn x hx')
+    exact Metric.mem_ball_self (hε_pos x hx')
+  have h_σ_D_nhds : ∀ x ∈ FF₀, σ x ⁻¹' D x ∈ 𝓝 y₀ := by
+    intro x hx
+    have h_D_nhds : D x ∈ 𝓝 x := (hD_open x hx).mem_nhds (hxD x hx)
+    have h_at : D x ∈ 𝓝 (σ x y₀) := by rw [hσ_y₀ x hx]; exact h_D_nhds
+    exact (hσ_cont x hx).preimage_mem_nhds h_at
+  have h_cv_fin : (criticalValuesGeneral f).Finite :=
+    criticalValues_finite_general f hf hnc
+  have h_bad : (criticalValuesGeneral f \ {y₀}).Finite := h_cv_fin.diff
+  have h_bad_closed : IsClosed (criticalValuesGeneral f \ {y₀}) := h_bad.isClosed
+  have h_compl_nhds : (criticalValuesGeneral f \ {y₀})ᶜ ∈ 𝓝 y₀ :=
+    h_bad_closed.isOpen_compl.mem_nhds (fun hbad => hbad.2 rfl)
+  have h_inter :
+      V_disj ∩ V_sec ∩ (criticalValuesGeneral f \ {y₀})ᶜ ∩
+        (⋂ x ∈ FF₀, σ x ⁻¹' D x) ∈ 𝓝 y₀ := by
+    refine Filter.inter_mem ?_ ?_
+    · refine Filter.inter_mem (Filter.inter_mem ?_ ?_) h_compl_nhds
+      · exact hVdisj_open.mem_nhds hy₀_Vdisj
+      · exact hVsec_open.mem_nhds hy₀_Vsec
+    · exact (Filter.biInter_finset_mem FF₀).mpr h_σ_D_nhds
+  have h_inter_W : _ ∈ 𝓝[≠] y₀ := nhdsWithin_le_nhds h_inter
+  filter_upwards [h_inter_W, h_σ_stab, self_mem_nhdsWithin]
+    with y hy_inter h_y_stab hy_ne
+  obtain ⟨⟨⟨hy_Vdisj, hy_Vsec⟩, hy_compl⟩, hy_σ_D⟩ := hy_inter
+  have hy_reg : y ∉ criticalValuesGeneral f := by
+    intro hcv
+    by_cases hy_eq : y = y₀
+    · rw [hy_eq] at hcv; exact hy₀ hcv
+    · exact hy_compl ⟨hcv, hy_eq⟩
+  have hy_ne_y₀ : y ≠ y₀ := hy_ne
+  have hσ_xy_D : ∀ x ∈ FF₀, σ x y ∈ D x := by
+    intro x hx
+    have : y ∈ ⋂ x' ∈ FF₀, σ x' ⁻¹' D x' := hy_σ_D
+    rw [Set.mem_iInter₂] at this
+    exact this x hx
+  have hf_σ_xy : ∀ x ∈ FF₀, f (σ x y) = y := fun x hx => hf_σ_id x hx y hy_Vsec
+  refine ⟨hy_reg, ?_⟩
+  intro z hz_fibre_set
+  have hz_fibre : f z = y := hz_fibre_set
+  have hz_pre : z ∈ f ⁻¹' V_disj := by
+    show f z ∈ V_disj; rw [hz_fibre]; exact hy_Vdisj
+  have hz_union : z ∈ ⋃ x ∈ hF₀'.toFinset, D x :=
+    hVdisj_pre_sub hz_pre
+  rw [Set.mem_iUnion₂] at hz_union
+  obtain ⟨x, hxFF', hz_in_Dx⟩ := hz_union
+  have hxFF : x ∈ FF₀ := by rw [← hFF_eq]; exact hxFF'
+  have h_ncard : (f ⁻¹' {y} ∩ D x).ncard = manifoldRamificationIndex f x := by
+    have h_ε_eq : (if h : x ∈ hF₀'.toFinset then εFn x h else 0) = εFn x hxFF' :=
+      dif_pos hxFF'
+    have h_D_eq : D x =
+        (chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) (εFn x hxFF') := by
+      show (chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x)
+            (if h : x ∈ hF₀'.toFinset then εFn x h else 0) =
+          (chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) (εFn x hxFF')
+      rw [h_ε_eq]
+    rw [h_D_eq]
+    exact h_count y hy_Vdisj hy_ne_y₀ x hxFF'
+  have h_ramif : manifoldRamificationIndex f x = 1 :=
+    manifoldRamificationIndex_eq_one_at_regular_value_preimage hf hnc hy₀
+      (hF₀.mem_toFinset.mp hxFF)
+  rw [h_ramif] at h_ncard
+  have hσxy_in : σ x y ∈ f ⁻¹' {y} ∩ D x :=
+    ⟨hf_σ_xy x hxFF, hσ_xy_D x hxFF⟩
+  have hz_in : z ∈ f ⁻¹' {y} ∩ D x := ⟨hz_fibre, hz_in_Dx⟩
+  have h_fin : (f ⁻¹' {y} ∩ D x).Finite :=
+    Set.finite_of_ncard_ne_zero (by rw [h_ncard]; norm_num)
+  have h_card_singleton : ({σ x y} : Set X).ncard = 1 := Set.ncard_singleton _
+  have h_sub : ({σ x y} : Set X) ⊆ f ⁻¹' {y} ∩ D x := by
+    intro c hc; rw [Set.mem_singleton_iff] at hc; rw [hc]; exact hσxy_in
+  have h_le : (f ⁻¹' {y} ∩ D x).ncard ≤ ({σ x y} : Set X).ncard := by
+    rw [h_ncard, h_card_singleton]
+  have h_eq_set : ({σ x y} : Set X) = f ⁻¹' {y} ∩ D x :=
+    Set.eq_of_subset_of_ncard_le h_sub h_le h_fin
+  have hz_in_singleton : z ∈ ({σ x y} : Set X) := by
+    rw [h_eq_set]; exact hz_in
+  rw [Set.mem_singleton_iff] at hz_in_singleton
+  rw [hz_in_singleton]
+  exact h_y_stab x hxFF
+
+/-- **`NormFM_regularized` eventually equals `NormFM` on a punctured nbhd
+of a regular value.**
+
+At regular `y₀`, the regularization override (which fires at every
+point where the order is non-negative) is a no-op on a punctured nbhd:
+the literal value already equals the limit there because every nearby
+regular `y` has every preimage non-pole (ZZ251 pre-pass), so `NormFM`
+is continuous at `y` (ZZ244 + per-y non-pole), and the limit equals the
+literal value (Tendsto via continuity + NeBot). -/
+lemma NormFM_regularized_eventuallyEq_NormFM_punctured
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X)
+    {y₀ : Y} (hy₀ : y₀ ∉ criticalValuesGeneral f) :
+    NormFM_regularized hf hnc g =ᶠ[𝓝[≠] y₀] NormFM f hf hnc g := by
+  classical
+  filter_upwards [eventually_all_preimages_non_pole hf hnc g hy₀] with y h_y
+  obtain ⟨hy_reg, hg_nonpole_y⟩ := h_y
+  -- At y: 0 ≤ mmero NormFM y AND continuous at y. So regularized = NormFM y.
+  have h_nonneg :=
+    NormFM_mmeromorphicOrderAt_nonneg_of_no_poles hf hnc g hg_nonpole_y
+  show NormFM_regularized hf hnc g y = NormFM f hf hnc g y
+  rw [NormFM_regularized_of_nonneg hf hnc g h_nonneg]
+  haveI : Filter.NeBot (𝓝[≠] y) := nhdsWithin_compl_singleton_neBot y
+  have h_cont : ContinuousAt (NormFM f hf hnc g) y :=
+    NormFM_continuousAt_of_regular_and_no_poles hf hnc g hy_reg hg_nonpole_y
+  have h_tendsto :
+      Tendsto (NormFM f hf hnc g) (𝓝[≠] y) (𝓝 (NormFM f hf hnc g y)) :=
+    h_cont.tendsto.mono_left nhdsWithin_le_nhds
+  exact h_tendsto.limUnder_eq
+
+/-- **Continuity of `NormFM_regularized` at a regular value with non-neg order.**
+
+Headline for the regular case of the `regular_continuousAt` field. At
+regular `y₀` with `0 ≤ mmero NormFM_regularized y₀`:
+* orders agree with `NormFM` (via `NormFM_regularized_eventuallyEq_NormFM_punctured`),
+* `NormFM` has a limit `L` over the punctured nbhd (ZZ247),
+* `NormFM_regularized y₀ = L` (limUnder_eq),
+* `NormFM_regularized` tends to `L` over `𝓝[≠] y₀` (Tendsto.congr_eq via the EventuallyEq),
+* combined with the value at `y₀`, this gives `ContinuousAt`. -/
+lemma NormFM_regularized_continuousAt_of_regular
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X)
+    {y₀ : Y} (hy₀ : y₀ ∉ criticalValuesGeneral f)
+    (ho : 0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM_regularized hf hnc g) y₀) :
+    ContinuousAt (NormFM_regularized hf hnc g) y₀ := by
+  classical
+  -- EventuallyEq on punctured nbhd: orders agree.
+  have h_evEq : NormFM_regularized hf hnc g =ᶠ[𝓝[≠] y₀] NormFM f hf hnc g :=
+    NormFM_regularized_eventuallyEq_NormFM_punctured hf hnc g hy₀
+  have h_ord_eq :
+      mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM_regularized hf hnc g) y₀
+        = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀ :=
+    mmeromorphicOrderAt_congr_punctured h_evEq
+  have ho_NormFM : 0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀ := by
+    rw [← h_ord_eq]; exact ho
+  -- ZZ247 manifold tendsto.
+  have hNormFM_mero : MMeromorphicAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀ :=
+    NormFM_mmeromorphicAt hf hnc g y₀
+  obtain ⟨L, hL⟩ := tendsto_nhds_of_mmeromorphicOrderAt_nonneg
+    (𝓘(ℂ, ℂ)) hNormFM_mero ho_NormFM
+  -- NormFM_regularized y₀ = limUnder = L.
+  haveI : Filter.NeBot (𝓝[≠] y₀) := nhdsWithin_compl_singleton_neBot y₀
+  have h_reg_val : NormFM_regularized hf hnc g y₀ = L := by
+    rw [NormFM_regularized_of_nonneg hf hnc g ho_NormFM]
+    exact hL.limUnder_eq
+  -- Tendsto NormFM_regularized (𝓝[≠] y₀) (𝓝 L) via EventuallyEq.
+  have h_tendsto_punc :
+      Tendsto (NormFM_regularized hf hnc g) (𝓝[≠] y₀) (𝓝 L) := by
+    apply Tendsto.congr' h_evEq.symm
+    exact hL
+  -- Combine with value at y₀.
+  rw [ContinuousAt, h_reg_val, ← nhdsNE_sup_pure y₀]
+  refine Filter.Tendsto.sup h_tendsto_punc ?_
+  rw [Filter.tendsto_pure_left]
+  intro V hV
+  rw [h_reg_val]
+  exact mem_of_mem_nhds hV
+
 end Manifold
 end JacobianChallenge
 
