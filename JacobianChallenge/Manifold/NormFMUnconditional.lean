@@ -669,6 +669,8 @@ theorem normFM_local_product_eq_normPow_at_radius
        let φ : ℂ → ℂ := (hψ_an_on z₀ (Metric.mem_closedBall_self hε_pos.le)).hasStrictDerivAt.localInverse _ _ _ hψ_deriv
        φ (ψ w) = w)) :
     ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 ∧
+      (meromorphicOrderAt g_x 0
+        = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x) ∧
       ∀ y : Y,
       ∀ (hMan_fin :
         (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
@@ -689,20 +691,41 @@ theorem normFM_local_product_eq_normPow_at_radius
   have hφ_an_zero : AnalyticAt ℂ φ 0 := by
     have := hψ_an_at.analyticAt_localInverse hψ_deriv
     rwa [hψ_z₀] at this
-  refine ⟨fun s => g.toFun ((chartAt ℂ x).symm (φ s)), ?_, ?_⟩
-  · have hg_pulled : MeromorphicAt (g.toFun ∘ (chartAt ℂ x).symm) z₀ :=
-      g.meromorphic x trivial
-    have hφ_zero : φ 0 = z₀ := by
-      have h_im :
-          φ (ψ z₀) = z₀ :=
-        HasStrictFDerivAt.localInverse_apply_image
-          (hψ_an_at.hasStrictDerivAt.hasStrictFDerivAt_equiv hψ_deriv)
-      rw [← hψ_z₀]; exact h_im
-    have hg_at_φ0 :
-        MeromorphicAt (g.toFun ∘ (chartAt ℂ x).symm) (φ 0) := by
-      rw [hφ_zero]; exact hg_pulled
-    show MeromorphicAt (fun s => g.toFun ((chartAt ℂ x).symm (φ s))) 0
+  have hg_pulled : MeromorphicAt (g.toFun ∘ (chartAt ℂ x).symm) z₀ :=
+    g.meromorphic x trivial
+  have hφ_zero : φ 0 = z₀ := by
+    have h_im :
+        φ (ψ z₀) = z₀ :=
+      HasStrictFDerivAt.localInverse_apply_image
+        (hψ_an_at.hasStrictDerivAt.hasStrictFDerivAt_equiv hψ_deriv)
+    rw [← hψ_z₀]; exact h_im
+  have hg_at_φ0 :
+      MeromorphicAt (g.toFun ∘ (chartAt ℂ x).symm) (φ 0) := by
+    rw [hφ_zero]; exact hg_pulled
+  refine ⟨fun s => g.toFun ((chartAt ℂ x).symm (φ s)), ?_, ?_, ?_⟩
+  · show MeromorphicAt (fun s => g.toFun ((chartAt ℂ x).symm (φ s))) 0
     exact hg_at_φ0.comp_analyticAt hφ_an_zero
+  · -- meromorphicOrderAt (g_x) 0 = mmeromorphicOrderAt I g.toFun x
+    -- via meromorphicOrderAt_comp_of_deriv_ne_zero on φ analytic + deriv ≠ 0.
+    have hφ_strict :
+        HasStrictDerivAt φ ((deriv ψ z₀)⁻¹) (ψ z₀) :=
+      hψ_an_at.hasStrictDerivAt.to_localInverse (hf' := hψ_deriv)
+    have hφ_strict' :
+        HasStrictDerivAt φ ((deriv ψ z₀)⁻¹) (0 : ℂ) := by
+      rw [← hψ_z₀]; exact hφ_strict
+    have h_dφ : deriv φ 0 = (deriv ψ z₀)⁻¹ :=
+      hφ_strict'.hasDerivAt.deriv
+    have h_dφ_ne : deriv φ 0 ≠ 0 := by
+      rw [h_dφ]; exact inv_ne_zero hψ_deriv
+    show meromorphicOrderAt (fun s => g.toFun ((chartAt ℂ x).symm (φ s))) 0
+        = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x
+    have h_eq_comp :
+        (fun s : ℂ => g.toFun ((chartAt ℂ x).symm (φ s)))
+          = (g.toFun ∘ (chartAt ℂ x).symm) ∘ φ := rfl
+    rw [h_eq_comp,
+      meromorphicOrderAt_comp_of_deriv_ne_zero hφ_an_zero h_dφ_ne]
+    rw [hφ_zero]
+    rfl
   · intro y hMan_fin h_count_y
     have h_image := normFM_local_image_eq_nthRootsFinset
       (f := f) hf hnc x h_pos (hε_pos := hε_pos) y
@@ -773,6 +796,8 @@ private theorem normFM_per_x_at_coord_radius
           (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).ncard
         = manifoldRamificationIndex f x) ∧
     ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 ∧
+      (meromorphicOrderAt g_x 0
+        = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x) ∧
       ∀ y : Y,
       ∀ (hMan_fin :
         (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
@@ -841,10 +866,11 @@ private theorem normFM_per_x_at_coord_radius
       exact lt_of_le_of_lt this hε_lt_δ
     exact hδ_sub hw_ball
   -- Apply step 11a with ε, ψ.
-  obtain ⟨g_x, hg_x_mero, h_prod⟩ :=
+  obtain ⟨g_x, hg_x_mero, hg_x_order, h_prod⟩ :=
     normFM_local_product_eq_normPow_at_radius hf hnc g x h_pos hε_pos
       hψ_an_on_ε hψ_z₀ hψ_deriv hψ_inj_ε hψ_eq_ε h_left_inv
-  exact ⟨ε, hε_pos, hε_le_R₀, V, hV_open, hfx_V, h_count, g_x, hg_x_mero, h_prod⟩
+  exact ⟨ε, hε_pos, hε_le_R₀, V, hV_open, hfx_V, h_count,
+         g_x, hg_x_mero, hg_x_order, h_prod⟩
 
 /-! ## Step 11c: NormFM_mmeromorphicAt y₀ — full headline assembly. -/
 
@@ -1018,6 +1044,8 @@ theorem normFM_per_x_at_y₀
           (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) ε)).ncard
         = manifoldRamificationIndex f x) ∧
     ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 ∧
+      (meromorphicOrderAt g_x 0
+        = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x) ∧
       ∀ y : Y,
       ∀ (hMan_fin :
         (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
@@ -1030,9 +1058,11 @@ theorem normFM_per_x_at_y₀
           normPow g_x (manifoldRamificationIndex f x)
             ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀) := by
   classical
-  obtain ⟨ε, hε_pos, hε_le, V, hV_open, hfx_V, h_count, g_x, hg_x_mero, h_prod⟩ :=
+  obtain ⟨ε, hε_pos, hε_le, V, hV_open, hfx_V, h_count,
+          g_x, hg_x_mero, hg_x_order, h_prod⟩ :=
     normFM_per_x_at_coord_radius hf hnc g x h_pos R₀ hR₀
-  refine ⟨ε, hε_pos, hε_le, V, hV_open, ?_, ?_, g_x, hg_x_mero, ?_⟩
+  refine ⟨ε, hε_pos, hε_le, V, hV_open, ?_, ?_,
+          g_x, hg_x_mero, hg_x_order, ?_⟩
   · rw [← hxy]; exact hfx_V
   · intro w hw_V hw_ne_y₀
     have hw_ne_fx : w ≠ f x := by rw [hxy]; exact hw_ne_y₀
@@ -1115,6 +1145,8 @@ private theorem perXEps_spec
               (perXEps hf hnc g x y₀ hxy h_pos R₀ hR₀))).ncard
           = manifoldRamificationIndex f x) ∧
       ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 ∧
+        (meromorphicOrderAt g_x 0
+          = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x) ∧
         ∀ y : Y,
         ∀ (hMan_fin :
           (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
@@ -1153,6 +1185,8 @@ structure NormFMPerXData
       = manifoldRamificationIndex f x
   g_x : ℂ → ℂ
   g_x_mero : MeromorphicAt g_x 0
+  g_x_order : meromorphicOrderAt g_x 0
+    = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x
   prod_eq : ∀ y : Y,
     ∀ (hMan_fin :
       (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
@@ -1191,10 +1225,12 @@ noncomputable def NormFMPerXData.ofExistential
   let g_x := h_g.choose
   let h_g_x := h_g.choose_spec
   let g_x_mero := h_g_x.1
-  let prod_eq := h_g_x.2
+  let g_x_order := h_g_x.2.1
+  let prod_eq := h_g_x.2.2
   { ε := ε, ε_pos := ε_pos, ε_le := ε_le,
     V := V, V_open := V_open, y₀_V := y₀_V, count := count,
-    g_x := g_x, g_x_mero := g_x_mero, prod_eq := prod_eq }
+    g_x := g_x, g_x_mero := g_x_mero, g_x_order := g_x_order,
+    prod_eq := prod_eq }
 
 /-! ## Step 12 (ZZ222c): generic G-product MMeromorphicAt lemma.
 
@@ -1561,8 +1597,12 @@ theorem NormFM_eventuallyEq_explicitFiberProduct
     (g : MeromorphicNonzero X) (y₀ : Y) :
     ∃ (FF : Finset X)
       (h_pos_fn : ∀ x ∈ FF, 1 ≤ manifoldRamificationIndex f x)
+      (h_fibre : ∀ x ∈ FF, f x = y₀)
       (g_x_fn : ∀ x ∈ FF, ℂ → ℂ)
       (g_x_mero : ∀ (x : X) (hxF : x ∈ FF), MeromorphicAt (g_x_fn x hxF) 0)
+      (g_x_order : ∀ (x : X) (hxF : x ∈ FF),
+        meromorphicOrderAt (g_x_fn x hxF) 0
+          = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x)
       (V_punct : Set Y),
       IsOpen V_punct ∧ y₀ ∈ V_punct ∧
       (∀ y ∈ V_punct, y ≠ y₀ →
@@ -1698,9 +1738,10 @@ theorem NormFM_eventuallyEq_explicitFiberProduct
       rw [← h_set_eq]
     rw [h_finset_eq]
     exact (perX x.val x.property).prod_eq y h_inter_small_fin h_count_small_x
-  exact ⟨hF_fin.toFinset, h_pos_fn,
+  exact ⟨hF_fin.toFinset, h_pos_fn, hfx_y₀,
          fun x hxF => (perX x hxF).g_x,
          fun x hxF => (perX x hxF).g_x_mero,
+         fun x hxF => (perX x hxF).g_x_order,
          V_punct, hV_punct_open, hy₀_punct, h_per_y⟩
 
 /-- **Order equality via the EventuallyEq witness.** Combines ZZ228's
@@ -1716,7 +1757,7 @@ lemma NormFM_mmeromorphicOrderAt_eq_explicitFiberProduct
       MMeromorphicAt (𝓘(ℂ, ℂ)) G y₀ ∧
       mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀
         = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) G y₀ := by
-  obtain ⟨FF, h_pos_fn, g_x_fn, g_x_mero, V_punct,
+  obtain ⟨FF, h_pos_fn, _h_fibre, g_x_fn, g_x_mero, _g_x_order, V_punct,
           hV_open, hy₀_mem, h_per_y⟩ :=
     NormFM_eventuallyEq_explicitFiberProduct hf hnc g y₀
   let G : Y → ℂ := fun y => ∏ x ∈ FF.attach,
@@ -2060,7 +2101,7 @@ theorem NormFM_mmeromorphicOrderAt_eq_planar_sum_witness
       mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀
         = ∑ x ∈ FF.attach, meromorphicOrderAt (g_x_fn x.val x.property) 0 := by
   classical
-  obtain ⟨FF, h_pos_fn, g_x_fn, g_x_mero, V_punct,
+  obtain ⟨FF, h_pos_fn, _h_fibre, g_x_fn, g_x_mero, _g_x_order, V_punct,
           hV_open, hy₀_mem, h_per_y⟩ :=
     NormFM_eventuallyEq_explicitFiberProduct hf hnc g y₀
   refine ⟨FF, h_pos_fn, g_x_fn, g_x_mero, ?_⟩
@@ -2082,6 +2123,52 @@ theorem NormFM_mmeromorphicOrderAt_eq_planar_sum_witness
   rw [h_NormFM_eq_G]
   -- Step 2: G order = planar sum via ZZ231g.
   exact headlineG_mmeromorphicOrderAt_eq_sum_planar f y₀ FF h_pos_fn g_x_fn g_x_mero
+
+/-- **NormFM order = sum of mmeromorphic orders over the fibre.**
+The headline corollary that downstream P1.3 (Norm-Divisor-Identity) consumes:
+
+  mmeromorphicOrderAt I (NormFM f hf hnc g) y₀
+    = ∑ x ∈ fibre, mmeromorphicOrderAt I g.toFun x
+
+The fibre `FF` and the property `f x = y₀` are exposed.
+
+Proof: combine the planar-sum witness with the per-x `g_x_order` field
+(meromorphicOrderAt (g_x_fn x) 0 = mmeromorphicOrderAt I g.toFun x). -/
+theorem NormFM_mmeromorphicOrderAt_eq_fibre_sum
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X) (y₀ : Y) :
+    ∃ (FF : Finset X),
+      (∀ x ∈ FF, f x = y₀) ∧
+      mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀
+        = ∑ x ∈ FF.attach,
+          mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x.val := by
+  classical
+  obtain ⟨FF, h_pos_fn, h_fibre, g_x_fn, g_x_mero, g_x_order, V_punct,
+          hV_open, hy₀_mem, h_per_y⟩ :=
+    NormFM_eventuallyEq_explicitFiberProduct hf hnc g y₀
+  refine ⟨FF, h_fibre, ?_⟩
+  -- Step 1: planar sum (re-derived from the existential).
+  let G : Y → ℂ := fun y => ∏ x ∈ FF.attach,
+    normPow (g_x_fn x.val x.property)
+      (manifoldRamificationIndex f x.val)
+      ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)
+  have h_NormFM_eq_G :
+      mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀
+        = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) G y₀ := by
+    apply mmeromorphicOrderAt_congr_punctured
+    rw [Filter.eventuallyEq_iff_exists_mem]
+    refine ⟨V_punct \ {y₀}, ?_, ?_⟩
+    · rw [mem_nhdsWithin_iff_exists_mem_nhds_inter]
+      refine ⟨V_punct, hV_open.mem_nhds hy₀_mem, ?_⟩
+      intro y hy; exact ⟨hy.1, hy.2⟩
+    · intro y hy; exact h_per_y y hy.1 hy.2
+  rw [h_NormFM_eq_G,
+      headlineG_mmeromorphicOrderAt_eq_sum_planar f y₀ FF h_pos_fn g_x_fn g_x_mero]
+  -- Step 2: replace each summand with the manifold-side order via g_x_order.
+  apply Finset.sum_congr rfl
+  intro x _hx
+  exact g_x_order x.val x.property
 
 end Manifold
 end JacobianChallenge
