@@ -172,5 +172,73 @@ theorem divPushforwardHom_principalDivisor_eq_NormFM_principalDivisor
   -- whose pointwise value is orderFun = (mmero ...).untop₀.
   rfl
 
+/-! ## Framework unblock: regularized `NormFM` for `MeromorphicNonzero` packaging
+
+The literal `NormFM y₀ = ∏ g(x)^k_x` may fail `regular_continuousAt` at
+branch points where `g` has cancelling poles/zeros: the literal value uses
+`g.toFun` at the pole (unconstrained), while the analytic-continuation
+limit gives a specific value.
+
+We define `NormFM_regularized` to override the value at every `y` with
+`0 ≤ mmero(NormFM, y)` to be the punctured-neighborhood limit. This gives
+`regular_continuousAt` by construction, while preserving meromorphy and
+non-vanishing germ (since the override only changes values at finitely many
+points — critical values are finite). -/
+
+/-- Regularized `NormFM`: at every regular point, take the
+`Filter.limUnder` over the punctured neighborhood (which is the analytic
+limit by `tendsto_nhds_of_meromorphicOrderAt_nonneg`); elsewhere keep the
+literal value.
+
+This is the **framework unblock** for `MeromorphicNonzero` packaging:
+the override forces `regular_continuousAt` by construction. The remaining
+proofs (meromorphic, nonvanishing_germ, regular_continuousAt itself) all
+rest on a single auxiliary lemma:
+
+  **`NormFM_continuousAt_of_regular`**: for any `y` not in
+  `criticalValuesGeneral f`, `ContinuousAt (NormFM f hf hnc g) y`.
+
+This auxiliary is the substantive remaining obligation; once proven, the
+three structural fields follow:
+* `meromorphic`: `NormFM_regularized =ᶠ[𝓝[≠] y₀] NormFM` (since they
+  differ only on the FINITE set of critical values where `mmero ≥ 0`,
+  and that set excludes a small enough punctured neighborhood).
+* `nonvanishing_germ`: order is preserved by punctured `EventuallyEq`.
+* `regular_continuousAt`: at `y₀` with `mmero ≥ 0`, `NormFM_regularized y₀`
+  IS the limit (by `Filter.Tendsto.limUnder_eq` +
+  `tendsto_nhds_of_meromorphicOrderAt_nonneg`). Combined with EventuallyEq
+  on the punctured neighborhood, the function tends to the correct value
+  at `y₀`. -/
+noncomputable def NormFM_regularized
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : JacobianChallenge.MeromorphicNonzero X) : Y → ℂ := fun y =>
+  if 0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y then
+    @Filter.limUnder _ _ _ ⟨(0 : ℂ)⟩ (nhdsWithin y {y}ᶜ) (NormFM f hf hnc g)
+  else
+    NormFM f hf hnc g y
+
+/-- Trivial unfold: at points where the meromorphic order is non-negative,
+`NormFM_regularized` equals `Filter.limUnder` of `NormFM` over the
+punctured neighborhood. -/
+lemma NormFM_regularized_of_nonneg
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : JacobianChallenge.MeromorphicNonzero X) {y : Y}
+    (h : 0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y) :
+    NormFM_regularized hf hnc g y =
+      @Filter.limUnder _ _ _ ⟨(0 : ℂ)⟩ (nhdsWithin y {y}ᶜ) (NormFM f hf hnc g) :=
+  if_pos h
+
+/-- Trivial unfold: at pole points (negative meromorphic order),
+`NormFM_regularized` equals the literal `NormFM` value. -/
+lemma NormFM_regularized_of_neg
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : JacobianChallenge.MeromorphicNonzero X) {y : Y}
+    (h : ¬ 0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y) :
+    NormFM_regularized hf hnc g y = NormFM f hf hnc g y :=
+  if_neg h
+
 end Manifold
 end JacobianChallenge
