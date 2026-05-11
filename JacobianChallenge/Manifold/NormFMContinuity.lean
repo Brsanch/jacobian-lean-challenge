@@ -319,7 +319,7 @@ theorem NormFM_eventuallyEq_section_product_at_regular_value
     exists_coherent_local_sections_at_regular_value hf hnc hy₀
   set FF₀ : Finset X := hF₀.toFinset with hFF₀_def
   -- Step 2: fibre-disjoint chart-radius decomposition.
-  obtain ⟨hF₀', ε_fn, V_disj, hVdisj_open, hy₀_Vdisj, hε_pos,
+  obtain ⟨hF₀', εFn, V_disj, hVdisj_open, hy₀_Vdisj, hε_pos,
           hD_pwd, hVdisj_pre_sub, h_count⟩ :=
     fibre_disjoint_chart_radius_decomposition f hf hnc y₀
   -- Coerce hF₀' to hF₀ via subsingleton: both are `(f⁻¹{y₀}).Finite` proofs;
@@ -331,31 +331,31 @@ theorem NormFM_eventuallyEq_section_product_at_regular_value
   set D : X → Set X := fun x =>
     (chartAt ℂ x).source ∩
       (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x)
-        (if h : x ∈ hF₀'.toFinset then ε_fn x h else 0) with hD_def
+        (if h : x ∈ hF₀'.toFinset then εFn x h else 0) with hD_def
   -- For x ∈ FF₀, σ x continuous at y₀ with σ x y₀ = x, and D x ∋ x is open.
   -- So {y : σ x y ∈ D x} is a nbhd of y₀ for each x.
   have hD_open : ∀ x ∈ FF₀, IsOpen (D x) := by
     intro x hx
-    have hx' : x ∈ hF₀'.toFinset := hFF_eq ▸ hx
+    have hx' : x ∈ hF₀'.toFinset := by rw [hFF_eq]; exact hx
     show IsOpen ((chartAt ℂ x).source ∩
         (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x)
-          (if h : x ∈ hF₀'.toFinset then ε_fn x h else 0))
-    rw [show (if h : x ∈ hF₀'.toFinset then ε_fn x h else 0) = ε_fn x hx'
+          (if h : x ∈ hF₀'.toFinset then εFn x h else 0))
+    rw [show (if h : x ∈ hF₀'.toFinset then εFn x h else 0) = εFn x hx'
         from dif_pos hx']
     have hco : ContinuousOn (chartAt ℂ x) (chartAt ℂ x).source :=
       (chartAt ℂ x).continuousOn_toFun
     exact hco.isOpen_inter_preimage (chartAt ℂ x).open_source Metric.isOpen_ball
   have hxD : ∀ x ∈ FF₀, x ∈ D x := by
     intro x hx
-    have hx' : x ∈ hF₀'.toFinset := hFF_eq ▸ hx
+    have hx' : x ∈ hF₀'.toFinset := by rw [hFF_eq]; exact hx
     show x ∈ (chartAt ℂ x).source ∩
       (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x)
-        (if h : x ∈ hF₀'.toFinset then ε_fn x h else 0)
-    rw [show (if h : x ∈ hF₀'.toFinset then ε_fn x h else 0) = ε_fn x hx'
+        (if h : x ∈ hF₀'.toFinset then εFn x h else 0)
+    rw [show (if h : x ∈ hF₀'.toFinset then εFn x h else 0) = εFn x hx'
         from dif_pos hx']
     refine ⟨mem_chart_source ℂ x, ?_⟩
-    show (chartAt ℂ x) x ∈ Metric.ball ((chartAt ℂ x) x) (ε_fn x hx')
-    exact Metric.mem_ball_self (hε_pos x hx')
+    have hpos : (0 : ℝ) < εFn x hx' := hε_pos x hx'
+    exact Metric.mem_ball_self hpos
   -- Per-x preimage shrink: σ x ⁻¹' D x is a nbhd of y₀.
   have h_σ_D_nhds : ∀ x ∈ FF₀, σ x ⁻¹' D x ∈ 𝓝 y₀ := by
     intro x hx
@@ -484,16 +484,16 @@ theorem NormFM_eventuallyEq_section_product_at_regular_value
       rw [hy_eq, hσ_y₀ x hxFF, hz_eq_x]
     · -- y ≠ y₀: use h_count.
       have h_ncard : (f ⁻¹' {y} ∩ D x).ncard = manifoldRamificationIndex f x := by
-        have h_ε_eq : (if h : x ∈ hF₀'.toFinset then ε_fn x h else 0) = ε_fn x hxFF' :=
+        have h_ε_eq : (if h : x ∈ hF₀'.toFinset then εFn x h else 0) = εFn x hxFF' :=
           dif_pos hxFF'
         have h_D_eq : D x =
             (chartAt ℂ x).source ∩
-              (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) (ε_fn x hxFF') := by
+              (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) (εFn x hxFF') := by
           show (chartAt ℂ x).source ∩
               (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x)
-                (if h : x ∈ hF₀'.toFinset then ε_fn x h else 0) =
+                (if h : x ∈ hF₀'.toFinset then εFn x h else 0) =
               (chartAt ℂ x).source ∩
-              (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) (ε_fn x hxFF')
+              (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) (εFn x hxFF')
           rw [h_ε_eq]
         rw [h_D_eq]
         exact h_count y hy_Vdisj hy_eq x hxFF'
@@ -829,6 +829,152 @@ lemma eventually_zero_le_mmero_at_all_sections
   -- Finite intersection over FF₀.
   rw [Filter.eventually_all_finset]
   exact h_per_x
+
+/-- **Eventual non-negativity of `mmero NormFM` near any regular `y₀`.**
+
+For any regular `y₀ ∉ criticalValuesGeneral f`, on a punctured
+neighbourhood of `y₀`, `0 ≤ mmero NormFM y`. Combines the bijection
+from `NormFM_eventuallyEq_section_product_at_regular_value` (ZZ243)
+with the σ-stability of `mmero g` from `eventually_zero_le_mmero_at_all_sections`
+(ZZ249). -/
+lemma eventually_zero_le_mmero_NormFM_punctured
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X)
+    {y₀ : Y} (hy₀ : y₀ ∉ criticalValuesGeneral f) :
+    ∀ᶠ y in 𝓝[≠] y₀,
+      0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y := by
+  classical
+  obtain ⟨hF₀, σ, V_sec, hVsec_open, hy₀_Vsec, hσ_y₀, hσ_cont, hf_σ_id, h_σ_stab⟩ :=
+    eventually_zero_le_mmero_at_all_sections hf hnc g hy₀
+  set FF₀ : Finset X := hF₀.toFinset with hFF₀_def
+  obtain ⟨hF₀', εFn, V_disj, hVdisj_open, hy₀_Vdisj, hε_pos,
+          hD_pwd, hVdisj_pre_sub, h_count⟩ :=
+    fibre_disjoint_chart_radius_decomposition f hf hnc y₀
+  have hFF_eq : hF₀'.toFinset = FF₀ :=
+    (Set.Finite.toFinset_inj).mpr rfl
+  set D : X → Set X := fun x =>
+    (chartAt ℂ x).source ∩
+      (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x)
+        (if h : x ∈ hF₀'.toFinset then εFn x h else 0) with hD_def
+  have hD_open : ∀ x ∈ FF₀, IsOpen (D x) := by
+    intro x hx
+    have hx' : x ∈ hF₀'.toFinset := by rw [hFF_eq]; exact hx
+    show IsOpen ((chartAt ℂ x).source ∩
+        (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x)
+          (if h : x ∈ hF₀'.toFinset then εFn x h else 0))
+    rw [show (if h : x ∈ hF₀'.toFinset then εFn x h else 0) = εFn x hx'
+        from dif_pos hx']
+    have hco : ContinuousOn (chartAt ℂ x) (chartAt ℂ x).source :=
+      (chartAt ℂ x).continuousOn_toFun
+    exact hco.isOpen_inter_preimage (chartAt ℂ x).open_source Metric.isOpen_ball
+  have hxD : ∀ x ∈ FF₀, x ∈ D x := by
+    intro x hx
+    have hx' : x ∈ hF₀'.toFinset := by rw [hFF_eq]; exact hx
+    show x ∈ (chartAt ℂ x).source ∩
+      (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x)
+        (if h : x ∈ hF₀'.toFinset then εFn x h else 0)
+    rw [show (if h : x ∈ hF₀'.toFinset then εFn x h else 0) = εFn x hx'
+        from dif_pos hx']
+    refine ⟨mem_chart_source ℂ x, ?_⟩
+    show (chartAt ℂ x) x ∈ Metric.ball ((chartAt ℂ x) x) (εFn x hx')
+    exact Metric.mem_ball_self (hε_pos x hx')
+  -- σ x ⁻¹' D x is nbhd of y₀ (since σ x cont, σ x y₀ = x ∈ D x open).
+  have h_σ_D_nhds : ∀ x ∈ FF₀, σ x ⁻¹' D x ∈ 𝓝 y₀ := by
+    intro x hx
+    have h_D_nhds : D x ∈ 𝓝 x := (hD_open x hx).mem_nhds (hxD x hx)
+    have h_at : D x ∈ 𝓝 (σ x y₀) := by rw [hσ_y₀ x hx]; exact h_D_nhds
+    exact (hσ_cont x hx).preimage_mem_nhds h_at
+  -- Critical-values-removal.
+  have h_cv_fin : (criticalValuesGeneral f).Finite :=
+    criticalValues_finite_general f hf hnc
+  have h_bad : (criticalValuesGeneral f \ {y₀}).Finite := h_cv_fin.diff
+  have h_bad_closed : IsClosed (criticalValuesGeneral f \ {y₀}) := h_bad.isClosed
+  have h_compl_nhds : (criticalValuesGeneral f \ {y₀})ᶜ ∈ 𝓝 y₀ :=
+    h_bad_closed.isOpen_compl.mem_nhds (fun hbad => hbad.2 rfl)
+  -- Build the "good" nbhd: σ x y ∈ D x ∀ x ∈ FF₀ ∧ in V_disj ∩ V_sec ∩ regular.
+  have h_inter :
+      V_disj ∩ V_sec ∩ (criticalValuesGeneral f \ {y₀})ᶜ ∩
+        (⋂ x ∈ FF₀, σ x ⁻¹' D x) ∈ 𝓝 y₀ := by
+    refine Filter.inter_mem ?_ ?_
+    · refine Filter.inter_mem (Filter.inter_mem ?_ ?_) h_compl_nhds
+      · exact hVdisj_open.mem_nhds hy₀_Vdisj
+      · exact hVsec_open.mem_nhds hy₀_Vsec
+    · exact (Filter.biInter_finset_mem FF₀).mpr h_σ_D_nhds
+  -- Take h_inter together with the σ-stability and self ≠.
+  have h_inter_W : _ ∈ 𝓝[≠] y₀ := nhdsWithin_le_nhds h_inter
+  filter_upwards [h_inter_W, h_σ_stab, self_mem_nhdsWithin]
+    with y hy_inter h_y_stab hy_ne
+  obtain ⟨⟨⟨hy_Vdisj, hy_Vsec⟩, hy_compl⟩, hy_σ_D⟩ := hy_inter
+  -- y is regular.
+  have hy_reg : y ∉ criticalValuesGeneral f := by
+    intro hcv
+    by_cases hy_eq : y = y₀
+    · rw [hy_eq] at hcv; exact hy₀ hcv
+    · exact hy_compl ⟨hcv, hy_eq⟩
+  have hy_ne_y₀ : y ≠ y₀ := hy_ne
+  -- σ x y ∈ D x for each x.
+  have hσ_xy_D : ∀ x ∈ FF₀, σ x y ∈ D x := by
+    intro x hx
+    have : y ∈ ⋂ x' ∈ FF₀, σ x' ⁻¹' D x' := hy_σ_D
+    rw [Set.mem_iInter₂] at this
+    exact this x hx
+  -- f (σ x y) = y.
+  have hf_σ_xy : ∀ x ∈ FF₀, f (σ x y) = y := fun x hx => hf_σ_id x hx y hy_Vsec
+  -- Now use NormFM_mmeromorphicOrderAt_eq_fibre_sum at y, with FF the full fibre.
+  obtain ⟨FF_y, h_fibre_y, h_eq_y⟩ :=
+    NormFM_mmeromorphicOrderAt_eq_fibre_sum hf hnc g y
+  rw [h_eq_y]
+  apply Finset.sum_nonneg
+  intro z _
+  -- z.val ∈ FF_y, so f z.val = y. Show z.val is σ x y for some x ∈ FF₀.
+  have hz_fibre : f z.val = y := h_fibre_y z.val z.property
+  -- z.val ∈ f⁻¹{y} ⊆ f⁻¹V_disj ⊆ ⋃ x ∈ FF₀', D x.
+  have hz_pre : z.val ∈ f ⁻¹' V_disj := by
+    show f z.val ∈ V_disj; rw [hz_fibre]; exact hy_Vdisj
+  have hz_union : z.val ∈ ⋃ x ∈ hF₀'.toFinset, D x :=
+    hVdisj_pre_sub hz_pre
+  rw [Set.mem_iUnion₂] at hz_union
+  obtain ⟨x, hxFF', hz_in_Dx⟩ := hz_union
+  have hxFF : x ∈ FF₀ := hFF_eq ▸ hxFF'
+  -- z.val and σ x y both in D x ∩ f⁻¹{y}; ncard = 1 ⇒ equal.
+  have h_ncard : (f ⁻¹' {y} ∩ D x).ncard = manifoldRamificationIndex f x := by
+    have h_ε_eq : (if h : x ∈ hF₀'.toFinset then εFn x h else 0) = εFn x hxFF' :=
+      dif_pos hxFF'
+    have h_D_eq : D x =
+        (chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) (εFn x hxFF') := by
+      show (chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x)
+            (if h : x ∈ hF₀'.toFinset then εFn x h else 0) =
+          (chartAt ℂ x).source ∩
+          (chartAt ℂ x) ⁻¹' Metric.ball ((chartAt ℂ x) x) (εFn x hxFF')
+      rw [h_ε_eq]
+    rw [h_D_eq]
+    exact h_count y hy_Vdisj hy_ne_y₀ x hxFF'
+  have h_ramif : manifoldRamificationIndex f x = 1 :=
+    manifoldRamificationIndex_eq_one_at_regular_value_preimage hf hnc hy₀
+      (hF₀.mem_toFinset.mp hxFF)
+  rw [h_ramif] at h_ncard
+  -- (f⁻¹{y} ∩ D x).ncard = 1.
+  have hσxy_in : σ x y ∈ f ⁻¹' {y} ∩ D x :=
+    ⟨hf_σ_xy x hxFF, hσ_xy_D x hxFF⟩
+  have hz_in : z.val ∈ f ⁻¹' {y} ∩ D x := ⟨hz_fibre, hz_in_Dx⟩
+  have h_fin : (f ⁻¹' {y} ∩ D x).Finite :=
+    Set.finite_of_ncard_ne_zero (by rw [h_ncard]; norm_num)
+  have h_card_singleton : ({σ x y} : Set X).ncard = 1 := Set.ncard_singleton _
+  have h_sub : ({σ x y} : Set X) ⊆ f ⁻¹' {y} ∩ D x := by
+    intro c hc; rw [Set.mem_singleton_iff] at hc; rw [hc]; exact hσxy_in
+  have h_le : (f ⁻¹' {y} ∩ D x).ncard ≤ ({σ x y} : Set X).ncard := by
+    rw [h_ncard, h_card_singleton]
+  have h_eq_set : ({σ x y} : Set X) = f ⁻¹' {y} ∩ D x :=
+    Set.eq_of_subset_of_ncard_le h_sub h_le h_fin
+  have hz_in_singleton : z.val ∈ ({σ x y} : Set X) := by
+    rw [h_eq_set]; exact hz_in
+  rw [Set.mem_singleton_iff] at hz_in_singleton
+  -- z.val = σ x y, so mmero g z.val = mmero g (σ x y) ≥ 0 by σ-stability.
+  rw [hz_in_singleton]
+  exact h_y_stab x hxFF
 
 end Manifold
 end JacobianChallenge
