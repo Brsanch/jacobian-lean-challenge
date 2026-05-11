@@ -1187,6 +1187,143 @@ lemma NormFM_regularized_continuousAt_of_regular
   rw [h_reg_val]
   exact mem_of_mem_nhds hV
 
+/-! ## Universal continuity for `NormFM_regularized` via finite bad set
+
+Key insight (closes the regular vs critical y₀ gap): the set of points
+in Y where `NormFM_regularized` differs from `NormFM` is contained in
+the image (under `f`) of the FINITE support of `g`'s principal
+divisor, unioned with the finite critical-value set. Hence the
+EventuallyEq `NormFM_regularized =ᶠ[𝓝[≠] y₀] NormFM` holds for ANY
+y₀ — no separate critical-case Hurwitz branch construction required. -/
+
+/-- The set of points in `X` where `g` has a non-zero order is finite
+(includes both poles and zeros of `g`). Follows from compactness +
+local-finiteness of the principal divisor's support. -/
+lemma g_nonzero_order_set_finite (g : MeromorphicNonzero X) :
+    { x : X | mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x ≠ 0 }.Finite := by
+  classical
+  -- Coerce to support of principalDivisorMap g.
+  have h_supp_fin : ((principalDivisorMap g : X → ℤ).support).Finite :=
+    Function.locallyFinsuppWithin.finiteSupport (principalDivisorMap g)
+      isCompact_univ
+  -- Show inclusion: { x : mmero ≠ 0 } ⊆ support.
+  apply h_supp_fin.subset
+  intro x hx
+  show ((principalDivisorMap g : X → ℤ) x) ≠ 0
+  rw [principalDivisorMap_apply]
+  show JacobianChallenge.MMeromorphicOn.orderFun (𝓘(ℂ, ℂ)) g.toFun x ≠ 0
+  unfold JacobianChallenge.MMeromorphicOn.orderFun
+  intro h_eq
+  apply hx
+  -- (mmero g x).untop₀ = 0 + mmero g x ≠ ⊤ (g.nonvanishing_germ) → mmero g x = 0.
+  have hne : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x ≠ ⊤ := g.nonvanishing_germ x
+  obtain ⟨n, hn⟩ := WithTop.ne_top_iff_exists.mp hne
+  rw [← hn] at h_eq
+  rw [WithTop.untop₀_coe] at h_eq
+  rw [← hn]; exact_mod_cast h_eq
+
+/-- **Universal EventuallyEq.** `NormFM_regularized` agrees with
+`NormFM` on a punctured nbhd of ANY `y₀ : Y`, by removing the finite
+"bad set" (image of `g`'s order-support under `f`, unioned with
+critical values).
+
+Proof strategy: at every `y` outside the bad set:
+* `y` is regular;
+* every preimage `z` of `y` has `mmero g z = 0` (since `z ∉ bad_X`);
+* by `NormFM_continuousAt_of_regular_and_no_poles` (ZZ244), `NormFM`
+  is continuous at `y`;
+* by `NormFM_regularized_eq_NormFM_at_regular_no_poles` (ZZ246), the
+  regularization override is a no-op at `y`.
+Finite sets are codiscrete, so the bad set's complement is in
+`𝓝[≠] y₀` for any `y₀`. -/
+lemma NormFM_regularized_eventuallyEq_NormFM_punctured_universal
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X) (y₀ : Y) :
+    NormFM_regularized hf hnc g =ᶠ[𝓝[≠] y₀] NormFM f hf hnc g := by
+  classical
+  -- Bad set in X: {x : mmero g x ≠ 0}. Finite.
+  set bad_X : Set X :=
+    { x : X | mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x ≠ 0 } with hbad_X_def
+  have h_bad_X_fin : bad_X.Finite := g_nonzero_order_set_finite g
+  -- Bad set in Y: image of bad_X under f, plus critical values.
+  set bad_Y : Set Y := (f '' bad_X) ∪ criticalValuesGeneral f with hbad_Y_def
+  have h_bad_Y_fin : bad_Y.Finite :=
+    (h_bad_X_fin.image f).union (criticalValues_finite_general f hf hnc)
+  -- Codiscrete complement.
+  have h_compl_in_𝓝NE : (bad_Y \ {y₀})ᶜ ∈ 𝓝[≠] y₀ := by
+    have h_finite : (bad_Y \ {y₀}).Finite := h_bad_Y_fin.diff
+    have h_closed : IsClosed (bad_Y \ {y₀}) := h_finite.isClosed
+    have h_compl_open : IsOpen (bad_Y \ {y₀})ᶜ := h_closed.isOpen_compl
+    have hy₀_compl : y₀ ∈ (bad_Y \ {y₀})ᶜ := by
+      intro h; exact h.2 rfl
+    exact nhdsWithin_le_nhds (h_compl_open.mem_nhds hy₀_compl)
+  filter_upwards [h_compl_in_𝓝NE, self_mem_nhdsWithin] with y hy_good hy_ne
+  -- y ∉ bad_Y \ {y₀}, i.e. either y = y₀ (excluded by hy_ne) or y ∉ bad_Y.
+  have hy_not_bad : y ∉ bad_Y := by
+    intro hy_bad
+    have h_not_y₀ : y ≠ y₀ := hy_ne
+    exact hy_good ⟨hy_bad, h_not_y₀⟩
+  -- y is regular.
+  have hy_reg : y ∉ criticalValuesGeneral f := fun hcv =>
+    hy_not_bad (Or.inr hcv)
+  -- Every preimage of y has mmero g = 0 (in particular ≥ 0).
+  have hg_nonpole : ∀ x ∈ f ⁻¹' {y},
+      0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x := by
+    intro x hx
+    have hfx_y : f x = y := hx
+    -- x ∉ bad_X (else f x = y ∈ f '' bad_X ⊆ bad_Y).
+    have hx_not_bad : x ∉ bad_X := fun hx_bad =>
+      hy_not_bad (Or.inl ⟨x, hx_bad, hfx_y⟩)
+    -- So mmero g x = 0, hence ≥ 0.
+    have h_eq_0 : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x = 0 := by
+      by_contra h_ne
+      exact hx_not_bad h_ne
+    rw [h_eq_0]
+  -- Apply ZZ246: regularized = literal.
+  exact NormFM_regularized_eq_NormFM_at_regular_no_poles hf hnc g hy_reg hg_nonpole
+
+/-- **Universal `regular_continuousAt` headline.** At any `y₀ : Y` with
+`0 ≤ mmero NormFM_regularized y₀`, the regularized form is continuous
+at `y₀`. Extends ZZ252 (regular y₀ case) to all y₀ via the finite
+bad-set argument. -/
+lemma NormFM_regularized_continuousAt_of_order_nonneg
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X)
+    {y₀ : Y}
+    (ho : 0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM_regularized hf hnc g) y₀) :
+    ContinuousAt (NormFM_regularized hf hnc g) y₀ := by
+  classical
+  have h_evEq :
+      NormFM_regularized hf hnc g =ᶠ[𝓝[≠] y₀] NormFM f hf hnc g :=
+    NormFM_regularized_eventuallyEq_NormFM_punctured_universal hf hnc g y₀
+  have h_ord_eq :
+      mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM_regularized hf hnc g) y₀
+        = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀ :=
+    mmeromorphicOrderAt_congr_punctured h_evEq
+  have ho_NormFM :
+      0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀ := by
+    rw [← h_ord_eq]; exact ho
+  have hNormFM_mero : MMeromorphicAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀ :=
+    NormFM_mmeromorphicAt hf hnc g y₀
+  obtain ⟨L, hL⟩ := tendsto_nhds_of_mmeromorphicOrderAt_nonneg
+    (𝓘(ℂ, ℂ)) hNormFM_mero ho_NormFM
+  haveI : Filter.NeBot (𝓝[≠] y₀) := nhdsWithin_compl_singleton_neBot y₀
+  have h_reg_val : NormFM_regularized hf hnc g y₀ = L := by
+    rw [NormFM_regularized_of_nonneg hf hnc g ho_NormFM]
+    exact hL.limUnder_eq
+  have h_tendsto_punc :
+      Tendsto (NormFM_regularized hf hnc g) (𝓝[≠] y₀) (𝓝 L) := by
+    apply Tendsto.congr' h_evEq.symm
+    exact hL
+  rw [ContinuousAt, h_reg_val, ← nhdsNE_sup_pure y₀]
+  refine Filter.Tendsto.sup h_tendsto_punc ?_
+  rw [Filter.tendsto_pure_left]
+  intro V hV
+  rw [h_reg_val]
+  exact mem_of_mem_nhds hV
+
 end Manifold
 end JacobianChallenge
 
