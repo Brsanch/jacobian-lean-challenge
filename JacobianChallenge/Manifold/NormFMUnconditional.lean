@@ -1813,6 +1813,71 @@ lemma meromorphicOrderAt_rotationProd
   -- Sum of constant = card • value.
   rw [Finset.sum_const, h_card]
 
+/-- Helper: `nthRootsFinset k 0 = {0}` for `k ≥ 1` (the polynomial `X^k`
+has only the root `0` over a domain). Used to simplify `normPow g k 0`. -/
+lemma nthRootsFinset_zero {k : ℕ} (hk : 1 ≤ k) :
+    Polynomial.nthRootsFinset k (0 : ℂ) = {0} := by
+  ext x
+  rw [Polynomial.mem_nthRootsFinset hk, Finset.mem_singleton]
+  exact pow_eq_zero_iff (Nat.one_le_iff_ne_zero.mp hk)
+
+/-- Helper: `(fun s : ℂ => s ^ k)` is not `EventuallyConst` at `0` when `k ≥ 1`.
+Reduces to `analyticOrderAt_pow_id` (= k, finite) via mathlib's
+`eventuallyConst_iff_analyticOrderAt_sub_eq_top`. -/
+lemma pow_not_eventuallyConst {k : ℕ} (hk : 1 ≤ k) :
+    ¬EventuallyConst (fun s : ℂ => s ^ k) (𝓝 (0 : ℂ)) := by
+  classical
+  have hk_ne : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
+  rw [eventuallyConst_iff_analyticOrderAt_sub_eq_top]
+  -- The function `fun s => s^k - 0^k = s^k` has analytic order k ≠ ⊤ at 0.
+  have h_simp : (fun s : ℂ => s ^ k - (fun s : ℂ => s ^ k) 0) = (fun s : ℂ => s ^ k) := by
+    funext s
+    simp [zero_pow hk_ne]
+  rw [h_simp, analyticOrderAt_pow_id k]
+  intro h_top
+  exact (ENat.coe_ne_top k) h_top
+
+/-- **Cancellation in `WithTop ℤ` by a positive natural number.**
+For `k ≥ 1` and `a, b : WithTop ℤ`, if `a * (k : WithTop ℤ) = b * (k : WithTop ℤ)`,
+then `a = b`. Used to extract `meromorphicOrderAt (normPow g k) 0 = ord g 0`
+from the order-of-composition equation. -/
+lemma withTop_int_mul_right_cancel {k : ℕ} (hk : 1 ≤ k)
+    {a b : WithTop ℤ} (h : a * (k : WithTop ℤ) = b * (k : WithTop ℤ)) :
+    a = b := by
+  have hk_ne_zero : (k : WithTop ℤ) ≠ 0 := by
+    have : (k : ℤ) ≠ 0 := by exact_mod_cast Nat.one_le_iff_ne_zero.mp hk
+    exact_mod_cast this
+  have hk_pos : (0 : ℤ) < (k : ℤ) := by exact_mod_cast hk
+  have hk_ne_int : (k : ℤ) ≠ 0 := Int.ne_of_gt hk_pos
+  have hk_coe : ((k : ℤ) : WithTop ℤ) = (k : WithTop ℤ) := by norm_cast
+  -- Case split on a, b : WithTop ℤ = Option ℤ.
+  induction a with
+  | top =>
+    induction b with
+    | top => rfl
+    | coe b' =>
+      exfalso
+      rw [WithTop.top_mul hk_ne_zero] at h
+      rw [show ((b' : WithTop ℤ)) * (k : WithTop ℤ) = ((b' * k : ℤ) : WithTop ℤ) by
+          rw [← hk_coe, ← WithTop.coe_mul]] at h
+      exact WithTop.top_ne_coe h
+  | coe a' =>
+    induction b with
+    | top =>
+      exfalso
+      rw [WithTop.top_mul hk_ne_zero] at h
+      rw [show ((a' : WithTop ℤ)) * (k : WithTop ℤ) = ((a' * k : ℤ) : WithTop ℤ) by
+          rw [← hk_coe, ← WithTop.coe_mul]] at h
+      exact WithTop.coe_ne_top h
+    | coe b' =>
+      rw [show ((a' : WithTop ℤ)) * (k : WithTop ℤ) = ((a' * k : ℤ) : WithTop ℤ) by
+          rw [← hk_coe, ← WithTop.coe_mul],
+          show ((b' : WithTop ℤ)) * (k : WithTop ℤ) = ((b' * k : ℤ) : WithTop ℤ) by
+          rw [← hk_coe, ← WithTop.coe_mul]] at h
+      rw [WithTop.coe_inj] at h
+      have : a' = b' := mul_right_cancel₀ hk_ne_int h
+      rw [this]
+
 end Manifold
 end JacobianChallenge
 
