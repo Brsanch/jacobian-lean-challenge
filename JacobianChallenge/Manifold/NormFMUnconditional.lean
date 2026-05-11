@@ -2003,6 +2003,28 @@ lemma meromorphicOrderAt_normPow_zero
   -- h_eq : ord(normPow g k, 0) * k = ord(g, 0) * k.
   exact withTop_int_mul_right_cancel hk h_eq
 
+/-- **Headline order as planar order sum.** Refines
+`headlineG_mmeromorphicOrderAt_eq_sum` by applying `meromorphicOrderAt_normPow_zero`
+to each summand: the order of `G` at `y₀` is the sum of `meromorphicOrderAt (g_x) 0`
+over the fiber, when each `k_x = manifoldRamificationIndex f x ≥ 1`. -/
+lemma headlineG_mmeromorphicOrderAt_eq_sum_planar
+    (f : X → Y) (y₀ : Y) (FF : Finset X)
+    (h_pos_fn : ∀ x ∈ FF, 1 ≤ manifoldRamificationIndex f x)
+    (g_x_fn : ∀ x ∈ FF, ℂ → ℂ)
+    (g_x_mero : ∀ (x : X) (hx : x ∈ FF), MeromorphicAt (g_x_fn x hx) 0) :
+    mmeromorphicOrderAt (𝓘(ℂ, ℂ))
+      (fun y : Y => ∏ x ∈ FF.attach,
+        normPow (g_x_fn x.val x.property) (manifoldRamificationIndex f x.val)
+          ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)) y₀ =
+      ∑ x ∈ FF.attach, meromorphicOrderAt (g_x_fn x.val x.property) 0 := by
+  classical
+  rw [headlineG_mmeromorphicOrderAt_eq_sum f y₀ FF h_pos_fn g_x_fn g_x_mero]
+  apply Finset.sum_congr rfl
+  intro x _hx
+  exact meromorphicOrderAt_normPow_zero
+    (g_x_fn x.val x.property) (h_pos_fn x.val x.property)
+    (g_x_mero x.val x.property)
+
 end Manifold
 end JacobianChallenge
 
