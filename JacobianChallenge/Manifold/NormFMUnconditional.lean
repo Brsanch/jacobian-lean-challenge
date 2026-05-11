@@ -1559,9 +1559,17 @@ theorem NormFM_eventuallyEq_explicitFiberProduct
     {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
     (hnc : ¬ JacobianChallenge.IsConstantMap f)
     (g : MeromorphicNonzero X) (y₀ : Y) :
-    ∃ (G : Y → ℂ) (V_punct : Set Y),
-      MMeromorphicAt (𝓘(ℂ, ℂ)) G y₀ ∧ IsOpen V_punct ∧ y₀ ∈ V_punct ∧
-      (∀ y ∈ V_punct, y ≠ y₀ → NormFM f hf hnc g y = G y) := by
+    ∃ (FF : Finset X)
+      (h_pos_fn : ∀ x ∈ FF, 1 ≤ manifoldRamificationIndex f x)
+      (g_x_fn : ∀ x ∈ FF, ℂ → ℂ)
+      (g_x_mero : ∀ (x : X) (hxF : x ∈ FF), MeromorphicAt (g_x_fn x hxF) 0)
+      (V_punct : Set Y),
+      IsOpen V_punct ∧ y₀ ∈ V_punct ∧
+      (∀ y ∈ V_punct, y ≠ y₀ →
+        NormFM f hf hnc g y =
+        ∏ x ∈ FF.attach, normPow (g_x_fn x.val x.property)
+          (manifoldRamificationIndex f x.val)
+          ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)) := by
   classical
   obtain ⟨hF_fin, ε_fn, V₀, hV₀_open, hy₀_V₀, hε_pos_fn,
           h_disj, h_cov, h_count_211⟩ :=
@@ -1690,7 +1698,10 @@ theorem NormFM_eventuallyEq_explicitFiberProduct
       rw [← h_set_eq]
     rw [h_finset_eq]
     exact (perX x.val x.property).prod_eq y h_inter_small_fin h_count_small_x
-  exact ⟨G, V_punct, hG_mero, hV_punct_open, hy₀_punct, h_per_y⟩
+  exact ⟨hF_fin.toFinset, h_pos_fn,
+         fun x hxF => (perX x hxF).g_x,
+         fun x hxF => (perX x hxF).g_x_mero,
+         V_punct, hV_punct_open, hy₀_punct, h_per_y⟩
 
 /-- **Order equality via the EventuallyEq witness.** Combines ZZ228's
 extracted EventuallyEq with ZZ225's punctured order-congruence: the
@@ -1705,8 +1716,15 @@ lemma NormFM_mmeromorphicOrderAt_eq_explicitFiberProduct
       MMeromorphicAt (𝓘(ℂ, ℂ)) G y₀ ∧
       mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀
         = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) G y₀ := by
-  obtain ⟨G, V_punct, hG_mero, hV_open, hy₀_mem, h_per_y⟩ :=
+  obtain ⟨FF, h_pos_fn, g_x_fn, g_x_mero, V_punct,
+          hV_open, hy₀_mem, h_per_y⟩ :=
     NormFM_eventuallyEq_explicitFiberProduct hf hnc g y₀
+  let G : Y → ℂ := fun y => ∏ x ∈ FF.attach,
+    normPow (g_x_fn x.val x.property)
+      (manifoldRamificationIndex f x.val)
+      ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)
+  have hG_mero : MMeromorphicAt (𝓘(ℂ, ℂ)) G y₀ :=
+    headlineG_mmeromorphicAt f y₀ FF h_pos_fn g_x_fn g_x_mero
   refine ⟨G, hG_mero, ?_⟩
   apply mmeromorphicOrderAt_congr_punctured
   rw [Filter.eventuallyEq_iff_exists_mem]
@@ -2024,6 +2042,46 @@ lemma headlineG_mmeromorphicOrderAt_eq_sum_planar
   exact meromorphicOrderAt_normPow_zero
     (g_x_fn x.val x.property) (h_pos_fn x.val x.property)
     (g_x_mero x.val x.property)
+
+/-- **NormFM order = planar sum (witness).** Combines the strong
+`NormFM_eventuallyEq_explicitFiberProduct` with the planar
+`headlineG_mmeromorphicOrderAt_eq_sum_planar` to express
+`mmeromorphicOrderAt(NormFM, y₀)` directly as a sum of planar orders
+of the per-x germs `g_x`. The fiber `FF`, ramification indices, and
+germs are exposed via the existential. -/
+theorem NormFM_mmeromorphicOrderAt_eq_planar_sum_witness
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X) (y₀ : Y) :
+    ∃ (FF : Finset X)
+      (_h_pos_fn : ∀ x ∈ FF, 1 ≤ manifoldRamificationIndex f x)
+      (g_x_fn : ∀ x ∈ FF, ℂ → ℂ)
+      (_g_x_mero : ∀ (x : X) (hxF : x ∈ FF), MeromorphicAt (g_x_fn x hxF) 0),
+      mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀
+        = ∑ x ∈ FF.attach, meromorphicOrderAt (g_x_fn x.val x.property) 0 := by
+  classical
+  obtain ⟨FF, h_pos_fn, g_x_fn, g_x_mero, V_punct,
+          hV_open, hy₀_mem, h_per_y⟩ :=
+    NormFM_eventuallyEq_explicitFiberProduct hf hnc g y₀
+  refine ⟨FF, h_pos_fn, g_x_fn, g_x_mero, ?_⟩
+  -- Step 1: NormFM order = G order via punctured EventuallyEq.
+  let G : Y → ℂ := fun y => ∏ x ∈ FF.attach,
+    normPow (g_x_fn x.val x.property)
+      (manifoldRamificationIndex f x.val)
+      ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)
+  have h_NormFM_eq_G :
+      mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀
+        = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) G y₀ := by
+    apply mmeromorphicOrderAt_congr_punctured
+    rw [Filter.eventuallyEq_iff_exists_mem]
+    refine ⟨V_punct \ {y₀}, ?_, ?_⟩
+    · rw [mem_nhdsWithin_iff_exists_mem_nhds_inter]
+      refine ⟨V_punct, hV_open.mem_nhds hy₀_mem, ?_⟩
+      intro y hy; exact ⟨hy.1, hy.2⟩
+    · intro y hy; exact h_per_y y hy.1 hy.2
+  rw [h_NormFM_eq_G]
+  -- Step 2: G order = planar sum via ZZ231g.
+  exact headlineG_mmeromorphicOrderAt_eq_sum_planar f y₀ FF h_pos_fn g_x_fn g_x_mero
 
 end Manifold
 end JacobianChallenge
