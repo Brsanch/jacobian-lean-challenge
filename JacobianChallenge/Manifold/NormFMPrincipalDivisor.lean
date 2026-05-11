@@ -135,5 +135,42 @@ theorem NormFM_nonvanishing_germ
   obtain ⟨x, _hx_mem, hx_top⟩ := h_sum_top
   exact g.nonvanishing_germ x.val hx_top
 
+/-- **Principal divisor of `NormFM`.** Bypasses the `MeromorphicNonzero Y`
+structure (which would require `regular_continuousAt`, an open chip) by
+calling `MMeromorphicOn.divisor` directly with the meromorphic and
+non-vanishing-germ proofs. -/
+noncomputable def NormFM_principalDivisor
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : JacobianChallenge.MeromorphicNonzero X) : JacobianChallenge.Div Y :=
+  JacobianChallenge.MMeromorphicOn.divisor (𝓘(ℂ, ℂ)) (NormFM f hf hnc g)
+    (fun y _ => NormFM_mmeromorphicAt hf hnc g y)
+    (NormFM_nonvanishing_germ hf hnc g)
+
+/-- **Divisor-level Norm-Divisor identity (P1.3).** The pushforward of the
+principal divisor of `g` along `f` equals the (bypass-packaged) principal
+divisor of `NormFM f hf hnc g`.
+
+Proof: pointwise equality at every `y₀` from
+`divPushforwardHom_principalDivisor_eq_NormFM_orderFun`, lifted to
+`Div Y` equality via `DFunLike.ext`.
+
+This is the divisor-level identity P1.3 needs. It avoids the
+`regular_continuousAt` field by using `MMeromorphicOn.divisor` directly
+instead of going through `MeromorphicNonzero`. -/
+theorem divPushforwardHom_principalDivisor_eq_NormFM_principalDivisor
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : JacobianChallenge.MeromorphicNonzero X) :
+    JacobianChallenge.Pic0.divPushforwardHom f
+        (JacobianChallenge.principalDivisorMap g)
+      = NormFM_principalDivisor hf hnc g := by
+  refine DFunLike.ext _ _ (fun y₀ => ?_)
+  -- LHS at y₀ via the pointwise theorem (ZZ236).
+  rw [divPushforwardHom_principalDivisor_eq_NormFM_orderFun hf hnc g y₀]
+  -- RHS at y₀: NormFM_principalDivisor unfolds to MMeromorphicOn.divisor,
+  -- whose pointwise value is orderFun = (mmero ...).untop₀.
+  rfl
+
 end Manifold
 end JacobianChallenge
