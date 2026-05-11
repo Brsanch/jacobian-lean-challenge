@@ -791,6 +791,45 @@ lemma eventually_zero_le_mmero_at_section
   rw [h_ord_eq]
   exact h_an.meromorphicOrderAt_nonneg
 
+/-- **Eventual non-negativity of `mmero g` at all local sections.**
+
+Composes `exists_coherent_local_sections_at_regular_value` (ZZ242) with
+`eventually_zero_le_mmero_at_section` (ZZ248) applied per `x ∈ FF₀`,
+followed by `Filter.eventually_all_finset`. Result: a punctured
+neighbourhood of `y₀` on which every section value `σ x y` is a
+non-pole of `g`. -/
+lemma eventually_zero_le_mmero_at_all_sections
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X)
+    {y₀ : Y} (hy₀ : y₀ ∉ criticalValuesGeneral f) :
+    ∃ (hF₀ : (f ⁻¹' {y₀}).Finite) (σ : X → Y → X)
+      (V : Set Y), IsOpen V ∧ y₀ ∈ V ∧
+      (∀ x ∈ hF₀.toFinset, σ x y₀ = x) ∧
+      (∀ x ∈ hF₀.toFinset, ContinuousAt (σ x) y₀) ∧
+      (∀ x ∈ hF₀.toFinset, ∀ y ∈ V, f (σ x y) = y) ∧
+      (∀ᶠ y in 𝓝[≠] y₀, ∀ x ∈ hF₀.toFinset,
+        0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun (σ x y)) := by
+  classical
+  obtain ⟨hF₀, σ, V, hV_open, hy₀_V, hσ_y₀, hσ_cont, hf_σ_id⟩ :=
+    exists_coherent_local_sections_at_regular_value hf hnc hy₀
+  refine ⟨hF₀, σ, V, hV_open, hy₀_V, hσ_y₀, hσ_cont, hf_σ_id, ?_⟩
+  -- For each x ∈ FF₀, σ x is a section, so ZZ248 applies.
+  have h_per_x : ∀ x ∈ hF₀.toFinset, ∀ᶠ y in 𝓝[≠] y₀,
+      0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun (σ x y) := by
+    intro x hx
+    have hx_fibre : x ∈ f ⁻¹' {y₀} := hF₀.mem_toFinset.mp hx
+    have hfx_y₀ : f x = y₀ := hx_fibre
+    have hf_σ_x : ∀ᶠ y in 𝓝 y₀, f (σ x y) = y := by
+      have hV_nhds : V ∈ 𝓝 y₀ := hV_open.mem_nhds hy₀_V
+      filter_upwards [hV_nhds] with y hyV
+      exact hf_σ_id x hx y hyV
+    exact eventually_zero_le_mmero_at_section g hfx_y₀
+      (hσ_y₀ x hx) (hσ_cont x hx) hf_σ_x
+  -- Finite intersection over FF₀.
+  rw [Filter.eventually_all_finset]
+  exact h_per_x
+
 end Manifold
 end JacobianChallenge
 
