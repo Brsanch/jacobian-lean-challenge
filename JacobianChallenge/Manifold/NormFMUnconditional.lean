@@ -1718,6 +1718,37 @@ lemma NormFM_mmeromorphicOrderAt_eq_explicitFiberProduct
   · intro y hy
     exact h_per_y y hy.1 hy.2
 
+/-- **Order of the explicit fiber product G as a sum.** Combines ZZ226
+(`mmeromorphicOrderAt_finset_prod`) with ZZ227
+(`mmeromorphicOrderAt_normPow_chart_translated`) to express the order of
+`G` at `y₀` as a sum of planar `normPow`-at-0 orders. -/
+
+lemma headlineG_mmeromorphicOrderAt_eq_sum
+    (f : X → Y) (y₀ : Y) (FF : Finset X)
+    (h_pos_fn : ∀ x ∈ FF, 1 ≤ manifoldRamificationIndex f x)
+    (g_x_fn : ∀ x ∈ FF, ℂ → ℂ)
+    (g_x_mero : ∀ (x : X) (hx : x ∈ FF), MeromorphicAt (g_x_fn x hx) 0) :
+    mmeromorphicOrderAt (𝓘(ℂ, ℂ))
+      (fun y : Y => ∏ x ∈ FF.attach,
+        normPow (g_x_fn x.val x.property) (manifoldRamificationIndex f x.val)
+          ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)) y₀ =
+      ∑ x ∈ FF.attach,
+        meromorphicOrderAt
+          (fun u : ℂ => normPow (g_x_fn x.val x.property)
+            (manifoldRamificationIndex f x.val) u) 0 := by
+  classical
+  rw [mmeromorphicOrderAt_finset_prod (s := FF.attach)
+      (F := fun x : FF => fun y : Y =>
+        normPow (g_x_fn x.val x.property) (manifoldRamificationIndex f x.val)
+          ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀))]
+  · apply Finset.sum_congr rfl
+    intro x _hx
+    exact mmeromorphicOrderAt_normPow_chart_translated y₀
+      (g_x_fn x.val x.property) (manifoldRamificationIndex f x.val)
+  · intro x _hx
+    exact normPow_mmeromorphicAt_chartPullback_translated
+      (h_pos_fn x.val x.property) (g_x_mero x.val x.property)
+
 end Manifold
 end JacobianChallenge
 
