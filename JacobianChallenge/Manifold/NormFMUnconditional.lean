@@ -1761,6 +1761,58 @@ lemma analyticOrderAt_pow_id (k : ℕ) :
   rw [h_fun_eq, analyticOrderAt_pow analyticAt_id, analyticOrderAt_id]
   simp
 
+/-- The rotation product `H s = ∏ ζ ∈ μ_k, g(ζ * s)` has order
+`k * meromorphicOrderAt g 0` at `s = 0`, when `g` is `MeromorphicAt 0`
+and `k ≥ 1`. Combines `meromorphicOrderAt_fun_prod` with
+`meromorphicOrderAt_comp_of_deriv_ne_zero` for each rotation factor. -/
+
+lemma meromorphicOrderAt_rotationProd
+    (g : ℂ → ℂ) {k : ℕ} (hk : 1 ≤ k) (hg : MeromorphicAt g 0) :
+    meromorphicOrderAt
+      (fun s : ℂ => ∏ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ), g (ζ * s)) 0
+      = k • meromorphicOrderAt g 0 := by
+  classical
+  have hk_ne : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
+  have h_card : (Polynomial.nthRootsFinset k (1 : ℂ)).card = k := by
+    have hζ_prim : IsPrimitiveRoot
+        (Complex.exp (2 * Real.pi * Complex.I / k)) k :=
+      Complex.isPrimitiveRoot_exp k hk_ne
+    exact hζ_prim.card_nthRootsFinset
+  have h_each_mero : ∀ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ),
+      MeromorphicAt (fun s : ℂ => g (ζ * s)) 0 := by
+    intro ζ hζ
+    have h_inner : AnalyticAt ℂ (fun s : ℂ => ζ * s) 0 :=
+      analyticAt_const.mul analyticAt_id
+    have h_val : (fun s : ℂ => ζ * s) 0 = 0 := by simp
+    have hg_at : MeromorphicAt g ((fun s : ℂ => ζ * s) 0) := by
+      rw [h_val]; exact hg
+    exact hg_at.comp_analyticAt h_inner
+  -- Order of product = sum of orders.
+  rw [meromorphicOrderAt_fun_prod h_each_mero]
+  -- Each summand = meromorphicOrderAt g 0 via comp_of_deriv_ne_zero.
+  have h_each_eq : ∀ ζ ∈ Polynomial.nthRootsFinset k (1 : ℂ),
+      meromorphicOrderAt (fun s : ℂ => g (ζ * s)) 0 = meromorphicOrderAt g 0 := by
+    intro ζ hζ
+    have hζ_pow : ζ ^ k = 1 := (Polynomial.mem_nthRootsFinset hk 1).mp hζ
+    have hζ_ne : ζ ≠ 0 := by
+      intro h_eq
+      rw [h_eq, zero_pow hk_ne] at hζ_pow
+      exact zero_ne_one hζ_pow
+    have h_inner_an : AnalyticAt ℂ (fun s : ℂ => ζ * s) 0 :=
+      analyticAt_const.mul analyticAt_id
+    have h_inner_deriv : deriv (fun s : ℂ => ζ * s) 0 ≠ 0 := by
+      rw [deriv_const_mul_field, deriv_id'']; simpa using hζ_ne
+    have h_comp := meromorphicOrderAt_comp_of_deriv_ne_zero (f := g)
+      h_inner_an h_inner_deriv
+    show meromorphicOrderAt (fun s : ℂ => g (ζ * s)) 0 = meromorphicOrderAt g 0
+    have h_eq_fun : (fun s : ℂ => g (ζ * s)) = g ∘ (fun s : ℂ => ζ * s) := rfl
+    rw [h_eq_fun, h_comp]
+    congr 1
+    simp
+  rw [Finset.sum_congr rfl h_each_eq]
+  -- Sum of constant = card • value.
+  rw [Finset.sum_const, h_card]
+
 end Manifold
 end JacobianChallenge
 
