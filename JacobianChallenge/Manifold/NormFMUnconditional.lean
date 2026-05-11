@@ -1548,6 +1548,150 @@ lemma mmeromorphicOrderAt_normPow_chart_translated
     simp
   rw [meromorphicOrderAt_comp_of_deriv_ne_zero h_an h_deriv, sub_self]
 
+/-- **Extracted EventuallyEq witness for the headline.**
+For each `y₀ : Y`, there exist a function `G : Y → ℂ` (a finite product of
+chart-translated `normPow` factors) and an open neighbourhood `V_punct ∋ y₀`
+on which `NormFM f hf hnc g` agrees with `G` (away from `y₀`). The headline
+`NormFM_mmeromorphicAt` follows by chart-pulled congr. This extraction
+exposes the witnesses for downstream order computations. -/
+
+theorem NormFM_eventuallyEq_explicitFiberProduct
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X) (y₀ : Y) :
+    ∃ (G : Y → ℂ) (V_punct : Set Y),
+      MMeromorphicAt (𝓘(ℂ, ℂ)) G y₀ ∧ IsOpen V_punct ∧ y₀ ∈ V_punct ∧
+      (∀ y ∈ V_punct, y ≠ y₀ → NormFM f hf hnc g y = G y) := by
+  classical
+  obtain ⟨hF_fin, ε_fn, V₀, hV₀_open, hy₀_V₀, hε_pos_fn,
+          h_disj, h_cov, h_count_211⟩ :=
+    fibre_disjoint_chart_radius_decomposition f hf hnc y₀
+  have hfx_y₀ : ∀ x ∈ hF_fin.toFinset, f x = y₀ := fun x hxF => by
+    have hx_pre : x ∈ f ⁻¹' {y₀} := hF_fin.mem_toFinset.mp hxF
+    exact hx_pre
+  have h_perChartNonConst :
+      JacobianChallenge.ContMDiff.Owed.degree.PerChartNonConstancyHypothesis X Y :=
+    JacobianChallenge.ContMDiff.Owed.degree.perChartNonConstancy_of_clopennessOfLocallyConst
+      JacobianChallenge.ContMDiff.Owed.degree.clopennessOfLocallyConst_holds
+  have h_pos_fn : ∀ x ∈ hF_fin.toFinset, 1 ≤ manifoldRamificationIndex f x := fun x hxF =>
+    manifoldRamificationIndex_pos_at_fibre_of_perChartNonConstancy
+      h_perChartNonConst hf hnc (hfx_y₀ x hxF)
+  let perX : ∀ (x : X) (hxF : x ∈ hF_fin.toFinset),
+      NormFMPerXData hf hnc g x y₀ (ε_fn x hxF) := fun x hxF =>
+    NormFMPerXData.ofExistential hf hnc g x y₀ (hfx_y₀ x hxF)
+      (h_pos_fn x hxF) (ε_fn x hxF) (hε_pos_fn x hxF)
+  let G : Y → ℂ := fun y =>
+    ∏ x ∈ hF_fin.toFinset.attach,
+      normPow (perX x.val x.property).g_x (manifoldRamificationIndex f x.val)
+        ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)
+  have hG_mero : MMeromorphicAt (𝓘(ℂ, ℂ)) G y₀ :=
+    headlineG_mmeromorphicAt f y₀ hF_fin.toFinset h_pos_fn
+      (fun x hxF => (perX x hxF).g_x)
+      (fun x hxF => (perX x hxF).g_x_mero)
+  let V_inter : Set Y := V₀ ∩ ⋂ x : hF_fin.toFinset, (perX x.val x.property).V
+  let CV : Set Y := (criticalValuesGeneral f) \ {y₀}
+  let V_punct : Set Y := V_inter \ CV
+  have hCV_finite : CV.Finite :=
+    (criticalValues_finite_general f hf hnc).subset Set.diff_subset
+  have hCV_closed : IsClosed CV := hCV_finite.isClosed
+  have hV_inter_open : IsOpen V_inter := by
+    refine hV₀_open.inter ?_
+    exact isOpen_iInter_of_finite (fun x => (perX x.val x.property).V_open)
+  have hV_punct_open : IsOpen V_punct := hV_inter_open.sdiff hCV_closed
+  have hy₀_inter : y₀ ∈ V_inter := by
+    refine ⟨hy₀_V₀, ?_⟩
+    rw [Set.mem_iInter]
+    exact fun x => (perX x.val x.property).y₀_V
+  have hy₀_punct : y₀ ∈ V_punct := by
+    refine ⟨hy₀_inter, ?_⟩
+    intro h_in_CV
+    exact h_in_CV.2 rfl
+  have h_per_y : ∀ y ∈ V_punct, y ≠ y₀ → NormFM f hf hnc g y = G y := by
+    intro y hy_punct hy_ne
+    have hy_inter : y ∈ V_inter := hy_punct.1
+    have hy_V₀ : y ∈ V₀ := hy_inter.1
+    have hy_perXV : ∀ (x : X) (hxF : x ∈ hF_fin.toFinset), y ∈ (perX x hxF).V := by
+      intro x hxF
+      have h := hy_inter.2
+      rw [Set.mem_iInter] at h
+      exact h ⟨x, hxF⟩
+    have hy_reg : y ∉ criticalValuesGeneral f := by
+      intro hy_crit
+      exact hy_punct.2 ⟨hy_crit, hy_ne⟩
+    have hF_y_fin : (f ⁻¹' {y}).Finite :=
+      JacobianChallenge.ContMDiff.Owed.degree.fibres_finite_statement_holds_unconditional
+        f hf hnc y
+    rw [NormFM_at_regular_value hf hnc g hy_reg]
+    let D_large : X → Set X := fun x' =>
+      (chartAt ℂ x').source ∩
+        (chartAt ℂ x') ⁻¹' Metric.ball ((chartAt ℂ x') x')
+          (if h : x' ∈ hF_fin.toFinset then ε_fn x' h else 0)
+    have h_cov_y : f ⁻¹' {y} ⊆ ⋃ x ∈ hF_fin.toFinset, D_large x := by
+      intro z hz
+      have hz_y : f z = y := hz
+      have hz_V₀ : z ∈ f ⁻¹' V₀ := by
+        show f z ∈ V₀; rw [hz_y]; exact hy_V₀
+      exact h_cov hz_V₀
+    rw [show (JacobianChallenge.ContMDiff.Owed.degree.fibres_finite_statement_holds_unconditional
+              f hf hnc y).toFinset = hF_y_fin.toFinset from rfl]
+    rw [prod_finite_eq_prod_biUnion_inter hF_y_fin hF_fin.toFinset D_large
+      h_disj h_cov_y g.toFun]
+    rw [← Finset.prod_attach hF_fin.toFinset
+      (fun x => ∏ z ∈ (hF_y_fin.inter_of_left (D_large x)).toFinset, g.toFun z)]
+    apply Finset.prod_congr rfl
+    intro x _hx
+    let ε_S : ℝ := (perX x.val x.property).ε
+    have hε_S_le : ε_S ≤ ε_fn x.val x.property := (perX x.val x.property).ε_le
+    let D_small_x : Set X :=
+      (chartAt ℂ x.val).source ∩
+        (chartAt ℂ x.val) ⁻¹' Metric.ball ((chartAt ℂ x.val) x.val) ε_S
+    have hD_large_x : D_large x.val =
+        (chartAt ℂ x.val).source ∩
+          (chartAt ℂ x.val) ⁻¹' Metric.ball ((chartAt ℂ x.val) x.val)
+            (ε_fn x.val x.property) := by
+      simp only [D_large, dif_pos x.property]
+    have h_inter_large_fin : (f ⁻¹' {y} ∩ D_large x.val).Finite :=
+      hF_y_fin.inter_of_left (D_large x.val)
+    have h_inter_small_fin : (f ⁻¹' {y} ∩ D_small_x).Finite :=
+      hF_y_fin.inter_of_left D_small_x
+    have h_count_small_x :
+        (f ⁻¹' {y} ∩ D_small_x).ncard = manifoldRamificationIndex f x.val :=
+      (perX x.val x.property).count y (hy_perXV x.val x.property) hy_ne
+    have h_count_large_via_211 :
+        (f ⁻¹' {y} ∩
+          ((chartAt ℂ x.val).source ∩
+            (chartAt ℂ x.val) ⁻¹' Metric.ball ((chartAt ℂ x.val) x.val)
+              (ε_fn x.val x.property))).ncard
+          = manifoldRamificationIndex f x.val :=
+      h_count_211 y hy_V₀ hy_ne x.val x.property
+    have h_set_eq :
+        f ⁻¹' {y} ∩ D_small_x = f ⁻¹' {y} ∩ D_large x.val := by
+      rw [hD_large_x]
+      have hcount_eq :
+          (f ⁻¹' {y} ∩ D_small_x).ncard
+            = (f ⁻¹' {y} ∩
+                ((chartAt ℂ x.val).source ∩
+                  (chartAt ℂ x.val) ⁻¹' Metric.ball ((chartAt ℂ x.val) x.val)
+                    (ε_fn x.val x.property))).ncard := by
+        rw [h_count_small_x, h_count_large_via_211]
+      have h_finite_large' :
+          (f ⁻¹' {y} ∩
+            ((chartAt ℂ x.val).source ∩
+              (chartAt ℂ x.val) ⁻¹' Metric.ball ((chartAt ℂ x.val) x.val)
+                (ε_fn x.val x.property))).Finite := by
+        rw [← hD_large_x]; exact h_inter_large_fin
+      exact fibre_inter_chart_disk_shrink_eq hε_S_le h_finite_large' hcount_eq
+    have h_finset_eq :
+        (hF_y_fin.inter_of_left (D_large x.val)).toFinset
+          = h_inter_small_fin.toFinset := by
+      apply Finset.ext
+      intro a
+      simp only [Set.Finite.mem_toFinset]
+      rw [← h_set_eq]
+    rw [h_finset_eq]
+    exact (perX x.val x.property).prod_eq y h_inter_small_fin h_count_small_x
+  exact ⟨G, V_punct, hG_mero, hV_punct_open, hy₀_punct, h_per_y⟩
+
 end Manifold
 end JacobianChallenge
 
