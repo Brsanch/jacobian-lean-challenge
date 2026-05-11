@@ -519,6 +519,49 @@ theorem NormFM_eventuallyEq_section_product_at_regular_value
   · -- Value: g.toFun (σ x y) = g.toFun (σ x y).
     intros; rfl
 
+/-- **Continuity of `NormFM` at a regular value with no preimage poles.**
+
+If `y₀` is a regular value of `f` and every preimage `x ∈ f⁻¹{y₀}` is a
+non-pole point of `g` (i.e. `0 ≤ mmero g x`), then
+`NormFM f hf hnc g` is continuous at `y₀`.
+
+Proof: by `NormFM_eventuallyEq_section_product_at_regular_value`,
+`NormFM` agrees on a neighbourhood of `y₀` with the section product
+`y ↦ ∏ x ∈ FF₀, g (σ x y)`. Each `g ∘ σ x` is continuous at `y₀` via
+`g.regular_continuousAt` at `x` (non-pole) and `σ x` continuous at `y₀`.
+The Finset product of continuous functions is continuous; transferring
+via the EventuallyEq finishes. -/
+theorem NormFM_continuousAt_of_regular_and_no_poles
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X)
+    {y₀ : Y} (hy₀ : y₀ ∉ criticalValuesGeneral f)
+    (hg_nonpole : ∀ x ∈ f ⁻¹' {y₀},
+        0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x) :
+    ContinuousAt (NormFM f hf hnc g) y₀ := by
+  classical
+  obtain ⟨hF₀, σ, hσ_y₀, hσ_cont, h_eventually⟩ :=
+    NormFM_eventuallyEq_section_product_at_regular_value hf hnc g hy₀
+  -- For each x ∈ hF₀.toFinset, `g ∘ σ x` is continuous at y₀.
+  have h_each :
+      ∀ x ∈ hF₀.toFinset, ContinuousAt (fun y => g.toFun (σ x y)) y₀ := by
+    intro x hx
+    have hx_fibre : x ∈ f ⁻¹' {y₀} := hF₀.mem_toFinset.mp hx
+    have hg_at_x : ContinuousAt g.toFun x :=
+      g.regular_continuousAt x (hg_nonpole x hx_fibre)
+    have hg_at_σ : ContinuousAt g.toFun (σ x y₀) := by
+      rw [hσ_y₀ x hx]; exact hg_at_x
+    exact hg_at_σ.comp (hσ_cont x hx)
+  -- Finset product is continuous: package via `tendsto_finset_prod`.
+  have h_prod :
+      ContinuousAt (fun y => ∏ x ∈ hF₀.toFinset, g.toFun (σ x y)) y₀ := by
+    show Tendsto (fun y => ∏ x ∈ hF₀.toFinset, g.toFun (σ x y)) (𝓝 y₀)
+      (𝓝 (∏ x ∈ hF₀.toFinset, g.toFun (σ x y₀)))
+    exact tendsto_finset_prod hF₀.toFinset
+      (fun x hx => (h_each x hx : Tendsto _ _ _))
+  -- Transfer continuity via EventuallyEq.
+  exact h_prod.congr h_eventually.symm
+
 end Manifold
 end JacobianChallenge
 
