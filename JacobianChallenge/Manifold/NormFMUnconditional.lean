@@ -1598,6 +1598,7 @@ theorem NormFM_eventuallyEq_explicitFiberProduct
     ∃ (FF : Finset X)
       (h_pos_fn : ∀ x ∈ FF, 1 ≤ manifoldRamificationIndex f x)
       (h_fibre : ∀ x ∈ FF, f x = y₀)
+      (h_full_fibre : ∀ x : X, f x = y₀ → x ∈ FF)
       (g_x_fn : ∀ x ∈ FF, ℂ → ℂ)
       (g_x_mero : ∀ (x : X) (hxF : x ∈ FF), MeromorphicAt (g_x_fn x hxF) 0)
       (g_x_order : ∀ (x : X) (hxF : x ∈ FF),
@@ -1738,7 +1739,11 @@ theorem NormFM_eventuallyEq_explicitFiberProduct
       rw [← h_set_eq]
     rw [h_finset_eq]
     exact (perX x.val x.property).prod_eq y h_inter_small_fin h_count_small_x
-  exact ⟨hF_fin.toFinset, h_pos_fn, hfx_y₀,
+  have h_full_fibre : ∀ x : X, f x = y₀ → x ∈ hF_fin.toFinset := by
+    intro x hx
+    rw [hF_fin.mem_toFinset]
+    exact hx
+  exact ⟨hF_fin.toFinset, h_pos_fn, hfx_y₀, h_full_fibre,
          fun x hxF => (perX x hxF).g_x,
          fun x hxF => (perX x hxF).g_x_mero,
          fun x hxF => (perX x hxF).g_x_order,
@@ -1757,7 +1762,7 @@ lemma NormFM_mmeromorphicOrderAt_eq_explicitFiberProduct
       MMeromorphicAt (𝓘(ℂ, ℂ)) G y₀ ∧
       mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀
         = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) G y₀ := by
-  obtain ⟨FF, h_pos_fn, _h_fibre, g_x_fn, g_x_mero, _g_x_order, V_punct,
+  obtain ⟨FF, h_pos_fn, _h_fibre, _h_full_fibre, g_x_fn, g_x_mero, _g_x_order, V_punct,
           hV_open, hy₀_mem, h_per_y⟩ :=
     NormFM_eventuallyEq_explicitFiberProduct hf hnc g y₀
   let G : Y → ℂ := fun y => ∏ x ∈ FF.attach,
@@ -2101,7 +2106,7 @@ theorem NormFM_mmeromorphicOrderAt_eq_planar_sum_witness
       mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀
         = ∑ x ∈ FF.attach, meromorphicOrderAt (g_x_fn x.val x.property) 0 := by
   classical
-  obtain ⟨FF, h_pos_fn, _h_fibre, g_x_fn, g_x_mero, _g_x_order, V_punct,
+  obtain ⟨FF, h_pos_fn, _h_fibre, _h_full_fibre, g_x_fn, g_x_mero, _g_x_order, V_punct,
           hV_open, hy₀_mem, h_per_y⟩ :=
     NormFM_eventuallyEq_explicitFiberProduct hf hnc g y₀
   refine ⟨FF, h_pos_fn, g_x_fn, g_x_mero, ?_⟩
@@ -2144,7 +2149,7 @@ theorem NormFM_mmeromorphicOrderAt_eq_fibre_sum
         = ∑ x ∈ FF.attach,
           mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x.val := by
   classical
-  obtain ⟨FF, h_pos_fn, h_fibre, g_x_fn, g_x_mero, g_x_order, V_punct,
+  obtain ⟨FF, h_pos_fn, h_fibre, h_full_fibre, g_x_fn, g_x_mero, g_x_order, V_punct,
           hV_open, hy₀_mem, h_per_y⟩ :=
     NormFM_eventuallyEq_explicitFiberProduct hf hnc g y₀
   refine ⟨FF, h_fibre, ?_⟩
@@ -2197,28 +2202,55 @@ lemma untop₀_sum_of_ne_top {ι : Type*} (S : Finset ι) (f : ι → WithTop �
 /-- Pointwise integer form of `NormFM_mmeromorphicOrderAt_eq_fibre_sum`.
 The `.untop₀` distributes over the fibre sum because each summand is finite
 (MeromorphicNonzero g forbids `mmeromorphicOrderAt _ g.toFun x = ⊤`).
-This is the form `principalDivisorMap` sees pointwise. -/
+The fibre `FF` is exposed in BOTH directions (`f x = y₀ ↔ x ∈ FF`) so
+downstream divisor pushforward can sum cleanly. -/
 theorem NormFM_principalDivisor_apply_at_y₀
     {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
     (hnc : ¬ JacobianChallenge.IsConstantMap f)
     (g : MeromorphicNonzero X) (y₀ : Y) :
     ∃ (FF : Finset X),
       (∀ x ∈ FF, f x = y₀) ∧
+      (∀ x : X, f x = y₀ → x ∈ FF) ∧
       (mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀).untop₀
         = ∑ x ∈ FF.attach,
           (mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x.val).untop₀ := by
   classical
-  obtain ⟨FF, h_fibre, h_eq⟩ :=
-    NormFM_mmeromorphicOrderAt_eq_fibre_sum hf hnc g y₀
-  refine ⟨FF, h_fibre, ?_⟩
-  rw [h_eq]
-  -- Distribute .untop₀ over the sum, using nonvanishing_germ to avoid ⊤.
-  have h_finite : ∀ x ∈ FF.attach,
-      mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x.val ≠ ⊤ :=
-    fun x _hx => g.nonvanishing_germ x.val
-  -- Generic helper: untop₀ distributes over a Finset sum of finite WithTop ℤ.
+  -- Re-derive directly to expose all the data we need together. We rebuild
+  -- the same construction as NormFM_mmeromorphicOrderAt_eq_fibre_sum but
+  -- using NormFM_eventuallyEq_explicitFiberProduct (which has h_full_fibre).
+  obtain ⟨FF, h_pos_fn, h_fibre, h_full_fibre,
+          g_x_fn, g_x_mero, g_x_order,
+          V_punct, hV_open, hy₀_mem, h_per_y⟩ :=
+    NormFM_eventuallyEq_explicitFiberProduct hf hnc g y₀
+  refine ⟨FF, h_fibre, h_full_fibre, ?_⟩
+  -- Step 1: NormFM order = G order (G = explicit fibre product).
+  let G : Y → ℂ := fun y => ∏ x ∈ FF.attach,
+    normPow (g_x_fn x.val x.property)
+      (manifoldRamificationIndex f x.val)
+      ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀)
+  have h_NormFM_eq_G :
+      mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀
+        = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) G y₀ := by
+    apply mmeromorphicOrderAt_congr_punctured
+    rw [Filter.eventuallyEq_iff_exists_mem]
+    refine ⟨V_punct \ {y₀}, ?_, ?_⟩
+    · rw [mem_nhdsWithin_iff_exists_mem_nhds_inter]
+      refine ⟨V_punct, hV_open.mem_nhds hy₀_mem, ?_⟩
+      intro y hy; exact ⟨hy.1, hy.2⟩
+    · intro y hy; exact h_per_y y hy.1 hy.2
+  -- Step 2: G order = sum of mmero g.toFun (via planar rule + g_x_order).
+  have h_G_eq : mmeromorphicOrderAt (𝓘(ℂ, ℂ)) G y₀
+      = ∑ x ∈ FF.attach,
+        mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x.val := by
+    rw [headlineG_mmeromorphicOrderAt_eq_sum_planar f y₀ FF h_pos_fn g_x_fn g_x_mero]
+    apply Finset.sum_congr rfl
+    intro x _hx
+    exact g_x_order x.val x.property
+  rw [h_NormFM_eq_G, h_G_eq]
+  -- Step 3: untop₀ distributes (each summand finite by nonvanishing_germ).
   exact untop₀_sum_of_ne_top FF.attach
-    (fun x => mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x.val) h_finite
+    (fun x => mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x.val)
+    (fun x _hx => g.nonvanishing_germ x.val)
 
 end Manifold
 end JacobianChallenge
