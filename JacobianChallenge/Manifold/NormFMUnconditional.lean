@@ -1692,6 +1692,32 @@ theorem NormFM_eventuallyEq_explicitFiberProduct
     exact (perX x.val x.property).prod_eq y h_inter_small_fin h_count_small_x
   exact ⟨G, V_punct, hG_mero, hV_punct_open, hy₀_punct, h_per_y⟩
 
+/-- **Order equality via the EventuallyEq witness.** Combines ZZ228's
+extracted EventuallyEq with ZZ225's punctured order-congruence: the
+order of `NormFM f hf hnc g` at `y₀` equals the order of the explicit
+fiber product `G`. -/
+
+lemma NormFM_mmeromorphicOrderAt_eq_explicitFiberProduct
+    {f : X → Y} (hf : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f)
+    (g : MeromorphicNonzero X) (y₀ : Y) :
+    ∃ (G : Y → ℂ),
+      MMeromorphicAt (𝓘(ℂ, ℂ)) G y₀ ∧
+      mmeromorphicOrderAt (𝓘(ℂ, ℂ)) (NormFM f hf hnc g) y₀
+        = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) G y₀ := by
+  obtain ⟨G, V_punct, hG_mero, hV_open, hy₀_mem, h_per_y⟩ :=
+    NormFM_eventuallyEq_explicitFiberProduct hf hnc g y₀
+  refine ⟨G, hG_mero, ?_⟩
+  apply mmeromorphicOrderAt_congr_punctured
+  rw [Filter.eventuallyEq_iff_exists_mem]
+  refine ⟨V_punct \ {y₀}, ?_, ?_⟩
+  · rw [mem_nhdsWithin_iff_exists_mem_nhds_inter]
+    refine ⟨V_punct, hV_open.mem_nhds hy₀_mem, ?_⟩
+    intro y hy
+    exact ⟨hy.1, hy.2⟩
+  · intro y hy
+    exact h_per_y y hy.1 hy.2
+
 end Manifold
 end JacobianChallenge
 
