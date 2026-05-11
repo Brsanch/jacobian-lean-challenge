@@ -671,6 +671,7 @@ theorem normFM_local_product_eq_normPow_at_radius
     ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 ∧
       (meromorphicOrderAt g_x 0
         = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x) ∧
+      g_x 0 = g.toFun x ∧
       ∀ y : Y,
       ∀ (hMan_fin :
         (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
@@ -702,7 +703,7 @@ theorem normFM_local_product_eq_normPow_at_radius
   have hg_at_φ0 :
       MeromorphicAt (g.toFun ∘ (chartAt ℂ x).symm) (φ 0) := by
     rw [hφ_zero]; exact hg_pulled
-  refine ⟨fun s => g.toFun ((chartAt ℂ x).symm (φ s)), ?_, ?_, ?_⟩
+  refine ⟨fun s => g.toFun ((chartAt ℂ x).symm (φ s)), ?_, ?_, ?_, ?_⟩
   · show MeromorphicAt (fun s => g.toFun ((chartAt ℂ x).symm (φ s))) 0
     exact hg_at_φ0.comp_analyticAt hφ_an_zero
   · -- meromorphicOrderAt (g_x) 0 = mmeromorphicOrderAt I g.toFun x
@@ -726,6 +727,11 @@ theorem normFM_local_product_eq_normPow_at_radius
       meromorphicOrderAt_comp_of_deriv_ne_zero hφ_an_zero h_dφ_ne]
     rw [hφ_zero]
     rfl
+  · -- g_x 0 = g.toFun x: at s=0, φ 0 = z₀, chart.symm z₀ = x.
+    show g.toFun ((chartAt ℂ x).symm (φ 0)) = g.toFun x
+    rw [hφ_zero]
+    congr 1
+    exact (chartAt ℂ x).left_inv (mem_chart_source ℂ x)
   · intro y hMan_fin h_count_y
     have h_image := normFM_local_image_eq_nthRootsFinset
       (f := f) hf hnc x h_pos (hε_pos := hε_pos) y
@@ -798,6 +804,7 @@ private theorem normFM_per_x_at_coord_radius
     ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 ∧
       (meromorphicOrderAt g_x 0
         = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x) ∧
+      g_x 0 = g.toFun x ∧
       ∀ y : Y,
       ∀ (hMan_fin :
         (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
@@ -866,11 +873,11 @@ private theorem normFM_per_x_at_coord_radius
       exact lt_of_le_of_lt this hε_lt_δ
     exact hδ_sub hw_ball
   -- Apply step 11a with ε, ψ.
-  obtain ⟨g_x, hg_x_mero, hg_x_order, h_prod⟩ :=
+  obtain ⟨g_x, hg_x_mero, hg_x_order, hg_x_value, h_prod⟩ :=
     normFM_local_product_eq_normPow_at_radius hf hnc g x h_pos hε_pos
       hψ_an_on_ε hψ_z₀ hψ_deriv hψ_inj_ε hψ_eq_ε h_left_inv
   exact ⟨ε, hε_pos, hε_le_R₀, V, hV_open, hfx_V, h_count,
-         g_x, hg_x_mero, hg_x_order, h_prod⟩
+         g_x, hg_x_mero, hg_x_order, hg_x_value, h_prod⟩
 
 /-! ## Step 11c: NormFM_mmeromorphicAt y₀ — full headline assembly. -/
 
@@ -1046,6 +1053,7 @@ theorem normFM_per_x_at_y₀
     ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 ∧
       (meromorphicOrderAt g_x 0
         = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x) ∧
+      g_x 0 = g.toFun x ∧
       ∀ y : Y,
       ∀ (hMan_fin :
         (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
@@ -1059,10 +1067,10 @@ theorem normFM_per_x_at_y₀
             ((chartAt ℂ y₀) y - (chartAt ℂ y₀) y₀) := by
   classical
   obtain ⟨ε, hε_pos, hε_le, V, hV_open, hfx_V, h_count,
-          g_x, hg_x_mero, hg_x_order, h_prod⟩ :=
+          g_x, hg_x_mero, hg_x_order, hg_x_value, h_prod⟩ :=
     normFM_per_x_at_coord_radius hf hnc g x h_pos R₀ hR₀
   refine ⟨ε, hε_pos, hε_le, V, hV_open, ?_, ?_,
-          g_x, hg_x_mero, hg_x_order, ?_⟩
+          g_x, hg_x_mero, hg_x_order, hg_x_value, ?_⟩
   · rw [← hxy]; exact hfx_V
   · intro w hw_V hw_ne_y₀
     have hw_ne_fx : w ≠ f x := by rw [hxy]; exact hw_ne_y₀
@@ -1147,6 +1155,7 @@ private theorem perXEps_spec
       ∃ g_x : ℂ → ℂ, MeromorphicAt g_x 0 ∧
         (meromorphicOrderAt g_x 0
           = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x) ∧
+        g_x 0 = g.toFun x ∧
         ∀ y : Y,
         ∀ (hMan_fin :
           (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
@@ -1187,6 +1196,7 @@ structure NormFMPerXData
   g_x_mero : MeromorphicAt g_x 0
   g_x_order : meromorphicOrderAt g_x 0
     = mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g.toFun x
+  g_x_value : g_x 0 = g.toFun x
   prod_eq : ∀ y : Y,
     ∀ (hMan_fin :
       (f ⁻¹' {y} ∩ ((chartAt ℂ x).source ∩
@@ -1226,11 +1236,12 @@ noncomputable def NormFMPerXData.ofExistential
   let h_g_x := h_g.choose_spec
   let g_x_mero := h_g_x.1
   let g_x_order := h_g_x.2.1
-  let prod_eq := h_g_x.2.2
+  let g_x_value := h_g_x.2.2.1
+  let prod_eq := h_g_x.2.2.2
   { ε := ε, ε_pos := ε_pos, ε_le := ε_le,
     V := V, V_open := V_open, y₀_V := y₀_V, count := count,
     g_x := g_x, g_x_mero := g_x_mero, g_x_order := g_x_order,
-    prod_eq := prod_eq }
+    g_x_value := g_x_value, prod_eq := prod_eq }
 
 /-! ## Step 12 (ZZ222c): generic G-product MMeromorphicAt lemma.
 
