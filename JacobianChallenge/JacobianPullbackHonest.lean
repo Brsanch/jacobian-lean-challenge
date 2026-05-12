@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import JacobianChallenge.JacobianPullbackWeighted
+import JacobianChallenge.JacobianPullback
 import JacobianChallenge.Manifold.HNTotalFromRamificationSum
 import JacobianChallenge.Manifold.FibresFiniteUnconditional
 import JacobianChallenge.Manifold.IsConstantMapAux
@@ -82,6 +83,7 @@ noncomputable def pullbackHonest_of_rsum
       (JacobianChallenge.Manifold.manifoldRamificationIndex f)
       (JacobianChallenge.ContMDiff.degreeFiber f hf)
       (fun y => h_rsum f hf hc y)
+      (Pic0.divPullbackWeighted_descent_of_smooth hf hc _ _ _)
 
 /-- Equation lemma: when `f` is constant, the honest pullback collapses
 to the zero topological hom. -/
@@ -115,7 +117,8 @@ lemma pullbackHonest_of_rsum_eq_pullbackWeighted_of_not_const
           f hf hnc)
         (JacobianChallenge.Manifold.manifoldRamificationIndex f)
         (JacobianChallenge.ContMDiff.degreeFiber f hf)
-        (fun y => h_rsum f hf hnc y) := by
+        (fun y => h_rsum f hf hnc y)
+        (Pic0.divPullbackWeighted_descent_of_smooth hf hnc _ _ _) := by
   classical
   unfold pullbackHonest_of_rsum
   exact dif_neg hnc
@@ -319,25 +322,28 @@ theorem pullbackHonest_of_rsum_comp
                 (g ∘ f) (hg.comp hf) hgfc)
               (JacobianChallenge.Manifold.manifoldRamificationIndex (g ∘ f))
               (JacobianChallenge.ContMDiff.degreeFiber (g ∘ f) (hg.comp hf))
-              (fun y => h_rsum_XZ (g ∘ f) (hg.comp hf) hgfc y) :
+              (fun y => h_rsum_XZ (g ∘ f) (hg.comp hf) hgfc y)
+              (Pic0.divPullbackWeighted_descent_of_smooth (hg.comp hf) hgfc _ _ _) :
                 Pic0 Z →+ Pic0 X) (QuotientAddGroup.mk D)
           = (Pic0.pullbackWeighted f
               (JacobianChallenge.ContMDiff.Owed.degree.fibres_finite_statement_holds_unconditional
                 f hf hfc)
               (JacobianChallenge.Manifold.manifoldRamificationIndex f)
               (JacobianChallenge.ContMDiff.degreeFiber f hf)
-              (fun y => h_rsum_XY f hf hfc y) :
+              (fun y => h_rsum_XY f hf hfc y)
+              (Pic0.divPullbackWeighted_descent_of_smooth hf hfc _ _ _) :
                 Pic0 Y →+ Pic0 X)
               ((Pic0.pullbackWeighted g
                 (JacobianChallenge.ContMDiff.Owed.degree.fibres_finite_statement_holds_unconditional
                   g hg hgc)
                 (JacobianChallenge.Manifold.manifoldRamificationIndex g)
                 (JacobianChallenge.ContMDiff.degreeFiber g hg)
-                (fun y => h_rsum_YZ g hg hgc y) :
+                (fun y => h_rsum_YZ g hg hgc y)
+                (Pic0.divPullbackWeighted_descent_of_smooth hg hgc _ _ _) :
                   Pic0 Z →+ Pic0 Y) (QuotientAddGroup.mk D))
-      rw [Pic0.pullbackWeighted_mk g _ _ _ _ D]
-      rw [Pic0.pullbackWeighted_mk (g ∘ f) _ _ _ _ D]
-      rw [Pic0.pullbackWeighted_mk f _ _ _ _
+      rw [Pic0.pullbackWeighted_mk g _ _ _ _ _ D]
+      rw [Pic0.pullbackWeighted_mk (g ∘ f) _ _ _ _ _ D]
+      rw [Pic0.pullbackWeighted_mk f _ _ _ _ _
             (Pic0.divPullbackWeighted g _ _ _ _ D)]
       -- Reduce `(QuotientAddGroup.mk d₁ : Pic0 X) = QuotientAddGroup.mk d₂`
       -- to `d₁ = d₂` in `Div0 X`.
@@ -383,7 +389,7 @@ theorem pushforward_pullbackHonest_of_rsum
     [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y] [DecidableEq Y]
     (h_rsum : JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_statement X Y)
     (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (P : Jacobian Y) :
-    Jacobian.pushforward f
+    Jacobian.pushforward hf
         (pullbackHonest_of_rsum h_rsum f hf P)
       = (JacobianChallenge.ContMDiff.degreeFiber f hf : ℤ) • P := by
   classical
@@ -414,21 +420,23 @@ theorem pushforward_pullbackHonest_of_rsum
     -- Both `Jacobian.pushforward` and `Jacobian.pullbackWeighted` carry
     -- `Pic0`-level additive maps via their `→ₜ+` `toAddMonoidHom` field,
     -- so the goal reduces to a `Pic0` statement.
-    show (Pic0.pushforward (X := X) (Y := Y) f
+    show (Pic0.pushforward (X := X) (Y := Y) hf
             ((Pic0.pullbackWeighted f
               (JacobianChallenge.ContMDiff.Owed.degree.fibres_finite_statement_holds_unconditional
                 f hf hc)
               (JacobianChallenge.Manifold.manifoldRamificationIndex f)
               (JacobianChallenge.ContMDiff.degreeFiber f hf)
-              (fun y => h_rsum f hf hc y) :
+              (fun y => h_rsum f hf hc y)
+              (Pic0.divPullbackWeighted_descent_of_smooth hf hc _ _ _) :
                 Pic0 Y →+ Pic0 X) (P : Pic0 Y)) : Pic0 Y)
         = (JacobianChallenge.ContMDiff.degreeFiber f hf : ℤ) • (P : Pic0 Y)
-    exact Pic0.pushforward_pullbackWeighted (X := X) (Y := Y) f
+    exact Pic0.pushforward_pullbackWeighted (X := X) (Y := Y) hf
       (JacobianChallenge.ContMDiff.Owed.degree.fibres_finite_statement_holds_unconditional
         f hf hc)
       (JacobianChallenge.Manifold.manifoldRamificationIndex f)
       (JacobianChallenge.ContMDiff.degreeFiber f hf)
-      (fun y => h_rsum f hf hc y) P
+      (fun y => h_rsum f hf hc y)
+      (Pic0.divPullbackWeighted_descent_of_smooth hf hc _ _ _) P
 
 /-! ### Identity case: `pullbackHonest_of_rsum h_rsum id contMDiff_id P = P`
 
@@ -513,6 +521,7 @@ constraint forces that value to be `0`. Hence `Div0 X = {0}` and
 `Pic0 X` is subsingleton. -/
 private lemma pic0_subsingleton_of_subsingleton
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
     [Subsingleton X] : Subsingleton (Pic0 X) := by
   classical
   -- It suffices to show every `D₁ D₂ : Div0 X` agree, then descend.
@@ -573,6 +582,7 @@ on the divisor side, when each fibre `id ⁻¹' {y} = {y}` and the weights
 follows the same shape as `Div.fiberSum_id_apply`. -/
 private lemma divPullbackWeighted_id_apply
     {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
     [DecidableEq X]
     (hf : ∀ y, ((id : X → X) ⁻¹' {y}).Finite) (e : X → ℕ)
     (he : ∀ x, e x = 1) (N : ℕ)
@@ -680,10 +690,11 @@ theorem pullbackHonest_of_rsum_id
               (id : X → X) contMDiff_id hc)
             (JacobianChallenge.Manifold.manifoldRamificationIndex (id : X → X))
             (JacobianChallenge.ContMDiff.degreeFiber (id : X → X) contMDiff_id)
-            (fun y => h_rsum (id : X → X) contMDiff_id hc y) :
+            (fun y => h_rsum (id : X → X) contMDiff_id hc y)
+            (Pic0.divPullbackWeighted_descent_of_smooth contMDiff_id hc _ _ _) :
               Pic0 X →+ Pic0 X) (QuotientAddGroup.mk D)
         = (QuotientAddGroup.mk D : Pic0 X)
-    rw [Pic0.pullbackWeighted_mk (id : X → X) _ _ _ _ D]
+    rw [Pic0.pullbackWeighted_mk (id : X → X) _ _ _ _ _ D]
     -- Reduce the quotient equality to `divPullbackWeighted_id_apply`.
     apply congrArg (QuotientAddGroup.mk : Div0 X → Pic0 X)
     apply divPullbackWeighted_id_apply

@@ -142,9 +142,9 @@ variable (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
 
 /-- The pushforward map between Jacobians associated to a map of the underlying curves. -/
 noncomputable def pushforward (f : X → Y)
-    (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     Jacobian X →ₜ+ Jacobian Y :=
-  JacobianChallenge.Jacobian.pushforward f
+  JacobianChallenge.Jacobian.pushforward hf
 
 -- pushforward is holomorphic
 theorem pushforward_contMDiff :
@@ -163,7 +163,7 @@ variable (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
 -- functoriality
 lemma pushforward_comp_apply (P : Jacobian X) :
     pushforward (g ∘ f) (hg.comp hf) P = pushforward g hg (pushforward f hf P) :=
-  JacobianChallenge.Jacobian.pushforward_comp_apply f g P
+  JacobianChallenge.Jacobian.pushforward_comp_apply hf hg P
 
 /-- Pullback map between Jacobians associated to a map of the underlying curves.
 Equal to the zero map if the map on curves is constant.
@@ -260,7 +260,7 @@ lemma pushforward_pullback (P : Jacobian Y) :
   -- argument is dropped at `Basic.lean.pushforward`), and `pullback f hf P =
   -- JacobianChallenge.Jacobian.pullbackHonest_of_rsum _ f hf P` (same body
   -- swap as in `pullback_comp_apply` above).
-  show JacobianChallenge.Jacobian.pushforward f
+  show JacobianChallenge.Jacobian.pushforward hf
         (JacobianChallenge.Jacobian.pullbackHonest_of_rsum
           (JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_holds_unconditional X Y)
           f hf P)
