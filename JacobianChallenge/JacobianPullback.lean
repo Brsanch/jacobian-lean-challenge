@@ -493,6 +493,50 @@ theorem Pic0.divPullbackWeighted_descent_of_smooth
   rw [AddSubgroup.mem_comap] at this
   exact this
 
+/-! ## Step 6: pushforward_pullbackWeighted (moved from FiberPullbackWeighted)
+
+This is the divisor-side of challenge item 24, using the new signatures
+(Pic0.pushforward requires hf; Pic0.pullbackWeighted requires h_desc).
+The underlying divisor identity `singletonMap_fiberSumWeighted` is
+unchanged from the old version. -/
+
+lemma Pic0.pushforward_pullbackWeighted
+    [T2Space X] [CompactSpace X] [ConnectedSpace X]
+    [IsManifold (𝓘(ℂ, ℂ)) ω X]
+    [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+    [IsManifold (𝓘(ℂ, ℂ)) ω Y]
+    [DecidableEq X] [DecidableEq Y]
+    {f : X → Y} (hfm : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ)) ω f)
+    (hf : ∀ y, (f ⁻¹' {y}).Finite)
+    (e : X → ℕ) (N : ℕ)
+    (hN_total : ∀ y, (∑ x ∈ (hf y).toFinset, e x) = N)
+    (h_desc : (PrincDiv Y).addSubgroupOf (Div0 Y) ≤
+      ((PrincDiv X).addSubgroupOf (Div0 X)).comap
+        (Pic0.divPullbackWeighted f hf e N hN_total))
+    (P : Pic0 Y) :
+    Pic0.pushforward hfm (Pic0.pullbackWeighted f hf e N hN_total h_desc P) = (N : ℤ) • P := by
+  letI : DecidableEq Y := Classical.decEq Y
+  refine QuotientAddGroup.induction_on P ?_
+  intro D
+  rw [Pic0.pullbackWeighted_mk, Pic0.pushforward_mk]
+  change (QuotientAddGroup.mk
+            (Pic0.divPushforward f
+              (Pic0.divPullbackWeighted f hf e N hN_total D))
+              : Pic0 Y)
+      = (QuotientAddGroup.mk ((N : ℤ) • D) : Pic0 Y)
+  refine congrArg
+    (QuotientAddGroup.mk (s := (PrincDiv Y).addSubgroupOf (Div0 Y))) ?_
+  apply Subtype.ext
+  show ((Pic0.divPushforward f
+            (Pic0.divPullbackWeighted f hf e N hN_total D) : Div0 Y) : Div Y)
+      = (((N : ℤ) • D : Div0 Y) : Div Y)
+  rw [Pic0.divPushforward_coe, Pic0.divPullbackWeighted_coe]
+  change Div.singletonMap (Y := Y) f
+            (Div.fiberSumWeighted f hf e (D : Div Y))
+      = (((N : ℤ) • D : Div0 Y) : Div Y)
+  rw [Div.singletonMap_fiberSumWeighted (Y := Y) f hf e N hN_total (D : Div Y)]
+  rfl
+
 end JacobianChallenge
 
 end
