@@ -185,19 +185,21 @@ items 1, 2, 5, 8, 9 will need infrastructure not in mathlib at the pin.
 - `Manifold/FibreCardWellDefinedAtRegular.lean` (ZZ155) — `fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo`: composes ZZ134+ZZ153+ZZ154 into the unfolded Hurwitz constant-card statement.
 - `Manifold/DegreeUnconditional.lean` (ZZ156) — `Basic.lean`'s `ContMDiff.degree` aligns with honest `degreeFiber` (signature-preserving swap demonstrated).
 
-Cumulative across all sessions: **~37,840 LOC across 162 files**. None of which strict-closes any item by itself. The path to first STRICT-CLOSED runs through `Manifold/ResidueTheorem.lean`'s named R5 gap: discharging R5 makes `PrincipalDivisorMultiplicative X` constructible (via the I1 lemmas + a `CommGroup` upgrade) and `ResidueTheorem X` true, after which the one-line swap in `Divisor.lean` (`PrincDiv := principalDivisorAddHom.range`) flips items 15, 19, 20 from STUB *(PROOF-HONEST)* to STRICT-CLOSED simultaneously. Per the 2026-05-07 cluster audits, R5 is **~60-80% built** (closest wall); other walls 5-40%.
+Cumulative across all sessions: **~37,840+ LOC across 162+ files**. ZZ256 (P1.5) routed `PrincDiv := PrincDivHonestCandidate` (the multiplicative range of `principalDivisorAddHom`) — this bypassed the R5 gap as the entry path; the residue theorem still gates `PrincDiv ⊆ Div⁰` (item 11 `CompactSpace`) but is no longer the bottleneck for strict-closing the functoriality stack. Eleven items strict-closed via the P1.4/P1.5 cascade: items 2, 3 (honest `Jacobian` + group), 6, 7, 8 (honest `ofCurve`, pushforward, pullback through divisor-level descent), 15, 19, 20 (proof-honest functoriality bodies, now over honest objects), 22, 23, 24 (honest pullback functoriality + degree formula via `pushforward_pullbackHonest_of_rsum`).
 
-## Honest scoring
+## Honest scoring (post-ZZ256, 2026-05-12)
 
-- **STRICT-CLOSED**: 0 (no item is yet Buzzard-acceptable; every filled item
-  routes through the stub `Jacobian X = Pic⁰ X` with `PrincDiv := ⊥` or
-  through stub `pullback`/`degree`).
-- **STUB**: 14, of which **3 are PROOF-HONEST** (items 15, 19, 20 — proof
-  bodies survive future honest routing; the bottleneck is the underlying
-  object).
-- **OPEN**: 10.
+- **STRICT-CLOSED**: **11** — items 2, 3, 6, 7, 8, 15, 19, 20, 22, 23, 24.
+- **STUB**: **4** — items 1 (`genus` needs Hodge finite-dimensionality),
+  4 (discrete `TopologicalSpace`, wants Phase 2 manifold topology),
+  9 (`ContMDiff.degree` wired to `degreeFiber` but well-definedness across
+  regular values is owed — see `Basic.lean:247-249`), 10 (T2 honest but
+  underlying topology stub).
+- **OPEN**: **9** — items 5, 11, 12, 13, 14, 16, 17, 18, 21.
 
-Reaching the first **STRICT-CLOSED** requires landing one of: the residue theorem
-on compact Riemann surfaces, an honest period lattice, the
-closed-orientable-surface classification, or honest fibre-cardinality
-for proper holomorphic maps.
+Reaching the next **STRICT-CLOSED** requires landing one of: (a) Hurwitz
+constant-card across regular values (flips item 9, builds on the ZZ151-156
+chain already ~50-80% landed), (b) honest period lattice → `ChartedSpace`
+on `Jacobian` (flips items 4, 5, 10, plus 11/12/13 cascade), (c) Abel-Jacobi
+(flips item 16), (d) closed-orientable-surface classification (item 14), or
+(e) Hodge L² finite-dimensionality of `HolomorphicOneForm` (item 1).
