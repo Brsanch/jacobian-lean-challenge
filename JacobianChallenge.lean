@@ -96,6 +96,7 @@ import JacobianChallenge.Manifold.HodgeFiniteDimensional
 import JacobianChallenge.Manifold.HodgeRiemannSphereInstance
 import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.HolomorphicOneFormRealification
+import JacobianChallenge.Manifold.HolomorphicOneFormRealificationLinearity
 import JacobianChallenge.Manifold.HLcUnconditional
 import JacobianChallenge.Manifold.HPkgUnconditional
 import JacobianChallenge.Manifold.HTopoUnconditional
