@@ -74,17 +74,23 @@ namespace SmoothOneForm
     (c • ω₁) x = c • (ω₁ x) := rfl
 
 @[simp] lemma nsmul_eval (n : ℕ) (ω₁ : SmoothOneForm I X) (x : X) :
-    (n • ω₁) x = n • (ω₁ x) := rfl
+    (n • ω₁) x = n • (ω₁ x) := by
+  induction n with
+  | zero => simp [zero_eval]
+  | succ k ih => rw [succ_nsmul, add_eval, ih, succ_nsmul]
 
 @[simp] lemma zsmul_eval (n : ℤ) (ω₁ : SmoothOneForm I X) (x : X) :
-    (n • ω₁) x = n • (ω₁ x) := rfl
+    (n • ω₁) x = n • (ω₁ x) := by
+  rcases Int.eq_nat_or_neg n with ⟨m, rfl | rfl⟩
+  · rw [natCast_zsmul, natCast_zsmul, nsmul_eval]
+  · rw [neg_zsmul, neg_zsmul, neg_eval, natCast_zsmul, natCast_zsmul, nsmul_eval]
 
 /-- Doubling a smooth 1-form: `(2 • ω) x = ω x + ω x`. A convenience
 restatement of `nsmul_eval` at `n = 2`, useful when downstream rewrites
 expect the `+` form rather than the `•` form. -/
 lemma two_nsmul_eval (ω₁ : SmoothOneForm I X) (x : X) :
     ((2 : ℕ) • ω₁) x = ω₁ x + ω₁ x := by
-  rw [nsmul_eval]; exact two_nsmul _
+  rw [nsmul_eval, two_nsmul]
 
 /-- Compatibility: scalar multiplication by `0 : ℝ` evaluates to
 `0 : CotangentSpace I x`. Follows from `smul_eval` and `zero_smul`. -/
