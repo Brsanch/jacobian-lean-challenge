@@ -21,21 +21,28 @@ checkout. For serial work, edit `main`-tracking branches directly.
 
 - **NEVER push until locally verified green.** This is the merge-gate
   invariant. Specifically:
-  - Before any `git push`, your new file MUST have either (a) returned
-    cleanly from `LEAN_NUM_THREADS=1 lake env lean
-    JacobianChallenge/.../YOUR_FILE.lean` with zero error lines, or
-    (b) been the `<target>` of a successful `taskpolicy lake build
-    JacobianChallenge....YOUR_FILE` (the "Build completed successfully"
-    line is the gate).
-  - Pushing un-verified code wastes parent-session merge work, pollutes
-    the branch with broken commits, and is exactly the "iterate on CI"
-    anti-pattern the local-verify policy was set up to eliminate. If
-    your local verification cannot run (cold clone, bootstrap not
-    finished), DO NOT PUSH. Report `✗ STUCK` instead.
-  - The corollary: once your file IS locally green, push and immediately
-    return your `✓ DONE` report. **Do NOT wait for repo CI to turn
-    green** — local-green IS the verification at this pin. CI watching is
-    explicitly removed from the discipline.
+  - **If your chip introduces new top-level declarations** (new `def`,
+    `lemma`, `theorem`, `instance`), the merge gate is a successful
+    full-project `taskpolicy -b nice -n 19 env LEAN_NUM_THREADS=1 lake
+    build` (NOT just `lake env lean`). The single-file `lake env lean`
+    check does **not** detect duplicate `namespace.declName`
+    registrations between your new file and other files in the project
+    — it elaborates one file at a time against cached `.olean`s and
+    misses the kernel-level uniqueness check that CI enforces. Two real
+    incidents in 2026-05-12 (zzMER, zz264/267) shipped duplicates that
+    every single-file check passed but full-build and CI rejected.
+    Allow ~5-30 min for the full build depending on `.lake` warmth.
+  - **If your chip is iterating on the proof body of a name already in
+    main**, `LEAN_NUM_THREADS=1 lake env lean <file>` is sufficient and
+    is the fast loop (~3-30s warm).
+  - Either way: pushing un-verified code wastes parent-session merge
+    work, pollutes the branch with broken commits, and is exactly the
+    "iterate on CI" anti-pattern the local-verify policy was set up to
+    eliminate. If your local verification cannot run (cold clone,
+    bootstrap not finished), DO NOT PUSH. Report `✗ STUCK` instead.
+  - The corollary: once the appropriate verification IS green, push and
+    immediately return your `✓ DONE` report. CI watching is explicitly
+    removed from the discipline.
 - **No `sorry`, no `axiom`** anywhere in the code you write.
 - **Do not use `ω` as a binder name.** Lean 4.30 reserves `ω` as the omega-tactic token; `(ω : ...)` produces "unexpected token 'ω'; expected '_' or identifier" errors. Use `om`, `form`, `oneform`, or any ASCII identifier instead. (`ω` is fine inside docstrings or as `open scoped` notation; just not as a `def`/`theorem`/`fun`/`have` binder.)
 - **No signature changes** to anything outside the new file you create.
@@ -45,7 +52,10 @@ checkout. For serial work, edit `main`-tracking branches directly.
     full build): `LEAN_NUM_THREADS=1 lake env lean
     JacobianChallenge/Manifold/YOUR_FILE.lean` returns in ~3-30s per file.
     Reads existing `.olean`s, no writes, no panic. Use this for fast
-    chip iteration.
+    chip iteration **on existing declaration bodies only**. Before any
+    push that introduces a new top-level name, follow with a full
+    `taskpolicy -b nice -n 19 env LEAN_NUM_THREADS=1 lake build` —
+    `lake env lean` does NOT detect cross-file duplicate names.
   - On a **cold /tmp clone**: do NOT try `lake env lean` first — it errors
     on missing `.olean`s for transitive imports. Instead, bootstrap and
     verify in one step:
