@@ -81,6 +81,17 @@ theorem FactUniformizationToRiemannSphere.of_HolomorphicEquiv
     FactUniformizationToRiemannSphere X where
   out := uniformizationToRiemannSphere_of_HolomorphicEquiv e hY.out
 
+/-- **Both-direction transport.** Biholomorphic spaces have the same
+`UniformizationToRiemannSphere` status. Useful for callers that want
+to normalise their argument to a canonical representative of the
+biholomorphism class. -/
+theorem uniformizationToRiemannSphere_iff_of_HolomorphicEquiv
+    (e : HolomorphicEquiv X Y) :
+    UniformizationToRiemannSphere X ↔ UniformizationToRiemannSphere Y := by
+  refine ⟨fun hX => ?_, fun hY => ?_⟩
+  · exact uniformizationToRiemannSphere_of_HolomorphicEquiv e.symm hX
+  · exact uniformizationToRiemannSphere_of_HolomorphicEquiv e hY
+
 end JacobianChallenge
 
 end
