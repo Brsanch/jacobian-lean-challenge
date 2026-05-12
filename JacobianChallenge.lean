@@ -98,6 +98,7 @@ import JacobianChallenge.Manifold.HodgeFiniteDimensional
 import JacobianChallenge.Manifold.HodgeRiemannSphereInstance
 import JacobianChallenge.Manifold.HodgeRiemannSphereUnconditional
 import JacobianChallenge.Manifold.HolomorphicEquiv
+import JacobianChallenge.Manifold.HolomorphicEquivConstructor
 import JacobianChallenge.Manifold.HolomorphicEquivRiemannSphere
 import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.HolomorphicOneFormEquivFromGenus
