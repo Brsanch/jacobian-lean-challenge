@@ -72,37 +72,11 @@ lemma mmeromorphicOrderAt_const (c : ℂ) :
   classical
   exact meromorphicOrderAt_const (𝕜 := ℂ) (E := ℂ) ((chartAt ℂ x) x) c
 
-/-- The order of the constant-one function at any point is `0`. -/
-@[simp] lemma mmeromorphicOrderAt_one :
-    mmeromorphicOrderAt I (1 : M → ℂ) x = (0 : WithTop ℤ) := by
-  have h_eq : (1 : M → ℂ) = (fun _ : M => (1 : ℂ)) := rfl
-  rw [h_eq, mmeromorphicOrderAt_const (I := I) (x := x) (1 : ℂ)]
-  simp
+/-! ## Order under ring operations
 
-/-! ## Order under ring operations -/
-
-/-- The order of a product equals the sum of orders. Pulls back
-`meromorphicOrderAt_mul` through the canonical chart. -/
-lemma mmeromorphicOrderAt_mul
-    (hf : MMeromorphicAt I f x) (hg : MMeromorphicAt I g x) :
-    mmeromorphicOrderAt I (f * g) x =
-      mmeromorphicOrderAt I f x + mmeromorphicOrderAt I g x := by
-  have hf' : MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hf
-  have hg' : MeromorphicAt (g ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hg
-  show meromorphicOrderAt ((f * g) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = _
-  have h : (f * g) ∘ (chartAt ℂ x).symm
-      = (f ∘ (chartAt ℂ x).symm) * (g ∘ (chartAt ℂ x).symm) := rfl
-  rw [h]
-  exact meromorphicOrderAt_mul hf' hg'
-
-/-- The order of the pointwise inverse is the negative of the order. Pulls
-back `meromorphicOrderAt_inv` through the canonical chart. -/
-lemma mmeromorphicOrderAt_inv :
-    mmeromorphicOrderAt I f⁻¹ x = - mmeromorphicOrderAt I f x := by
-  show meromorphicOrderAt (f⁻¹ ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = _
-  have h : f⁻¹ ∘ (chartAt ℂ x).symm = (f ∘ (chartAt ℂ x).symm)⁻¹ := rfl
-  rw [h]
-  exact meromorphicOrderAt_inv
+  `mmeromorphicOrderAt_one`, `_mul`, `_inv` already live in
+  `Divisor/PrincipalDivisor.lean` (lines 166/185/220). This file no longer
+  duplicates them. -/
 
 /-- The order of a quotient equals the difference of the orders. -/
 lemma mmeromorphicOrderAt_div
