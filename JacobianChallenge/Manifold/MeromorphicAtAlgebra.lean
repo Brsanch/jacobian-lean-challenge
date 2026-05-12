@@ -174,6 +174,30 @@ lemma mmeromorphicOrderAt_zpow (hf : MMeromorphicAt I f x) (n : ℤ) :
   rw [h_comp]
   exact meromorphicOrderAt_zpow hf'
 
+/-! ## Order under finset products -/
+
+/-- The order of a finset product of meromorphic functions equals the
+sum of the orders of the factors. Chart-pullback of
+`Mathlib.Analysis.Meromorphic.Order.meromorphicOrderAt_fun_prod`. -/
+lemma mmeromorphicOrderAt_finprod
+    {ι : Type*} {s : Finset ι} {h : ι → M → ℂ}
+    (hh : ∀ i ∈ s, MMeromorphicAt I (h i) x) :
+    mmeromorphicOrderAt I (fun y => ∏ i ∈ s, h i y) x
+      = ∑ i ∈ s, mmeromorphicOrderAt I (h i) x := by
+  classical
+  have hh' : ∀ i ∈ s, MeromorphicAt
+      (fun z => h i ((chartAt ℂ x).symm z)) ((chartAt ℂ x) x) :=
+    fun i hi => by exact hh i hi
+  show meromorphicOrderAt
+      ((fun y => ∏ i ∈ s, h i y) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = _
+  have h_comp :
+      (fun y => ∏ i ∈ s, h i y) ∘ (chartAt ℂ x).symm
+        = (fun z => ∏ i ∈ s, h i ((chartAt ℂ x).symm z)) := by
+    funext z
+    rfl
+  rw [h_comp]
+  exact meromorphicOrderAt_fun_prod hh'
+
 /-! ## Order under scalar multiplication by a nonzero constant -/
 
 /-- The order of `c • f` (for `c : ℂ` nonzero) equals the order of `f`.
