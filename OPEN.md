@@ -21,18 +21,25 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard (post-ZZ256 P1.5, 2026-05-12):**
 
-- **STRICT-CLOSED:** **12 / 24** — items **2, 3, 6, 7, 8, 15, 19, 20, 21,
-  22, 23, 24**. ZZ256 landed `PrincDiv := PrincDivHonestCandidate` and
+- **STRICT-CLOSED:** **11 / 24** — items **2, 3, 6, 7, 8, 15, 19, 20, 22,
+  23, 24**. ZZ256 landed `PrincDiv := PrincDivHonestCandidate` and
   `Pic0` (honest, with manifold instances) in
   `Divisor/PrincipalDivisorRange.lean`. `Pic0.pushforward (hf)` uses P1.4
-  via `JacobianPushforward.lean`. `Pic0.pullbackWeighted (h_desc)` uses the
-  sister descent `Pic0.divPullbackWeighted_descent_of_smooth` in
-  `JacobianPullback.lean` (the genuine analytic chip).
-- **STUB (placeholder topology / target):** items 4, 10.
-- **OPEN (sorry still in `Basic.lean` or downstream):** 1, 5, 11, 12, 13,
-  14, 16, 17, 18 = 9 items. Item 16 (`ofCurve_inj`) reverted from STUB to
-  OPEN as predicted by CLOSURE_MAP — it requires Abel-Jacobi (Phase 2).
+  via `JacobianPushforward.lean`. `Pic0.pullbackWeighted (h_desc)` uses
+  the sister descent `Pic0.divPullbackWeighted_descent_of_smooth` in
+  `JacobianPullback.lean` (genuine analytic chip).
+- **STUB (placeholder topology / target / pending discharge):** items
+  **1, 4, 9, 10** = 4 items.
+- **OPEN (sorry in `Basic.lean` or transitively via downstream sorry):**
+  items **5, 11, 12, 13, 14, 16, 17, 18, 21** = 9 items. Item 16
+  (`ofCurve_inj`) reverted from STUB to OPEN as CLOSURE_MAP predicted —
+  it requires Abel-Jacobi (Phase 2).
 - **Previous scoreboard (2026-05-09, HEAD `5e601e8`):** 0/24 STRICT-CLOSED.
+
+(CLOSURE_MAP §A col 4 originally predicted 12 items flip; actual is 11
+because item 9 `ContMDiff.degree` stays STUB — its Basic.lean docstring
+explicitly acknowledges "well-definedness of the fibre count across regular
+values is the deeper classical fact still owed at this pin".)
 
 > **`CLOSURE_MAP.md` (authored 2026-05-09, repo root) is now the live
 > source of truth.** It has the per-item map, mathlib status verified
@@ -59,34 +66,34 @@ whenever a status changes.
 | # | Item | Status | Notes |
 |---|---|---|---|
 | 1 | `genus X : ℕ` | **STUB** | Body: `JacobianChallenge.genus X = Module.finrank ℂ (HolomorphicOneForm X)`. Returns `0` by convention if `HolomorphicOneForm X` is infinite-dimensional, and finite-dimensionality on compact connected `X` is **not yet proved** (Hodge theory). The anti-hack pair (item 14, `genus_eq_zero_iff_homeo`) is **OPEN**. |
-| 2 | `Jacobian X : Type u` | **STUB** | Body: `Jacobian X := Pic0 X` where `Pic0 X = Div0 X ⧸ (PrincDiv X).addSubgroupOf (Div0 X)` and **`PrincDiv X := ⊥`** (placeholder; honest version requires the residue theorem). Mathematically `Jacobian X ≃ Div0 X` here, **not** the analytic Jacobian `ℂ^g / Λ`. |
-| 3 | `instance : AddCommGroup (Jacobian X)` | **STUB** | Inherits from the `Pic0` quotient. The group structure is honest; the underlying type is not (item 2). |
+| 2 | `Jacobian X : Type u` | **STRICT-CLOSED** *(post-ZZ256, 2026-05-12)* | Body: `Jacobian X := Pic0 X` with `Pic0 X = Div0 X ⧸ (PrincDiv X).addSubgroupOf (Div0 X)` and **`PrincDiv X := PrincDivHonestCandidate X`** (honest principal-divisor subgroup, in `Divisor/PrincipalDivisorRange.lean`). |
+| 3 | `instance : AddCommGroup (Jacobian X)` | **STRICT-CLOSED** *(post-ZZ256)* | Inherits from the honest `Pic0` quotient. |
 | 4 | `instance : TopologicalSpace (Jacobian X)` | **STUB** | Discrete (`⊥`). The challenge wants the complex-manifold topology (item 5 `ChartedSpace`); discrete is not it. |
-| 5 | `instance : ChartedSpace (Fin (genus X) → ℂ) (Jacobian X)` | **OPEN** | Requires the analytic-Jacobian construction (period-lattice or honest `Pic⁰`); not landable on the current discrete-topology placeholder. The parallel `AnalyticTorus X` carries an honest `ChartedSpace` instance (`Manifold/PeriodLattice.lean`), but is not wired into `Jacobian`. |
-| 6 | `Jacobian.ofCurve : X → Jacobian X` | **STUB** | Body: `Q ↦ [δQ − δP]` in `Pic⁰` (honest formula). Lands in stub `Pic⁰`, so the *object* of the map is wrong. |
-| 7 | `Jacobian.pushforward f hf` | **STUB** | Body: honest `Pic⁰` pushforward via `Div.singletonMap` + descent. Object is stub `Pic⁰`. |
-| 8 | `Jacobian.pullback f hf` | **STUB** | Body: zero `ContinuousAddMonoidHom`. **Wrong implementation** (honest map is the divisor fiber-sum). `Div.fiberSum` (`Divisor/FiberSum.lean`) and `Pic0.pullback (f, hf, N, hN)` (`Divisor/FiberPullback.lean`) are landed; the swap into `Basic.lean` waits on a derivation of finite-fibres + constant-card from `ContMDiff` smoothness alone. |
-| 9 | `ContMDiff.degree f hf : ℕ` | **STUB** | Body: `degreeStub f hf` (0 for constant, 1 otherwise). `degreeFiber` infrastructure (with `RegularValueWitness` bundle) merged at `2985cdd` in `Manifold/Degree.lean`; not wired into `Basic.lean` yet because honest fibre-cardinality requires three classical inputs not in mathlib. |
+| 5 | `instance : ChartedSpace (Fin (genus X) → ℂ) (Jacobian X)` | **OPEN** | Requires the analytic-Jacobian construction (period-lattice). The parallel `AnalyticTorus X` carries an honest `ChartedSpace` instance (`Manifold/PeriodLattice.lean`), but is not wired into `Jacobian`. |
+| 6 | `Jacobian.ofCurve : X → Jacobian X` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `Q ↦ [δQ − δP]` in honest `Pic⁰`. |
+| 7 | `Jacobian.pushforward f hf` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `JacobianChallenge.Jacobian.pushforward hf` in `JacobianPushforward.lean`. Descent via P1.4 (`PrincDivHonestCandidate_addSubgroupOf_Div0_le_comap_divPushforward`) on the non-constant branch + degree-zero trivialization on the constant branch. |
+| 8 | `Jacobian.pullback f hf` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `Jacobian.pullbackHonest_of_rsum`, which dispatches to either `0` (constant `f`) or `Jacobian.pullbackWeighted` with `e := manifoldRamificationIndex f` and `N := degreeFiber f hf`. The `Pic0.pullbackWeighted` descent obligation is discharged unconditionally by `Pic0.divPullbackWeighted_descent_of_smooth` (`JacobianPullback.lean`) — sister chip to P1.4 in the contravariant direction. |
+| 9 | `ContMDiff.degree f hf : ℕ` | **STUB** | Body: `JacobianChallenge.ContMDiff.degreeFiber f hf` (honest regular-fibre cardinality via `RegularValueWitness`). The Basic.lean docstring acknowledges that **well-definedness across regular values** is a deeper classical fact still owed at this pin; without it, the function value depends on the (deterministic but unproved-to-be-invariant) `Classical.choice` of regular-value witness. Fails the strict-reviewer bar. |
 
 ## Theorems (Prop) — Basic.lean items 10–24 in OPEN.md numbering
 
 | # | Item | Status | Notes |
 |---|---|---|---|
 | 10 | `instance : T2Space (Jacobian X)` | **STUB** | Discrete ⇒ T2 is honest, but the topology itself is wrong (item 4). |
-| 11 | `instance : CompactSpace (Jacobian X)` | **OPEN** | Pic⁰ with `PrincDiv = ⊥` is `Div⁰ X`, a free abelian group on the (in general infinite) underlying set of `X`. Not compact in any sensible topology. Requires real period-lattice quotient. |
-| 12 | `instance : IsManifold ... ω (Jacobian X)` | **OPEN** | Requires analytic-Jacobian construction. `AnalyticTorus X` has an honest `IsManifold` instance modulo `Λ = ⊥`; not wired into `Jacobian`. |
-| 13 | `instance : LieAddGroup ... ω (Jacobian X)` | **OPEN** | Requires item 12 plus smoothness of group ops. |
-| 14 | `genus_eq_zero_iff_homeo` (anti-hack vs. `genus := 0`) | **OPEN** | Genus 0 ↔ `X ≃ₜ S²`. Multi-month: requires closed-orientable-surface classification + Riemann sphere as `ChartedSpace` + bridge to geometric genus. |
-| 15 | `ofCurve_self : ofCurve P P = 0` | **STUB** *(PROOF-HONEST)* | Real proof reducing to `[δP − δP] = 0` in `Pic⁰`. Proof would survive future honest `PrincDiv`. Not STRICT-CLOSED because the *target* `Jacobian X` is itself a stub. |
-| 16 | `ofCurve_inj` (anti-hack vs. `Jacobian := PUnit`) | **STUB** | Currently provable because `PrincDiv = ⊥` makes the quotient faithful — but the proof **uses the placeholder** and will not survive honest `PrincDiv` (under which the Abel–Jacobi theorem becomes load-bearing). Listed STUB rather than STRICT-CLOSED because the proof's correctness is contingent on the stub. |
-| 17 | `Jacobian.ofCurve_contMDiff` | **OPEN** | Requires item 5 (`ChartedSpace`) plus a real `ofCurve`. |
-| 18 | `Jacobian.pushforward_contMDiff` | **OPEN** | Requires item 5 plus a real `pushforward`. |
-| 19 | `pushforward_id_apply` | **STUB** *(PROOF-HONEST)* | Real proof via `Pic0.pushforward_id` ↦ `Div.singletonMap_id_apply`. Functoriality of `singletonMap` survives any honest `PrincDiv`. Not STRICT-CLOSED because the underlying `Jacobian` is stub. |
-| 20 | `pushforward_comp_apply` | **STUB** *(PROOF-HONEST)* | Real proof via `Pic0.pushforward_comp` ↦ `Div.singletonMap_comp_apply`. Same survives-future-honest argument as 19. |
-| 21 | `Jacobian.pullback_contMDiff` | **OPEN** | Requires item 5 plus a real `pullback`. |
-| 22 | `pullback_id_apply` | **OPEN** | Genuinely false for the zero-stub `pullback`; remains `sorry`. |
-| 23 | `pullback_comp_apply` | **STUB** | Vacuously `0 ∘ 0 = 0`. Not STRICT-CLOSED: the proof crucially depends on `pullback` being the zero stub. |
-| 24 | `pushforward_pullback : pushforward f (pullback f P) = degree f • P` | **OPEN** | Headline degree formula; fails for the current zero-pullback stub. |
+| 11 | `instance : CompactSpace (Jacobian X)` | **OPEN** | `sorry` in `Basic.lean`. Compactness needs the analytic-Jacobian quotient topology (period-lattice), Phase 2. |
+| 12 | `instance : IsManifold ... ω (Jacobian X)` | **OPEN** | `sorry`. Requires analytic-Jacobian construction. `AnalyticTorus X` has an honest `IsManifold` instance modulo `Λ = ⊥`; not wired into `Jacobian`. |
+| 13 | `instance : LieAddGroup ... ω (Jacobian X)` | **OPEN** | `sorry`. Requires item 12 plus smoothness of group ops. |
+| 14 | `genus_eq_zero_iff_homeo` (anti-hack vs. `genus := 0`) | **OPEN** | `sorry`. Genus 0 ↔ `X ≃ₜ S²`. Multi-month: requires closed-orientable-surface classification + Riemann sphere as `ChartedSpace` + bridge to geometric genus. |
+| 15 | `ofCurve_self : ofCurve P P = 0` | **STRICT-CLOSED** *(post-ZZ256)* | Real proof reducing to `[δP − δP] = 0` in honest `Pic⁰`. |
+| 16 | `ofCurve_inj` (anti-hack vs. `Jacobian := PUnit`) | **OPEN** *(post-ZZ256 regression)* | The previous STUB proof exploited `PrincDiv X = ⊥` to make the quotient faithful. Under honest `PrincDiv` that argument fails; `Jacobian.lean`'s `ofCurve_inj` is now `sorry` (Basic.lean transitively). Genuinely requires Abel–Jacobi (Phase 2). |
+| 17 | `Jacobian.ofCurve_contMDiff` | **OPEN** | `sorry`. Requires item 5 (`ChartedSpace`) plus a real `ofCurve`. |
+| 18 | `Jacobian.pushforward_contMDiff` | **OPEN** | `sorry`. Requires item 5 plus a real `pushforward`. |
+| 19 | `pushforward_id_apply` | **STRICT-CLOSED** *(post-ZZ256)* | Real proof via `Pic0.pushforward_id` (in `JacobianPushforward.lean`) ↦ `Div.singletonMap_id_apply`. |
+| 20 | `pushforward_comp_apply` | **STRICT-CLOSED** *(post-ZZ256)* | Real proof via `Pic0.pushforward_comp` (in `JacobianPushforward.lean`) ↦ `Div.singletonMap_comp_apply`. |
+| 21 | `Jacobian.pullback_contMDiff` | **OPEN** | `sorry`. Requires item 5 plus a real `pullback`. |
+| 22 | `pullback_id_apply` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `JacobianChallenge.Jacobian.pullbackHonest_of_rsum_id _ P` — case-splits on `IsConstantMap (id : X → X)`, with the non-constant branch reducing to `divPullbackWeighted_id_apply` (single-fibre `id ⁻¹' {y} = {y}`, weight 1 everywhere). |
+| 23 | `pullback_comp_apply` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `pullbackHonest_of_rsum_comp` — the both-non-constant case delegates to `Div.fiberSumWeighted_comp_apply` with multiplicative ramification weights `manifoldRamificationIndex_comp_unconditional`. |
+| 24 | `pushforward_pullback : pushforward f (pullback f P) = degree f • P` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `pushforward_pullbackHonest_of_rsum` — case-splits on `IsConstantMap f`. Constant case: both sides zero. Non-constant: reduces to `Pic0.pushforward_pullbackWeighted` (in `JacobianPullback.lean`, using the new honest `Pic0.pushforward (hf)` signature). |
 
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 
