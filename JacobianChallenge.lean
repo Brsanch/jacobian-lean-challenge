@@ -204,6 +204,7 @@ import JacobianChallenge.Manifold.RiemannSphereMobius
 import JacobianChallenge.Manifold.SinglePoleLaurentExtractionDischarge
 import JacobianChallenge.Manifold.SmoothChain
 import JacobianChallenge.Manifold.SmoothChainBoundary
+import JacobianChallenge.Manifold.SmoothChainIntegralLinearity
 import JacobianChallenge.Manifold.SmoothOneForm
 import JacobianChallenge.Manifold.SmoothOneFormAlgebra
 import JacobianChallenge.Manifold.SmoothPathChartCompat
