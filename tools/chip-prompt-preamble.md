@@ -22,23 +22,33 @@ checkout. For serial work, edit `main`-tracking branches directly.
 - **No `sorry`, no `axiom`** anywhere in the code you write.
 - **Do not use `ω` as a binder name.** Lean 4.30 reserves `ω` as the omega-tactic token; `(ω : ...)` produces "unexpected token 'ω'; expected '_' or identifier" errors. Use `om`, `form`, `oneform`, or any ASCII identifier instead. (`ω` is fine inside docstrings or as `open scoped` notation; just not as a `def`/`theorem`/`fun`/`have` binder.)
 - **No signature changes** to anything outside the new file you create.
-- **Local single-file verification is the primary check.** Iterate with:
-  ```
-  LEAN_NUM_THREADS=1 lake env lean JacobianChallenge/YOUR_NEW_FILE.lean
-  ```
-  Returns in ~3-30s per file against a warm `.lake` cache, no panic. Lake
-  reads existing `.olean`s and elaborates the file in memory without
-  writing artifacts, so this is safe on M3 Ultra. Iterate until the file
-  compiles green locally before any push. (The previous version of this
-  preamble said "NEVER run `lake env lean` locally — Apple Silicon
-  kernel-panics"; that was the pre-2026-05-10 policy and is now stale.
-  Single-file `LEAN_NUM_THREADS=1` is safe. What's still banned: `lake
-  build` without `taskpolicy`-throttle, `lake exe cache get`,
-  multi-threaded `lake env lean`, and `du`/`find` on `.lake`.)
-- **After the new file is locally green**, also single-file-check the
-  top-level manifest `JacobianChallenge.lean` (which imports your module)
-  to catch import-ordering / namespace issues that single-file-checking
-  the new file alone misses.
+- **Local verification = `taskpolicy lake build <target>`** for cold clones,
+  or `LEAN_NUM_THREADS=1 lake env lean FILE.lean` for warm-cache iteration.
+  - On a **warm-cache** checkout (canonical, or a /tmp clone after first
+    full build): `LEAN_NUM_THREADS=1 lake env lean
+    JacobianChallenge/Manifold/YOUR_FILE.lean` returns in ~3-30s per file.
+    Reads existing `.olean`s, no writes, no panic. Use this for fast
+    chip iteration.
+  - On a **cold /tmp clone**: do NOT try `lake env lean` first — it errors
+    on missing `.olean`s for transitive imports. Instead, bootstrap and
+    verify in one step:
+    ```
+    taskpolicy -b nice -n 19 env LEAN_NUM_THREADS=1 lake build \
+      JacobianChallenge.Manifold.YOUR_FILE 2>&1 | tail -5
+    ```
+    First run takes ~10-15 min (mathlib `.olean` cache compile from
+    source). Subsequent runs in the same clone are incremental and fast.
+    **`lake build` IS the verification** — if it completes "Build
+    completed successfully", the file is verified. No need for a separate
+    `lake env lean` step.
+  - What's still banned: `lake build` *without* `taskpolicy`-throttle,
+    `lake exe cache get`, multi-threaded `lake env lean`, and `du`/`find`
+    on `.lake`. The previous version of this preamble said "NEVER run
+    `lake env lean` locally" — that's the pre-2026-05-10 policy and is
+    stale.
+- **After the new file is locally green**, single-file-check the top-level
+  manifest `JacobianChallenge.lean` (or `lake build` the manifest target)
+  to catch import-ordering / namespace issues.
 - **CI is now optional final verification, not the merge gate.** If you
   want one for confidence after the local checks pass, push and
   `gh run watch --exit-status`. Otherwise just push and report.
