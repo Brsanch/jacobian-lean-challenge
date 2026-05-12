@@ -235,6 +235,7 @@ import JacobianChallenge.Manifold.TopologicalDegree
 import JacobianChallenge.Manifold.WithinChartWitnessReduction
 import JacobianChallenge.Manifold.ZeroCountEqPoleCount
 import JacobianChallenge.Topology.Genus0ImpliesS2Reduction
+import JacobianChallenge.Topology.Item14ForRiemannSphere
 import JacobianChallenge.Topology.Item14FromUniformization
 import JacobianChallenge.Topology.S2ImpliesGenus0Discharge
 import JacobianChallenge.Topology.S2ImpliesGenus0Unconditional
