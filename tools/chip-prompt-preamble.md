@@ -19,6 +19,23 @@ checkout. For serial work, edit `main`-tracking branches directly.
 
 ## Discipline rules (non-negotiable)
 
+- **NEVER push until locally verified green.** This is the merge-gate
+  invariant. Specifically:
+  - Before any `git push`, your new file MUST have either (a) returned
+    cleanly from `LEAN_NUM_THREADS=1 lake env lean
+    JacobianChallenge/.../YOUR_FILE.lean` with zero error lines, or
+    (b) been the `<target>` of a successful `taskpolicy lake build
+    JacobianChallenge....YOUR_FILE` (the "Build completed successfully"
+    line is the gate).
+  - Pushing un-verified code wastes parent-session merge work, pollutes
+    the branch with broken commits, and is exactly the "iterate on CI"
+    anti-pattern the local-verify policy was set up to eliminate. If
+    your local verification cannot run (cold clone, bootstrap not
+    finished), DO NOT PUSH. Report `✗ STUCK` instead.
+  - The corollary: once your file IS locally green, push and immediately
+    return your `✓ DONE` report. **Do NOT wait for repo CI to turn
+    green** — local-green IS the verification at this pin. CI watching is
+    explicitly removed from the discipline.
 - **No `sorry`, no `axiom`** anywhere in the code you write.
 - **Do not use `ω` as a binder name.** Lean 4.30 reserves `ω` as the omega-tactic token; `(ω : ...)` produces "unexpected token 'ω'; expected '_' or identifier" errors. Use `om`, `form`, `oneform`, or any ASCII identifier instead. (`ω` is fine inside docstrings or as `open scoped` notation; just not as a `def`/`theorem`/`fun`/`have` binder.)
 - **No signature changes** to anything outside the new file you create.
@@ -49,9 +66,9 @@ checkout. For serial work, edit `main`-tracking branches directly.
 - **After the new file is locally green**, single-file-check the top-level
   manifest `JacobianChallenge.lean` (or `lake build` the manifest target)
   to catch import-ordering / namespace issues.
-- **CI is now optional final verification, not the merge gate.** If you
-  want one for confidence after the local checks pass, push and
-  `gh run watch --exit-status`. Otherwise just push and report.
+- **No CI watching.** Once local verification is green, push and return.
+  The parent session does not wait for repo CI; merging is unblocked
+  the moment your local build succeeds.
 - **On any local error:** read the message inline (single-file elaboration
   prints it at the bottom of stdout), fix the specific issue, re-run the
   single-file check. There is no per-cycle cap on local iteration —
