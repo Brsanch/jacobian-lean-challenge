@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.PullbackLinearEquiv
+import JacobianChallenge.Manifold.HolomorphicOneFormPullbackRefl
 
 set_option diagnostics.threshold 100
 
@@ -63,6 +64,34 @@ theorem HolomorphicEquiv.pullbackLinearEquiv_symm_symm
     (e : HolomorphicEquiv X Y) :
     (e.pullbackLinearEquiv.symm).symm = e.pullbackLinearEquiv :=
   LinearEquiv.symm_symm _
+
+/-- **`pullbackLinearEquiv` on `HolomorphicEquiv.refl` is the identity
+LinearEquiv.** Combines `pullbackPointwise_refl` (zz...) — which says
+`refl.pullbackPointwise α x = α.eval x` pointwise — with
+`ContMDiffSection.ext` to upgrade the pointwise identity to an equality
+on `HolomorphicOneForm X`, and finally `LinearEquiv.ext` to reach the
+LinearEquiv level. -/
+theorem HolomorphicEquiv.pullbackLinearEquiv_refl :
+    (HolomorphicEquiv.refl :
+        HolomorphicEquiv X X).pullbackLinearEquiv
+      = LinearEquiv.refl ℂ (HolomorphicOneForm X) := by
+  refine LinearEquiv.ext fun α => ?_
+  -- Reduce LHS: refl.pullbackLinearEquiv α = refl.pullbackForm α
+  --   (by pullbackLinearEquiv_apply).
+  -- Goal becomes: refl.pullbackForm α = α (RHS is LinearEquiv.refl • α = α).
+  -- Use ContMDiffSection.ext via type ascription, since HolomorphicOneForm
+  -- is a `def` aliasing ContMDiffSection and does not inherit @[ext].
+  refine
+    (show (((HolomorphicEquiv.refl : HolomorphicEquiv X X).pullbackForm α :
+              ContMDiffSection (𝕜 := ℂ) (E := ℂ) (H := ℂ) (M := X)
+                𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω (CotangentSpace 𝓘(ℂ) : X → Type _)) = α)
+        from ContMDiffSection.ext (fun x => ?_))
+  -- Reduce LHS: (refl.pullbackForm α) x
+  --   = (refl.pullbackForm α).toFun x         (DFunLike)
+  --   = refl.pullbackPointwise α x            (pullbackForm.toFun = pullbackPointwise)
+  --   = α.eval x                              (pullbackPointwise_refl)
+  --   = α x                                   (eval = DFunLike coe)
+  exact HolomorphicEquiv.pullbackPointwise_refl α x
 
 end JacobianChallenge
 
