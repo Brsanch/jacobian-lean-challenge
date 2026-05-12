@@ -209,8 +209,50 @@ lemma zpow (hf : MMeromorphicAt I f x) (n : ℤ) : MMeromorphicAt I (f ^ n) x :=
     have h := (hf.pow (m + 1)).inv
     simpa only [zpow_negSucc] using h
 
-/-- Multiplication of a meromorphic function by a complex scalar is meromorphic.
-Implemented via the constant-meromorphic factor and pointwise multiplication. -/
+/-- Finite products of `MMeromorphicAt` functions are `MMeromorphicAt`. -/
+lemma prod {ι : Type*} {s : Finset ι} {F : ι → M → ℂ}
+    (hF : ∀ i ∈ s, MMeromorphicAt I (F i) x) :
+    MMeromorphicAt I (∏ i ∈ s, F i) x := by
+  show MeromorphicAt ((∏ i ∈ s, F i) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+  have h_comp : (∏ i ∈ s, F i) ∘ (chartAt ℂ x).symm
+      = (fun z => ∏ i ∈ s, F i ((chartAt ℂ x).symm z)) := by
+    funext z
+    simp [Finset.prod_apply]
+  rw [h_comp]
+  exact MeromorphicAt.fun_prod (fun i hi => hF i hi)
+
+/-- Finite-prod variant: a function-valued `∏ i, F i z` is `MMeromorphicAt`. -/
+lemma fun_prod {ι : Type*} {s : Finset ι} {F : ι → M → ℂ}
+    (hF : ∀ i ∈ s, MMeromorphicAt I (F i) x) :
+    MMeromorphicAt I (fun y => ∏ i ∈ s, F i y) x := by
+  have h_eq : (fun y => ∏ i ∈ s, F i y) = ∏ i ∈ s, F i := by
+    funext y; simp [Finset.prod_apply]
+  rw [h_eq]
+  exact prod hF
+
+/-- Finite sums of `MMeromorphicAt` functions are `MMeromorphicAt`. -/
+lemma sum {ι : Type*} {s : Finset ι} {F : ι → M → ℂ}
+    (hF : ∀ i ∈ s, MMeromorphicAt I (F i) x) :
+    MMeromorphicAt I (∑ i ∈ s, F i) x := by
+  show MeromorphicAt ((∑ i ∈ s, F i) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+  have h_comp : (∑ i ∈ s, F i) ∘ (chartAt ℂ x).symm
+      = (fun z => ∑ i ∈ s, F i ((chartAt ℂ x).symm z)) := by
+    funext z
+    simp [Finset.sum_apply]
+  rw [h_comp]
+  exact MeromorphicAt.fun_sum (fun i hi => hF i hi)
+
+/-- Finite-sum variant: a function-valued `∑ i, F i z` is `MMeromorphicAt`. -/
+lemma fun_sum {ι : Type*} {s : Finset ι} {F : ι → M → ℂ}
+    (hF : ∀ i ∈ s, MMeromorphicAt I (F i) x) :
+    MMeromorphicAt I (fun y => ∑ i ∈ s, F i y) x := by
+  have h_eq : (fun y => ∑ i ∈ s, F i y) = ∑ i ∈ s, F i := by
+    funext y; simp [Finset.sum_apply]
+  rw [h_eq]
+  exact sum hF
+
+/-- Multiplication of a meromorphic function by a complex scalar is
+meromorphic. -/
 lemma const_smul (c : ℂ) (hf : MMeromorphicAt I f x) :
     MMeromorphicAt I (c • f) x := by
   -- `c • f = (fun _ => c) * f` pointwise on `M → ℂ`.
@@ -264,6 +306,26 @@ lemma zpow (hf : MMeromorphicOn I f s) (n : ℤ) : MMeromorphicOn I (f ^ n) s :=
 lemma const_smul (c : ℂ) (hf : MMeromorphicOn I f s) :
     MMeromorphicOn I (c • f) s :=
   fun x hx => (hf x hx).const_smul c
+
+lemma prod {ι : Type*} {t : Finset ι} {F : ι → M → ℂ}
+    (hF : ∀ i ∈ t, MMeromorphicOn I (F i) s) :
+    MMeromorphicOn I (∏ i ∈ t, F i) s :=
+  fun x hx => MMeromorphicAt.prod (fun i hi => hF i hi x hx)
+
+lemma fun_prod {ι : Type*} {t : Finset ι} {F : ι → M → ℂ}
+    (hF : ∀ i ∈ t, MMeromorphicOn I (F i) s) :
+    MMeromorphicOn I (fun y => ∏ i ∈ t, F i y) s :=
+  fun x hx => MMeromorphicAt.fun_prod (fun i hi => hF i hi x hx)
+
+lemma sum {ι : Type*} {t : Finset ι} {F : ι → M → ℂ}
+    (hF : ∀ i ∈ t, MMeromorphicOn I (F i) s) :
+    MMeromorphicOn I (∑ i ∈ t, F i) s :=
+  fun x hx => MMeromorphicAt.sum (fun i hi => hF i hi x hx)
+
+lemma fun_sum {ι : Type*} {t : Finset ι} {F : ι → M → ℂ}
+    (hF : ∀ i ∈ t, MMeromorphicOn I (F i) s) :
+    MMeromorphicOn I (fun y => ∑ i ∈ t, F i y) s :=
+  fun x hx => MMeromorphicAt.fun_sum (fun i hi => hF i hi x hx)
 
 end MMeromorphicOn
 
