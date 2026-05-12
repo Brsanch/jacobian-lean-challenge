@@ -267,6 +267,7 @@ import JacobianChallenge.Manifold.ZeroCountEqPoleCount
 import JacobianChallenge.Topology.Genus0ImpliesS2Reduction
 import JacobianChallenge.Topology.Item14ForRiemannSphere
 import JacobianChallenge.Topology.Item14ClassInstance
+import JacobianChallenge.Topology.Item14ClassTransport
 import JacobianChallenge.Topology.Item14FromSingleUniformization
 import JacobianChallenge.Topology.Item14FromSubsingletonAndHomeo
 import JacobianChallenge.Topology.Item14FromUniformization
