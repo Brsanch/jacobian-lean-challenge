@@ -76,12 +76,25 @@ def sub (α β : MeromorphicOneForm X) : MeromorphicOneForm X where
   meromorphic_coeff := fun x =>
     (α.meromorphic_coeff x).sub (β.meromorphic_coeff x)
 
+/-- Pointwise complex-scalar multiplication of a meromorphic 1-form. The
+resulting coefficient is `c • α.coeff`, which is meromorphic by
+`MMeromorphicAt.const_smul`. -/
+def scmul (c : ℂ) (α : MeromorphicOneForm X) : MeromorphicOneForm X where
+  toFun := fun y => c • α.toFun y
+  meromorphic_coeff := fun x => by
+    have h_coeff : (fun y => (c • α.toFun y) 1) = c • α.coeff := by
+      funext y
+      simp [coeff_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+    rw [h_coeff]
+    exact (α.meromorphic_coeff x).const_smul c
+
 /-! ### Typeclass instances -/
 
 instance : Zero (MeromorphicOneForm X) := ⟨zero⟩
 instance : Add (MeromorphicOneForm X) := ⟨add⟩
 instance : Neg (MeromorphicOneForm X) := ⟨neg⟩
 instance : Sub (MeromorphicOneForm X) := ⟨sub⟩
+instance : SMul ℂ (MeromorphicOneForm X) := ⟨scmul⟩
 
 /-! ### `toFun` projections under the group operations -/
 
@@ -96,6 +109,9 @@ instance : Sub (MeromorphicOneForm X) := ⟨sub⟩
 
 @[simp] lemma toFun_sub (α β : MeromorphicOneForm X) :
     (α - β).toFun = fun y => α.toFun y - β.toFun y := rfl
+
+@[simp] lemma toFun_smul (c : ℂ) (α : MeromorphicOneForm X) :
+    (c • α).toFun = fun y => c • α.toFun y := rfl
 
 /-! ### `coeff` projections under the group operations -/
 
@@ -114,6 +130,11 @@ instance : Sub (MeromorphicOneForm X) := ⟨sub⟩
 @[simp] lemma coeff_sub (α β : MeromorphicOneForm X) (y : X) :
     (α - β).coeff y = α.coeff y - β.coeff y := by
   simp [coeff_apply, toFun_sub]
+
+@[simp] lemma coeff_smul (c : ℂ) (α : MeromorphicOneForm X) (y : X) :
+    (c • α).coeff y = c • α.coeff y := by
+  simp [coeff_apply, toFun_smul,
+    ContinuousLinearMap.smul_apply, smul_eq_mul]
 
 /-! ### `toFun` is injective
 
