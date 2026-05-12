@@ -95,6 +95,7 @@ import JacobianChallenge.Manifold.HodgeBiholomorphismTransport
 import JacobianChallenge.Manifold.HodgeFiniteDimensional
 import JacobianChallenge.Manifold.HodgeRiemannSphereInstance
 import JacobianChallenge.Manifold.HolomorphicOneForm
+import JacobianChallenge.Manifold.HolomorphicOneFormLinear
 import JacobianChallenge.Manifold.HolomorphicOneFormRealification
 import JacobianChallenge.Manifold.HLcUnconditional
 import JacobianChallenge.Manifold.HPkgUnconditional
