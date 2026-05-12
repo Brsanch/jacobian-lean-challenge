@@ -208,6 +208,7 @@ import JacobianChallenge.Manifold.ResidueViaTopologicalDegree
 import JacobianChallenge.Manifold.RiemannSphere
 import JacobianChallenge.Manifold.RiemannSphereGenus
 import JacobianChallenge.Manifold.RiemannSphereMobius
+import JacobianChallenge.Manifold.RiemannSphereSouthChartTendsto
 import JacobianChallenge.Manifold.SinglePoleLaurentExtractionDischarge
 import JacobianChallenge.Manifold.SmoothChain
 import JacobianChallenge.Manifold.SmoothChainBoundary
