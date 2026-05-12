@@ -47,6 +47,8 @@ the manifold via chart pullback. -/
 
 namespace JacobianChallenge
 
+open scoped ContDiff Manifold
+
 namespace Div
 
 variable {X Y : Type*}
@@ -127,7 +129,9 @@ namespace Pic0
 
 variable {X Y : Type*}
   [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
   [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+  [ChartedSpace ℂ Y] [IsManifold (𝓘(ℂ, ℂ)) ω Y]
   [DecidableEq X]
 
 /-- The constant-total-weight version of the divisor pullback, descending
@@ -148,31 +152,35 @@ noncomputable def divPullbackWeighted
     ((divPullbackWeighted f hf e N hN_total D : Div0 X) : Div X)
       = Div.fiberSumWeighted f hf e (D : Div Y) := rfl
 
-/-- Promote the weighted pullback to `Pic⁰ Y →+ Pic⁰ X`. With the
-placeholder `PrincDiv = ⊥` the descent through the quotient is
-automatic. -/
+/-- Promote the weighted pullback to `Pic⁰ Y →+ Pic⁰ X` (ZZ256, 2026-05-11).
+
+The honest descent requires a principal-divisor preserving witness
+`h_desc`. For `f : X → Y` smooth holomorphic non-constant and
+`g : MeromorphicNonzero Y`, the weighted pullback equals
+`principalDivisorMap (g ∘ f)` via the analytic identity
+`ord_x(g ∘ f) = manifoldRamificationIndex f x · ord_{f x}(g)`. The
+discharge of `h_desc` is provided downstream as
+`Pic0.divPullbackWeighted_descent_of_smooth` in `JacobianPullback.lean`. -/
 noncomputable def pullbackWeighted
     (f : X → Y) (hf : ∀ y, (f ⁻¹' {y}).Finite) (e : X → ℕ) (N : ℕ)
-    (hN_total : ∀ y, (∑ x ∈ (hf y).toFinset, e x) = N) :
-    Pic0 Y →+ Pic0 X := by
-  refine QuotientAddGroup.map
+    (hN_total : ∀ y, (∑ x ∈ (hf y).toFinset, e x) = N)
+    (h_desc : (PrincDiv Y).addSubgroupOf (Div0 Y) ≤
+      ((PrincDiv X).addSubgroupOf (Div0 X)).comap
+        (divPullbackWeighted f hf e N hN_total)) :
+    Pic0 Y →+ Pic0 X :=
+  QuotientAddGroup.map
     ((PrincDiv Y).addSubgroupOf (Div0 Y))
     ((PrincDiv X).addSubgroupOf (Div0 X))
-    (divPullbackWeighted f hf e N hN_total) ?_
-  intro D hD
-  have hBot : (PrincDiv Y).addSubgroupOf (Div0 Y) = ⊥ := by
-    unfold PrincDiv
-    simp [AddSubgroup.addSubgroupOf]
-  rw [hBot, AddSubgroup.mem_bot] at hD
-  subst hD
-  rw [AddSubgroup.mem_comap]
-  rw [map_zero]
-  exact AddSubgroup.zero_mem _
+    (divPullbackWeighted f hf e N hN_total) h_desc
 
 @[simp] lemma pullbackWeighted_mk
     (f : X → Y) (hf : ∀ y, (f ⁻¹' {y}).Finite) (e : X → ℕ) (N : ℕ)
-    (hN_total : ∀ y, (∑ x ∈ (hf y).toFinset, e x) = N) (D : Div0 Y) :
-    pullbackWeighted f hf e N hN_total (QuotientAddGroup.mk D : Pic0 Y)
+    (hN_total : ∀ y, (∑ x ∈ (hf y).toFinset, e x) = N)
+    (h_desc : (PrincDiv Y).addSubgroupOf (Div0 Y) ≤
+      ((PrincDiv X).addSubgroupOf (Div0 X)).comap
+        (divPullbackWeighted f hf e N hN_total))
+    (D : Div0 Y) :
+    pullbackWeighted f hf e N hN_total h_desc (QuotientAddGroup.mk D : Pic0 Y)
       = (QuotientAddGroup.mk
           (divPullbackWeighted f hf e N hN_total D) : Pic0 X) := rfl
 
@@ -272,53 +280,8 @@ lemma singletonMap_fiberSumWeighted
 
 end Div
 
-namespace Pic0
-
-variable {X Y : Type*}
-  [TopologicalSpace X] [T2Space X] [CompactSpace X]
-  [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
-  [DecidableEq X] [DecidableEq Y]
-
-/-- The composite `pushforward ∘ pullbackWeighted` is multiplication by the
-(constant) total fibre weight `N`. Weighted analog of
-`Pic0.pushforward_pullback` in `FiberPullback.lean`; used by
-`Basic.lean.pushforward_pullback` (challenge item 24) on the non-constant
-branch. -/
-lemma pushforward_pullbackWeighted
-    (f : X → Y) (hf : ∀ y, (f ⁻¹' {y}).Finite)
-    (e : X → ℕ) (N : ℕ)
-    (hN_total : ∀ y, (∑ x ∈ (hf y).toFinset, e x) = N)
-    (P : Pic0 Y) :
-    Pic0.pushforward f (Pic0.pullbackWeighted f hf e N hN_total P) = (N : ℤ) • P := by
-  -- Match the `Classical.decEq Y` instance used inside `divPushforwardHom`.
-  letI : DecidableEq Y := Classical.decEq Y
-  refine QuotientAddGroup.induction_on P ?_
-  intro D
-  -- Rewrite LHS through `pullbackWeighted_mk` and `pushforward_mk`.
-  rw [Pic0.pullbackWeighted_mk, Pic0.pushforward_mk]
-  -- Equality of quotient classes ⇐ equality of `Div0 Y` representatives.
-  change (QuotientAddGroup.mk
-            (Pic0.divPushforward f
-              (Pic0.divPullbackWeighted f hf e N hN_total D))
-              : Pic0 Y)
-      = (QuotientAddGroup.mk ((N : ℤ) • D) : Pic0 Y)
-  refine congrArg
-    (QuotientAddGroup.mk (s := (PrincDiv Y).addSubgroupOf (Div0 Y))) ?_
-  apply Subtype.ext
-  -- Reduce to `Div Y` equality.
-  show ((Pic0.divPushforward f
-            (Pic0.divPullbackWeighted f hf e N hN_total D) : Div0 Y) : Div Y)
-      = (((N : ℤ) • D : Div0 Y) : Div Y)
-  rw [Pic0.divPushforward_coe, Pic0.divPullbackWeighted_coe]
-  -- Unfold `divPushforwardHom` to `singletonMap`.
-  change Div.singletonMap (Y := Y) f
-            (Div.fiberSumWeighted f hf e (D : Div Y))
-      = (((N : ℤ) • D : Div0 Y) : Div Y)
-  -- Apply the weighted divisor-level identity.
-  rw [Div.singletonMap_fiberSumWeighted (Y := Y) f hf e N hN_total (D : Div Y)]
-  -- ℤ-smul on `Div0 Y` is the underlying ℤ-smul on `Div Y`.
-  rfl
-
-end Pic0
+-- `pushforward_pullbackWeighted` moved to `JacobianPushforward.lean`
+-- (ZZ256, 2026-05-11). Uses `Pic0.pushforward (hf : ContMDiff ω f)` which
+-- lives downstream of P1.4.
 
 end JacobianChallenge

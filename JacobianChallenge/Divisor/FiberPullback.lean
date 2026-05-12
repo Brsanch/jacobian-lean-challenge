@@ -49,6 +49,8 @@ factor as `N * D.degree`. -/
 
 namespace JacobianChallenge
 
+open scoped ContDiff Manifold
+
 /-! ### Degree of a fibre-sum -/
 
 namespace Div
@@ -136,7 +138,9 @@ namespace Pic0
 
 variable {X Y : Type*}
   [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
   [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+  [ChartedSpace ℂ Y] [IsManifold (𝓘(ℂ, ℂ)) ω Y]
   [DecidableEq X]
 
 /-- The constant-fibre-cardinality version of the divisor pullback,
@@ -156,33 +160,36 @@ noncomputable def divPullback
     ((divPullback f hf N hN D : Div0 X) : Div X)
       = Div.fiberSum f hf (D : Div Y) := rfl
 
-/-- Same construction promoted to `Pic⁰ Y →+ Pic⁰ X`. With the placeholder
-`PrincDiv = ⊥` the descent through the quotient is automatic
-(cf. `Pic0.pushforward` in `Jacobian.lean` for the same trick). -/
+/-- Pic0-level pullback (ZZ256e, 2026-05-11). The honest descent of
+`divPullback f hf N hN` through the quotient requires a principal-divisor
+preserving witness `h_desc`. This is the sister-hypothesis to P1.4
+(`PrincDivHonestCandidate_addSubgroupOf_Div0_le_comap_divPushforward`):
+for smooth holomorphic non-constant `f` with uniform topological fibre
+cardinality, `g : MeromorphicNonzero Y` composes through `f` to give
+`g ∘ f : MeromorphicNonzero X`, and the divisor pullback matches the
+principal divisor of the composition (this is the unramified case, since
+`hN : uniform card = N` for analytic non-constant `f` forces the
+ramification index to be 1 at every preimage). The honest discharge of
+`h_desc` lives downstream in `JacobianPullback.lean` (sister file to
+`JacobianPushforward.lean`); see `Pic0.divPullback_descent_of_smooth`. -/
 noncomputable def pullback
     (f : X → Y) (hf : ∀ y, (f ⁻¹' {y}).Finite) (N : ℕ)
-    (hN : ∀ y, (hf y).toFinset.card = N) :
-    Pic0 Y →+ Pic0 X := by
-  refine QuotientAddGroup.map
+    (hN : ∀ y, (hf y).toFinset.card = N)
+    (h_desc : (PrincDiv Y).addSubgroupOf (Div0 Y) ≤
+      ((PrincDiv X).addSubgroupOf (Div0 X)).comap (divPullback f hf N hN)) :
+    Pic0 Y →+ Pic0 X :=
+  QuotientAddGroup.map
     ((PrincDiv Y).addSubgroupOf (Div0 Y))
     ((PrincDiv X).addSubgroupOf (Div0 X))
-    (divPullback f hf N hN) ?_
-  -- LHS is `⊥` since `PrincDiv Y = ⊥`, so the comap condition is vacuous.
-  intro D hD
-  have hBot : (PrincDiv Y).addSubgroupOf (Div0 Y) = ⊥ := by
-    unfold PrincDiv
-    simp [AddSubgroup.addSubgroupOf]
-  rw [hBot, AddSubgroup.mem_bot] at hD
-  -- `D = 0`, so `divPullback _ D = 0 ∈ any subgroup`.
-  subst hD
-  rw [AddSubgroup.mem_comap]
-  rw [map_zero]
-  exact AddSubgroup.zero_mem _
+    (divPullback f hf N hN) h_desc
 
 @[simp] lemma pullback_mk
     (f : X → Y) (hf : ∀ y, (f ⁻¹' {y}).Finite) (N : ℕ)
-    (hN : ∀ y, (hf y).toFinset.card = N) (D : Div0 Y) :
-    pullback f hf N hN (QuotientAddGroup.mk D : Pic0 Y)
+    (hN : ∀ y, (hf y).toFinset.card = N)
+    (h_desc : (PrincDiv Y).addSubgroupOf (Div0 Y) ≤
+      ((PrincDiv X).addSubgroupOf (Div0 X)).comap (divPullback f hf N hN))
+    (D : Div0 Y) :
+    pullback f hf N hN h_desc (QuotientAddGroup.mk D : Pic0 Y)
       = (QuotientAddGroup.mk (divPullback f hf N hN D) : Pic0 X) := rfl
 
 /-! ### Contravariant composition at `Pic⁰` level -/
@@ -191,15 +198,15 @@ section Comp
 
 variable {X Y Z : Type*}
   [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
   [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+  [ChartedSpace ℂ Y] [IsManifold (𝓘(ℂ, ℂ)) ω Y]
   [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+  [ChartedSpace ℂ Z] [IsManifold (𝓘(ℂ, ℂ)) ω Z]
   [DecidableEq X] [DecidableEq Y]
 
 /-- Contravariant composition at the `Pic⁰` level: pulling back along
-    `g ∘ f` agrees with first pulling back along `g` then along `f`,
-    provided the cardinality witnesses compose multiplicatively
-    (`(g∘f)⁻¹{z}` has cardinality `M * N` when fibres of `g` have
-    cardinality `M` and fibres of `f` have cardinality `N`). -/
+    `g ∘ f` agrees with first pulling back along `g` then along `f`. -/
 lemma pullback_comp_apply
     (f : X → Y) (g : Y → Z)
     (hf : ∀ y, (f ⁻¹' {y}).Finite)
@@ -209,19 +216,22 @@ lemma pullback_comp_apply
     (hNf : ∀ y, (hf y).toFinset.card = Nf)
     (hNg : ∀ z, (hg z).toFinset.card = Ng)
     (hNgf : ∀ z, (hgf z).toFinset.card = Ng * Nf)
+    (h_desc_f : (PrincDiv Y).addSubgroupOf (Div0 Y) ≤
+      ((PrincDiv X).addSubgroupOf (Div0 X)).comap (divPullback f hf Nf hNf))
+    (h_desc_g : (PrincDiv Z).addSubgroupOf (Div0 Z) ≤
+      ((PrincDiv Y).addSubgroupOf (Div0 Y)).comap (divPullback g hg Ng hNg))
+    (h_desc_gf : (PrincDiv Z).addSubgroupOf (Div0 Z) ≤
+      ((PrincDiv X).addSubgroupOf (Div0 X)).comap
+        (divPullback (g ∘ f) hgf (Ng * Nf) hNgf))
     (P : Pic0 Z) :
-    pullback (g ∘ f) hgf (Ng * Nf) hNgf P
-      = pullback f hf Nf hNf (pullback g hg Ng hNg P) := by
+    pullback (g ∘ f) hgf (Ng * Nf) hNgf h_desc_gf P
+      = pullback f hf Nf hNf h_desc_f (pullback g hg Ng hNg h_desc_g P) := by
   refine QuotientAddGroup.induction_on P ?_
   intro D
   rw [pullback_mk, pullback_mk, pullback_mk]
-  -- Need `divPullback (g ∘ f) hgf (Ng * Nf) hNgf D
-  --        = divPullback f hf Nf hNf (divPullback g hg Ng hNg D)`.
   have hDiv : (divPullback (g ∘ f) hgf (Ng * Nf) hNgf D : Div X)
       = (divPullback f hf Nf hNf (divPullback g hg Ng hNg D) : Div X) := by
     rw [divPullback_coe, divPullback_coe, divPullback_coe]
-    -- Reduces to the underlying `fiberSum`-level composition, freshly merged
-    -- as `Div.fiberSum_comp_apply` in `FiberSum.lean`.
     exact Div.fiberSum_comp_apply f g hf hg hgf (D : Div Z)
   have h : divPullback (g ∘ f) hgf (Ng * Nf) hNgf D
       = divPullback f hf Nf hNf (divPullback g hg Ng hNg D) :=
@@ -237,6 +247,7 @@ end Pic0
 namespace Pic0
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
   [DecidableEq X]
 
 /-- The identity map has finite fibres (singletons). Stated as a `def` for
@@ -256,24 +267,34 @@ lemma _root_.JacobianChallenge.Div.id_fibers_card_one (x : X) :
     simp
   rw [htf, Finset.card_singleton]
 
-/-- Identity functoriality at the `Pic⁰` level: pulling back along `id`
-    with the canonical singleton-fibre witnesses returns the identity hom.
-    The honest proof reduces, via `pullback_mk` and `divPullback_coe`, to
-    `Div.fiberSum_id_apply` (already in `FiberSum.lean`) — note that the
-    `N = 1` case lets us cancel the `1 • _` in the degree formula trivially. -/
-lemma pullback_id (P : Pic0 X) :
-    pullback (id : X → X) Div.id_finite_fibers 1 Div.id_fibers_card_one P = P := by
-  refine QuotientAddGroup.induction_on P ?_
-  intro D
-  rw [pullback_mk]
-  -- Reduce to `divPullback id _ 1 _ D = D` as elements of `Div0 X`,
-  -- then via `Subtype.ext` to the underlying `Div X`-equality.
+/-- The trivial descent witness for the identity map: `divPullback id`
+agrees with the identity on `Div0`, so the descent is `le_refl`. -/
+lemma divPullback_id_descent :
+    (PrincDiv X).addSubgroupOf (Div0 X) ≤
+      ((PrincDiv X).addSubgroupOf (Div0 X)).comap
+        (divPullback (id : X → X) Div.id_finite_fibers 1 Div.id_fibers_card_one) := by
+  intro D hD
+  rw [AddSubgroup.mem_comap]
+  -- divPullback id sends D to fiberSum id D = D (`fiberSum_id_apply`).
   have hDiv : (divPullback (id : X → X) Div.id_finite_fibers 1
         Div.id_fibers_card_one D : Div X) = (D : Div X) := by
     rw [divPullback_coe]
-    -- Goal: `Div.fiberSum id Div.id_finite_fibers (D : Div X) = (D : Div X)`.
-    -- `Div.id_finite_fibers` is *definitionally* `fun y => Set.finite_singleton y`,
-    -- so this matches the existing `fiberSum_id_apply`.
+    exact Div.fiberSum_id_apply (D : Div X)
+  have h : divPullback (id : X → X) Div.id_finite_fibers 1
+      Div.id_fibers_card_one D = D := Subtype.ext hDiv
+  rw [h]
+  exact hD
+
+/-- Identity functoriality at the `Pic⁰` level. -/
+lemma pullback_id (P : Pic0 X) :
+    pullback (id : X → X) Div.id_finite_fibers 1 Div.id_fibers_card_one
+      divPullback_id_descent P = P := by
+  refine QuotientAddGroup.induction_on P ?_
+  intro D
+  rw [pullback_mk]
+  have hDiv : (divPullback (id : X → X) Div.id_finite_fibers 1
+        Div.id_fibers_card_one D : Div X) = (D : Div X) := by
+    rw [divPullback_coe]
     exact Div.fiberSum_id_apply (D : Div X)
   have h : divPullback (id : X → X) Div.id_finite_fibers 1
       Div.id_fibers_card_one D = D := Subtype.ext hDiv
@@ -390,66 +411,14 @@ namespace Pic0
 
 variable {X Y : Type*}
   [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
   [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+  [ChartedSpace ℂ Y] [IsManifold (𝓘(ℂ, ℂ)) ω Y]
   [DecidableEq X] [DecidableEq Y]
 
-/-- The composite `pushforward ∘ pullback` is multiplication by the (constant)
-fibre cardinality. This is the divisor-side of challenge item 24
-(`pushforward_pullback`); the `Basic.lean` version replaces `N` with
-`ContMDiff.degree f hf` and is gated on a derivation `Nonempty witness ⇒
-constant-fibre-cardinality with that exact value`.
-
-The `[DecidableEq Y]` instance is part of the spec signature and threads
-through `Div.singletonMap_fiberSum`, even though the proof body also uses
-`Classical.decEq Y` to match the instance baked into `divPushforwardHom`. -/
-lemma pushforward_pullback
-    (f : X → Y) (hf : ∀ y, (f ⁻¹' {y}).Finite)
-    (N : ℕ) (hN : ∀ y, (hf y).toFinset.card = N)
-    (P : Pic0 Y) :
-    Pic0.pushforward f (Pic0.pullback f hf N hN P) = (N : ℤ) • P := by
-  -- Match the `Classical.decEq Y` instance used inside `divPushforwardHom`,
-  -- so that `singletonMap (Y := Y) f` (whose `[DecidableEq Y]` instance is
-  -- supplied here via `Classical.decEq Y`) is the *same* function as the one
-  -- inside `divPushforwardHom`.
-  letI : DecidableEq Y := Classical.decEq Y
-  -- Quotient-induction on `P` to a representative `D : Div0 Y`.
-  refine QuotientAddGroup.induction_on P ?_
-  intro D
-  -- Use `Quotient.sound` (via `QuotientAddGroup.eq`) on the underlying
-  -- equation: it suffices to show the representatives are equal in
-  -- `Div0 Y` (which they will be — the difference is `0`, and `0 ∈` any
-  -- subgroup, so the quotient classes are equal regardless of `PrincDiv`).
-  -- Actually a cleaner route: package the LHS and RHS into a representative
-  -- equality and lift via `congrArg mk`.
-  -- Step 1: rewrite LHS through `pullback_mk` and `pushforward_mk`.
-  rw [Pic0.pullback_mk, Pic0.pushforward_mk]
-  -- Step 2: `change` the RHS to `mk ((N:ℤ) • D)`. This is true by `rfl`
-  -- because the ℤ-smul on `Pic0 Y` (a quotient `AddCommGroup`) is defined
-  -- pointwise as `mk (n • d)` (via `QuotientAddGroup.smul`).
-  change (QuotientAddGroup.mk
-            (Pic0.divPushforward f (Pic0.divPullback f hf N hN D))
-              : Pic0 Y)
-      = (QuotientAddGroup.mk ((N : ℤ) • D) : Pic0 Y)
-  -- Equality of quotient classes: it suffices to show the representatives
-  -- are equal.
-  refine congrArg (QuotientAddGroup.mk (s := (PrincDiv Y).addSubgroupOf (Div0 Y))) ?_
-  -- Reduce `Div0 Y`-equality to `Div Y`-equality via `Subtype.ext`.
-  apply Subtype.ext
-  -- LHS coerces to `divPushforwardHom f (Div.fiberSum f hf D)`.
-  -- RHS coerces to `(N : ℤ) • (D : Div Y)` (ℤ-smul on a subgroup is the
-  -- pointwise ℤ-smul on the ambient group).
-  show ((Pic0.divPushforward f (Pic0.divPullback f hf N hN D) : Div0 Y) : Div Y)
-      = (((N : ℤ) • D : Div0 Y) : Div Y)
-  rw [Pic0.divPushforward_coe, Pic0.divPullback_coe]
-  -- Unfold `divPushforwardHom f` to `singletonMap (Y := Y) f` (which is what
-  -- it is, after the `letI` above makes the `DecidableEq Y` instance match).
-  change Div.singletonMap (Y := Y) f (Div.fiberSum f hf (D : Div Y))
-      = (((N : ℤ) • D : Div0 Y) : Div Y)
-  -- Apply the divisor-level identity.
-  rw [Div.singletonMap_fiberSum (Y := Y) f hf N hN (D : Div Y)]
-  -- Goal: `(N : ℤ) • (D : Div Y) = (((N : ℤ) • D : Div0 Y) : Div Y)`.
-  -- `(N : ℤ) • ·` on `Div0 Y` is the underlying `(N : ℤ) • ·` on `Div Y`.
-  rfl
+-- `pushforward_pullback` lemma moved to `JacobianPushforward.lean`
+-- (ZZ256, 2026-05-11). It uses `Pic0.pushforward (hf : ContMDiff ω f)`
+-- which lives downstream of P1.4.
 
 end Pic0
 

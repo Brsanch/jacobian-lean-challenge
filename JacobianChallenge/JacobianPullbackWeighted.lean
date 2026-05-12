@@ -24,21 +24,29 @@ No `sorry`, no `axiom`. -/
 
 namespace JacobianChallenge
 
+open scoped ContDiff Manifold
+
 namespace Jacobian
 
 variable {X Y : Type*}
 variable [TopologicalSpace X] [T2Space X] [CompactSpace X]
+variable [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
 variable [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+variable [ChartedSpace ℂ Y] [IsManifold (𝓘(ℂ, ℂ)) ω Y]
 variable [DecidableEq X]
 
 /-- The **weighted pullback** `Jacobian Y →ₜ+ Jacobian X` from
 `Pic0.pullbackWeighted`. Continuity is automatic because `Jacobian X`
-carries the discrete topology at this pin. -/
+carries the discrete topology at this pin. Takes a descent witness
+`h_desc` (post-ZZ256 honest signature). -/
 noncomputable def pullbackWeighted
     (f : X → Y) (hf : ∀ y, (f ⁻¹' {y}).Finite) (e : X → ℕ) (N : ℕ)
-    (hN_total : ∀ y, (∑ x ∈ (hf y).toFinset, e x) = N) :
+    (hN_total : ∀ y, (∑ x ∈ (hf y).toFinset, e x) = N)
+    (h_desc : (PrincDiv Y).addSubgroupOf (Div0 Y) ≤
+      ((PrincDiv X).addSubgroupOf (Div0 X)).comap
+        (Pic0.divPullbackWeighted f hf e N hN_total)) :
     Jacobian Y →ₜ+ Jacobian X where
-  toAddMonoidHom := Pic0.pullbackWeighted f hf e N hN_total
+  toAddMonoidHom := Pic0.pullbackWeighted f hf e N hN_total h_desc
   continuous_toFun := continuous_of_discreteTopology
 
 end Jacobian
