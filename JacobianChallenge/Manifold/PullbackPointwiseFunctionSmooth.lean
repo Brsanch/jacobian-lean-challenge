@@ -194,6 +194,62 @@ theorem HolomorphicEquiv.alpha_toFun_comp_eSymm_contMDiffAt
         (α.toFun ((e.toEquiv.symm : Y → X) y))) y₀ :=
   (HolomorphicEquiv.alpha_toFun_comp_eSymm_contMDiff e α).contMDiffAt
 
+/-! ## Pullback as a `clm_apply` shape
+
+The pointwise pullback `(α.eval (e x)).comp (mfderiv e x)` can be
+re-expressed as `ϕ x (v x)` where `ϕ x = (compL).flip (mfderiv e x)`
+(the `ϕ`-side) and `v x = α.toFun (e x)` (the `v`-side). This matches
+the shape required by `ContMDiffAt.clm_apply_of_inCoordinates` exactly,
+so the eventual section-smoothness chip can rewrite the pullback via
+this identity, then invoke the mathlib lemma with the smoothness inputs
+shipped in zz302 and zz303. -/
+
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
+/-- **`pullbackPointwise` as `clm_apply`.** The pointwise pullback
+factors as `((compL).flip (mfderiv e x)) (α.toFun (e x))` — i.e., as
+the application of the precomposition CLM (`ϕ`-side, smoothness from
+zz302) to the form-value (`v`-side, smoothness from zz303). -/
+theorem HolomorphicEquiv.pullbackPointwise_eq_clm_apply
+    (e : HolomorphicEquiv X Y) (α : HolomorphicOneForm Y) (x : X) :
+    e.pullbackPointwise α x
+      = ((ContinuousLinearMap.compL ℂ ℂ ℂ ℂ).flip
+          (mfderiv (𝓘(ℂ, ℂ)) (𝓘(ℂ, ℂ)) (e : X → Y) x))
+            (α.toFun ((e : X → Y) x)) := by
+  -- LHS = (α.eval (e x)).comp (mfderiv e x), by definition.
+  -- RHS unfolds via `compL.flip` to the same composition.
+  show ContinuousLinearMap.comp (HolomorphicOneForm.eval α ((e : X → Y) x))
+      (mfderiv (𝓘(ℂ, ℂ)) (𝓘(ℂ, ℂ)) (e : X → Y) x)
+    = ((ContinuousLinearMap.compL ℂ ℂ ℂ ℂ).flip
+        (mfderiv (𝓘(ℂ, ℂ)) (𝓘(ℂ, ℂ)) (e : X → Y) x))
+          (α.toFun ((e : X → Y) x))
+  ext
+  -- HolomorphicOneForm.eval α (e x) = α.toFun (e x) (defeq via DFunLike on
+  -- ContMDiffSection unfold).
+  have h_eval : HolomorphicOneForm.eval α ((e : X → Y) x)
+      = α.toFun ((e : X → Y) x) := rfl
+  rw [h_eval]
+  rfl
+
+omit [IsManifold 𝓘(ℂ, ℂ) ω Y] in
+/-- **`pullbackPointwise` along `e.symm` as `clm_apply`.** Symmetric
+version for the inverse-direction pullback, used in item-14 reverse. -/
+theorem HolomorphicEquiv.pullbackPointwise_symm_eq_clm_apply
+    (e : HolomorphicEquiv X Y) (α : HolomorphicOneForm X) (y : Y) :
+    e.symm.pullbackPointwise α y
+      = ((ContinuousLinearMap.compL ℂ ℂ ℂ ℂ).flip
+          (mfderiv (𝓘(ℂ, ℂ)) (𝓘(ℂ, ℂ))
+            (e.toEquiv.symm : Y → X) y))
+            (α.toFun ((e.toEquiv.symm : Y → X) y)) := by
+  show ContinuousLinearMap.comp (HolomorphicOneForm.eval α
+      ((e.symm : Y → X) y))
+      (mfderiv (𝓘(ℂ, ℂ)) (𝓘(ℂ, ℂ)) (e.symm : Y → X) y)
+    = _
+  ext
+  have h_eval : HolomorphicOneForm.eval α ((e.symm : Y → X) y)
+      = α.toFun ((e.toEquiv.symm : Y → X) y) := rfl
+  rw [h_eval]
+  rfl
+
 end JacobianChallenge
 
 end
