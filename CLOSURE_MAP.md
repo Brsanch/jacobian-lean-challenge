@@ -24,7 +24,7 @@ This file replaces the high-level OPEN.md narrative with a per-item map citing e
 | 11 | `CompactSpace (Jacobian X)` | 102 | `sorry` | **OPEN** — needs period-lattice quotient (Phase 2) |
 | 12 | `IsManifold ... (Jacobian X)` | 110 | `sorry` | **OPEN** — needs period-lattice (Phase 2) |
 | 13 | `LieAddGroup ... (Jacobian X)` | 113 | `sorry` | **OPEN** — needs period-lattice + Lie group transport (Phase 2) |
-| 14 | `genus_eq_zero_iff_homeo` | 70 | `sorry` | **OPEN** — surface classification (Phase 3) |
+| 14 | `genus_eq_zero_iff_homeo` | 70 | `sorry` | **OPEN** — single named open input `UniformizationToRiemannSphere X` post-zz309; pullback half closed honestly via zz302–zz310 |
 | 15 | `ofCurve_self` | 126 | one-line delegation to `Jacobian.ofCurve_self` | STRICT-CLOSED |
 | 16 | `ofCurve_inj` | 135 | delegates to `Jacobian.ofCurve_inj`, which uses `hBot : PrincDiv = ⊥` at `Jacobian.lean:206-209` | **OPEN** under Phase 1 — proof breaks; honest replacement needs Abel's theorem (Phase 2) |
 | 17 | `Jacobian.ofCurve_contMDiff` | 124 | `sorry` | **OPEN** — needs item 5 (Phase 2) + AJ smoothness |
@@ -251,6 +251,43 @@ Statement at `Basic.lean:70`: `genus X = 0 ↔ Nonempty (X ≃ₜ sphere (0 : Eu
 | **3.E Sphere structure translation: abstract S² ↔ `Metric.sphere (0:EuclideanSpace ℝ (Fin 3)) 1`** | mathlib has `Topology/Compactification/OnePoint/Sphere.lean`. Repo has scaffolding in `Topology/{OnePointHomeoSphere,...}.lean`. | infrastructure ✓ | **500–1,000** |
 
 **Phase 3 total verified**: **7,100–15,000 LOC**.
+
+**Update 2026-05-13 (zz302–zz310 chain, ~1,800 LOC landed)**: the
+*pullback-of-1-forms* half of Phase 3 is now closed honestly. Specifically:
+
+- zz302–zz306 (`PullbackPointwiseFunctionSmooth.lean`,
+  `PullbackSectionSmoothness.lean`) discharge the cotangent ↔ tangent
+  in-coordinates bridge UNCONDITIONALLY, then assemble the smooth
+  pullback section `HolomorphicEquiv.pullbackSection_contMDiffAt`.
+- zz307 (`PullbackHolomorphicOneForm.lean`) upgrades the pointwise
+  pullback to a `HolomorphicOneForm`, and discharges
+  `IsHolomorphicOneFormPullback_for_all e.symm` unconditionally —
+  closing the previously-tautological zz287–zz301 loop.
+- zz308 (`PullbackLinearEquiv.lean`) packages this as a
+  `HolomorphicOneForm Y ≃ₗ[ℂ] HolomorphicOneForm X`, and ships the full
+  item-14 biconditional for any `X ≃ₕ RiemannSphere`.
+- zz309 (`Item14FromSingleUniformization.lean`) consolidates
+  `Item14FromUniformization.lean`'s two open inputs
+  (`UniformizationGenus0 X` + `HolomorphicOneFormEquivRiemannSphere X`)
+  into **a single named open hypothesis**:
+
+      UniformizationToRiemannSphere X :=
+        (genus X = 0 ∨ Nonempty (X ≃ₜ StandardS2)) →
+          Nonempty (HolomorphicEquiv X RiemannSphere)
+
+  This is precisely the classical uniformization-for-genus-0 statement
+  in the exact shape required to close both directions of item 14.
+- zz310 (`HolomorphicEquivGenusInvariance.lean`) extracts
+  `HolomorphicEquiv X Y → genus X = genus Y` as a one-line API for
+  downstream transport.
+
+**Net effect on the Phase 3 LOC estimate**: components 3.A, 3.B (surface
+classification + Radó) remain entirely as the *topological* gap. The
+pullback half (item-14 reverse direction's analytic content) is no
+longer a Phase 3 cost — item 14 reduces to **a single named open
+classical input** (uniformization for genus-0 surfaces), not two. The
+remaining work to flip item 14 STRICT-CLOSED is: prove
+`UniformizationToRiemannSphere X` (the disjunctive form above).
 
 ### D.3 — Phase 4 (item 1: `genus X` honest)
 
