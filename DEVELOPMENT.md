@@ -18,29 +18,34 @@ work. The triggers are predictable and avoidable.
 - ❌ `du -sh` / `du -h` on `.lake/`, `.lake/packages/mathlib/`, or any
   directory with tens of thousands of `.olean` files → **instant panic**.
 - ❌ `find` with heavy predicates or `-exec` on big trees (`~`, `/Volumes/`).
-- ❌ `lake build` — the **finalization phase** (flushing `.olean`, `.ilean`,
-  `.c`, trace files across the dep graph) is many small writes in a
-  narrow window and saturates apfsd. Confirmed crashes with
-  `LEAN_NUM_THREADS=1 lake build` on a 3-file project.
+- ❌ `lake build` *without* `taskpolicy` throttle — the **finalization
+  phase** (flushing `.olean`, `.ilean`, `.c`, trace files across the dep
+  graph) is many small writes in a narrow window and saturates apfsd.
+  Throttled form `taskpolicy -b nice -n 19 lake build` is safe.
 - ❌ `lake exe cache get` — leantar decompresses ~8,000 small files in a
   burst. Every time.
 - ❌ Multi-threaded `lake env lean FILE.lean` — parallel `.olean` writes
-  same pattern as `lake build`.
+  same pattern as `lake build`. Stick to `LEAN_NUM_THREADS=1`.
 - ❌ `sed -i` on multi-thousand-line files (use the Edit tool instead).
 - ❌ `cp -r` or `mv` of large trees (`.lake` is ~7 GB).
 - ❌ Back-to-back heavy file operations without pause.
 
 ### Always do these
 
-- ✅ For single-file verification:
-  `LEAN_NUM_THREADS=1 lake env lean JacobianChallenge/YOUR_FILE.lean`
-  (no-write elaboration; only type-checks in memory, doesn't write
-  artifacts).
+- ✅ **For single-file verification (primary loop):**
+  `LEAN_NUM_THREADS=1 lake env lean JacobianChallenge/YOUR_FILE.lean`.
+  Reads existing `.olean`s and elaborates the file in memory without
+  writing artifacts. Warm cache: ~3-30s per check, no panic. Iterate as
+  many times as needed — local cycles are free. This is the primary
+  verification, not CI.
+- ✅ **For full-graph build (when really needed):**
+  `taskpolicy -b nice -n 19 lake build`. Throttled background priority
+  keeps apfsd under saturation threshold. Only run this when you need
+  fresh `.olean`s for many files (e.g. after a mathlib bump) — for
+  per-file chip iteration, the single-file `lake env lean` is enough.
 - ✅ For size info: `ls -ldh /path` (directory itself, no recursion)
   or `df -h /Volumes/4TB\ SD` (free space only).
 - ✅ For finding files: use `Glob` / file browser, not `find`.
-- ✅ For any build-phase work: **push to CI** and let GitHub Actions
-  build the `.olean` cache.
 - ✅ For big copies: `rsync --bwlimit=30M`.
 
 ### If you forget and the machine panics
@@ -53,60 +58,81 @@ Restart the machine. Any unsaved Lean work is gone.
 
 ---
 
-## CI-as-default workflow
+## Local-verify-primary workflow
 
-**Policy:** CI is the authoritative build and the default verifier.
-Local compile is rare, only for tiny surgical checks, and only on files
-under ~5k lines. Do not run `lake build` on your workstation.
+**Policy (post-2026-05-10):** single-file `LEAN_NUM_THREADS=1 lake env
+lean FILE.lean` is the primary verification. It type-checks against the
+existing `.olean` cache without writing artifacts, returns in ~3-30s on
+a warm cache, and does not panic the M3 Ultra. CI is now **optional**
+final verification, not the merge gate. (The previous version of this
+file enforced CI-as-default because `lake env lean` was assumed unsafe;
+that turned out to be only the multi-threaded form. `LEAN_NUM_THREADS=1`
+is safe.)
 
-### Multi-agent work: every agent owns its CI cycle
+### Single-agent serial work: edit `main`-tracking branches directly
 
-When work is parallelised across multiple agents (worktrees / feature
-branches), **each agent must own the full commit → push → CI-watch →
-fix → repeat loop on its own branch, and may not return until that
-branch is CI-green** (lean-action step `conclusion == "success"`).
+For one chip at a time, work directly in the canonical checkout on a
+feature branch:
 
-This is a **hard rule**, not a suggestion. The reason:
+```
+cd "/Volumes/4TB SD/ClaudeCode/jacobian-lean-challenge"
+git checkout main && git pull
+git checkout -b feat/<chip-name>
+```
 
-- The `apfsd`-panic policy bans local `lake build` / `lake env lean` /
-  `lake exe cache get`, so agents have *no other way* to know whether
-  their work compiles.
-- An agent that returns un-verified work pushes the verification cost
-  onto the merge step, which is the wrong place to discover errors —
-  by then other agents have piled fixes on top.
-- "Compiles when I push it" is the only honest definition of "done"
-  for any agent in this repo.
+Then the per-iteration loop is:
 
-The mechanics each agent must follow:
+1. Edit the new file (or the manifest, for the import line).
+2. `LEAN_NUM_THREADS=1 lake env lean JacobianChallenge/YOUR_FILE.lean`.
+3. Read the inline error (printed at the bottom of stdout); fix; repeat.
+4. When the new file is green, also single-file-verify
+   `JacobianChallenge.lean` (the top-level manifest) to catch
+   import-ordering / namespace issues.
+5. Commit (no AI-attribution trailer).
+6. Push the branch. CI is optional — only watch it if you want a final
+   confidence check after local-green.
 
-1. Work in a worktree on its own feature branch.
-2. Commit the work (no `Co-Authored-By: Claude` trailer; see project
-   `CLAUDE.md`'s "no AI attribution" rule).
-3. `git push -u origin <branch>` (first push) or `git push` (later).
-4. Get the run id:
-   ```sh
-   gh run list --repo Brsanch/jacobian-lean-challenge --limit 1 \
-     --json databaseId,headSha,status
-   ```
-5. Poll the lean-action step (NOT docgen — docgen is non-blocking and
-   can hang) every ~30s:
-   ```sh
-   gh run view <RUN_ID> --repo Brsanch/jacobian-lean-challenge --json jobs \
-     --jq '[.jobs[].steps[] | select(.name | contains("lean-action")) |
-            {name, status, conclusion}]'
-   ```
-6. On `conclusion == "success"`: branch is green, return.
-7. On `conclusion == "failure"`: pull the failed log, diagnose, fix,
-   commit, push, return to step 4. Cap at ~6 fix cycles before
-   returning a "stuck" report.
+### Multi-agent parallel work: independent clones + local verification
 
-The merge into `main` is the parent session's job, *after* the
-agent's branch is green. The merge itself triggers a new CI run on
-`main`; the parent verifies that as well.
+When parallelising across sub-agents, give each agent its own
+independent `gh repo clone` checkout so concurrent commits don't
+entangle the parent. Each agent runs its own local single-file verify
+loop — **NOT** a CI-watch loop. CI watching used to be the only honest
+"done" signal; it isn't anymore.
 
-**What the parent session must do when dispatching multi-agent work:**
-state this rule in every agent prompt verbatim or by reference, so
-the agent doesn't omit the CI loop.
+```sh
+cd /tmp
+for x in a b c; do
+  rm -rf agent-${x}-jacobian 2>/dev/null
+  gh repo clone Brsanch/jacobian-lean-challenge agent-${x}-jacobian \
+    -- --depth 1 --quiet
+done
+```
+
+In each agent's prompt: *"You are working in `/tmp/agent-a-jacobian`.
+You are the ONLY agent in this directory. Verify with
+`LEAN_NUM_THREADS=1 lake env lean ...` until your new file and the
+manifest both pass single-file checks; then commit and push your
+branch. Do NOT watch CI."*
+
+DO NOT use the Agent tool's `isolation: "worktree"` parameter for
+parallel work. Worktree-mode isolation leaks branch state into the
+parent checkout — confirmed in the 2026-04-26 jacobian session.
+
+### "Done" criterion for an agent
+
+The agent's local checks are the source of truth:
+
+- New file passes `LEAN_NUM_THREADS=1 lake env lean <file>`.
+- Manifest passes `LEAN_NUM_THREADS=1 lake env lean JacobianChallenge.lean`.
+- `grep -nE "sorry|axiom\s" <new file>` is empty.
+- `git diff main -- <listed upstream files>` is empty (no signature
+  changes outside the new file).
+
+Once those four pass, the agent reports done — no CI watching required.
+The parent session can push a CI run as a final-verification step if
+the chip is touching cross-cutting infrastructure, but that's optional
+and does not gate merge.
 
 ### Use independent clones, NOT git worktree isolation
 
@@ -134,33 +160,28 @@ agents' feature branches, and concurrent pushes get entangled. The
 five worktree-isolated agents and re-dispatched in independent clones,
 which then produced 8+ rounds of clean parallel work.
 
-### Escalate when an agent caps out
+### Escalate when an agent gets stuck
 
-When a sub-agent hits its 6-cycle fix cap and returns a "stuck"
-report, the parent session should NOT just abandon the branch. The
-agent's per-agent fix cap is for the agent, not for the project.
+When a sub-agent returns a "stuck" report, the parent session should
+NOT just abandon the branch.
 
-Escalation protocol:
+Escalation protocol (post-local-verify era):
 
-1. Pull the most recent failed log:
+1. `cd` into the agent's clone (or check out its branch in the canonical
+   checkout via `git fetch origin <branch> && git checkout <branch>`).
+2. Run the agent's last failing single-file check:
    ```sh
-   RUN=$(gh run list --repo Brsanch/jacobian-lean-challenge --limit 5 \
-     --json databaseId,headSha \
-     --jq '.[] | select(.headSha | startswith("AGENT_LAST_SHA")) | .databaseId' | head -1)
-   gh run view $RUN --repo Brsanch/jacobian-lean-challenge --log-failed 2>&1 \
-     | grep -E "error:" | head -10
+   LEAN_NUM_THREADS=1 lake env lean JacobianChallenge/<file>
    ```
-2. Read the actual error. Often the agent burned 6 cycles on what looks
-   like a single specific tactic / name / instance issue. Manual eyes
-   can spot the fix in seconds.
-3. Make the fix in the agent's clone (it already has the latest version
-   of the agent's work). Commit, push, watch CI.
-4. If still failing, repeat. You're now the iterator.
+   The error is printed inline at the bottom of stdout. Often the agent
+   burned context trying tactic alternatives when the actual fix is a
+   single name / instance mismatch obvious on manual eyes.
+3. Make the fix. Re-verify single-file. Commit. Push.
+4. If still failing, repeat. You're now the iterator. There is no
+   per-cycle cap on local iteration.
 
-**Don't delete the agent's branch on the remote.** Even after the agent
-gives up, the agent's local commit chain in `/tmp/agent-X-jacobian` is
-needed for the escalation. If you delete the remote branch, you have to
-either recreate it from local commits or start over.
+**Don't delete the agent's branch on the remote** — the commit chain is
+your starting point for escalation.
 
 **Don't escalate "no honest progress" reports** that name a specific
 mathematical or library blocker (e.g. "needs Mayer-Vietoris from
@@ -210,36 +231,44 @@ The strict-reader bar (Buzzard would accept this) is what counts.
 Anti-hack lemmas paired with the item being closed are the test —
 if the anti-hack is still `sorry`, the item is a stub.
 
-### Why CI over local
+### When to fall back to CI
 
-- CI runs on remote Linux runners with no shared filesystem to saturate.
-- CI caches `.lake/build/` between runs — incremental builds are fast.
-- CI never crashes your machine.
-- Slow on first run (~3-5 min for `lake build` after cache warms; docgen
-  step is known to hang but is `continue-on-error: true`, so doesn't
-  block correctness).
+The single-file local check is sufficient for type-checking the new
+file plus its imports. Use CI only when:
+
+- You're touching a cross-cutting import (something in
+  `JacobianChallenge.lean` or a heavily-imported module) and want a
+  smoke-test that no downstream file breaks under cumulative
+  elaboration. The local check verifies *your file*'s imports, but not
+  every consumer of a definition you renamed.
+- The mathlib pin changed (`lean-toolchain` or `lake-manifest.json`)
+  and your `.lake` cache is from before the bump.
+- You want a final independent confirmation before declaring a chip
+  done.
+
+In those cases, push the branch and watch the `build` job:
+
+```sh
+gh run watch --exit-status
+```
+
+`docgen` and `dedupe-caches` jobs are allowed to fail / hang and do not
+gate correctness.
 
 ### The typical loop
 
 1. Write code in modular blocks, **≤ 150 lines per commit** ideally.
-2. `git add`, `git commit`, `git push`. Each push triggers the Lean
-   Action CI workflow (`.github/workflows/lean_action_ci.yml`).
-3. Poll CI status:
+2. After each significant change:
    ```
-   gh run list --repo Brsanch/jacobian-lean-challenge --limit 3 \
-     --json status,conclusion,headSha,workflowName
+   LEAN_NUM_THREADS=1 lake env lean JacobianChallenge/Manifold/YOUR_FILE.lean
    ```
-4. Direct job view (`leanprover/lean-action@v1` step is the one that
-   matters; docgen is allowed to fail):
+   Read the error inline, fix, re-run. ~3-30s per cycle.
+3. Once green locally, also single-file-check the manifest:
    ```
-   gh run view --job=<JOB_ID> --repo Brsanch/jacobian-lean-challenge
+   LEAN_NUM_THREADS=1 lake env lean JacobianChallenge.lean
    ```
-   Green check on `leanprover/lean-action@v1` = build succeeded.
-5. On failure, pull the failed log:
-   ```
-   gh run view <RUN_ID> --repo Brsanch/jacobian-lean-challenge --log-failed
-   ```
-   Read the specific Lean error, patch, push.
+4. `git add`, `git commit`, `git push`. If you want CI confirmation,
+   `gh run watch --exit-status`; otherwise the local check is enough.
 
 ### Cache hygiene
 
@@ -291,7 +320,8 @@ set_option diagnostics.threshold 100 in
 theorem your_failing_theorem ... := ...
 ```
 
-Push to CI. The CI log will contain output like:
+Then run `LEAN_NUM_THREADS=1 lake env lean <file>` locally. The stdout
+will contain output like:
 
 ```
 info: File.lean:L:0: [diag] Diagnostics
@@ -341,7 +371,7 @@ hits `isDefEq`.
 3. Lean's default instance synthesis then picks the same instance at
    every use site, and field assignment matches.
 
-**Pre-push checklist:**
+**Pre-`lake env lean` checklist:**
 
 1. Does this theorem call `.bound` or `.something` on a structure whose
    field type involves `DecidableEq`-parametrised terms?
@@ -375,13 +405,14 @@ goal, which triggers `.default` transparency.
   failures trying architectural fixes before the 1-minute diagnostic
   run pinpointed the actual loop. Cost comparison:
 
-  | Approach | Cycles | Wall time |
-  |---|---|---|
-  | Architectural guesses without diagnostics | 9 | ~40 min |
-  | Run `set_option diagnostics true` once | 1 | ~4 min |
-  | Apply fix from diagnostic output | 1 | ~4 min |
+  | Approach | Cycles | Wall time (CI era) | Wall time (local-verify era) |
+  |---|---|---|---|
+  | Architectural guesses without diagnostics | 9 | ~40 min | ~5 min |
+  | Run `set_option diagnostics true` once | 1 | ~4 min | ~15s |
+  | Apply fix from diagnostic output | 1 | ~4 min | ~15s |
 
-  **Lesson: diagnostic first, architectural guesses never.**
+  Local single-file verification compressed this loop ~10×, but the
+  lesson is unchanged: **diagnostic first, architectural guesses never.**
 
 ---
 
@@ -448,22 +479,32 @@ failure mode and the only filter is build failure or human review.
 
 Before every `git push`:
 
-1. **Imports at top?** All `.lean` files must have `import` statements
+1. **Single-file green?** `LEAN_NUM_THREADS=1 lake env lean
+   JacobianChallenge/Manifold/YOUR_FILE.lean` exits 0 with no error
+   output.
+2. **Manifest single-file green?** `LEAN_NUM_THREADS=1 lake env lean
+   JacobianChallenge.lean` exits 0 (catches import-ordering /
+   namespace issues that the new-file check alone misses).
+3. **Imports at top?** All `.lean` files must have `import` statements
    at the very top (above any `/-! ... -/` doc-comment).
-2. **Tiny commit?** Ideally ≤ 150 lines changed per commit. Large
-   commits amplify CI retry cost if something fails.
-3. **No local `lake build`?** Verified you didn't run `lake build` or
-   `lake exe cache get` locally. Use CI.
-4. **If consuming a structure field**: check for the `DecidableEq`
+4. **Tiny commit?** Ideally ≤ 150 lines changed per commit.
+5. **No banned ops?** Verified you didn't run `lake build` without
+   `taskpolicy`, `lake exe cache get`, or `du` on `.lake`.
+6. **If consuming a structure field**: check for the `DecidableEq`
    class-parameter pattern (Step 3 above). If your theorem takes
    `[DecidableEq ...]` and calls `.field` on a structure, remove the
    parameter and use `classical`.
-5. **Commit message descriptive?** Reference the lemma name or item
-   number from `OPEN.md` that landed. Ex.: `"Close OPEN item 15: ofCurve_self"`.
-6. **No AI-attribution trailer.** No `Co-Authored-By: Claude` lines
-   in commit messages, no AI ack in any file. (Sister-project
-   `noethersolve` traced an arXiv rejection to such an ack on
-   2026-04-22.)
+7. **No `sorry` / `axiom`?** `grep -nE "sorry|axiom\s" <new file>` is
+   empty (and matches your honest intent).
+8. **No upstream signature changes?** `git diff main -- <listed
+   upstream files>` is empty for any file outside the new one.
+9. **Commit message descriptive?** Reference the lemma name or item
+   number from `OPEN.md` that landed. Ex.: `"Close OPEN item 15:
+   ofCurve_self"`.
+10. **No AI-attribution trailer.** No `Co-Authored-By: Claude` lines
+    in commit messages, no AI ack in any file. (Sister-project
+    `noethersolve` traced an arXiv rejection to such an ack on
+    2026-04-22.)
 
 ---
 
