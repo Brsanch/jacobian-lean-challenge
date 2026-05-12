@@ -192,14 +192,19 @@ lemma zsmul_single_sub_zsmul_single_apply [DecidableEq X]
     ((n • (single P : Div X) - n • single Q) : X → ℤ) y
       = n * ((if y = P then 1 else 0) - (if y = Q then 1 else 0)) := by
   classical
+<<<<<<< Updated upstream
   rw [sub_apply, zsmul_apply, zsmul_apply, single_apply, single_apply,
       mul_sub]
+=======
+  simp [sub_apply, zsmul_apply, single_apply, mul_sub]
+>>>>>>> Stashed changes
 
 /-- `n • (single P - single Q)` lies in `Div0 X` (compact Hausdorff `X`).
 The degree of `single P - single Q` is `0`, so its `ℤ`-multiples are too. -/
 lemma zsmul_single_sub_single_mem_Div0 [DecidableEq X] [T2Space X]
     [CompactSpace X] (n : ℤ) (P Q : X) :
     n • ((single P : Div X) - single Q) ∈ Div0 X := by
+<<<<<<< Updated upstream
   -- `single P - single Q ∈ Div0 X` is provided by
   -- `single_sub_single_mem_Div0` (with the arguments swapped: it is stated
   -- for `single Q - single P`; we negate).
@@ -209,6 +214,12 @@ lemma zsmul_single_sub_single_mem_Div0 [DecidableEq X] [T2Space X]
       rw [neg_sub]
     rw [hneg]
     exact neg_mem_Div0 (single_sub_single_mem_Div0 (X := X) Q P)
+=======
+  -- `single_sub_single_mem_Div0` reads `(P Q : X) : single Q - single P ∈ Div0`;
+  -- calling with the args swapped gives the variant we want.
+  have hbase : ((single P : Div X) - single Q) ∈ Div0 X :=
+    single_sub_single_mem_Div0 (X := X) Q P
+>>>>>>> Stashed changes
   exact zsmul_mem_Div0 n hbase
 
 end Div
