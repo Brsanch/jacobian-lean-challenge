@@ -49,6 +49,7 @@ noncomputable section
 
 open Set Filter Topology
 open scoped Manifold Topology ContDiff
+open JacobianChallenge.ContMDiff (RegularValueWitnessReg)
 
 namespace JacobianChallenge
 namespace Manifold
