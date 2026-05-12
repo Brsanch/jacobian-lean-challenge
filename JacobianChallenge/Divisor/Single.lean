@@ -227,6 +227,34 @@ lemma single_eq_iff [DecidableEq X] (x y : X) :
   · rw [if_neg hxy] at hx
     exact absurd hx one_ne_zero
 
+/-- The singleton-indicator divisor `Div.single x` is never zero. -/
+lemma single_ne_zero [DecidableEq X] (x : X) :
+    (single x : Div X) ≠ 0 := by
+  classical
+  intro h
+  -- Evaluate at `x`: LHS = `1`, RHS = `0`. Contradiction.
+  have hx : (single x : Div X) x = (0 : Div X) x := by rw [h]
+  rw [single_apply, if_pos rfl] at hx
+  -- `(0 : Div X) x = 0` by `Function.locallyFinsuppWithin.coe_zero`.
+  have h0 : (0 : Div X) x = 0 := by
+    show ((0 : Div X) : X → ℤ) x = 0
+    rw [Function.locallyFinsuppWithin.coe_zero, Pi.zero_apply]
+  rw [h0] at hx
+  exact absurd hx one_ne_zero
+
+/-- The singleton-indicator divisor `Div.single x` is nonzero at `x`. -/
+lemma single_self_apply [DecidableEq X] (x : X) :
+    (single x : Div X) x = 1 := by
+  classical
+  rw [single_apply, if_pos rfl]
+
+/-- The singleton-indicator divisor `Div.single x` is zero at any
+point distinct from `x`. -/
+lemma single_apply_of_ne [DecidableEq X] {x y : X} (h : y ≠ x) :
+    (single x : Div X) y = 0 := by
+  classical
+  rw [single_apply, if_neg h]
+
 end Div
 
 end JacobianChallenge
