@@ -61,13 +61,39 @@ Restart the machine. Any unsaved Lean work is gone.
 ## Local-verify-primary workflow
 
 **Policy (post-2026-05-10):** single-file `LEAN_NUM_THREADS=1 lake env
-lean FILE.lean` is the primary verification. It type-checks against the
-existing `.olean` cache without writing artifacts, returns in ~3-30s on
-a warm cache, and does not panic the M3 Ultra. CI is now **optional**
-final verification, not the merge gate. (The previous version of this
-file enforced CI-as-default because `lake env lean` was assumed unsafe;
+lean FILE.lean` is the primary verification for **iterating on the body**
+of an already-named declaration. It type-checks against the existing
+`.olean` cache without writing artifacts, returns in ~3-30s on a warm
+cache, and does not panic the M3 Ultra. CI is now **optional** final
+verification, not the merge gate. (The previous version of this file
+enforced CI-as-default because `lake env lean` was assumed unsafe;
 that turned out to be only the multi-threaded form. `LEAN_NUM_THREADS=1`
 is safe.)
+
+### ⚠️ Critical: pre-push merge gate for new top-level declarations
+
+`lake env lean FILE.lean` and the manifest single-file check **do not
+detect duplicate `namespace.declName` registrations across files** —
+they elaborate one file at a time against pre-built `.olean`s, where
+the kernel has already cached both names without re-checking
+uniqueness. Two real incidents on 2026-05-12 (zzMER, zz264/267) added
+declarations that collided with names already in
+`Divisor/PrincipalDivisor.lean`; every local single-file check passed,
+yet CI rejected the merge with
+`environment already contains 'JacobianChallenge.foo' from <other file>`.
+
+**Therefore: any chip that introduces a new top-level `def` / `lemma` /
+`theorem` / `instance` must be gated by a full
+`taskpolicy -b nice -n 19 lake build` (or a `lake build <new-target>` +
+`lake build JacobianChallenge` pair) on the canonical checkout before
+push.** The full build elaborates every file fresh, so it surfaces
+duplicate-name conflicts at module-load time the way CI does. Allow
+~5-15 min on a warm `.lake`, ~30 min if the chip touches a heavily
+imported module.
+
+`lake env lean` remains fine for *iterating on the proof body of an
+existing declaration* (whose name already lives in main). It is
+insufficient for *adding new names*.
 
 ### Single-agent serial work: edit `main`-tracking branches directly
 
@@ -88,9 +114,15 @@ Then the per-iteration loop is:
 4. When the new file is green, also single-file-verify
    `JacobianChallenge.lean` (the top-level manifest) to catch
    import-ordering / namespace issues.
-5. Commit (no AI-attribution trailer).
-6. Push the branch. CI is optional — only watch it if you want a final
-   confidence check after local-green.
+5. **Pre-push gate for chips with new top-level declarations:**
+   run `taskpolicy -b nice -n 19 env LEAN_NUM_THREADS=1 lake build`
+   (full project) and confirm "Build completed successfully". This is
+   the only way to surface duplicate-name conflicts with declarations
+   already living in other files. Skip this step only if the chip is
+   pure proof-body iteration on names already in main.
+6. Commit (no AI-attribution trailer).
+7. Push the branch. CI is then optional — only watch it if you want a
+   final confidence check after local-green.
 
 ### Multi-agent parallel work: independent clones + local verification
 
@@ -125,11 +157,16 @@ The agent's local checks are the source of truth:
 
 - New file passes `LEAN_NUM_THREADS=1 lake env lean <file>`.
 - Manifest passes `LEAN_NUM_THREADS=1 lake env lean JacobianChallenge.lean`.
+- **Full `taskpolicy -b nice -n 19 lake build` passes** (mandatory for
+  any chip introducing a new top-level `def`/`lemma`/`theorem`/
+  `instance`; the single-file checks alone do *not* detect duplicate
+  `namespace.declName` registrations across files — two such regressions
+  in 2026-05-12: zzMER, zz264/267).
 - `grep -nE "sorry|axiom\s" <new file>` is empty.
 - `git diff main -- <listed upstream files>` is empty (no signature
   changes outside the new file).
 
-Once those four pass, the agent reports done — no CI watching required.
+Once those five pass, the agent reports done — no CI watching required.
 The parent session can push a CI run as a final-verification step if
 the chip is touching cross-cutting infrastructure, but that's optional
 and does not gate merge.
