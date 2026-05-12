@@ -72,18 +72,11 @@ lemma mmeromorphicOrderAt_const (c : ℂ) :
   classical
   exact meromorphicOrderAt_const (𝕜 := ℂ) (E := ℂ) ((chartAt ℂ x) x) c
 
-/-- The order of a nonzero constant is `0`. Specialization of
-`mmeromorphicOrderAt_const`. -/
-lemma mmeromorphicOrderAt_const_ne_zero {c : ℂ} (hc : c ≠ 0) :
-    mmeromorphicOrderAt I (fun _ : M => c) x = 0 := by
-  rw [mmeromorphicOrderAt_const]
-  simp [hc]
-
-/-- The order of the constant function `1` is `0`. Specialization of
-`mmeromorphicOrderAt_const_ne_zero`. -/
+/-- The order of the constant function `1` is `0`. -/
 @[simp] lemma mmeromorphicOrderAt_one_const :
-    mmeromorphicOrderAt I (fun _ : M => (1 : ℂ)) x = 0 :=
-  mmeromorphicOrderAt_const_ne_zero one_ne_zero
+    mmeromorphicOrderAt I (fun _ : M => (1 : ℂ)) x = 0 := by
+  rw [mmeromorphicOrderAt_const]
+  simp
 
 /-! ## Order under ring operations
 
@@ -159,33 +152,11 @@ lemma mmeromorphicOrderAt_sub_ge
   rw [h_neg_order] at h
   exact h
 
-/-! ## Order under powers -/
+/-! ## Order under powers
 
-/-- The order of `f ^ n` equals `n * mmeromorphicOrderAt I f x` for
-`n : ℕ`. Chart-pullback of `Mathlib.Analysis.Meromorphic.Order.meromorphicOrderAt_pow`. -/
-lemma mmeromorphicOrderAt_pow (hf : MMeromorphicAt I f x) (n : ℕ) :
-    mmeromorphicOrderAt I (f ^ n) x = n * mmeromorphicOrderAt I f x := by
-  have hf' : MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hf
-  show meromorphicOrderAt ((f ^ n) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = _
-  have h_comp : (f ^ n) ∘ (chartAt ℂ x).symm
-      = (f ∘ (chartAt ℂ x).symm) ^ n := by
-    funext z
-    simp [Function.comp_apply, Pi.pow_apply]
-  rw [h_comp]
-  exact meromorphicOrderAt_pow hf'
-
-/-- The order of `f ^ n` equals `n * mmeromorphicOrderAt I f x` for
-`n : ℤ`. Chart-pullback of `Mathlib.Analysis.Meromorphic.Order.meromorphicOrderAt_zpow`. -/
-lemma mmeromorphicOrderAt_zpow (hf : MMeromorphicAt I f x) (n : ℤ) :
-    mmeromorphicOrderAt I (f ^ n) x = n * mmeromorphicOrderAt I f x := by
-  have hf' : MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hf
-  show meromorphicOrderAt ((f ^ n) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = _
-  have h_comp : (f ^ n) ∘ (chartAt ℂ x).symm
-      = (f ∘ (chartAt ℂ x).symm) ^ n := by
-    funext z
-    simp [Function.comp_apply, Pi.pow_apply]
-  rw [h_comp]
-  exact meromorphicOrderAt_zpow hf'
+  `mmeromorphicOrderAt_pow` and `mmeromorphicOrderAt_zpow` already live in
+  `Divisor/PrincipalDivisor.lean` (lines 236 / 251) and are not duplicated
+  here. -/
 
 /-! ## Order under finset products -/
 
