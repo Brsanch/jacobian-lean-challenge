@@ -76,6 +76,7 @@ import JacobianChallenge.Manifold.DerivBridgeFromNonConstant
 import JacobianChallenge.Manifold.DisjointFibreNbhds
 import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Manifold.DegreeWellDefined
+import JacobianChallenge.Manifold.DivisorAlgebra
 import JacobianChallenge.Manifold.FiberCountBridge
 import JacobianChallenge.Manifold.FibreBalance
 import JacobianChallenge.Manifold.FibreBalanceTopologicalDegree
