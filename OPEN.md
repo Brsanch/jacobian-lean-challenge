@@ -21,7 +21,7 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard (post-ZZ256 P1.5, 2026-05-12):**
 
-- **STRICT-CLOSED:** **11 / 24** — items **2, 3, 6, 7, 8, 15, 19, 20, 22,
+- **STRICT-CLOSED:** **12 / 24** — items **2, 3, 6, 7, 8, 9, 15, 19, 20, 22,
   23, 24**. ZZ256 landed `PrincDiv := PrincDivHonestCandidate` and
   `Pic0` (honest, with manifold instances) in
   `Divisor/PrincipalDivisorRange.lean`. `Pic0.pushforward (hf)` uses P1.4
@@ -29,17 +29,16 @@ spec. Three statuses, with one tag for partial progress:
   the sister descent `Pic0.divPullbackWeighted_descent_of_smooth` in
   `JacobianPullback.lean` (genuine analytic chip).
 - **STUB (placeholder topology / target / pending discharge):** items
-  **1, 4, 9, 10** = 4 items.
+  **1, 4, 10** = 3 items.
 - **OPEN (sorry in `Basic.lean` or transitively via downstream sorry):**
   items **5, 11, 12, 13, 14, 16, 17, 18, 21** = 9 items. Item 16
   (`ofCurve_inj`) reverted from STUB to OPEN as CLOSURE_MAP predicted —
   it requires Abel-Jacobi (Phase 2).
 - **Previous scoreboard (2026-05-09, HEAD `5e601e8`):** 0/24 STRICT-CLOSED.
 
-(CLOSURE_MAP §A col 4 originally predicted 12 items flip; actual is 11
-because item 9 `ContMDiff.degree` stays STUB — its Basic.lean docstring
-explicitly acknowledges "well-definedness of the fibre count across regular
-values is the deeper classical fact still owed at this pin".)
+(CLOSURE_MAP §A col 4 originally predicted 12 items flip; with item 9 now
+STRICT-CLOSED via `Manifold/HPkgUnconditional.lean` +
+`Manifold/DegreeWellDefined.lean` the actual is 12.)
 
 > **`CLOSURE_MAP.md` (authored 2026-05-09, repo root) is now the live
 > source of truth.** It has the per-item map, mathlib status verified
@@ -73,7 +72,7 @@ whenever a status changes.
 | 6 | `Jacobian.ofCurve : X → Jacobian X` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `Q ↦ [δQ − δP]` in honest `Pic⁰`. |
 | 7 | `Jacobian.pushforward f hf` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `JacobianChallenge.Jacobian.pushforward hf` in `JacobianPushforward.lean`. Descent via P1.4 (`PrincDivHonestCandidate_addSubgroupOf_Div0_le_comap_divPushforward`) on the non-constant branch + degree-zero trivialization on the constant branch. |
 | 8 | `Jacobian.pullback f hf` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `Jacobian.pullbackHonest_of_rsum`, which dispatches to either `0` (constant `f`) or `Jacobian.pullbackWeighted` with `e := manifoldRamificationIndex f` and `N := degreeFiber f hf`. The `Pic0.pullbackWeighted` descent obligation is discharged unconditionally by `Pic0.divPullbackWeighted_descent_of_smooth` (`JacobianPullback.lean`) — sister chip to P1.4 in the contravariant direction. |
-| 9 | `ContMDiff.degree f hf : ℕ` | **STUB** | Body: `JacobianChallenge.ContMDiff.degreeFiber f hf` (honest regular-fibre cardinality via `RegularValueWitness`). The Basic.lean docstring acknowledges that **well-definedness across regular values** is a deeper classical fact still owed at this pin; without it, the function value depends on the (deterministic but unproved-to-be-invariant) `Classical.choice` of regular-value witness. Fails the strict-reviewer bar. |
+| 9 | `ContMDiff.degree f hf : ℕ` | **STRICT-CLOSED** *(post-zzITEM9, 2026-05-12)* | Body: `JacobianChallenge.ContMDiff.degreeFiber f hf`. Well-definedness across regular witnesses is `JacobianChallenge.degreeFiber_eq_card_of_regular_witness` in `Manifold/DegreeWellDefined.lean`, composing `Manifold/HPkgUnconditional.lean` (`h_pkg_holds_unconditional`, from chip A `LocalSheetData.ofRegularValueWitnessReg` + chip B `critical_value_set_finite` + RVE deriv-bridge + HLcUnconditional) through `fibre_card_well_defined_at_regular_holds_of_h_pkg`. |
 
 ## Theorems (Prop) — Basic.lean items 10–24 in OPEN.md numbering
 
@@ -189,12 +188,10 @@ Cumulative across all sessions: **~37,840+ LOC across 162+ files**. ZZ256 (P1.5)
 
 ## Honest scoring (post-ZZ256, 2026-05-12)
 
-- **STRICT-CLOSED**: **11** — items 2, 3, 6, 7, 8, 15, 19, 20, 22, 23, 24.
-- **STUB**: **4** — items 1 (`genus` needs Hodge finite-dimensionality),
+- **STRICT-CLOSED**: **12** — items 2, 3, 6, 7, 8, 9, 15, 19, 20, 22, 23, 24.
+- **STUB**: **3** — items 1 (`genus` needs Hodge finite-dimensionality),
   4 (discrete `TopologicalSpace`, wants Phase 2 manifold topology),
-  9 (`ContMDiff.degree` wired to `degreeFiber` but well-definedness across
-  regular values is owed — see `Basic.lean:247-249`), 10 (T2 honest but
-  underlying topology stub).
+  10 (T2 honest but underlying topology stub).
 - **OPEN**: **9** — items 5, 11, 12, 13, 14, 16, 17, 18, 21.
 
 Reaching the next **STRICT-CLOSED** requires landing one of: (a) Hurwitz

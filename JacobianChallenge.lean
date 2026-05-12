@@ -74,6 +74,7 @@ import JacobianChallenge.Manifold.CriticalValuesFiniteUnconditional
 import JacobianChallenge.Manifold.DerivBridgeFromNonConstant
 import JacobianChallenge.Manifold.DisjointFibreNbhds
 import JacobianChallenge.Manifold.Degree
+import JacobianChallenge.Manifold.DegreeWellDefined
 import JacobianChallenge.Manifold.FiberCountBridge
 import JacobianChallenge.Manifold.FibreBalance
 import JacobianChallenge.Manifold.FibreBalanceTopologicalDegree
@@ -96,6 +97,7 @@ import JacobianChallenge.Manifold.HodgeRiemannSphereInstance
 import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.HolomorphicOneFormRealification
 import JacobianChallenge.Manifold.HLcUnconditional
+import JacobianChallenge.Manifold.HPkgUnconditional
 import JacobianChallenge.Manifold.HTopoUnconditional
 import JacobianChallenge.Manifold.HurwitzWellDefinedFromHPath
 import JacobianChallenge.Manifold.HurwitzWellDefinedUnconditionalTopo

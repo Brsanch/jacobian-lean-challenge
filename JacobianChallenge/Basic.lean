@@ -244,9 +244,8 @@ existence of a regular-value witness for non-constant holomorphic maps is
 discharged unconditionally by ZZ49
 (`Owed.degree.regular_value_exists_statement_holds_unconditional`), so this
 returns a real fibre count rather than a constant-vs-non-constant indicator.
-Independence of the chosen witness (i.e. well-definedness of the fibre count
-across regular values) is the deeper classical fact still owed at this pin
-(see `Manifold/Degree.lean` and ZZ156). -/
+Well-definedness is `JacobianChallenge.degreeFiber_eq_card_of_regular_witness`
+in `Manifold/DegreeWellDefined.lean`. -/
 noncomputable def _root_.ContMDiff.degree
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
   JacobianChallenge.ContMDiff.degreeFiber f hf
