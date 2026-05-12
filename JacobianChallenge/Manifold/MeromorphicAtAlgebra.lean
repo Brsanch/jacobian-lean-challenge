@@ -72,6 +72,19 @@ lemma mmeromorphicOrderAt_const (c : ℂ) :
   classical
   exact meromorphicOrderAt_const (𝕜 := ℂ) (E := ℂ) ((chartAt ℂ x) x) c
 
+/-- The order of a nonzero constant is `0`. Specialization of
+`mmeromorphicOrderAt_const`. -/
+lemma mmeromorphicOrderAt_const_ne_zero {c : ℂ} (hc : c ≠ 0) :
+    mmeromorphicOrderAt I (fun _ : M => c) x = 0 := by
+  rw [mmeromorphicOrderAt_const]
+  simp [hc]
+
+/-- The order of the constant function `1` is `0`. Specialization of
+`mmeromorphicOrderAt_const_ne_zero`. -/
+@[simp] lemma mmeromorphicOrderAt_one_const :
+    mmeromorphicOrderAt I (fun _ : M => (1 : ℂ)) x = 0 :=
+  mmeromorphicOrderAt_const_ne_zero one_ne_zero
+
 /-! ## Order under ring operations
 
   `mmeromorphicOrderAt_one`, `_mul`, `_inv` already live in
