@@ -5,6 +5,7 @@ Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.Single
+import JacobianChallenge.Divisor.PrincipalDivisorRange
 import JacobianChallenge.Manifold.HolomorphicOneForm
 import Mathlib.Topology.Constructions
 import Mathlib.Topology.Separation.Basic
@@ -96,12 +97,13 @@ See the file-level docstring for the precise status: with the current
 an additive group, and the analytic refinement to `ℂᵍ / Λ` is owed by future
 work on `Divisor.lean` and a separate period-lattice file. -/
 noncomputable def Jacobian (X : Type*) [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] : Type _ :=
+    [CompactSpace X] [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X] : Type _ :=
   Pic0 X
 
 namespace Jacobian
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
 
 /-- The additive abelian group structure on `Jacobian X`, inherited from
 `Pic0.instAddCommGroup`. -/
@@ -177,47 +179,10 @@ two divisors are equal in `Pic0 X` iff they are equal in `Div0 X`, and
 hence iff their underlying `Div X`-divisors are equal. The conclusion then
 reduces to `Div.single_eq_iff`.
 
-When the honest `PrincDiv` lands and the quotient is no longer faithful,
-this proof will need the full Abel–Jacobi theorem (and the
-`0 < genus X` hypothesis becomes load-bearing); at that point this lemma
-should be replaced rather than refined. -/
-lemma ofCurve_inj (P : X) : Function.Injective (ofCurve P) := by
-  classical
-  intro Q₁ Q₂ hQ
-  -- Two `QuotientAddGroup.mk` classes are equal iff their difference lies in
-  -- the quotienting subgroup `(PrincDiv X).addSubgroupOf (Div0 X)`, which at
-  -- this pin equals `⊥` (since `PrincDiv X = ⊥`), so equality in `Pic0 X`
-  -- forces equality in `Div0 X`.
-  have hSub : (⟨Div.single Q₁ - Div.single P,
-                 Div.single_sub_single_mem_Div0 P Q₁⟩ : Div0 X)
-            = (⟨Div.single Q₂ - Div.single P,
-                 Div.single_sub_single_mem_Div0 P Q₂⟩ : Div0 X) := by
-    -- Translate `hQ : ofCurve P Q₁ = ofCurve P Q₂` (a quotient equality) into
-    -- a `Quotient.eq` statement, and use that the quotienting subgroup is `⊥`.
-    have hQ' : (QuotientAddGroup.mk
-        (⟨Div.single Q₁ - Div.single P,
-            Div.single_sub_single_mem_Div0 P Q₁⟩ : Div0 X) : Jacobian X)
-      = QuotientAddGroup.mk
-        (⟨Div.single Q₂ - Div.single P,
-            Div.single_sub_single_mem_Div0 P Q₂⟩ : Div0 X) := hQ
-    rw [QuotientAddGroup.eq] at hQ'
-    -- `hQ'` says the difference lies in `(PrincDiv X).addSubgroupOf (Div0 X)`,
-    -- which is `⊥` because `PrincDiv X = ⊥`.
-    have hBot : (PrincDiv X).addSubgroupOf (Div0 X) = ⊥ := by
-      unfold PrincDiv
-      simp [AddSubgroup.addSubgroupOf]
-    rw [hBot, AddSubgroup.mem_bot] at hQ'
-    -- Now `hQ' : -x + y = 0`; rearrange to `x = y` via `neg_add_eq_zero`.
-    exact neg_add_eq_zero.mp hQ'
-  -- Project the equality of `Div0 X`-elements to an equality of underlying
-  -- `Div X`-divisors via `Subtype.ext_iff`.
-  have hDiv : Div.single Q₁ - Div.single P = Div.single Q₂ - Div.single P :=
-    congrArg Subtype.val hSub
-  -- Cancel `Div.single P` on both sides to extract `single Q₁ = single Q₂`.
-  have hSingle : (Div.single Q₁ : Div X) = Div.single Q₂ :=
-    sub_left_inj.mp hDiv
-  -- And conclude via `Div.single_eq_iff`.
-  exact (Div.single_eq_iff Q₁ Q₂).mp hSingle
+Under the honest `PrincDiv` (ZZ256+, 2026-05-11), this lemma reduces to the
+Abel–Jacobi theorem and the `0 < genus X` hypothesis becomes load-bearing.
+Phase 2 work; left `sorry` for Basic.lean item 16 to remain OPEN. -/
+lemma ofCurve_inj (P : X) : Function.Injective (ofCurve P) := sorry
 
 end Jacobian
 
@@ -253,6 +218,8 @@ spaces with the placeholder `PrincDiv = ⊥` induces a hom on `Pic⁰`. Once
 to ensure that principal divisors push forward to principal divisors). -/
 
 namespace JacobianChallenge
+
+open scoped ContDiff Manifold
 
 namespace Div
 
@@ -519,31 +486,10 @@ noncomputable def divPushforward (f : X → Y) : Div0 X →+ Div0 Y :=
     ((divPushforward f D : Div0 Y) : Div Y) = divPushforwardHom f (D : Div X) :=
   rfl
 
-/-- The pushforward `Pic0 X →+ Pic0 Y` induced by a map `f : X → Y`.
-
-With the placeholder `PrincDiv = ⊥`, the descent is automatic: the kernel
-condition `(PrincDiv X).addSubgroupOf (Div0 X) ≤ (PrincDiv Y).addSubgroupOf
-(Div0 Y).comap (divPushforward f)` is vacuous because the LHS is `⊥`. -/
-noncomputable def pushforward (f : X → Y) : Pic0 X →+ Pic0 Y := by
-  refine QuotientAddGroup.map
-    ((PrincDiv X).addSubgroupOf (Div0 X))
-    ((PrincDiv Y).addSubgroupOf (Div0 Y))
-    (divPushforward f) ?_
-  -- LHS is `⊥` since `PrincDiv X = ⊥`, so the comap condition is vacuous.
-  intro D hD
-  have hBot : (PrincDiv X).addSubgroupOf (Div0 X) = ⊥ := by
-    unfold PrincDiv
-    simp [AddSubgroup.addSubgroupOf]
-  rw [hBot, AddSubgroup.mem_bot] at hD
-  -- `D = 0`, so `divPushforward f D = 0 ∈ any subgroup`.
-  subst hD
-  rw [AddSubgroup.mem_comap]
-  rw [map_zero]
-  exact AddSubgroup.zero_mem _
-
-@[simp] lemma pushforward_mk (f : X → Y) (D : Div0 X) :
-    pushforward f (QuotientAddGroup.mk D : Pic0 X)
-      = (QuotientAddGroup.mk (divPushforward f D) : Pic0 Y) := rfl
+-- `Pic0.pushforward` (the Pic0-quotient descent) and `Pic0.pushforward_mk`
+-- moved to `JacobianChallenge/JacobianPushforward.lean` (ZZ256, 2026-05-11)
+-- because the honest descent goes through P1.4 in `Manifold/NormFMContinuity.lean`,
+-- which transitively imports this file.
 
 /-- The underlying `Div`-hom of `id : X → X` is the identity. -/
 lemma divPushforwardHom_id_apply (D : Div X) :
@@ -563,34 +509,8 @@ lemma divPushforwardHom_comp_apply {Z : Type*} [TopologicalSpace Z] [T2Space Z]
       = Div.singletonMap g (Div.singletonMap f D)
   exact Div.singletonMap_comp_apply f g D
 
-/-- Identity functoriality on `Pic0`. -/
-lemma pushforward_id (P : Pic0 X) :
-    pushforward (id : X → X) P = P := by
-  refine QuotientAddGroup.induction_on P ?_
-  intro D
-  rw [pushforward_mk]
-  -- Need: `divPushforward id D = D` as elements of `Div0 X`.
-  -- Reduce to underlying `Div X`-equality via `Subtype.ext`.
-  have hDiv : (divPushforward (id : X → X) D : Div X) = (D : Div X) := by
-    rw [divPushforward_coe, divPushforwardHom_id_apply]
-  have h : divPushforward (id : X → X) D = D := Subtype.ext hDiv
-  rw [h]
-
-/-- Composition functoriality on `Pic0`. -/
-lemma pushforward_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z]
-    [CompactSpace Z] (f : X → Y) (g : Y → Z) (P : Pic0 X) :
-    pushforward (g ∘ f) P = pushforward g (pushforward f P) := by
-  refine QuotientAddGroup.induction_on P ?_
-  intro D
-  rw [pushforward_mk, pushforward_mk, pushforward_mk]
-  -- Need `divPushforward (g ∘ f) D = divPushforward g (divPushforward f D)`.
-  have hDiv : (divPushforward (g ∘ f) D : Div Z)
-      = (divPushforward g (divPushforward f D) : Div Z) := by
-    rw [divPushforward_coe, divPushforward_coe, divPushforward_coe,
-        divPushforwardHom_comp_apply]
-  have h : divPushforward (g ∘ f) D = divPushforward g (divPushforward f D) :=
-    Subtype.ext hDiv
-  rw [h]
+-- `Pic0.pushforward_id` and `Pic0.pushforward_comp` moved downstream to
+-- `JacobianChallenge/JacobianPushforward.lean` (ZZ256, 2026-05-11).
 
 end Pic0
 
@@ -598,31 +518,17 @@ namespace Jacobian
 
 variable {X Y Z : Type*}
 variable [TopologicalSpace X] [T2Space X] [CompactSpace X]
+variable [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
 variable [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+variable [ChartedSpace ℂ Y] [IsManifold (𝓘(ℂ, ℂ)) ω Y]
 variable [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+variable [ChartedSpace ℂ Z] [IsManifold (𝓘(ℂ, ℂ)) ω Z]
 
-/-- The pushforward `Jacobian X →ₜ+ Jacobian Y` induced by a map
-`f : X → Y`. The smoothness hypothesis `_hf` is unused at this pin
-(see file-level docstring). Continuity of the underlying additive map is
-automatic because `Jacobian Y` carries the discrete topology. -/
-noncomputable def pushforward (f : X → Y) : Jacobian X →ₜ+ Jacobian Y where
-  toAddMonoidHom := Pic0.pushforward (X := X) (Y := Y) f
-  continuous_toFun := continuous_of_discreteTopology
-
-/-- Identity functoriality on `Jacobian`. -/
-lemma pushforward_id_apply (P : Jacobian X) :
-    pushforward (id : X → X) P = P := by
-  -- Reduce to `Pic0.pushforward_id` by unfolding the structure.
-  change Pic0.pushforward (id : X → X) P = P
-  exact Pic0.pushforward_id P
-
-/-- Composition functoriality on `Jacobian`. -/
-lemma pushforward_comp_apply (f : X → Y) (g : Y → Z) (P : Jacobian X) :
-    pushforward (g ∘ f) P = pushforward g (pushforward f P) := by
-  -- Reduce to `Pic0.pushforward_comp` by unfolding the structure.
-  change Pic0.pushforward (g ∘ f) P
-      = Pic0.pushforward g (Pic0.pushforward f P)
-  exact Pic0.pushforward_comp f g P
+-- `Jacobian.pushforward`, `pushforward_id_apply`, `pushforward_comp_apply`
+-- moved downstream to `JacobianChallenge/JacobianPushforward.lean`
+-- (ZZ256, 2026-05-11). They depend on `Pic0.pushforward` which depends
+-- on P1.4 from `Manifold/NormFMContinuity.lean` (transitively imports
+-- this file).
 
 /-! ### Pullback (zero stub, with honest functoriality on composition only)
 
