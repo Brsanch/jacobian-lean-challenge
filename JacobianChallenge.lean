@@ -181,6 +181,7 @@ import JacobianChallenge.Manifold.PreimageEventualContainment
 import JacobianChallenge.Manifold.PrincipalDivisorDegreeZero
 import JacobianChallenge.Manifold.R4FibreSumBalance
 import JacobianChallenge.Manifold.R5StackHypothesesDischarge
+import JacobianChallenge.Manifold.R5Unconditional
 import JacobianChallenge.Manifold.RamificationIndex
 import JacobianChallenge.Manifold.RamificationIndexChain
 import JacobianChallenge.Manifold.RamificationIndexCompUnconditional
