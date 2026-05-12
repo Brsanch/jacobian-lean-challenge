@@ -70,6 +70,23 @@ theorem HolomorphicEquiv.subsingleton_iff
     Subsingleton X ↔ Subsingleton Y :=
   e.toEquiv.subsingleton_congr
 
+/-- **Contrapositive.** A biholomorphism into a non-subsingleton
+codomain is non-constant. Useful for feeding into the degree
+machinery (which dispatches on `IsConstantMap`). -/
+theorem HolomorphicEquiv.not_isConstantMap_of_not_subsingleton_target
+    (e : HolomorphicEquiv X Y) (h : ¬ Subsingleton Y) :
+    ¬ JacobianChallenge.IsConstantMap (e : X → Y) :=
+  fun hc => h (e.subsingleton_target_of_isConstantMap hc)
+
+/-- **Contrapositive (source form).** A biholomorphism from a
+non-subsingleton source is non-constant (using `subsingleton_iff` to
+move the hypothesis from source to target). -/
+theorem HolomorphicEquiv.not_isConstantMap_of_not_subsingleton_source
+    (e : HolomorphicEquiv X Y) (h : ¬ Subsingleton X) :
+    ¬ JacobianChallenge.IsConstantMap (e : X → Y) :=
+  e.not_isConstantMap_of_not_subsingleton_target
+    (fun hY => h (e.subsingleton_iff.mpr hY))
+
 end JacobianChallenge
 
 end
