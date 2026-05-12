@@ -19,19 +19,20 @@ spec. Three statuses, with one tag for partial progress:
   placeholders. Not closure; it's a tag indicating the proof is real even
   though the underlying object is a stub.
 
-**Current scoreboard (audited against `Basic.lean` HEAD `5e601e8`, 2026-05-09):**
+**Current scoreboard (post-ZZ256 P1.5, 2026-05-12):**
 
-- **STRICT-CLOSED:** 0 / 24 (under the strict-bar definition above —
-  requires both honest implementation AND the underlying `Jacobian X`
-  being the intended analytic Jacobian).
-- **STUB but with HONEST BODY (Phase 0, 2026-05-09):** items **8, 22, 23,
-  24** (rsum thread). Implementations honest, no `sorry`/`axiom`; auto-flip
-  to STRICT-CLOSED the moment Phase 1 lands honest
-  `Jacobian X = Pic⁰ X / honest PrincDiv`.
-- **PROOF-HONEST stubs (auto-flip after Phase 1):** items 15, 19, 20.
+- **STRICT-CLOSED:** **12 / 24** — items **2, 3, 6, 7, 8, 15, 19, 20, 21,
+  22, 23, 24**. ZZ256 landed `PrincDiv := PrincDivHonestCandidate` and
+  `Pic0` (honest, with manifold instances) in
+  `Divisor/PrincipalDivisorRange.lean`. `Pic0.pushforward (hf)` uses P1.4
+  via `JacobianPushforward.lean`. `Pic0.pullbackWeighted (h_desc)` uses the
+  sister descent `Pic0.divPullbackWeighted_descent_of_smooth` in
+  `JacobianPullback.lean` (the genuine analytic chip).
 - **STUB (placeholder topology / target):** items 4, 10.
-- **OPEN (sorry still in `Basic.lean`):** 1, 5, 11, 12, 13, 14, 16, 17,
-  18, 21 = 10 items.
+- **OPEN (sorry still in `Basic.lean` or downstream):** 1, 5, 11, 12, 13,
+  14, 16, 17, 18 = 9 items. Item 16 (`ofCurve_inj`) reverted from STUB to
+  OPEN as predicted by CLOSURE_MAP — it requires Abel-Jacobi (Phase 2).
+- **Previous scoreboard (2026-05-09, HEAD `5e601e8`):** 0/24 STRICT-CLOSED.
 
 > **`CLOSURE_MAP.md` (authored 2026-05-09, repo root) is now the live
 > source of truth.** It has the per-item map, mathlib status verified
