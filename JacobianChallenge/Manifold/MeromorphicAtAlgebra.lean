@@ -146,4 +146,52 @@ lemma mmeromorphicOrderAt_sub_ge
   rw [h_neg_order] at h
   exact h
 
+/-! ## Order under powers -/
+
+/-- The order of `f ^ n` equals `n * mmeromorphicOrderAt I f x` for
+`n : ℕ`. Chart-pullback of `Mathlib.Analysis.Meromorphic.Order.meromorphicOrderAt_pow`. -/
+lemma mmeromorphicOrderAt_pow (hf : MMeromorphicAt I f x) (n : ℕ) :
+    mmeromorphicOrderAt I (f ^ n) x = n * mmeromorphicOrderAt I f x := by
+  have hf' : MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hf
+  show meromorphicOrderAt ((f ^ n) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = _
+  have h_comp : (f ^ n) ∘ (chartAt ℂ x).symm
+      = (f ∘ (chartAt ℂ x).symm) ^ n := by
+    funext z
+    simp [Function.comp_apply, Pi.pow_apply]
+  rw [h_comp]
+  exact meromorphicOrderAt_pow hf'
+
+/-- The order of `f ^ n` equals `n * mmeromorphicOrderAt I f x` for
+`n : ℤ`. Chart-pullback of `Mathlib.Analysis.Meromorphic.Order.meromorphicOrderAt_zpow`. -/
+lemma mmeromorphicOrderAt_zpow (hf : MMeromorphicAt I f x) (n : ℤ) :
+    mmeromorphicOrderAt I (f ^ n) x = n * mmeromorphicOrderAt I f x := by
+  have hf' : MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) := hf
+  show meromorphicOrderAt ((f ^ n) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = _
+  have h_comp : (f ^ n) ∘ (chartAt ℂ x).symm
+      = (f ∘ (chartAt ℂ x).symm) ^ n := by
+    funext z
+    simp [Function.comp_apply, Pi.pow_apply]
+  rw [h_comp]
+  exact meromorphicOrderAt_zpow hf'
+
+/-! ## Order under scalar multiplication by a nonzero constant -/
+
+/-- The order of `c • f` (for `c : ℂ` nonzero) equals the order of `f`.
+Derived from `meromorphicOrderAt_smul_of_ne_zero` with the constant function
+`fun _ : ℂ => c`. -/
+lemma mmeromorphicOrderAt_const_smul {c : ℂ} (hc : c ≠ 0) :
+    mmeromorphicOrderAt I (c • f) x = mmeromorphicOrderAt I f x := by
+  show meromorphicOrderAt ((c • f) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+        = meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+  have h_comp : (c • f) ∘ (chartAt ℂ x).symm
+      = ((fun _ : ℂ => c) • (f ∘ (chartAt ℂ x).symm)) := by
+    funext z
+    simp [Function.comp_apply, Pi.smul_apply, smul_eq_mul]
+  rw [h_comp]
+  have h_const_an : AnalyticAt ℂ (fun _ : ℂ => c) ((chartAt ℂ x) x) :=
+    analyticAt_const
+  have h_const_ne : (fun _ : ℂ => c) ((chartAt ℂ x) x) ≠ 0 := hc
+  exact meromorphicOrderAt_smul_of_ne_zero (g := fun _ : ℂ => c)
+    (f := f ∘ (chartAt ℂ x).symm) (x := (chartAt ℂ x) x) h_const_an h_const_ne
+
 end JacobianChallenge
