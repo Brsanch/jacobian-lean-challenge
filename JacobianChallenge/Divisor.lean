@@ -195,48 +195,13 @@ noncomputable def Div0 (X : Type*) [TopologicalSpace X] [T2Space X]
     [CompactSpace X] : AddSubgroup (Div X) :=
   (Div.degreeHom (X := X)).ker
 
-/-- The subgroup of *principal* divisors.
+/-! ### `PrincDiv` and `Pic0` (moved to `Divisor/PrincipalDivisorRange.lean`)
 
-**PLACEHOLDER (Option B in the design notes).** A principal divisor is the
-divisor `(f) := ∑_x ord_x(f) · [x]` of a non-zero global meromorphic function
-`f : X → ℂ`. To define this honestly we would need:
-
-1. The chart-independence of `mmeromorphicOrderAt I f x` (currently owed by
-   `JacobianChallenge.Manifold.MeromorphicAt` — see its `## Owed work`
-   section).
-2. Local finiteness of `{x | mmeromorphicOrderAt I f x ≠ 0}` for a non-zero
-   meromorphic `f`, packaged into a `Function.locallyFinsuppWithin` on
-   `Set.univ`.
-3. The residue-theorem identity, which on a compact Riemann surface yields
-   `∑_x ord_x(f) = 0`, i.e. that the constructed divisor *does* lie in
-   `Div0 X`. This is the deep input from complex analysis on compact Riemann
-   surfaces and is *not* present in mathlib at the pin
-   `8e3c989104daaa052921bf43de9eef0e1ac9fbf5`.
-
-Until items (1)–(3) are in place we set `PrincDiv X := ⊥`, the trivial
-subgroup. The *type* `Pic0 X` defined below is therefore well-formed and
-carries the expected `AddCommGroup` instance, but the *mathematical content*
-of `Pic0 X` at this pin coincides with `Div0 X` itself rather than with the
-analytic Picard group of degree-zero line bundles. This placeholder is
-deliberate: it lets downstream files (`JacobianChallenge.Basic` item 12)
-refer to `Pic0 X` as an abelian group target while the underlying analytic
-content is being built. Do not prove statements about `Pic0 X` that rely on
-`PrincDiv` actually being the principal subgroup. -/
-noncomputable def PrincDiv (X : Type*) [TopologicalSpace X] :
-    AddSubgroup (Div X) := ⊥
-
-/-- The (placeholder) *Picard group of degree-zero divisor classes*. With
-the current `PrincDiv X = ⊥`, this is canonically isomorphic to `Div0 X`;
-the honest construction is gated on the analytic items listed in
-`PrincDiv`'s docstring. -/
-noncomputable def Pic0 (X : Type*) [TopologicalSpace X] [T2Space X]
-    [CompactSpace X] : Type _ :=
-  Div0 X ⧸ (PrincDiv X).addSubgroupOf (Div0 X)
-
-/-- `Pic0 X` is an additive commutative group (inherited from the quotient
-of an additive subgroup of an additive commutative group). -/
-noncomputable instance Pic0.instAddCommGroup (X : Type*) [TopologicalSpace X]
-    [T2Space X] [CompactSpace X] : AddCommGroup (Pic0 X) :=
-  inferInstanceAs (AddCommGroup (Div0 X ⧸ (PrincDiv X).addSubgroupOf (Div0 X)))
+ZZ256 (2026-05-11). `PrincDiv X` and `Pic0 X` are defined honestly in
+`Divisor/PrincipalDivisorRange.lean`. They live there because the honest
+`PrincDiv X` references `principalDivisorMap`, which would import-cycle
+through this file. The signatures gain `[ChartedSpace ℂ X]
+[IsManifold (𝓘(ℂ, ℂ)) ω X]` over the prior topological signatures.
+-/
 
 end JacobianChallenge
