@@ -133,6 +133,7 @@ import JacobianChallenge.Manifold.LogDiffAnchoredDischarge
 import JacobianChallenge.Manifold.LogDiffAnchoredWitness
 import JacobianChallenge.Manifold.MFDerivTranspose
 import JacobianChallenge.Manifold.MeromorphicAt
+import JacobianChallenge.Manifold.MeromorphicAtAlgebra
 import JacobianChallenge.Manifold.MeromorphicDegreeFiberSum
 import JacobianChallenge.Manifold.MeromorphicDegreeFiberSumEquivalences
 import JacobianChallenge.Manifold.MeromorphicDivisor
