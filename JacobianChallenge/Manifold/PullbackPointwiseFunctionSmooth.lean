@@ -137,6 +137,63 @@ theorem HolomorphicEquiv.mfderiv_symm_transpose_contMDiffAt
             (e.toEquiv.symm : Y → X) y) y₀ y)) y₀ :=
   (e.contMDiff_inverse y₀).mfderiv_transpose analytic_succ_le_analytic
 
+/-! ## `v`-side smoothness: `α ∘ e` as a total-space-valued map
+
+For `α : HolomorphicOneForm Y` and `e : HolomorphicEquiv X Y`, the
+function `x ↦ TotalSpace.mk' (ℂ →L[ℂ] ℂ) (e x) (α.toFun (e x))` valued
+in the total space of the cotangent bundle of `Y` is `ContMDiff` on `X`.
+
+This is the `v`-side input of `ContMDiffAt.clm_apply_of_inCoordinates`
+in the pullback-section-smoothness chip: `α` as a smooth section,
+composed with `e` (smooth), is smooth as a total-space-valued function.
+
+The shape `TotalSpace.mk' F b f` matches the form used in
+`RiemannSphereChartNHolomorphy.lean` (which compiles), avoiding the
+`T%`-elaborator's typeclass-search issues through the
+`HolomorphicOneForm = def` boundary. -/
+
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
+/-- **`v`-side smoothness.** Composition of a holomorphic 1-form on `Y`
+with a `HolomorphicEquiv X Y`, viewed as a total-space-valued function. -/
+theorem HolomorphicEquiv.alpha_toFun_comp_e_contMDiff
+    (e : HolomorphicEquiv X Y) (α : HolomorphicOneForm Y) :
+    ContMDiff (𝓘(ℂ, ℂ)) ((𝓘(ℂ, ℂ)).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
+      (fun x : X => Bundle.TotalSpace.mk' (ℂ →L[ℂ] ℂ) (e x)
+        (α.toFun ((e : X → Y) x))) :=
+  α.contMDiff.comp e.contMDiff_forward
+
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
+/-- **`v`-side smoothness, pointwise.** -/
+theorem HolomorphicEquiv.alpha_toFun_comp_e_contMDiffAt
+    (e : HolomorphicEquiv X Y) (α : HolomorphicOneForm Y) (x₀ : X) :
+    ContMDiffAt (𝓘(ℂ, ℂ)) ((𝓘(ℂ, ℂ)).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
+      (fun x : X => Bundle.TotalSpace.mk' (ℂ →L[ℂ] ℂ) (e x)
+        (α.toFun ((e : X → Y) x))) x₀ :=
+  (HolomorphicEquiv.alpha_toFun_comp_e_contMDiff e α).contMDiffAt
+
+omit [IsManifold 𝓘(ℂ, ℂ) ω Y] in
+/-- **`v`-side for `e.symm`.** For the inverse biholomorphism, the
+composition `α ∘ e.symm` (as a total-space-valued function on `Y`) is
+`ContMDiff`. This is the `v`-side input for the pullback section in
+the `Y → X` (item-14 reverse) direction. -/
+theorem HolomorphicEquiv.alpha_toFun_comp_eSymm_contMDiff
+    (e : HolomorphicEquiv X Y) (α : HolomorphicOneForm X) :
+    ContMDiff (𝓘(ℂ, ℂ)) ((𝓘(ℂ, ℂ)).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
+      (fun y : Y => Bundle.TotalSpace.mk' (ℂ →L[ℂ] ℂ)
+        ((e.toEquiv.symm : Y → X) y)
+        (α.toFun ((e.toEquiv.symm : Y → X) y))) :=
+  α.contMDiff.comp e.contMDiff_inverse
+
+omit [IsManifold 𝓘(ℂ, ℂ) ω Y] in
+/-- **`v`-side for `e.symm`, pointwise.** -/
+theorem HolomorphicEquiv.alpha_toFun_comp_eSymm_contMDiffAt
+    (e : HolomorphicEquiv X Y) (α : HolomorphicOneForm X) (y₀ : Y) :
+    ContMDiffAt (𝓘(ℂ, ℂ)) ((𝓘(ℂ, ℂ)).prod 𝓘(ℂ, ℂ →L[ℂ] ℂ)) ω
+      (fun y : Y => Bundle.TotalSpace.mk' (ℂ →L[ℂ] ℂ)
+        ((e.toEquiv.symm : Y → X) y)
+        (α.toFun ((e.toEquiv.symm : Y → X) y))) y₀ :=
+  (HolomorphicEquiv.alpha_toFun_comp_eSymm_contMDiff e α).contMDiffAt
+
 end JacobianChallenge
 
 end
