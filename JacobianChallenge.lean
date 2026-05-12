@@ -236,5 +236,6 @@ import JacobianChallenge.Manifold.WithinChartWitnessReduction
 import JacobianChallenge.Manifold.ZeroCountEqPoleCount
 import JacobianChallenge.Topology.Genus0ImpliesS2Reduction
 import JacobianChallenge.Topology.S2ImpliesGenus0Discharge
+import JacobianChallenge.Topology.S2ImpliesGenus0Unconditional
 import JacobianChallenge.Topology.SurfaceClassificationGenus
 import JacobianChallenge.Topology.SurfaceGenus
