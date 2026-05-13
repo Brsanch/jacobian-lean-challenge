@@ -84,7 +84,7 @@ theorem kthRootSubstitution_of_localFactorization
     rw [h1, ← h2, mul_pow]
 
 /-- ZZ74 with an extra radius bound `ε ≤ R`. -/
-private theorem localMultiplicityOne_preimage_card_with_radius
+theorem localMultiplicityOne_preimage_card_with_radius
     {g : ℂ → ℂ} {x₀ : ℂ}
     (h_an : AnalyticAt ℂ g x₀) (hd : deriv g x₀ ≠ 0)
     {R : ℝ} (hR : 0 < R) :
@@ -152,12 +152,12 @@ private theorem localMultiplicityOne_preimage_card_with_radius
 /-! ## Cardinality of k-th roots of a nonzero complex number -/
 
 /-- The k-th roots of a nonzero complex number, viewed as a `Finset`. -/
-private noncomputable def kthRootsFinset (k : ℕ) (a : ℂ) : Finset ℂ :=
+noncomputable def kthRootsFinset (k : ℕ) (a : ℂ) : Finset ℂ :=
   (Polynomial.X ^ k - Polynomial.C a : Polynomial ℂ).roots.toFinset
 
 /-- The set of k-th roots of `a` equals `(kthRootsFinset k a : Set ℂ)`,
 when `a ≠ 0` and `k ≥ 1`. -/
-private lemma kth_roots_eq_finset {k : ℕ} (hk : 1 ≤ k) {a : ℂ} (ha : a ≠ 0) :
+lemma kth_roots_eq_finset {k : ℕ} (hk : 1 ≤ k) {a : ℂ} (ha : a ≠ 0) :
     {ξ : ℂ | ξ ^ k = a} = (kthRootsFinset k a : Set ℂ) := by
   set p : Polynomial ℂ := Polynomial.X ^ k - Polynomial.C a with hp_def
   have hk0 : k ≠ 0 := Nat.one_le_iff_ne_zero.mp hk
@@ -178,7 +178,7 @@ private lemma kth_roots_eq_finset {k : ℕ} (hk : 1 ≤ k) {a : ℂ} (ha : a ≠
         Polynomial.eval_X, Polynomial.eval_C, eq_comm]
 
 /-- The Finset of k-th roots has cardinality `k`. -/
-private lemma kth_roots_finset_card {k : ℕ} (hk : 1 ≤ k) {a : ℂ} (ha : a ≠ 0) :
+lemma kth_roots_finset_card {k : ℕ} (hk : 1 ≤ k) {a : ℂ} (ha : a ≠ 0) :
     (kthRootsFinset k a).card = k := by
   classical
   set p : Polynomial ℂ := Polynomial.X ^ k - Polynomial.C a with hp_def
