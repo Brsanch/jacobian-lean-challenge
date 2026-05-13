@@ -325,6 +325,7 @@ import JacobianChallenge.Topology.LinearSystemDeltaP
 import JacobianChallenge.Topology.LinearSystemGermDeltaP
 import JacobianChallenge.Topology.RRDimensionFormGerm
 import JacobianChallenge.Topology.RRGenusZeroGermComposition
+import JacobianChallenge.Topology.Item14FromGermfield
 import JacobianChallenge.Topology.LinearSystemSubLemmas
 import JacobianChallenge.Topology.LiouvilleFromLocalConstancy
 import JacobianChallenge.Topology.MeromorphicNonzeroBuilder
