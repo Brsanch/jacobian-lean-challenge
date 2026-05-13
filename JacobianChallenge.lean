@@ -302,6 +302,7 @@ import JacobianChallenge.Topology.LinearSystemAPI
 import JacobianChallenge.Topology.LinearSystemConstants
 import JacobianChallenge.Topology.RRDimensionForm
 import JacobianChallenge.Topology.LinearSystemDeltaP
+import JacobianChallenge.Topology.LinearSystemSubLemmas
 import JacobianChallenge.Topology.LiouvilleFromLocalConstancy
 import JacobianChallenge.Topology.Item14FromUniformization
 import JacobianChallenge.Topology.S2ImpliesGenus0Discharge
