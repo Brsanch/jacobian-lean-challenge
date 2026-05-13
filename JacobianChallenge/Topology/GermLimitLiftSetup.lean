@@ -94,6 +94,18 @@ lemma germLimitLift_eq_self_of_continuous {g : X → ℂ}
   ext x
   exact germLimitLift_eq_self_of_continuousAt h_cts.continuousAt
 
+/-- **`germLimitLift` is invariant under punctured-nhd EventuallyEq
+when at least one of the functions has a limit.** -/
+lemma germLimitLift_eq_of_eventuallyEq_nhdsNE_of_tendsto {f g : X → ℂ}
+    {x : X} (h : f =ᶠ[𝓝[≠] x] g) {c : ℂ}
+    (hc : Filter.Tendsto g (𝓝[≠] x) (𝓝 c)) :
+    germLimitLift f x = germLimitLift g x := by
+  show MeromorphicNonzero.germLimit f x = MeromorphicNonzero.germLimit g x
+  -- Both have limit c (via EventuallyEq).
+  have hc_f : Filter.Tendsto f (𝓝[≠] x) (𝓝 c) := hc.congr' h.symm
+  rw [MeromorphicNonzero.germLimit_eq_of_tendsto hc_f,
+      MeromorphicNonzero.germLimit_eq_of_tendsto hc]
+
 end JacobianChallenge
 
 end
