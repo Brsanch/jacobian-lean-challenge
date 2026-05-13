@@ -296,6 +296,7 @@ import JacobianChallenge.Topology.GermLimitLiftSetup
 import JacobianChallenge.Topology.LiftDecomposition
 import JacobianChallenge.Topology.LiftRegularContinuousFromCoherence
 import JacobianChallenge.Topology.LiftRegularContinuousAtPole
+import JacobianChallenge.Manifold.SurjectiveOfNonConstantDischarge
 import JacobianChallenge.Topology.Item14ForRiemannSphere
 import JacobianChallenge.Topology.Item14ClassInstance
 import JacobianChallenge.Topology.Item14FinalComposition
