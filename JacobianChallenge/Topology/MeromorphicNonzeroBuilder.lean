@@ -57,6 +57,30 @@ def MeromorphicNonzero.ofContinuousMeromorphic
     (h_cts : Continuous g) :
     (MeromorphicNonzero.ofContinuousMeromorphic g h_mero h_nonvanish h_cts).toFun = g := rfl
 
+/-- **Regular-continuous builder.** Weaker than the continuous
+builder above: requires continuity *only at non-pole points* (matching
+the `regular_continuousAt` field shape exactly). This is the form
+the lifting discharge will actually want, since `germLimitLift g`
+typically has poles where g does and the strong global-continuity
+fails. -/
+def MeromorphicNonzero.ofRegularContinuous
+    (g : X → ℂ)
+    (h_mero : MMeromorphicOn (𝓘(ℂ, ℂ)) g Set.univ)
+    (h_nonvanish : ∀ x, mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g x ≠ ⊤)
+    (h_reg_cts : ∀ x, 0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g x → ContinuousAt g x) :
+    MeromorphicNonzero X where
+  toFun := g
+  meromorphic := h_mero
+  nonvanishing_germ := h_nonvanish
+  regular_continuousAt := h_reg_cts
+
+@[simp] lemma MeromorphicNonzero.ofRegularContinuous_toFun
+    (g : X → ℂ)
+    (h_mero : MMeromorphicOn (𝓘(ℂ, ℂ)) g Set.univ)
+    (h_nonvanish : ∀ x, mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g x ≠ ⊤)
+    (h_reg_cts : ∀ x, 0 ≤ mmeromorphicOrderAt (𝓘(ℂ, ℂ)) g x → ContinuousAt g x) :
+    (MeromorphicNonzero.ofRegularContinuous g h_mero h_nonvanish h_reg_cts).toFun = g := rfl
+
 end JacobianChallenge
 
 end
