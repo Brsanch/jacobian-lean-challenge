@@ -270,6 +270,7 @@ import JacobianChallenge.Manifold.ResidueTheorem
 import JacobianChallenge.Manifold.ResidueTheoremAssembly
 import JacobianChallenge.Manifold.ResidueTheoremFromRsum
 import JacobianChallenge.Manifold.ResidueTheoremStokes
+import JacobianChallenge.Manifold.ResidueTheoremUnconditional
 import JacobianChallenge.Manifold.ResidueViaTopologicalDegree
 import JacobianChallenge.Manifold.RiemannSphere
 import JacobianChallenge.Manifold.RiemannSphereChartCoefficients
@@ -314,6 +315,7 @@ import JacobianChallenge.Topology.LiftDecomposition
 import JacobianChallenge.Topology.LiftRegularContinuousFromCoherence
 import JacobianChallenge.Topology.LiftRegularContinuousAtPole
 import JacobianChallenge.Topology.UniversalGermCoherentFromContinuity
+import JacobianChallenge.Topology.LiftMeroOrderFromContinuity
 import JacobianChallenge.Manifold.SurjectiveOfNonConstantDischarge
 import JacobianChallenge.Topology.Item14ForRiemannSphere
 import JacobianChallenge.Topology.Item14ClassInstance
