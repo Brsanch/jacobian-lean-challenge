@@ -102,6 +102,7 @@ import JacobianChallenge.Manifold.FibresFiniteAssembly
 import JacobianChallenge.Manifold.FibresFiniteUnconditional
 import JacobianChallenge.Manifold.GlobalChainBoundaryDischarge
 import JacobianChallenge.Manifold.GlobalResidueSum
+import JacobianChallenge.Manifold.H1SmoothMod
 import JacobianChallenge.Manifold.HNTotalFromRamificationSum
 import JacobianChallenge.Manifold.HodgeBiholomorphismTransport
 import JacobianChallenge.Manifold.HodgeFiniteDimensional
@@ -146,6 +147,7 @@ import JacobianChallenge.Manifold.HolomorphicOneFormRiemannSphereInstances
 import JacobianChallenge.Manifold.HolomorphicOneFormRealification
 import JacobianChallenge.Manifold.HolomorphicOneFormRealificationLinearity
 import JacobianChallenge.Manifold.ComplexManifoldRealification
+import JacobianChallenge.Manifold.ComplexPeriodPairing
 import JacobianChallenge.Manifold.HolomorphicOneFormRealComponent
 import JacobianChallenge.Manifold.HLcUnconditional
 import JacobianChallenge.Manifold.HPkgUnconditional
@@ -287,6 +289,7 @@ import JacobianChallenge.Manifold.SinglePoleLaurentExtractionDischarge
 import JacobianChallenge.Manifold.SmoothChain
 import JacobianChallenge.Manifold.SmoothChainBoundary
 import JacobianChallenge.Manifold.SmoothChainIntegralLinearity
+import JacobianChallenge.Manifold.SmoothCycle
 import JacobianChallenge.Manifold.SmoothOneForm
 import JacobianChallenge.Manifold.SmoothOneFormAlgebra
 import JacobianChallenge.Manifold.SmoothPathChartCompat
