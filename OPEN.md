@@ -104,10 +104,16 @@ STRICT-CLOSED via `Manifold/HPkgUnconditional.lean` +
 Phase 3 ~7.1–15k (surface classification, blocked), Phase 4 ~6.9–12.8k
 (Hodge, blocked). See `CLOSURE_MAP.md` section F.
 
-**Phase 0 LOC merged this session (2026-05-09):** net **+9,200** total
-(11,310 added / 2,108 deleted, including doc files; .lean-only net +8,776).
-Repo size at end of session: **49,526 LOC** total in `*.lean` files
-(49,323 inside `JacobianChallenge/` + 203-line top-level import manifest).
+**Phase 0 LOC merged 2026-05-09:** net **+9,200** total (11,310 added /
+2,108 deleted, including doc files; .lean-only net +8,776). Repo size at
+end of 2026-05-09 session: 49,526 LOC total in `*.lean` files (49,323
+inside `JacobianChallenge/` + 203-line top-level import manifest).
+
+**Current repo size (post-2026-05-13, HEAD `a259c14`):** **76,592 LOC**
+total in `*.lean` files (76,240 inside `JacobianChallenge/` + 352-line
+top-level import manifest). Net **+27,066** LOC since 2026-05-09 across
+the germfield arc + period-lattice arc PL-1/PL-2/PL-3a-d + item-14
+forward refactor + the zz302–zz388 / zz344–zz380 RR-thread chips.
 
 Do not regenerate this list from context — query this file. Update this file
 whenever a status changes.
