@@ -94,6 +94,15 @@ lemma germLimitLift_eq_self_of_continuous {g : X → ℂ}
   ext x
   exact germLimitLift_eq_self_of_continuousAt h_cts.continuousAt
 
+/-- **Idempotence under continuity.** If `g` is everywhere continuous,
+then applying `germLimitLift` twice equals applying it once (in fact
+both equal `g`). Tiny corollary of `germLimitLift_eq_self_of_continuous`. -/
+lemma germLimitLift_idempotent_of_continuous {g : X → ℂ}
+    (h_cts : Continuous g) :
+    germLimitLift (germLimitLift g) = germLimitLift g := by
+  rw [germLimitLift_eq_self_of_continuous h_cts]
+  exact germLimitLift_eq_self_of_continuous h_cts
+
 /-- **`germLimitLift` is invariant under punctured-nhd EventuallyEq
 when at least one of the functions has a limit.** -/
 lemma germLimitLift_eq_of_eventuallyEq_nhdsNE_of_tendsto {f g : X → ℂ}
