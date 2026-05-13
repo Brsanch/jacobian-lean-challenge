@@ -169,6 +169,7 @@ import JacobianChallenge.Manifold.LocalMultiplicityInvariance
 import JacobianChallenge.Manifold.LocalNormalForm
 import JacobianChallenge.Manifold.LocalSheetDataAtRegularValue
 import JacobianChallenge.Manifold.LocalSheetDataFromContMDiff
+import JacobianChallenge.Manifold.MaxModLocalConstancy
 import JacobianChallenge.Manifold.LogDerivLaurent
 import JacobianChallenge.Manifold.LogDerivLaurentDischarge
 import JacobianChallenge.Manifold.LogDiffAnchored
