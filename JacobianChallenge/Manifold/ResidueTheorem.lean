@@ -15,7 +15,9 @@ set_option diagnostics.threshold 100
 
 /-! # The residue theorem on a compact connected Riemann surface
 
-This file states the **residue theorem**:
+This file declares the **named structural statements** (`R1`–`R5`) of the
+Route A proof of the residue theorem, and the conditional discharge
+`residue_theorem_of_routeA`.
 
 > For every `f : MeromorphicNonzero X` on a compact connected Riemann surface
 > `X`, the principal divisor `(f) := principalDivisorMap f` has degree zero
@@ -23,23 +25,24 @@ This file states the **residue theorem**:
 
 Equivalently, `∑_{x ∈ X} ord_x(f) = 0` (the orders at zeros sum to the orders
 at poles). Together with the (already-landed) `principalDivisorMap` of
-`Divisor/PrincipalDivisor.lean`, this is the last analytic input needed to
-land an honest `PrincDiv X` and unblock the `STRICT-CLOSED` route for
-challenge-spec items 15, 19, 20.
+`Divisor/PrincipalDivisor.lean`, this is the analytic input needed for an
+honest `PrincDiv X` and the strict-bar route for items 15, 19, 20.
 
-## SPECULATIVE SKELETON — `sorry` is intentionally allowed in this file
+## Status (post-`ResidueTheoremUnconditional.lean`)
 
-This file is the residue-theorem leg. The full proof depends on classical
-inputs that are **not in mathlib** at the pin
-`8e3c989104daaa052921bf43de9eef0e1ac9fbf5`. Per the I3 task brief, we ship
-the **proof skeleton** with each gap closed by a `sorry` whose preceding
-comment names the exact owed input. **Every `sorry` in this file is a
-*named* gap with a one-line owed-from pointer**. No `axiom`s are introduced
-(unlike `sorry`, an `axiom` would persist forever and contaminate the build).
+R1–R5 are all **unconditionally discharged in-tree**:
 
-`Basic.lean` is **not** modified. The `residue_theorem` here is what the
-honest `PrincDiv X` and the related items 15/19/20 in `Basic.lean` will
-ultimately route through.
+| Statement | Discharge |
+|---|---|
+| `R1_poleExtension_statement` | `ResidueTheoremFromRsum.R1_poleExtension_statement_holds` (via `Manifold/MeromorphicExtension.lean`) |
+| `R2_fibres_finite_statement` | `ResidueTheoremFromRsum.R2_fibres_finite_statement_holds` |
+| `R3_localMultiplicity_statement` | `ResidueTheoremFromRsum.R3_localMultiplicity_statement_holds` |
+| `R4_fibreSum_balance_statement` | `R4FibreSumBalance.R4_fibreSum_balance_statement_holds` |
+| `R5_principal_degree_zero_statement` | `R5Unconditional.R5_principal_degree_zero_statement_holds` |
+
+The headline `JacobianChallenge.residue_theorem` lives in
+`Manifold/ResidueTheoremUnconditional.lean` as a one-line composition.
+This file contains no `sorry`s.
 
 ## Two classical proof routes
 
@@ -49,72 +52,23 @@ canonically to a holomorphic map `f̃ : X → RiemannSphere = ℂ ∪ {∞}`. Th
 fibre; in particular over `0 ∈ S²` the multiplicities sum to `∑_{f(x)=0} ord_x f`,
 while over `∞ ∈ S²` they sum to `∑_{f(x)=∞} (-ord_x f)`. Equality of the two
 fibre-degrees gives `∑_{f(x)=0} ord_x f + ∑_{f(x)=∞} ord_x f = 0`, i.e.
-`∑_x ord_x f = 0`.
+`∑_x ord_x f = 0`. **This is the route implemented in-tree.**
 
 **Route B — Stokes / contour integration.** The 1-form `df / f` is meromorphic
 on `X` with simple poles at `supp (f)` and integer residues equal to the local
 orders. By Stokes on a small-disk-complement plus residue theorem in each
-chart, `∑_x Res_x(df/f) = 0` on a closed compact 2-manifold.
-
-We use **Route A** as the main flow because it composes more cleanly with the
-already-landed `RegularValueWitness` and `degreeFiber` infrastructure in
-`Manifold/Degree.lean`. Each gap is identified by its *named owed input*
-(either a missing classical theorem or a missing piece of our own
-infrastructure). Route B is sketched in a comment block at the end.
-
-## Owed gaps — Route A
-
-(R1) **Pole-extension.** Given `f : MeromorphicNonzero X`, build the canonical
-     holomorphic extension `f̃ : X → RiemannSphere` sending poles of `f` to
-     `∞`. Owed from: a small `Manifold/MeromorphicExtension.lean` writing
-     `f̃ x = if mmeromorphicOrderAt I f x ≥ 0 then ↑(f x) else ∞` and proving
-     it is `ContMDiff` to `RiemannSphere` using the local pole/zero normal
-     form. Statement-level only at this pin.
-
-(R2) **Zero / pole fibres are finite.** Mathlib infrastructure gap: this is
-     the special case `Y = RiemannSphere`, `y ∈ {0, ∞}` of
-     `Owed.degree.fibres_finite_statement` (already a named owed statement
-     in `Manifold/Degree.lean`). On a compact `X` this also follows from
-     local finiteness of the order divisor (`MMeromorphicOn.divisor` in
-     `Manifold/MeromorphicDivisor.lean`) — but only after R1.
-
-(R3) **Multiplicity = local order.** For the extension `f̃ : X → RiemannSphere`
-     and `x ∈ X` with `f x = 0` (resp. pole), the local multiplicity of `f̃`
-     at `x` equals `(mmeromorphicOrderAt I f x).untop₀.natAbs`. This is the
-     standard local normal form `z ↦ z^k` for analytic maps; mathlib does
-     not yet package this as a single named lemma at the pin.
-
-(R4) **Topological degree = ∑ multiplicities on each fibre.** Owed from:
-     `Owed.degree.fibre_card_well_defined_statement` *strengthened* to count
-     with multiplicities. The `RegularValueWitness`-based `degreeFiber`
-     currently only counts cardinality of regular fibres.
-
-(R5) **Equality of fibre-degrees over 0 and ∞.** This is the classical
-     topological-degree identity `deg(f̃) = #(f̃⁻¹ y₁) = #(f̃⁻¹ y₂)` for
-     proper holomorphic maps between connected compact Riemann surfaces.
-     Reduces to (R4) once both fibres are regular; otherwise needs the
-     covering-space argument on `S² \ critical values`.
-
-The five gaps together discharge `residue_theorem`. Each is owed from a
-specific source listed at the corresponding `sorry` below.
+chart, `∑_x Res_x(df/f) = 0` on a closed compact 2-manifold. Sketched at the
+end of this file; not implemented.
 
 ## What this file actually compiles
 
-1. The headline statement `residue_theorem` with the exact signature mandated
-   by the brief: degree of the principal divisor equals `0`.
-2. Five **named, honest Prop-valued statements** `R1`–`R5` (the structural
-   pieces of Route A). Each is a `def ... : Prop` (no proof, just the
-   classical statement), exposing the dependency surface for downstream.
-3. A `theorem residue_theorem_of_routeA` that **conditionally closes** the
-   residue theorem from one named hypothesis (`R5`, which is the residue
-   theorem in summed-over-the-support form). This is `sorry`-free.
-4. The advertised `theorem residue_theorem` that uses `residue_theorem_of_routeA`
-   plus a single `sorry` for the missing proof of `R5` from `R1+R2+R3+R4`.
-
-The composition `residue_theorem_of_routeA` + the five `R_i` axiomatic
-inputs is **the proof skeleton**: it makes the dependency surface explicit
-so that filling any one of the five (or, more precisely, R1–R4 → R5) is
-the only remaining work.
+1. Five **named Prop-valued statements** `R1`–`R5` (the structural pieces of
+   Route A). Each is a `def ... : Prop`. Their discharges live in the files
+   listed above.
+2. `theorem residue_theorem_of_routeA` — conditionally discharges the
+   residue-theorem conclusion from `R5`. Useful for callers that want to
+   thread an explicit `R5` hypothesis (e.g. for an alternative discharge
+   route). No `sorry`.
 -/
 
 noncomputable section
@@ -147,8 +101,11 @@ variable (X : Type u)
 The extension is `ContMDiff` (analytic) and its `∞`-fibre is exactly the
 pole set of `f`.
 
-**Status:** statement only. Owed from a future
-`Manifold/MeromorphicExtension.lean` package. -/
+**Status:** discharged unconditionally by
+`ResidueTheoremFromRsum.R1_poleExtension_statement_holds`, via
+`MeromorphicNonzero.toRiemannSphere` and
+`MeromorphicNonzero.toRiemannSphere_contMDiff` in
+`Manifold/MeromorphicExtension.lean`. -/
 def R1_poleExtension_statement : Prop :=
   ∀ (f : MeromorphicNonzero X),
     ∃ fTilde : X → RiemannSphere,
@@ -162,13 +119,11 @@ def R1_poleExtension_statement : Prop :=
 `{x | (mmeromorphicOrderAt I f x).untop₀ > 0}` (zeros) and
 `{x | (mmeromorphicOrderAt I f x).untop₀ < 0}` (poles) are both finite.
 
-**Status:** statement only. Discharged by combining `MMeromorphicOn.divisor`
-(local finiteness of the order divisor, in
-`Manifold/MeromorphicDivisor.lean`) with compactness of `X`; the *finite*
-statement is owed because the local-finiteness packaging in mathlib lives
-on `Function.locallyFinsuppWithin Set.univ` and the support-finset
-extraction is per-divisor in this file but not yet exposed as a named
-lemma at this pin. -/
+**Status:** discharged unconditionally by
+`ResidueTheoremFromRsum.R2_fibres_finite_statement_holds`, via
+`MMeromorphicOn.zeros_finite` / `MMeromorphicOn.poles_finite` (in
+`Manifold/MeromorphicDivisor.lean`) combined with compactness of `X` and
+the `untop₀ ↔ WithTop ℤ` translation lemmas. -/
 def R2_fibres_finite_statement : Prop :=
   ∀ (f : MeromorphicNonzero X),
     {x : X | (mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x).untop₀ > 0}.Finite ∧
@@ -181,10 +136,11 @@ of `f̃` at `x` (in the sense of `LocalMultiplicity`) equals
 normal form `z ↦ z^k` for an analytic map at a point, applied with `k =
 ord_x(f)`.
 
-**Status:** statement only. The local-normal-form theorem is not named in
-mathlib at the pin. We state R3 in the coarse "multiplicity ≥ 1" form here
-because the precise `JacobianChallenge.LocalMultiplicity` API needed for the
-exact-equality statement is itself partial (`degreeStub` indicator only). -/
+**Status:** discharged unconditionally by
+`ResidueTheoremFromRsum.R3_localMultiplicity_statement_holds`. The coarse
+"multiplicity ≥ 1" form used here reduces to integer arithmetic
+(`Int.natAbs ≠ 0 ↔ value ≠ 0`); the precise local-normal-form input enters
+only in R4. -/
 def R3_localMultiplicity_statement : Prop :=
   ∀ (f : MeromorphicNonzero X),
     ∀ (x : X),
@@ -205,9 +161,11 @@ This is the classical fact that the topological degree of a proper holomorphic
 map between connected compact Riemann surfaces is constant across regular
 values, applied to the two values `0` and `∞`.
 
-**Status:** statement only. This is precisely the residue theorem in
-fibre-decomposed form — the form in which the topological-degree proof
-naturally produces it. -/
+**Status:** discharged unconditionally by
+`R4FibreSumBalance.R4_fibreSum_balance_statement_holds`. This is the
+classical fibre-sum balance for the Riemann-sphere extension of a
+non-constant meromorphic function; the discharge composes the in-tree
+topological-degree, chart-integral, and ramification-sum chips. -/
 def R4_fibreSum_balance_statement : Prop :=
   ∀ (f : MeromorphicNonzero X)
     (hZ : {x : X | (mmeromorphicOrderAt (𝓘(ℂ, ℂ)) f.toFun x).untop₀ > 0}.Finite)
@@ -222,65 +180,35 @@ statement so the headline `residue_theorem` is a one-liner against `R5`,
 and so future replacement of `R5` (by a real proof routing through
 R1+R2+R3+R4 or via Route B) immediately closes everything.
 
-**Status:** statement = the residue theorem. Discharged by combining
-R1+R2+R3+R4 with the bookkeeping that `(principalDivisorMap f).degree =
-∑_{x ∈ supp} ord_x f`, splitting the support sum over `ord > 0` and
-`ord < 0` (using R2 to make both finite), and applying R4. -/
+**Status:** discharged unconditionally by
+`R5Unconditional.R5_principal_degree_zero_statement_holds`, composing R4
+with `ResidueTheoremFromRsum.R5_principal_degree_zero_statement_of_R4`. -/
 def R5_principal_degree_zero_statement : Prop :=
   ∀ (f : MeromorphicNonzero X), (principalDivisorMap f).degree = 0
 
 end ResidueTheorem
 
-/-! ### The residue theorem (the headline) -/
+/-! ### The residue theorem (the headline)
 
-/-- The **residue theorem** on a compact connected Riemann surface: for every
-non-zero global meromorphic function `f`, the principal divisor `(f)` has
-degree zero, i.e. `∑_x ord_x f = 0`.
+The headline `JacobianChallenge.residue_theorem` now lives in
+`Manifold/ResidueTheoremUnconditional.lean`, as a one-line discharge
+composing the in-tree R1+R2+R3+R4 chain through
+`R5_principal_degree_zero_statement_holds`. It is no longer a skeleton:
+R1, R2, R3, R4 are all unconditionally discharged in-tree
+(`ResidueTheoremFromRsum.lean`, `R4FibreSumBalance.lean`).
 
-**SKELETON.** This file's `residue_theorem` ships with a single `sorry`
-naming the owed input. See the file docstring for the five-step Route A
-breakdown and `residue_theorem_of_routeA` for the conditional discharge. -/
-theorem residue_theorem
-    {X : Type u}
-    [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
-    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
-    (f : MeromorphicNonzero X) :
-    (principalDivisorMap f).degree = 0 := by
-  -- OWED INPUT (single named gap):
-  --   `JacobianChallenge.ResidueTheorem.R5_principal_degree_zero_statement X`
-  --
-  -- which decomposes (Route A) as the conjunction of the four named
-  -- classical statements:
-  --   R1 = `R1_poleExtension_statement X`     (pole-extension to S², ContMDiff)
-  --   R2 = `R2_fibres_finite_statement X`     (zero & pole fibres finite)
-  --   R3 = `R3_localMultiplicity_statement X` (local mult = local order)
-  --   R4 = `R4_fibreSum_balance_statement X`  (∑ over zeros + ∑ over poles = 0)
-  --
-  -- Once R5 is discharged (by Route A via R1–R4, or by Route B via Stokes),
-  -- this `theorem` is closed by `residue_theorem_of_routeA hR5 f`.
-  --
-  -- Source location of the owed input:
-  --   * R1: future `Manifold/MeromorphicExtension.lean` (not yet in repo).
-  --   * R2: combine `MMeromorphicOn.divisor` (local finiteness, in
-  --         `Manifold/MeromorphicDivisor.lean`) with `CompactSpace X`;
-  --         expose as a named lemma in this file or in `MeromorphicDivisor.lean`.
-  --   * R3: classical local normal form `z ↦ z^k` for analytic maps; not
-  --         in mathlib at the pin. See `Mathlib.Analysis.Analytic.Order` for
-  --         the partial 1-D version.
-  --   * R4: classical topological-degree theorem for proper holomorphic
-  --         maps between compact Riemann surfaces; not in mathlib.
-  sorry
+The conditional discharge `residue_theorem_of_routeA` below remains as
+a structural skeleton for callers that want to thread an explicit `R5`
+hypothesis (e.g. for an alternative route, Stokes-based or otherwise). -/
 
-/-! ### Conditional discharge (no new `sorry`s)
+/-! ### Conditional discharge
 
-The lemma below shows that **assuming** the bottom-line owed statement `R5`,
-the residue theorem follows immediately. This is the structural skeleton:
-any future replacement of `R5` (by a real proof, either via the Route A
-chain R1+R2+R3+R4 or via Route B Stokes) immediately discharges the
-`residue_theorem` headline via this lemma.
-
-`R5` is the conjunction-output of `R1+R2+R3+R4`; we split it out so that the
-headline `residue_theorem` is a clean one-liner against a single named hypothesis. -/
+The lemma below shows that, given the named statement `R5`, the residue
+theorem follows immediately. `R5` is discharged unconditionally by
+`R5Unconditional.R5_principal_degree_zero_statement_holds`; this lemma is
+retained for callers that want to thread an explicit `R5` hypothesis
+(e.g. when replacing the in-tree R4 discharge with an alternative
+Route B / Stokes proof). -/
 
 theorem residue_theorem_of_routeA
     {X : Type u}

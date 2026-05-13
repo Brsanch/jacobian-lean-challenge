@@ -11,73 +11,56 @@ set_option diagnostics.threshold 100
 
 /-! # Strict-closure path: from R5 to honest items 15/19/20
 
-This file is a pure **wiring receipt**. It introduces no new mathematical
-content; it just makes the strict-closure chain mechanically explicit so a
-strict reader can see the whole route in one place. Every arrow below is a
-*real existing lemma/def in the repo* — the file just glues them.
+This file is a **wiring receipt**. It glues real existing lemmas to make
+the strict-closure chain mechanically explicit in one place.
+
+## Status (2026-05-13)
+
+The full chain is now closed. R5 is discharged unconditionally by
+`Manifold/R5Unconditional.R5_principal_degree_zero_statement_holds`, and
+`PrincDiv X := PrincDivHonestCandidate X` is the active definition in
+`Divisor/PrincipalDivisorRange.lean` (post-ZZ256). Items 15, 19, 20 in
+`Basic.lean` are STRICT-CLOSED.
 
 ## The chain visually
 
 ```
-StrictClosurePath chain:
-
   R5 (residue theorem on compact RS)
+    — discharged: R5Unconditional.R5_principal_degree_zero_statement_holds
     ↓ [residueTheorem_iff_range_le_Div0]
   PrincDivHonestCandidate X ⊆ Div0 X
-    ↓ [one-line edit in Divisor.lean: PrincDiv := PrincDivHonestCandidate]
-  Honest PrincDiv X (no longer ⊥)
-    ↓ [Pic0 X = Div0 X / (PrincDiv X).addSubgroupOf becomes meaningful]
-  Items 15, 19, 20 (PROOF-HONEST today) strict-close.
-    - ofCurve_self [δP - δP = 0 in honest Pic⁰] ✓
-    - pushforward_id_apply [Div.singletonMap_id functoriality] ✓
-    - pushforward_comp_apply [Div.singletonMap_comp functoriality] ✓
+    ↓ [PrincDiv := PrincDivHonestCandidate in PrincipalDivisorRange.lean]
+  Honest PrincDiv X
+    ↓ [Pic0 X = Div0 X / (PrincDiv X).addSubgroupOf is the analytic Jacobian]
+  Items 15, 19, 20 — STRICT-CLOSED.
 ```
 
 ## What lives where
 
-* The R5 hypothesis is the named owed statement
-  `JacobianChallenge.ResidueTheorem.R5_principal_degree_zero_statement`,
-  declared in `Manifold/ResidueTheorem.lean` (the only file in the repo
-  where `sorry` is allowed). It is the bottom-line input to the
-  topological-degree Route A breakdown documented in that file.
+* `R5_principal_degree_zero_statement X` (named statement) is declared in
+  `Manifold/ResidueTheorem.lean`. Its discharge is
+  `R5_principal_degree_zero_statement_holds` in
+  `Manifold/R5Unconditional.lean`, composing in-tree R4 with
+  `residue_theorem_of_R4`.
 
 * The equivalence `ResidueTheorem X ↔ PrincDivHonestCandidate X ≤ Div0 X`
   is `residueTheorem_iff_range_le_Div0`, proved (no `sorry`, no `Iff.rfl`)
-  in `Divisor/PrincipalDivisorRange.lean` by routing through
-  `AddSubgroup.closure_le`, `AddMonoidHom.mem_ker`, and
-  `Div.degreeHom_apply`.
+  in `Divisor/PrincipalDivisorRange.lean`.
 
-* The eventual one-line swap in `Divisor.lean`,
-  ```
-  noncomputable def PrincDiv (X : Type*) [...] : AddSubgroup (Div X) :=
-    PrincDivHonestCandidate X
-  ```
-  is **not** performed here — that change is intentionally kept as a single
-  one-line edit in `Divisor.lean` so that the move from placeholder `⊥` to
-  honest principal-divisor subgroup is auditable in one diff.
+* The `PrincDiv := PrincDivHonestCandidate` swap is performed in
+  `Divisor/PrincipalDivisorRange.lean:437` (ZZ256). The honest `PrincDiv X`
+  references `principalDivisorMap`, which would import-cycle through
+  `Divisor.lean`, so the active definition lives in
+  `PrincipalDivisorRange.lean` rather than `Divisor.lean`.
 
-* Items 15, 19, 20 in `Basic.lean` are already labelled
-  `STUB *(PROOF-HONEST)*` in `OPEN.md`: their proof bodies (in `Jacobian.lean`
-  and `Basic.lean`) route through the `Pic0` quotient *abstractly* via
-  `Div.singletonMap_id`, `Div.singletonMap_comp`, and `δP − δP = 0`. Those
-  arguments survive any honest replacement of `PrincDiv X`. Once the swap
-  above happens, the three items become STRICT-CLOSED on the spot — no
-  proof-body changes required.
+## What this file does
 
-## What this file does *not* do
-
-* It does **not** discharge R5. R5 is the deep classical input (residue
-  theorem on a compact connected Riemann surface), owed from
-  `Manifold/ResidueTheorem.lean`'s Route A (R1+R2+R3+R4) or the alternative
-  Stokes-route sketched in that file's tail. R5 is consumed here as a
-  hypothesis only.
-* It does **not** modify `JacobianChallenge/Basic.lean`,
-  `JacobianChallenge/Manifold/ResidueTheorem.lean`, or
-  `JacobianChallenge/Divisor.lean`. The first is the challenge spec
-  (untouched by contract), the second already houses its allowed `sorry`
-  for R5, and the third stays in placeholder form so the eventual swap is
-  a clean one-line audit.
-* It introduces **no axioms** and uses **no `sorry`**.
+* Provides `PrincDivHonestCandidate_le_Div0_of_R5` (conditional on the R5
+  hypothesis) and the alias `PrincDivHonestCandidate_le_Div0_of_trigger`.
+  R5 is now in-tree unconditional, so these conditional forms compose
+  cleanly with `R5_principal_degree_zero_statement_holds` to give an
+  unconditional `PrincDivHonestCandidate ≤ Div0` whenever needed.
+* Introduces **no axioms** and uses **no `sorry`**.
 -/
 
 noncomputable section

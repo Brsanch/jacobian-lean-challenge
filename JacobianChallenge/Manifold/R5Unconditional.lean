@@ -20,9 +20,10 @@ in-tree, with no `sorry` / `axiom`, by composing the in-tree R4 chip
 `ResidueTheoremFromRsum.residue_theorem_of_R4`).
 
 This file packages that composition as the single named theorem
-`R5_principal_degree_zero_statement_holds`, which the headline
-`residue_theorem` in `Manifold/ResidueTheorem.lean` consumes to close
-its previous `sorry`.
+`R5_principal_degree_zero_statement_holds`. The headline `residue_theorem`
+in `Manifold/ResidueTheoremUnconditional.lean` consumes this to close its
+previous `sorry` (the skeleton in `Manifold/ResidueTheorem.lean` has been
+retired).
 
 No `sorry`, no `axiom`, no new mathematical content — purely a
 defeq-level repackaging from `(principalDivisorMap f).degree = 0`

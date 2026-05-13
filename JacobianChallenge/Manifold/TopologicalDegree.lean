@@ -101,9 +101,11 @@ Three named identifications all unfold to the same `Prop`:
 
 All three are the same `Prop`-valued statement. Each name makes a different
 proof route conspicuous: contour-integral, signed-multiplicity bookkeeping,
-or topological-degree-of-a-branched-covering. Discharging any one of them
-discharges all three (and `residue_theorem` in
-`Manifold/ResidueTheorem.lean`) by `Iff.rfl` substitution.
+or topological-degree-of-a-branched-covering. The in-tree discharge runs
+through `R4FibreSumBalance.R4_fibreSum_balance_statement_holds`, and the
+headline `residue_theorem` in `Manifold/ResidueTheoremUnconditional.lean`
+consumes it; the `Iff`s here let alternative-route discharges substitute
+in.
 -/
 
 noncomputable section
@@ -180,9 +182,11 @@ lemma topologicalDegreeBalance_iff_residueTheorem :
 `Manifold/ResidueTheorem.lean`'s named-gap decomposition.
 
 This is the dual of `topologicalDegreeBalance_iff_residueTheorem` against
-the R5 name: any proof of either name immediately discharges the
-`residue_theorem` skeleton's last `sorry` via
-`residue_theorem_of_routeA`.
+the R5 name. R5 is itself discharged unconditionally by
+`R5Unconditional.R5_principal_degree_zero_statement_holds`; this `Iff`
+remains useful for alternative-route proofs that produce the
+topological-degree statement and want to feed it into the residue-theorem
+pipeline.
 
 Both sides unfold to
 `∀ f : MeromorphicNonzero X, (principalDivisorMap f).degree = 0`, so the
