@@ -73,6 +73,21 @@ items). 545 LOC across 3 new files.
 `[Subsingleton (HolomorphicOneForm X)]`. See `Topology/HTopFromSubsingleton.lean`
 for the single-input capstone.
 
+**Item 14 forward-leg refactor 2026-05-13 (HEAD `f38de0f`):**
+`Topology/Item14ForwardFromFiniteDim.lean` (129 LOC) replaces the
+`[Subsingleton (HolomorphicOneForm X)]` typeclass on the germfield
+capstone with the weaker, Hodge-standard `[FiniteDimensional ℂ
+(HolomorphicOneForm X)]`. Under finite-dim + `ExistsSimplePoleGerm`,
+the open hypothesis `Genus0ImpliesS2 X` (forward leg of
+`SurfaceClassificationGenus`) is discharged: `genus X = 0` →
+`Subsingleton` (via existing `holomorphicOneForm_subsingleton_of_genus_eq_zero`)
+→ germfield capstone fires → homeomorphism `X ≃ₜ S²`. The reverse leg
+`S2ImpliesGenus0 X` (topological→geometric genus bridge) remains an
+explicit named hypothesis. Scoreboard unchanged (12/24); item 14's
+forward leg now sits on the single Hodge gap
+(`HolomorphicOneFormFiniteDim`) plus the single RR-side existence input
+(`ExistsSimplePoleGermAtSomePoint`).
+
 (CLOSURE_MAP §A col 4 originally predicted 12 items flip; with item 9 now
 STRICT-CLOSED via `Manifold/HPkgUnconditional.lean` +
 `Manifold/DegreeWellDefined.lean` the actual is 12.)
