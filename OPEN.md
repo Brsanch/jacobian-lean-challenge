@@ -82,7 +82,7 @@ whenever a status changes.
 | 11 | `instance : CompactSpace (Jacobian X)` | **OPEN** | `sorry` in `Basic.lean`. Compactness needs the analytic-Jacobian quotient topology (period-lattice), Phase 2. |
 | 12 | `instance : IsManifold ... ω (Jacobian X)` | **OPEN** | `sorry`. Requires analytic-Jacobian construction. `AnalyticTorus X` has an honest `IsManifold` instance modulo `Λ = ⊥`; not wired into `Jacobian`. |
 | 13 | `instance : LieAddGroup ... ω (Jacobian X)` | **OPEN** | `sorry`. Requires item 12 plus smoothness of group ops. |
-| 14 | `genus_eq_zero_iff_homeo` (anti-hack vs. `genus := 0`) | **OPEN** | `sorry`. Architecturally closed via zz331's `genus_eq_zero_iff_homeo_from_all_conditionals` ([Topology/Item14FinalComposition.lean](JacobianChallenge/Topology/Item14FinalComposition.lean)). After zz302–zz382 (~6,800+ LOC across two sessions, 34 chips for RR-thread alone in zz337–zz370, +zz381, +zz382): the **`RiemannRochGenusZero X` input has been reduced** to **two named classical inputs** via the `linearSystemDeltaP p` Submodule infrastructure: `RR_DimGE2_GenusZero X` (`∃ p, 2 ≤ finrank ℂ (linearSystemDeltaP p)`) — the heavy Riemann-Roch + Serre-duality content; and `LiftToMeromorphicNonzero X` — the technical lifting from plain `g ∈ L(δp) \ constants` to a `MeromorphicNonzero X` carrier (refinable to `GermCoherentLift_Discharge` + identity-theorem propagation). zz381 reduces `LiftRegularContinuousAt X` (input #4 of the six-input split) entirely to two germ-coherence statements — `UniversalGermCoherent X p` (off-pole, via zz380) and `UniversalGermCoherentAtPole X p` (at-pole, the new chip in [Topology/LiftRegularContinuousAtPole.lean](JacobianChallenge/Topology/LiftRegularContinuousAtPole.lean)): the off-pole and at-pole cases of `germLimitLift g =ᶠ[𝓝[≠] x] g`, both classical identity-theorem content. zz382 discharges **input #3 unconditionally**: `Surjective_of_NonConstant_Analytic_Manifold X Y` is now a THEOREM ([Manifold/SurjectiveOfNonConstantDischarge.lean](JacobianChallenge/Manifold/SurjectiveOfNonConstantDischarge.lean), 412 LOC) via the within-one-chart identity-theorem clopen globalisation + mathlib's `AnalyticAt.eventually_constant_or_nhds_le_map_nhds` open-map dichotomy. The analytic bridge (`MeroSinglePoleExtendsToDeg1Map` via the simple-pole-to-degree-1-map construction), the universal regularity at simple poles (`UniformSimplePoleRegularity`), and `LiouvilleOnCompactConnected` are all now THEOREMS (zz344, zz350). The remaining open inputs for item 14: (1+2) RR-thread (above), (3) ~~`Surjective_of_NonConstant_Analytic_Manifold`~~ **CLOSED zz382**, (4) `BijectiveAnalyticIsBiholomorphism`, (5) topological-sphere-uniformization branch. See CLOSURE_MAP.md §D.2 for the full per-input LOC table. |
+| 14 | `genus_eq_zero_iff_homeo` (anti-hack vs. `genus := 0`) | **OPEN** | `sorry`. Architecturally closed via zz331's `genus_eq_zero_iff_homeo_from_all_conditionals` ([Topology/Item14FinalComposition.lean](JacobianChallenge/Topology/Item14FinalComposition.lean)). After zz302–zz382 (~6,800+ LOC, 34 chips for RR-thread alone in zz337–zz370, +zz381, +zz382). zz381 reduces `LiftRegularContinuousAt X` to germ-coherence (`UniversalGermCoherent`, `UniversalGermCoherentAtPole`) in [Topology/LiftRegularContinuousAtPole.lean](JacobianChallenge/Topology/LiftRegularContinuousAtPole.lean). zz382 discharges **input #3 unconditionally** (`Surjective_of_NonConstant_Analytic_Manifold X Y` is now a THEOREM in [Manifold/SurjectiveOfNonConstantDischarge.lean](JacobianChallenge/Manifold/SurjectiveOfNonConstantDischarge.lean), 412 LOC) via within-one-chart identity-theorem + `AnalyticAt.eventually_constant_or_nhds_le_map_nhds` dichotomy. **Status of remaining open inputs after 2026-05-13 architectural review:** (1) `RR_DimGE2_GenusZero X` — vacuously true under broken `linearSystemDeltaP` (see "Architectural issue" section above); needs germ-field refactor before it has Riemann-Roch content. (2) `LiftToMeromorphicNonzero X` — depends on sub-inputs #2/#3/#5/#6 which are false against the blip counterexample under current `linearSystemDeltaP`. (3) ~~`Surjective_of_NonConstant_Analytic_Manifold`~~ **CLOSED zz382**. (4) `BijectiveAnalyticIsBiholomorphism` — chip-sized (~600–1500 LOC under a Hurwitz-corollary upstream contribution to mathlib). (5) topological-sphere-uniformization branch — multi-thousand LOC. **Conclusion**: item 14 is blocked on either the germ-field refactor (RR side) or the Hurwitz upstream + remaining chips (#4, #5). See CLOSURE_MAP.md §D.2 for the per-input LOC table. |
 | 15 | `ofCurve_self : ofCurve P P = 0` | **STRICT-CLOSED** *(post-ZZ256)* | Real proof reducing to `[δP − δP] = 0` in honest `Pic⁰`. |
 | 16 | `ofCurve_inj` (anti-hack vs. `Jacobian := PUnit`) | **OPEN** *(post-ZZ256 regression)* | The previous STUB proof exploited `PrincDiv X = ⊥` to make the quotient faithful. Under honest `PrincDiv` that argument fails; `Jacobian.lean`'s `ofCurve_inj` is now `sorry` (Basic.lean transitively). Genuinely requires Abel–Jacobi (Phase 2). |
 | 17 | `Jacobian.ofCurve_contMDiff` | **OPEN** | `sorry`. Requires item 5 (`ChartedSpace`) plus a real `ofCurve`. |
@@ -93,6 +93,50 @@ whenever a status changes.
 | 22 | `pullback_id_apply` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `JacobianChallenge.Jacobian.pullbackHonest_of_rsum_id _ P` — case-splits on `IsConstantMap (id : X → X)`, with the non-constant branch reducing to `divPullbackWeighted_id_apply` (single-fibre `id ⁻¹' {y} = {y}`, weight 1 everywhere). |
 | 23 | `pullback_comp_apply` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `pullbackHonest_of_rsum_comp` — the both-non-constant case delegates to `Div.fiberSumWeighted_comp_apply` with multiplicative ramification weights `manifoldRamificationIndex_comp_unconditional`. |
 | 24 | `pushforward_pullback : pushforward f (pullback f P) = degree f • P` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `pushforward_pullbackHonest_of_rsum` — case-splits on `IsConstantMap f`. Constant case: both sides zero. Non-constant: reduces to `Pic0.pushforward_pullbackWeighted` (in `JacobianPullback.lean`, using the new honest `Pic0.pushforward (hf)` signature). |
+
+## ⚠️ Architectural issue: RR-thread linear system (flagged 2026-05-13)
+
+The current `linearSystemDeltaP p : Submodule ℂ (X → ℂ)` is defined over
+*pointwise* functions `X → ℂ`. This admits "essentially-zero" elements
+(e.g. `g(p_0) = 100, g(y) = 0 otherwise`) that satisfy `IsBoundedByDeltaP
+p g` and are not in `span ℂ {1}` (non-constant) yet have
+`germLimitLift g ≡ 0` — making the canonicalised lift unusable.
+Consequences:
+
+1. **`finrank ℂ (linearSystemDeltaP p) = ∞` trivially**, by the family of
+   "blip-at-`p_0`" functions. So `RR_DimGE2_GenusZero X := ∃ p, 2 ≤
+   finrank ℂ (linearSystemDeltaP p)` is vacuously true with no
+   Riemann-Roch content.
+2. **Inputs #2, #3, #5, #6** of the six-input split
+   (`riemannRochGenusZero_from_six_inputs` in
+   [`Topology/RRGenusZeroFinalComposition.lean`](JacobianChallenge/Topology/RRGenusZeroFinalComposition.lean))
+   — `LiftMMeromorphicOn`, `LiftNonvanishingGerm`, `LiftOrderPreserved`,
+   `LiftNotConstant` — are **false as stated** against the blip
+   counterexample.
+3. **Input #4** (`LiftRegularContinuousAt`, reduced to germ-coherence
+   hypotheses via zz380 + zz381) is the only sub-input where the
+   reduction stands cleanly; even so, the germ-coherence hypotheses
+   themselves are about elements of the broken `linearSystemDeltaP`.
+
+**Fix requires germ-based ambient.** The honest L(δp) is a Submodule of
+germs (or equivalence classes modulo "essentially zero") of meromorphic
+functions, not raw `(X → ℂ)`. Patching `linearSystemDeltaP` to a
+sub-Submodule with the germ-canonicity predicate fails closure under
+addition (poles with cancelling residues create regular sums whose
+pointwise values at the pole are unconstrained → not germ-canonical).
+Similarly for `MeromorphicNonzero`-based formulations.
+
+**Right architecture**: define `MeromorphicFunctionField X` as the
+ℂ-algebra of germs of meromorphic functions on a connected complex
+1-manifold (using the existing `MMeromorphicOn` infrastructure but
+quotiented by punctured-nhd EventuallyEq), then `L(D)` as a Submodule of
+this field for any divisor `D`. This is mathlib-scale work (~800–1500
+LOC for the germ field, ~300–500 LOC for L(D)), not chip-scale.
+
+**Future-session guidance**: do not attempt to close inputs #2, #3, #5,
+#6 against the current `linearSystemDeltaP`. They cannot be discharged
+without rebuilding the ambient. Treat the RR-thread as blocked on the
+germ-field refactor.
 
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 
