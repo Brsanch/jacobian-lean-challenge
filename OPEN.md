@@ -48,6 +48,25 @@ items, but unblocks downstream PL-2 → PL-4 → period-lattice → items
   compatibility + cotangent commutativity + manifold scalar-restriction
   bridge + section smoothness packaging).
 
+**Period-lattice arc PL-2 closed 2026-05-13 (HEAD `fbb137f`):** Scoreboard
+unchanged (PL-2 is structural; unblocks PL-3 / PL-4 / the period-lattice
+items). 545 LOC across 3 new files.
+- `Manifold/SmoothCycle.lean` (173 LOC) — `SmoothCycle I X :=
+  ker(SmoothChain.boundary) : AddSubgroup (SmoothChain I X)`, basic API,
+  cycle-restricted real `integrate` and `integratePairingHom`.
+- `Manifold/H1SmoothMod.lean` (256 LOC) — named-hypothesis bundle
+  `StokesBoundaryInvariance I X` carrying `boundaries`, `closedForms`,
+  and the invariance gap; `H1 := SmoothCycle ⧸ boundaries` quotient;
+  `periodPairing : H1 → closedForms → ℝ` factored via `Quotient.liftOn'`
+  with half-bilinearity (zero/scalar in form arg, full additive in
+  chain arg).
+- `Manifold/ComplexPeriodPairing.lean` (116 LOC) — complex-valued
+  `complexPeriod c om := Re ∫_c om + i · Im ∫_c om` on
+  `SmoothCycle 𝓘(ℝ, ℂ) X × HolomorphicOneForm X`, plus
+  `complexPeriodHom` (additive in cycle arg) and `re_`/`im_`
+  projection lemmas. ℂ-linearity in the form arg is deferred
+  (needs `intervalIntegrable` chart-pullback witnesses).
+
 **Germfield arc closed 2026-05-13 (HEAD `2e5cfb4`):** item 14's
 `genus_eq_zero_iff_homeo` reduced to **one classical input**
 (`ExistsSimplePoleGermAtSomePoint X`) modulo the structural typeclass
