@@ -302,6 +302,7 @@ import JacobianChallenge.Topology.ConstantsFinrank
 import JacobianChallenge.Topology.LinearSystemAPI
 import JacobianChallenge.Topology.LinearSystemConstants
 import JacobianChallenge.Topology.RRDimensionForm
+import JacobianChallenge.Topology.RRGenusZeroFinrankChain
 import JacobianChallenge.Topology.LinearSystemDeltaP
 import JacobianChallenge.Topology.LinearSystemSubLemmas
 import JacobianChallenge.Topology.LiouvilleFromLocalConstancy
