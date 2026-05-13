@@ -414,6 +414,96 @@ work is the heavy Riemann-Roch formula + Serre duality classical
 content (multi-thousand-LOC L²-Hodge or sheaf cohomology, not in
 mathlib at the pin).
 
+**Update 2026-05-13 part 4 (zz382 + zz383–zz388)**: inputs #3 and #4 of
+the item-14 final composition are now both **discharged unconditionally**.
+
+* **zz382** (`Manifold/SurfaceOfNonConstantDischarge.lean`, +412 LOC):
+  `Surjective_of_NonConstant_Analytic_Manifold X Y` is a THEOREM, by
+  the within-one-chart identity-theorem clopen + mathlib's
+  `AnalyticAt.eventually_constant_or_nhds_le_map_nhds` open-map
+  dichotomy.
+* **zz383–zz388** (`Manifold/{BijectiveAnalyticDischarge,
+  GlobalInverseSmooth, ManifoldInverseContMDiffAt, ChartPullbackInverse,
+  ChartPullbackHurwitz, HurwitzCorollary}.lean`, +~1,300 LOC total):
+  `BijectiveAnalyticIsBiholomorphism X` is a THEOREM, via the
+  Hurwitz-corollary chain `deriv_ne_zero_of_injOn_ball` (zz383) →
+  chart-pullback inverse (zz384/zz385) → manifold inverse `ContMDiffAt`
+  (zz386) → global `Function.invFun` smoothness (zz387) → packaging as
+  `HolomorphicEquiv` (zz388). 8639 jobs green, no `sorry`/no `axiom`.
+
+**Item 14 frontier after zz382 + zz388 (2 remaining inputs)**:
+
+| Input | Status | Classical content | Est. LOC |
+|---|---|---|---|
+| `RR_DimGE2_GenusZero X` + `LiftToMeromorphicNonzero X` (RR-thread) | **blocked architecturally** (`linearSystemDeltaP` blip counterexample, see "Architectural issue" in `OPEN.md`); unblock requires germ-field refactor | RR + Serre duality on δp + germ-of-meromorphic-functions ambient | 6,800–11,500 + ~1,000–2,000 refactor |
+| `h_top : Nonempty (X ≃ₜ StandardS2) → Nonempty (HolomorphicEquiv X RS)` (topological-sphere branch / input #5) | open | Uniformization for closed Riemann surfaces of genus 0 / surface classification | 6,000–13,000 |
+
+#### D.2.5 — Scout of the topological-sphere branch (input #5)
+
+The hypothesis is `h_top : Nonempty (X ≃ₜ StandardS2) → Nonempty
+(HolomorphicEquiv X RiemannSphere)` as named in
+`Topology/Item14FinalComposition.lean`. Routes evaluated:
+
+* **Route A (via Hodge identification + RR-thread)**. From `X ≃ₜ S²`
+  conclude `TopologicalGenus X = 0` (available via
+  `Homeomorph.topologicalGenus_eq` + `TopologicalGenus S² = 0`), then
+  use a Hodge identification `TopologicalGenus X = JacobianChallenge.genus X`
+  on compact Riemann surfaces to conclude `genus X = 0`, then use
+  `RiemannRochGenusZero` (input #1) + degree-1-is-biholomorphism (input
+  #4, now closed via zz388) to produce the biholomorphism. **Status**:
+  blocked twice — the Hodge-identification bridge is itself
+  multi-thousand-LOC Hodge theory not in mathlib at the pin, AND the
+  RR-thread is blocked on the germ-field refactor (see "Architectural
+  issue" in `OPEN.md`). Route A is therefore **architecturally subordinate
+  to RR**, not an independent path.
+
+* **Route B (direct via uniformization-for-S²)**. Forster Ch. 26 /
+  Farkas–Kra Ch. III: any complex structure on `S²` is biholomorphic to
+  `OnePoint ℂ`. Standard proofs use either the Riemann mapping theorem
+  (for `S² ∖ {p}`, lifted to a meromorphic function on `S²`) or
+  harmonic-function constructions via the Dirichlet problem. **Status**:
+  requires Riemann mapping or Dirichlet on a punctured `S²`; neither is
+  at the pin. **6,000–13,000 LOC** classical Riemann-surface theory.
+
+* **Route C (direct from the homeomorphism)**. Pick `p ∈ X`, set
+  `q = h(p) ∈ S²`. The chart coordinate of `RiemannSphere` around `q`
+  is a meromorphic function on `RS` with simple pole at the south pole.
+  Pull back along `h⁻¹`. **Status**: pullback under a bare homeomorphism
+  is only continuous, not meromorphic — the meromorphy needs the same
+  Hodge-theoretic content as Route A. Not chip-tractable as stated.
+
+**Partial-progress observation**. Even if input #5 alone is closed, it
+only closes the `←` direction of item 14 (`Nonempty (X ≃ₜ S²) →
+JacobianChallenge.genus X = 0`), via
+`s2ImpliesGenus0_of_uniformizationToRiemannSphere` (using zz307's
+`genus_eq_zero_of_holomorphicEquiv_RiemannSphere_honest`). The `→`
+direction (`genus X = 0 → Nonempty (X ≃ₜ S²)`) still requires the
+RR-thread separately. So **item 14 STRICT-CLOSED needs BOTH the RR-thread
+unblocked AND input #5 closed**; input #5 alone is half of item 14.
+
+**Conclusion**. Input #5 is *not chip-tractable at the current pin*.
+Any route through it requires Hodge theory or Dirichlet harmonic
+analysis as upstream mathlib content. The cheapest concrete entry point
+is the Hodge identification `TopologicalGenus X = JacobianChallenge.genus
+X` on compact Riemann surfaces (~3,000–6,000 LOC by itself); this would
+also be a precondition for any honest closure of input #1 in the
+genus-zero-from-topology direction. Pursuing it is a strategic decision
+on par with the germ-field refactor — not a chip-sized commitment.
+
+**Existing infrastructure relevant to input #5 (no new code needed)**:
+- `Topology/SurfaceGenus.lean` — `TopologicalGenus X = finrank ℚ (H₁(X; ℚ))`
+  + `Homeomorph.topologicalGenus_eq` (homeomorphism invariance).
+- `Topology/OnePointHomeoSphere.lean` — `RiemannSphere ≃ₜ StandardS2`.
+- `Manifold/HolomorphicEquivGenusInvariance.lean` (zz310) — biholomorphism preserves genus.
+- `Manifold/PullbackHolomorphicOneForm.lean` (zz307) —
+  `genus_eq_zero_of_holomorphicEquiv_RiemannSphere_honest`.
+- `Manifold/RiemannSphereGenusAPI.lean` — `genus RiemannSphere = 0`
+  unconditional.
+- `Topology/S2ImpliesGenus0Discharge.lean` — packages the
+  "linear-equivalence-on-1-forms → genus = 0" reduction (weaker than
+  full input #5, but already closed honestly under the linear-equivalence
+  hypothesis).
+
 ### D.3 — Phase 4 (item 1: `genus X` honest)
 
 `genus X = Module.finrank ℂ (HolomorphicOneForm X)` is the definition; the strict bar requires `HolomorphicOneForm X` to be the right object AND finite-dimensional.
