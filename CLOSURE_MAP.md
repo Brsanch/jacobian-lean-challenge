@@ -333,7 +333,7 @@ The mechanical glue through these four inputs to item 14 STRICT-CLOSED
 is now complete (zz331). Each remaining input is a concrete classical
 theorem with explicit textbook references (Forster Ch. 11).
 
-**Update 2026-05-13 part 3 (zz337–zz358 chain, ~3,000 LOC landed).**
+**Update 2026-05-13 part 3 (zz337–zz362 chain, ~3,400 LOC landed).**
 The `RiemannRochGenusZero X` input has been **architecturally
 reduced** to a single deeper open hypothesis. Specifically:
 
@@ -367,12 +367,19 @@ reduced** to a single deeper open hypothesis. Specifically:
   `RR_DimGE2_GenusZero` dimension form with forward bridge to
   strict-gt, API extraction lemmas.
 
-**Item 14 frontier after zz337–zz358** (the `RiemannRochGenusZero X`
-input has been deepened to one open classical hypothesis):
+* zz360–zz362 — derived neg/sub closure of `L(δp)`; one-step
+  `RR_DimGE2_GenusZero → ∃ g ∈ L(δp), g ∉ constants` (zz361);
+  full closure chain `RR_DimGE2_GenusZero + LiftToMeromorphicNonzero
+  ⇒ RiemannRochGenusZero` (zz362, naming the technical lifting
+  hypothesis explicitly).
+
+**Item 14 frontier after zz337–zz362** (the `RiemannRochGenusZero X`
+thread is now reduced to TWO concrete named classical inputs):
 
 | Input | Status | Classical content | Est. LOC |
 |---|---|---|---|
-| `ExistsNonConstantBoundedByDeltaP_GenusZero X` (equivalent: `RR_DimGE2_GenusZero X` finrank ≥ 2 of `linearSystemDeltaP p`) | open | Riemann-Roch formula + Serre duality at `δp` for genus 0 | 6,000–10,000 |
+| `RR_DimGE2_GenusZero X` (`∃ p, 2 ≤ finrank ℂ (linearSystemDeltaP p)` under `genus X = 0`) | open | Riemann-Roch formula + Serre duality at `δp` for genus 0 | 6,000–10,000 |
+| `LiftToMeromorphicNonzero X` (technical: plain `g ∈ L(δp) \ constants` ⇒ `∃ MeromorphicNonzero X` lift) | open | Identity theorem + chart redefinition for `regular_continuousAt` | 800–1,500 |
 | `Surjective_of_NonConstant_Analytic_Manifold X RS` | open | Manifold open-mapping + clopen | 600–1,200 |
 | `BijectiveAnalyticIsBiholomorphism X` | open | Inverse function theorem at ram-idx = 1 | 800–1,500 |
 | Topological-sphere branch | open | Surface classification / uniformization-for-S² | 6,000–13,000 |
