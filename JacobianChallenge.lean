@@ -78,6 +78,7 @@ import JacobianChallenge.Manifold.DerivBridgeFromNonConstant
 import JacobianChallenge.Manifold.DisjointFibreNbhds
 import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Manifold.DegreeOneBijective
+import JacobianChallenge.Manifold.DegreeOneFromSinglePole
 import JacobianChallenge.Manifold.DegreeOneInjective
 import JacobianChallenge.Manifold.DegreeOneInjectiveFibres
 import JacobianChallenge.Manifold.DegreeOneSurjective
