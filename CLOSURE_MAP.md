@@ -289,6 +289,50 @@ classical input** (uniformization for genus-0 surfaces), not two. The
 remaining work to flip item 14 STRICT-CLOSED is: prove
 `UniformizationToRiemannSphere X` (the disjunctive form above).
 
+**Update 2026-05-13 part 2 (zz311–zz336 chain, ~1,500 LOC landed)**:
+the closure chain for item 14 is now fully **architecturally complete**,
+with two of the named open inputs DOWNGRADED to theorems:
+
+* zz311–zz314: pullbackLinearEquiv is a contravariant functor (refl,
+  symm, trans, round-trip — all closed unconditionally).
+* zz315: clean one-liner `genus X = 0` from `HolomorphicEquiv X RS`.
+* zz316–zz318: `FactUniformizationToRiemannSphere X` as a typeclass +
+  biholomorphism-transport (iff form).
+* zz319: `HolomorphicEquiv.compactSpace` / `.t2Space` API.
+* zz320–zz321: `HolomorphicEquiv ↔ IsConstantMap` bridge.
+* zz322: `RegularValueWitness_card_eq_one` for biholomorphisms.
+* zz323: `HolomorphicEquiv → degreeFiber = 1` (substantive analytic).
+* zz325: Riemann-Roch + degree-1-biholomorphism waypoint (names the
+  inputs `RiemannRochGenusZero X` and `DegreeOneIsBiholomorphic_RS X`).
+* zz326–zz329: `degreeFiber=1 → singleton fibres → injective → bijective`
+  (conditional on `ramificationSumEqualsDegree_statement X RS`, now
+  unconditional — see zz336).
+* zz330: `BijectiveAnalyticIsBiholomorphism X` (smooth-inverse named).
+* zz331: **FINAL composition theorem**: item 14 biconditional from
+  exactly five named classical inputs (in `Item14FinalComposition.lean`).
+* zz333: `open_nbhd_infinite_of_chartedSpace_complex` — open
+  neighbourhoods in `ChartedSpace ℂ` are infinite (unconditional).
+* zz335: **`NearbyRegularValueExists` UNCONDITIONAL** — first
+  open-input → theorem conversion.
+* zz336: **`NearbyRegularWitnessHypothesis` UNCONDITIONAL** —
+  consequently `ramificationSumEqualsDegree_statement X Y` is now an
+  unconditional theorem (via existing
+  `ramificationSumEqualsDegree_holds_of_nearby_regular_witness_only`).
+
+**Item 14 frontier after this session (4 named classical inputs):**
+
+| # | Input | Status | Classical content | Est. LOC |
+|---|---|---|---|---|
+| 1 | `RiemannRochGenusZero X` | open | Riemann-Roch + Serre duality on δp divisor | 6,000–10,000 |
+| 3 | `Surjective_of_NonConstant_Analytic_Manifold X RS` | open | Manifold open-mapping + clopen argument | 600–1,200 |
+| 4 | `BijectiveAnalyticIsBiholomorphism X` | open | Inverse function theorem at ram-idx = 1 | 800–1,500 |
+| 5 | Topological-sphere branch (`X ≃ₜ S² → ∃ HolomorphicEquiv X RS`) | open | Surface classification / uniformization-for-S² | 6,000–13,000 |
+| | **Total** | | | **13,400–25,700** |
+
+The mechanical glue through these four inputs to item 14 STRICT-CLOSED
+is now complete (zz331). Each remaining input is a concrete classical
+theorem with explicit textbook references (Forster Ch. 11).
+
 ### D.3 — Phase 4 (item 1: `genus X` honest)
 
 `genus X = Module.finrank ℂ (HolomorphicOneForm X)` is the definition; the strict bar requires `HolomorphicOneForm X` to be the right object AND finite-dimensional.
