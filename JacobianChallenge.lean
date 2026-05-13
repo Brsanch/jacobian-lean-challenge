@@ -299,6 +299,7 @@ import JacobianChallenge.Topology.Item14FromSubsingletonAndHomeo
 import JacobianChallenge.Topology.HolomorphicLocallyConstantDischarge
 import JacobianChallenge.Topology.ConstantsFinrank
 import JacobianChallenge.Topology.LinearSystemConstants
+import JacobianChallenge.Topology.RRDimensionForm
 import JacobianChallenge.Topology.LinearSystemDeltaP
 import JacobianChallenge.Topology.LiouvilleFromLocalConstancy
 import JacobianChallenge.Topology.Item14FromUniformization
