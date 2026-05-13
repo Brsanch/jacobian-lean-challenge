@@ -280,4 +280,5 @@ import JacobianChallenge.Topology.S2ImpliesGenus0Discharge
 import JacobianChallenge.Topology.S2ImpliesGenus0Unconditional
 import JacobianChallenge.Topology.SurfaceClassificationGenus
 import JacobianChallenge.Topology.SurfaceGenus
+import JacobianChallenge.Topology.UniformizationFromRiemannRoch
 import JacobianChallenge.Topology.UniformizationInputsRiemannSphere
