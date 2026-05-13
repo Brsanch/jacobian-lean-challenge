@@ -7,6 +7,7 @@ import JacobianChallenge.Manifold.SmoothCycle
 import JacobianChallenge.Manifold.H1SmoothMod
 import JacobianChallenge.Manifold.HolomorphicOneFormRealComponent
 import JacobianChallenge.Manifold.ComplexManifoldRealification
+import JacobianChallenge.Manifold.SmoothPathIntegrability
 
 /-! # Complex-valued period pairing on holomorphic 1-forms (chip PL-2d)
 
@@ -25,11 +26,13 @@ real bundled components.
 
 ## What this file does *not* attempt
 
-* `ℂ`-linearity of the pairing in the form argument. This requires
-  additivity of the path integral in the 1-form, which in turn requires
-  `intervalIntegrable` witnesses on chart-pullback integrands
-  (`SmoothPath.integrate_add`). That integrability lemma is a separate
-  chip (not part of PL-2).
+* Full `ℂ`-linearity of the pairing in the form argument. Additivity
+  (`complexPeriod_add_right`) is delivered below using the PL-3e
+  integrability witness (`SmoothPathIntegrability.lean`). ℂ-scaling is
+  *not* attempted in this file: it mixes the real and imaginary
+  components via `realPart (z • om) = Re z · realPart om − Im z · imagPart om`,
+  which is an algebraic identity orthogonal to integrability and
+  deserves its own chip.
 
 * Factoring through `H₁`. The `StokesBoundaryInvariance` bundle in
   `Manifold/H1SmoothMod.lean` already factors the real-valued pairing
@@ -110,6 +113,69 @@ against `imagComponent om`. -/
     (complexPeriod c om).im = SmoothCycle.integrate c (imagComponent om) := by
   unfold complexPeriod
   simp
+
+/-! ## Form-side additivity of `realComponent` / `imagComponent` -/
+
+/-- `realComponent` is additive on holomorphic 1-forms (bundled-section
+equality). -/
+@[simp] lemma realComponent_add (om₁ om₂ : HolomorphicOneForm X) :
+    realComponent (om₁ + om₂) = realComponent om₁ + realComponent om₂ := by
+  refine ContMDiffSection.coe_inj ?_
+  funext x
+  -- Pointwise: `(om₁+om₂).realPart x = om₁.realPart x + om₂.realPart x`.
+  exact HolomorphicOneForm.realPart_add om₁ om₂ x
+
+/-- `imagComponent` is additive on holomorphic 1-forms (bundled-section
+equality). -/
+@[simp] lemma imagComponent_add (om₁ om₂ : HolomorphicOneForm X) :
+    imagComponent (om₁ + om₂) = imagComponent om₁ + imagComponent om₂ := by
+  refine ContMDiffSection.coe_inj ?_
+  funext x
+  exact HolomorphicOneForm.imagPart_add om₁ om₂ x
+
+/-! ## Form-side additivity of `complexPeriod` (PL-3e consumer) -/
+
+/-- **Form-side additivity of the complex period pairing.** Uses the
+PL-3e integrability witness `SmoothPath.intervalIntegrable_integrand`
+indirectly through `SmoothCycle.integrate_add_form`. -/
+lemma complexPeriod_add_right (c : SmoothCycle 𝓘(ℝ, ℂ) X)
+    (om₁ om₂ : HolomorphicOneForm X) :
+    complexPeriod c (om₁ + om₂) = complexPeriod c om₁ + complexPeriod c om₂ := by
+  unfold complexPeriod
+  rw [realComponent_add, imagComponent_add,
+      SmoothCycle.integrate_add_form, SmoothCycle.integrate_add_form]
+  push_cast
+  ring
+
+/-- The complex-valued period pairing as an `AddMonoidHom` in the *form*
+argument, with the smooth cycle held fixed. -/
+def complexPeriodHomRight (c : SmoothCycle 𝓘(ℝ, ℂ) X) :
+    HolomorphicOneForm X →+ ℂ where
+  toFun om := complexPeriod c om
+  map_zero' := by
+    unfold complexPeriod
+    -- `realComponent 0 = 0` and `imagComponent 0 = 0` by section
+    -- additivity (a-b=a+(-b), then sub from zero), but we can short-cut
+    -- via Re/Im of the zero form: pointwise `realPart 0 x = 0`, so
+    -- `SmoothCycle.integrate c 0 = 0`.
+    have h_re_zero : realComponent (0 : HolomorphicOneForm X)
+        = (0 : SmoothOneForm 𝓘(ℝ, ℂ) X) := by
+      refine ContMDiffSection.coe_inj ?_
+      funext x
+      exact HolomorphicOneForm.realPart_zero x
+    have h_im_zero : imagComponent (0 : HolomorphicOneForm X)
+        = (0 : SmoothOneForm 𝓘(ℝ, ℂ) X) := by
+      refine ContMDiffSection.coe_inj ?_
+      funext x
+      exact HolomorphicOneForm.imagPart_zero x
+    rw [h_re_zero, h_im_zero, SmoothCycle.integrate_zero_right]
+    push_cast
+    ring
+  map_add' om₁ om₂ := complexPeriod_add_right c om₁ om₂
+
+@[simp] lemma complexPeriodHomRight_apply (c : SmoothCycle 𝓘(ℝ, ℂ) X)
+    (om : HolomorphicOneForm X) :
+    complexPeriodHomRight c om = complexPeriod c om := rfl
 
 end JacobianChallenge
 
