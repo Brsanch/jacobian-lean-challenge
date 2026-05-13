@@ -77,6 +77,7 @@ import JacobianChallenge.Manifold.DisjointFibreNbhds
 import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Manifold.DegreeOneInjective
 import JacobianChallenge.Manifold.DegreeOneInjectiveFibres
+import JacobianChallenge.Manifold.DegreeOneSurjective
 import JacobianChallenge.Manifold.DegreeWellDefined
 import JacobianChallenge.Manifold.DivisorAlgebra
 import JacobianChallenge.Manifold.FiberCountBridge
