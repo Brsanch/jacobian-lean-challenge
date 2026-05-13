@@ -71,13 +71,16 @@ unchanged (structural; completes ℂ-linearity of the complex-valued
 period pairing in the form argument). +307 LOC PL-3e + 165 LOC ℂ-scaling,
 2 new files.
 
-* `Manifold/ComplexPeriodSmulRight.lean` (165 LOC) — `realPart_smul` /
+* `Manifold/ComplexPeriodSmulRight.lean` (~205 LOC) — `realPart_smul` /
   `imagPart_smul` (pointwise + bundled), `realComponent_smul` /
   `imagComponent_smul` (`SmoothOneForm`-valued), `complexPeriod_smul_right
-  : complexPeriod c (z • om) = z * complexPeriod c om`, and the bundled
+  : complexPeriod c (z • om) = z * complexPeriod c om`, the bundled
   `complexPeriodLinearMap : HolomorphicOneForm X →ₗ[ℂ] ℂ` (with cycle
-  fixed). Closes the algebraic-mixing-of-Re/Im step that was orthogonal
-  to PL-3e's integrability work.
+  fixed), and the fully bundled ℂ-bilinear pairing
+  `complexPeriodBilinear : SmoothCycle 𝓘(ℝ, ℂ) X →+ HolomorphicOneForm X →ₗ[ℂ] ℂ`
+  (cycle-additive + form-ℂ-linear). Closes the algebraic-mixing-of-Re/Im
+  step orthogonal to PL-3e's integrability work, and packages the full
+  pairing API.
 
 
 - `Manifold/SmoothPathIntegrability.lean` (307 LOC) — proves
