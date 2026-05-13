@@ -333,7 +333,10 @@ The mechanical glue through these four inputs to item 14 STRICT-CLOSED
 is now complete (zz331). Each remaining input is a concrete classical
 theorem with explicit textbook references (Forster Ch. 11).
 
-**Update 2026-05-13 part 3 (zz337–zz366 chain, ~3,750 LOC landed).**
+**Update 2026-05-13 part 3 (zz337–zz380 chain, 45 commits, ~4,200 LOC landed).**
+
+**See `HANDOFF_2026_05_13_RR_GENUS_ZERO.md` for the full session
+summary, the 6-input frontier table, and the next-session plan.**
 The `RiemannRochGenusZero X` input has been **architecturally
 reduced** to a single deeper open hypothesis. Specifically:
 
@@ -379,6 +382,20 @@ reduced** to a single deeper open hypothesis. Specifically:
   `tendsto_nhds_of_meromorphicOrderAt_nonneg` + chart-transport
   (zz365); `GermCoherentOff` predicate naming the canonicalisation
   property + `GermCoherentLift_Discharge` named hypothesis (zz366).
+
+* zz368–zz378 — `linearSystemDeltaP_nontrivial` (zz368); various API
+  consolidation (zz369–zz374); `MeromorphicNonzero.ofContinuousMeromorphic`
+  + `.ofRegularContinuous` builders (zz375, zz376); 5-input
+  decomposition of `LiftToMeromorphicNonzero` via the builder
+  (zz377); final 6-input composition theorem
+  `riemannRochGenusZero_from_six_inputs` (zz378).
+
+* zz380 — **substantive discharge** of regular-continuity at non-pole
+  points: under a named `UniversalGermCoherent X p` hypothesis,
+  `ContinuousAt (germLimitLift g) x` for every `g ∈ L(δp)` and
+  `x ≠ p`. Real proof via zz365's punctured-Tendsto + EventuallyEq
+  transfer + mathlib's `continuousAt_iff_punctured_nhds`. (The
+  `x = p` case remains for a future chip.)
 
 **Item 14 frontier after zz337–zz362** (the `RiemannRochGenusZero X`
 thread is now reduced to TWO concrete named classical inputs):
