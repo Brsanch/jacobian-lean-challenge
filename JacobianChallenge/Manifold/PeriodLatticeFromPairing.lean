@@ -8,6 +8,10 @@ import JacobianChallenge.Manifold.PeriodLatticeRankTwoG
 import JacobianChallenge.Manifold.PeriodLatticeOfRankTwoG_Wiring
 import JacobianChallenge.Manifold.PeriodLatticeOfRankTwoG_ComplexWiring
 import Mathlib.LinearAlgebra.Basis.Defs
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+import Mathlib.LinearAlgebra.Dimension.Constructions
+import Mathlib.Algebra.Module.ZLattice.Basic
+import Mathlib.Topology.Algebra.IsUniformGroup.Basic
 
 /-! # Bridge: `PeriodPairingData X` + basis ⇒ `PeriodLatticeOfRankTwoG X`
 (chip PL-3a)
@@ -269,6 +273,97 @@ noncomputable def PeriodLatticeOfRankTwoG.ofPeriodPairing_chartedSpace
       (PeriodLatticeOfRankTwoG.ofPeriodPairing data α h).lattice.toIntSubmodule :=
     h.isZLattice
   PeriodLatticeOfRankTwoG.chartedSpaceHypothesis_holds _
+
+/-! ### Slim constructor: `isClosed` and `rank_eq` are derivable
+
+Two of the four fields of `PeriodLatticeAnalyticHypotheses` are
+redundant given the other two:
+
+* `isClosed` follows from `[T2Space (Fin g → ℂ)]` (automatic) and
+  `DiscreteTopology` of the underlying `AddSubgroup` via the additive
+  form of `Subgroup.isClosed_of_discrete`
+  (`Mathlib.Topology.Algebra.IsUniformGroup.Basic`, instance attr).
+* `rank_eq` follows from `IsZLattice ℝ` via `ZLattice.rank ℝ`, which
+  gives `finrank ℤ L = finrank ℝ E`, combined with
+  `finrank ℝ (Fin g → ℂ) = 2 * g` (Cauchy-Riemann splitting).
+
+This section provides the two derivation lemmas plus the slim
+constructor `PeriodLatticeAnalyticHypotheses.ofDiscrete` taking only
+the two `Submodule ℤ`-instance fields. New consumers should prefer the
+slim constructor; the original 4-field structure is preserved for
+backwards compatibility (no consumers in repo at landing time, so no
+breakage). -/
+
+/-- Real dimension of `Fin g → ℂ` is `2 * g` (Cauchy-Riemann splitting). -/
+lemma finrank_real_pi_complex (g : ℕ) :
+    Module.finrank ℝ (Fin g → ℂ) = 2 * g := by
+  rw [Module.finrank_pi_fintype]
+  simp [Complex.finrank_real_complex, mul_comm, Fintype.card_fin]
+
+/-- The `rank_eq` field of `PeriodLatticeAnalyticHypotheses` is derivable
+from the `isZLattice` instance via `ZLattice.rank ℝ`. -/
+lemma periodLatticeImage_rank_of_isZLattice
+    (data : PeriodPairingData X)
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    [DiscreteTopology (periodLatticeImage data α).toIntSubmodule]
+    [IsZLattice ℝ (periodLatticeImage data α).toIntSubmodule] :
+    Module.finrank ℤ (periodLatticeImage data α).toIntSubmodule
+      = 2 * JacobianChallenge.genus X := by
+  rw [ZLattice.rank ℝ, finrank_real_pi_complex]
+
+/-- The `isClosed` field is derivable from the `DiscreteTopology`
+instance on the underlying `Submodule ℤ`: the `Submodule ℤ` and its
+underlying `AddSubgroup` share the same subtype topology, so
+`AddSubgroup.isClosed_of_discrete` (an instance taking
+`[T2Space _] [DiscreteTopology H]`) fires. -/
+lemma periodLatticeImage_isClosed_of_discrete
+    (data : PeriodPairingData X)
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    [hdt : DiscreteTopology (periodLatticeImage data α).toIntSubmodule] :
+    IsClosed ((periodLatticeImage data α :
+      Set (Fin (JacobianChallenge.genus X) → ℂ))) := by
+  -- The subtypes `↥(periodLatticeImage data α)` and
+  -- `↥(periodLatticeImage data α).toIntSubmodule` agree on carrier; the
+  -- subtype topology comes from the `Set` carrier, which is the same
+  -- set in either guise.
+  haveI : DiscreteTopology (periodLatticeImage data α) := hdt
+  exact AddSubgroup.isClosed_of_discrete
+
+/-- **Slim constructor.** Build `PeriodLatticeAnalyticHypotheses` from
+just the `discreteTopology` and `isZLattice` instance fields; `isClosed`
+and `rank_eq` are derived from `AddSubgroup.isClosed_of_discrete` and
+`ZLattice.rank ℝ` respectively. -/
+def PeriodLatticeAnalyticHypotheses.ofDiscrete
+    (data : PeriodPairingData X)
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (discrete : DiscreteTopology (periodLatticeImage data α).toIntSubmodule)
+    (zlat : @IsZLattice ℝ _ (Fin (JacobianChallenge.genus X) → ℂ) _ _
+      (periodLatticeImage data α).toIntSubmodule discrete) :
+    PeriodLatticeAnalyticHypotheses data α :=
+  haveI := discrete
+  haveI := zlat
+  { isClosed := periodLatticeImage_isClosed_of_discrete data α
+    rank_eq := periodLatticeImage_rank_of_isZLattice data α
+    discreteTopology := discrete
+    isZLattice := zlat }
+
+@[simp] lemma PeriodLatticeAnalyticHypotheses.ofDiscrete_discreteTopology
+    (data : PeriodPairingData X)
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (discrete : DiscreteTopology (periodLatticeImage data α).toIntSubmodule)
+    (zlat : @IsZLattice ℝ _ (Fin (JacobianChallenge.genus X) → ℂ) _ _
+      (periodLatticeImage data α).toIntSubmodule discrete) :
+    (PeriodLatticeAnalyticHypotheses.ofDiscrete data α discrete zlat).discreteTopology
+      = discrete := rfl
+
+@[simp] lemma PeriodLatticeAnalyticHypotheses.ofDiscrete_isZLattice
+    (data : PeriodPairingData X)
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (discrete : DiscreteTopology (periodLatticeImage data α).toIntSubmodule)
+    (zlat : @IsZLattice ℝ _ (Fin (JacobianChallenge.genus X) → ℂ) _ _
+      (periodLatticeImage data α).toIntSubmodule discrete) :
+    (PeriodLatticeAnalyticHypotheses.ofDiscrete data α discrete zlat).isZLattice
+      = zlat := rfl
 
 end JacobianChallenge
 
