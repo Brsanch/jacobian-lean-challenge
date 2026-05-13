@@ -155,6 +155,39 @@ def complexPeriodLinearMap (c : SmoothCycle 𝓘(ℝ, ℂ) X) :
     (om : HolomorphicOneForm X) :
     complexPeriodLinearMap c om = complexPeriod c om := rfl
 
+/-! ## Fully bundled ℂ-bilinear period pairing
+
+`complexPeriod` is additive in the cycle argument (PL-2 /
+`complexPeriod_add_left`) and ℂ-linear in the form argument (above).
+This section packages both sides into a single bundled object:
+
+  `complexPeriodBilinear : SmoothCycle 𝓘(ℝ, ℂ) X →+ HolomorphicOneForm X →ₗ[ℂ] ℂ`
+
+i.e. an additive group hom from cycles to ℂ-linear forms on
+`HolomorphicOneForm X`. (The cycle side is only ℤ-linear, not ℂ-linear
+or even ℝ-linear, because smooth 1-cycles on a complex manifold do not
+naturally carry a ℂ- or ℝ-module structure beyond formal Finsupp ℤ-linear
+combinations — they are integer chains.)
+-/
+
+/-- **Fully bundled ℂ-bilinear period pairing.** The cycle argument is an
+additive hom; the form argument is a ℂ-linear functional. -/
+def complexPeriodBilinear :
+    SmoothCycle 𝓘(ℝ, ℂ) X →+ (HolomorphicOneForm X →ₗ[ℂ] ℂ) where
+  toFun c := complexPeriodLinearMap c
+  map_zero' := by
+    refine LinearMap.ext fun om => ?_
+    show complexPeriod (0 : SmoothCycle 𝓘(ℝ, ℂ) X) om = 0
+    exact complexPeriod_zero_left om
+  map_add' c₁ c₂ := by
+    refine LinearMap.ext fun om => ?_
+    show complexPeriod (c₁ + c₂) om = complexPeriod c₁ om + complexPeriod c₂ om
+    exact complexPeriod_add_left c₁ c₂ om
+
+@[simp] lemma complexPeriodBilinear_apply (c : SmoothCycle 𝓘(ℝ, ℂ) X)
+    (om : HolomorphicOneForm X) :
+    (complexPeriodBilinear (X := X) c) om = complexPeriod c om := rfl
+
 end JacobianChallenge
 
 end
