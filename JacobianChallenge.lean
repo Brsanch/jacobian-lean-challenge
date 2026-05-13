@@ -147,6 +147,7 @@ import JacobianChallenge.Manifold.HLcUnconditional
 import JacobianChallenge.Manifold.HPkgUnconditional
 import JacobianChallenge.Manifold.HTopoUnconditional
 import JacobianChallenge.Manifold.HurwitzCorollary
+import JacobianChallenge.Manifold.HurwitzManifold
 import JacobianChallenge.Manifold.HurwitzWellDefinedFromHPath
 import JacobianChallenge.Manifold.HurwitzWellDefinedUnconditionalTopo
 import JacobianChallenge.Manifold.HurwitzPatchingDataConstruction
