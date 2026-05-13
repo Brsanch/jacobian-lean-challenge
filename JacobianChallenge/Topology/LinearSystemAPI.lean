@@ -59,6 +59,20 @@ namespace linearSystemDeltaP
 lemma mem_iff {p : X} {f : X → ℂ} :
     f ∈ linearSystemDeltaP p ↔ IsBoundedByDeltaP p f := Iff.rfl
 
+/-- `0 ∈ linearSystemDeltaP p`. -/
+lemma zero_mem (p : X) : (0 : X → ℂ) ∈ linearSystemDeltaP p :=
+  (linearSystemDeltaP p).zero_mem
+
+/-- `f + g ∈ linearSystemDeltaP p` when both are. -/
+lemma add_mem {p : X} {f g : X → ℂ}
+    (hf : f ∈ linearSystemDeltaP p) (hg : g ∈ linearSystemDeltaP p) :
+    f + g ∈ linearSystemDeltaP p := (linearSystemDeltaP p).add_mem hf hg
+
+/-- `c • f ∈ linearSystemDeltaP p` when `f` is. -/
+lemma smul_mem {p : X} (c : ℂ) {f : X → ℂ}
+    (hf : f ∈ linearSystemDeltaP p) :
+    c • f ∈ linearSystemDeltaP p := (linearSystemDeltaP p).smul_mem c hf
+
 end linearSystemDeltaP
 
 end JacobianChallenge
