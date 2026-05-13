@@ -265,6 +265,7 @@ import JacobianChallenge.Manifold.RiemannSphereR1OverlapReduction
 import JacobianChallenge.Manifold.RiemannSphereSubsingletonReduction
 import JacobianChallenge.Manifold.RiemannSphereMobius
 import JacobianChallenge.Manifold.RiemannSphereSouthChartTendsto
+import JacobianChallenge.Manifold.SinglePoleInftyFibre
 import JacobianChallenge.Manifold.SinglePoleLaurentExtractionDischarge
 import JacobianChallenge.Manifold.SmoothChain
 import JacobianChallenge.Manifold.SmoothChainBoundary
