@@ -310,6 +310,7 @@ import JacobianChallenge.Topology.RRGenusZeroFinrankChain
 import JacobianChallenge.Topology.LinearSystemDeltaP
 import JacobianChallenge.Topology.LinearSystemSubLemmas
 import JacobianChallenge.Topology.LiouvilleFromLocalConstancy
+import JacobianChallenge.Topology.MeromorphicNonzeroBuilder
 import JacobianChallenge.Topology.Item14FromUniformization
 import JacobianChallenge.Topology.S2ImpliesGenus0Discharge
 import JacobianChallenge.Topology.S2ImpliesGenus0Unconditional
