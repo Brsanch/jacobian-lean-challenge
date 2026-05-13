@@ -245,6 +245,7 @@ import JacobianChallenge.Manifold.RegularSubsetPreconnected
 import JacobianChallenge.Manifold.RegularValueExistsRegUnconditional
 import JacobianChallenge.Manifold.RegularValueExistsUnconditional
 import JacobianChallenge.Manifold.RegularValueSetConnected
+import JacobianChallenge.Manifold.RegularValueWitnessAtInfty
 import JacobianChallenge.Manifold.ResidueTheorem
 import JacobianChallenge.Manifold.ResidueTheoremAssembly
 import JacobianChallenge.Manifold.ResidueTheoremFromRsum
