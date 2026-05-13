@@ -294,6 +294,7 @@ import JacobianChallenge.Topology.ExistsMeroSimplePoleSplit
 import JacobianChallenge.Topology.GermCoherent
 import JacobianChallenge.Topology.GermLimitLiftSetup
 import JacobianChallenge.Topology.LiftDecomposition
+import JacobianChallenge.Topology.LiftRegularContinuousFromCoherence
 import JacobianChallenge.Topology.Item14ForRiemannSphere
 import JacobianChallenge.Topology.Item14ClassInstance
 import JacobianChallenge.Topology.Item14FinalComposition
