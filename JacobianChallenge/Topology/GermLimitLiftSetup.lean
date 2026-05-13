@@ -72,6 +72,20 @@ lemma germLimitLift_eq_self_of_continuousAt
     h_cts.tendsto.mono_left nhdsWithin_le_nhds
   simp [germLimitLift, MeromorphicNonzero.germLimit_eq_of_tendsto h_tendsto]
 
+/-- **The lift of the zero function is the zero function.** -/
+@[simp] lemma germLimitLift_zero :
+    germLimitLift (0 : X → ℂ) = (0 : X → ℂ) := by
+  ext x
+  -- The constant zero function is continuous everywhere; germLimitLift = self.
+  exact germLimitLift_eq_self_of_continuousAt continuousAt_const
+
+/-- **The lift of the constant function `c` is the constant function
+`c`.** -/
+@[simp] lemma germLimitLift_const (c : ℂ) :
+    germLimitLift (fun _ : X => c) = (fun _ : X => c) := by
+  ext x
+  exact germLimitLift_eq_self_of_continuousAt continuousAt_const
+
 end JacobianChallenge
 
 end
