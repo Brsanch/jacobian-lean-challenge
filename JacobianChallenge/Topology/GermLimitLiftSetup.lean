@@ -86,6 +86,14 @@ lemma germLimitLift_eq_self_of_continuousAt
   ext x
   exact germLimitLift_eq_self_of_continuousAt continuousAt_const
 
+/-- **A globally continuous function is its own lift.** If `g` is
+continuous at every point, then `germLimitLift g = g`. -/
+lemma germLimitLift_eq_self_of_continuous {g : X → ℂ}
+    (h_cts : Continuous g) :
+    germLimitLift g = g := by
+  ext x
+  exact germLimitLift_eq_self_of_continuousAt h_cts.continuousAt
+
 end JacobianChallenge
 
 end
