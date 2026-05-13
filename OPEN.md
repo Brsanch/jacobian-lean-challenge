@@ -36,6 +36,24 @@ spec. Three statuses, with one tag for partial progress:
   it requires Abel-Jacobi (Phase 2).
 - **Previous scoreboard (2026-05-09, HEAD `5e601e8`):** 0/24 STRICT-CLOSED.
 
+**Period-lattice arc PL-1 closed 2026-05-13 (HEAD `8f4e0a7`):**
+Scoreboard unchanged (the PL-1 infrastructure does not directly flip
+items, but unblocks downstream PL-2 → PL-4 → period-lattice → items
+5/11/12/13/16/17/18/21).
+- `Manifold/ComplexManifoldRealification.lean` — `instance : IsManifold
+  𝓘(ℝ, ℂ) n X` from holomorphic structure.
+- `Manifold/HolomorphicOneFormRealComponent.lean` (400 LOC) — bundled
+  `realComponent` / `imagComponent : HolomorphicOneForm X → SmoothOneForm
+  𝓘(ℝ, ℂ) X` with full bundle-section smoothness chain (tangent-bundle
+  compatibility + cotangent commutativity + manifold scalar-restriction
+  bridge + section smoothness packaging).
+
+**Germfield arc closed 2026-05-13 (HEAD `2e5cfb4`):** item 14's
+`genus_eq_zero_iff_homeo` reduced to **one classical input**
+(`ExistsSimplePoleGermAtSomePoint X`) modulo the structural typeclass
+`[Subsingleton (HolomorphicOneForm X)]`. See `Topology/HTopFromSubsingleton.lean`
+for the single-input capstone.
+
 (CLOSURE_MAP §A col 4 originally predicted 12 items flip; with item 9 now
 STRICT-CLOSED via `Manifold/HPkgUnconditional.lean` +
 `Manifold/DegreeWellDefined.lean` the actual is 12.)
