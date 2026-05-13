@@ -204,15 +204,17 @@ items 1, 2, 5, 8, 9 will need infrastructure not in mathlib at the pin.
 - **Finite-dimensionality of `HolomorphicOneForm X`** on compact connected
   Riemann surface — needed for `genus X` to be the right integer. Hodge
   theory; not yet proved.
-- **Honest `PrincDiv X`** — requires the residue theorem on a compact Riemann
-  surface (∑_x ord_x f = 0). The other two classical inputs are now landed:
-  chart-independence of `mmeromorphicOrderAt` is unconditional in
-  `Manifold/MeromorphicAt.lean`, and local finiteness lives in
-  `Manifold/MeromorphicDivisor.lean` (`MMeromorphicOn.divisor`). The
-  `principalDivisorMap : MeromorphicNonzero X → Div X` is built in
-  `Divisor/PrincipalDivisor.lean`; the eventual honest `PrincDiv X` is
-  `AddSubgroup.range principalDivisorMap` once the residue-theorem leg
-  shows the range lands in `Div⁰`.
+- **Honest `PrincDiv X`** — *landed.* `PrincDiv X := PrincDivHonestCandidate X`
+  in `Divisor/PrincipalDivisorRange.lean` (post-ZZ256). The residue theorem
+  on a compact Riemann surface (∑_x ord_x f = 0) is **discharged
+  unconditionally** in-tree as `JacobianChallenge.residue_theorem`
+  (`Manifold/ResidueTheoremUnconditional.lean`), composing the R1+R2+R3+R4
+  chain via `R5Unconditional.R5_principal_degree_zero_statement_holds`.
+  Supporting infrastructure: chart-independence of `mmeromorphicOrderAt`
+  (`Manifold/MeromorphicAt.lean`), local finiteness
+  (`Manifold/MeromorphicDivisor.lean`'s `MMeromorphicOn.divisor`),
+  `principalDivisorMap` (`Divisor/PrincipalDivisor.lean`), and
+  pole-extension to `RiemannSphere` (`Manifold/MeromorphicExtension.lean`).
 - **Honest period lattice** as a rank-`2g` `Submodule ℤ` of `ℂ^g` — requires
   H₁(X; ℤ) for compact Riemann surfaces (not in mathlib at the pin) plus
   period-pairing integration of holomorphic 1-forms over loops.
@@ -246,7 +248,7 @@ items 1, 2, 5, 8, 9 will need infrastructure not in mathlib at the pin.
 - `Divisor/FiberPullback.lean` (~456 LOC after H1+H2+H3, 2026-04-26) — `Pic0.pullback (f, hf, N, hN)` via `divPullback` descent under constant-fibre-cardinality, plus full contravariant functoriality (`pullback_id`, `pullback_comp_apply`) and the divisor-side of item 24 (`Pic0.pushforward_pullback = N • id`, with `Div.singletonMap_fiberSum` as the divisor-level identity).
 - `Divisor/PrincipalDivisor.lean` (~350 LOC after I1, 2026-04-26) — `MeromorphicNonzero X` + `principalDivisorMap : MeromorphicNonzero X → Div X` + `CommMonoid (MeromorphicNonzero X)` + `principalDivisorMap_one` + `principalDivisorMap_mul` (multiplicativity).
 - `Divisor/PrincipalDivisorRange.lean` (~331 LOC, 2026-04-26) — `class PrincipalDivisorMultiplicative` (the `CommGroup`+lemmas typeclass) + `principalDivisorAddHom : Additive (MeromorphicNonzero X) →+ Div X` + `PrincDivHonestCandidate := principalDivisorAddHom.range` + `ResidueTheorem X : Prop` + `residueTheorem_iff_range_le_Div0` equivalence.
-- `Manifold/ResidueTheorem.lean` (~338 LOC, 2026-04-26) — `residue_theorem` skeleton with one named gap (R5) + Route A breakdown (R1+R2+R3+R4) + sorry-free `residue_theorem_of_routeA` conditional discharge. **The only file in the repo where `sorry` is allowed.**
+- `Manifold/ResidueTheorem.lean` (2026-04-26, headline retired 2026-05-13) — five named statements `R1`–`R5` (Route A breakdown) + sorry-free `residue_theorem_of_routeA` conditional discharge. No `sorry`. Headline `JacobianChallenge.residue_theorem` lives in `Manifold/ResidueTheoremUnconditional.lean`; R1–R5 discharges in `Manifold/ResidueTheoremFromRsum.lean` + `Manifold/R4FibreSumBalance.lean` + `Manifold/R5Unconditional.lean`.
 - `Topology/SurfaceGenus.lean` (~108 LOC) — `TopologicalGenus = finrank ℚ H₁` + invariance.
 - `Divisor.lean` (~225 LOC) — `Div X`, `Div.degree`, `degreeHom`, `Div0`, `Pic0` modulo `PrincDiv := ⊥` placeholder.
 - `Divisor/Single.lean` (~150 LOC) — `Div.single`, `degree_single = 1`, `single_sub_single_mem_Div0`.
@@ -286,7 +288,7 @@ items 1, 2, 5, 8, 9 will need infrastructure not in mathlib at the pin.
 - `Manifold/FibreCardWellDefinedAtRegular.lean` (ZZ155) — `fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo`: composes ZZ134+ZZ153+ZZ154 into the unfolded Hurwitz constant-card statement.
 - `Manifold/DegreeUnconditional.lean` (ZZ156) — `Basic.lean`'s `ContMDiff.degree` aligns with honest `degreeFiber` (signature-preserving swap demonstrated).
 
-Cumulative across all sessions: **~37,840+ LOC across 162+ files**. ZZ256 (P1.5) routed `PrincDiv := PrincDivHonestCandidate` (the multiplicative range of `principalDivisorAddHom`) — this bypassed the R5 gap as the entry path; the residue theorem still gates `PrincDiv ⊆ Div⁰` (item 11 `CompactSpace`) but is no longer the bottleneck for strict-closing the functoriality stack. Eleven items strict-closed via the P1.4/P1.5 cascade: items 2, 3 (honest `Jacobian` + group), 6, 7, 8 (honest `ofCurve`, pushforward, pullback through divisor-level descent), 15, 19, 20 (proof-honest functoriality bodies, now over honest objects), 22, 23, 24 (honest pullback functoriality + degree formula via `pushforward_pullbackHonest_of_rsum`).
+Cumulative across all sessions: **~37,840+ LOC across 162+ files**. ZZ256 (P1.5) routed `PrincDiv := PrincDivHonestCandidate` (the multiplicative range of `principalDivisorAddHom`) — this bypassed the R5 gap as the entry path for strict-closing the functoriality stack. The residue theorem itself (R5 / `PrincDiv ⊆ Div⁰`) is now **discharged unconditionally** in `Manifold/ResidueTheoremUnconditional.lean` (2026-05-13), so the `PrincDivHonestCandidate ≤ Div0`/R5 trigger in `Divisor/StrictClosurePath.lean` is no longer conditional; what remains for item 11 (`CompactSpace (Jacobian X)`) is the Phase-2 period-lattice quotient topology, not the residue theorem. Eleven items strict-closed via the P1.4/P1.5 cascade: items 2, 3 (honest `Jacobian` + group), 6, 7, 8 (honest `ofCurve`, pushforward, pullback through divisor-level descent), 15, 19, 20 (proof-honest functoriality bodies, now over honest objects), 22, 23, 24 (honest pullback functoriality + degree formula via `pushforward_pullbackHonest_of_rsum`).
 
 ## Honest scoring (post-ZZ256, 2026-05-12)
 

@@ -59,21 +59,24 @@ so the equivalence is `Iff.rfl`. We name the lemma anyway, with the
 unfolding documented, because:
 
 * it makes the *equality of statements* explicit rather than implicit;
-* downstream consumers (and the `Manifold/ResidueTheorem.lean` skeleton)
-  can route through either name, and any future change of either side
-  immediately produces a compile-time mismatch caught here;
-* it pins the structural decomposition: R1+R2+R3 (in `Manifold/ResidueTheorem.lean`)
-  set up the topological-degree machinery, and R4 *is* the complete
-  remaining content of the residue theorem.
+* downstream consumers can route through either name, and any future
+  change of either side immediately produces a compile-time mismatch
+  caught here;
+* it pins the structural decomposition: R1+R2+R3 (in
+  `Manifold/ResidueTheorem.lean`) set up the topological-degree
+  machinery, and R4 *is* the complete remaining content of the residue
+  theorem.
 
 ## Anti-overclaim
 
 This file does **not** prove R4. Both sides of
 `R4_signedMult_zero_iff_residueTheorem` are *statements*, and the lemma
-shows them to be the same statement. The deep classical content remains
-`Manifold/ResidueTheorem.lean`'s `residue_theorem` `sorry`, which is
-named (R5 in the Route-A decomposition) and which decomposes through
-R1+R2+R3+R4 in this file's R4 form.
+shows them to be the same statement. The R4 discharge itself lives in
+`Manifold/R4FibreSumBalance.lean`
+(`R4_fibreSum_balance_statement_holds`), which routes through the
+in-tree chart-integral, ramification-sum, and topological-degree chips
+and is then consumed by `Manifold/ResidueTheoremUnconditional.lean`'s
+headline `residue_theorem`.
 
 This file:
 
