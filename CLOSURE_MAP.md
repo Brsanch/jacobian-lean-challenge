@@ -333,7 +333,7 @@ The mechanical glue through these four inputs to item 14 STRICT-CLOSED
 is now complete (zz331). Each remaining input is a concrete classical
 theorem with explicit textbook references (Forster Ch. 11).
 
-**Update 2026-05-13 part 3 (zz337–zz362 chain, ~3,400 LOC landed).**
+**Update 2026-05-13 part 3 (zz337–zz366 chain, ~3,750 LOC landed).**
 The `RiemannRochGenusZero X` input has been **architecturally
 reduced** to a single deeper open hypothesis. Specifically:
 
@@ -372,6 +372,13 @@ reduced** to a single deeper open hypothesis. Specifically:
   full closure chain `RR_DimGE2_GenusZero + LiftToMeromorphicNonzero
   ⇒ RiemannRochGenusZero` (zz362, naming the technical lifting
   hypothesis explicitly).
+
+* zz363–zz366 — germLimit-based lift candidate (`germLimitLift`)
+  setup with zero/const trivial cases (zz363, zz364); existence of
+  punctured-nhd limit for `g ∈ L(δp)` at non-pole points via
+  `tendsto_nhds_of_meromorphicOrderAt_nonneg` + chart-transport
+  (zz365); `GermCoherentOff` predicate naming the canonicalisation
+  property + `GermCoherentLift_Discharge` named hypothesis (zz366).
 
 **Item 14 frontier after zz337–zz362** (the `RiemannRochGenusZero X`
 thread is now reduced to TWO concrete named classical inputs):
