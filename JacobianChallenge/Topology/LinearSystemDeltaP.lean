@@ -131,6 +131,53 @@ lemma IsBoundedByDeltaP.add {p : X} {f g : X → ℂ}
       le_min hf_p hg_p
     exact h_min_neg1.trans h_min
 
+/-- **Scalar-multiplication closure.** `f ∈ L(δp) ⇒ c • f ∈ L(δp)`. -/
+lemma IsBoundedByDeltaP.smul {p : X} {f : X → ℂ}
+    (c : ℂ) (hf : IsBoundedByDeltaP p f) :
+    IsBoundedByDeltaP p (c • f) := by
+  by_cases hc : c = 0
+  · -- c = 0: c • f = 0.
+    have h_eq : (c • f) = (0 : X → ℂ) := by
+      ext x; simp [hc]
+    rw [h_eq]
+    exact IsBoundedByDeltaP.zero p
+  · -- c ≠ 0: order of c • f matches order of f.
+    obtain ⟨hf_mero, hf_off, hf_p⟩ := hf
+    refine ⟨?_, ?_, ?_⟩
+    · -- MMeromorphicOn closure.
+      intro x _
+      have hxf : MMeromorphicAt (𝓘(ℂ, ℂ)) f x := hf_mero x (Set.mem_univ x)
+      show MeromorphicAt ((c • f) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+      have h_unf : (c • f) ∘ (chartAt ℂ x).symm
+          = (fun _ : ℂ => c) • (f ∘ (chartAt ℂ x).symm) := by
+        ext; simp [Pi.smul_apply]
+      rw [h_unf]
+      exact (MeromorphicAt.const c _).smul hxf
+    · -- Order off p ≥ 0.
+      intro x hx
+      have hxf : MMeromorphicAt (𝓘(ℂ, ℂ)) f x := hf_mero x (Set.mem_univ x)
+      -- Goal: 0 ≤ mmeromorphicOrderAt _ (c • f) x.
+      show 0 ≤ meromorphicOrderAt ((c • f) ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+      have h_unf : (c • f) ∘ (chartAt ℂ x).symm
+          = (fun _ : ℂ => c) • (f ∘ (chartAt ℂ x).symm) := by
+        ext; simp [Pi.smul_apply]
+      rw [h_unf]
+      -- meromorphicOrderAt_smul: order((const c) • f) = order(const c) + order(f) = 0 + order(f).
+      rw [meromorphicOrderAt_smul (MeromorphicAt.const c _) hxf]
+      rw [meromorphicOrderAt_const _ c, if_neg hc]
+      rw [zero_add]
+      exact hf_off x hx
+    · -- Order at p ≥ -1.
+      have hxf : MMeromorphicAt (𝓘(ℂ, ℂ)) f p := hf_mero p (Set.mem_univ p)
+      show ((-1 : ℤ) : WithTop ℤ) ≤
+        meromorphicOrderAt ((c • f) ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p)
+      have h_unf : (c • f) ∘ (chartAt ℂ p).symm
+          = (fun _ : ℂ => c) • (f ∘ (chartAt ℂ p).symm) := by
+        ext; simp [Pi.smul_apply]
+      rw [h_unf, meromorphicOrderAt_smul (MeromorphicAt.const c _) hxf,
+          meromorphicOrderAt_const _ c, if_neg hc, zero_add]
+      exact hf_p
+
 /-- **Constant functions are in `L(δp)`.** A non-zero constant `c`
 has order `0` everywhere; the zero constant is covered by
 `IsBoundedByDeltaP.zero`. -/
@@ -163,6 +210,23 @@ lemma IsBoundedByDeltaP.const (p : X) (c : ℂ) :
         rw [WithTop.coe_le_coe]
         decide
       exact this
+
+/-- **`L(δp)` packaged as a `ℂ`-vector subspace of `X → ℂ`.** With this
+in scope, standard linear-algebra dim machinery (basis extension,
+`finrank`, dimension counting) becomes available for `L(δp)`. -/
+def linearSystemDeltaP {X : Type u}
+    [TopologicalSpace X] [ChartedSpace ℂ X]
+    (p : X) : Submodule ℂ (X → ℂ) where
+  carrier := {f | IsBoundedByDeltaP p f}
+  zero_mem' := IsBoundedByDeltaP.zero p
+  add_mem' := IsBoundedByDeltaP.add
+  smul_mem' c _f hf := IsBoundedByDeltaP.smul c hf
+
+/-- Membership in `linearSystemDeltaP p` is by definition
+`IsBoundedByDeltaP p`. -/
+@[simp] lemma mem_linearSystemDeltaP {X : Type u}
+    [TopologicalSpace X] [ChartedSpace ℂ X] (p : X) (f : X → ℂ) :
+    f ∈ linearSystemDeltaP p ↔ IsBoundedByDeltaP p f := Iff.rfl
 
 end JacobianChallenge
 
