@@ -289,6 +289,7 @@ import JacobianChallenge.Manifold.WithinChartWitnessReduction
 import JacobianChallenge.Manifold.ZeroCountEqPoleCount
 import JacobianChallenge.Topology.Genus0ImpliesS2Reduction
 import JacobianChallenge.Topology.ExistenceBridge
+import JacobianChallenge.Topology.ExistenceFromFinrank
 import JacobianChallenge.Topology.ExistsMeroSimplePoleSplit
 import JacobianChallenge.Topology.Item14ForRiemannSphere
 import JacobianChallenge.Topology.Item14ClassInstance
