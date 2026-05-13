@@ -66,10 +66,20 @@ items). 545 LOC across 3 new files.
   `complexPeriodHom` (additive in cycle arg) and `re_`/`im_`
   projection lemmas. (ℂ-scaling in form arg still deferred.)
 
-**Period-lattice arc PL-3e closed 2026-05-13:** Scoreboard unchanged
-(PL-3e is structural; it closes the integrability gap that blocked
-form-side additivity of every chain/cycle integral, including
-`complexPeriod`). +307 LOC, 1 new file.
+**Period-lattice arc PL-3e + ℂ-scaling closed 2026-05-13:** Scoreboard
+unchanged (structural; completes ℂ-linearity of the complex-valued
+period pairing in the form argument). +307 LOC PL-3e + 165 LOC ℂ-scaling,
+2 new files.
+
+* `Manifold/ComplexPeriodSmulRight.lean` (165 LOC) — `realPart_smul` /
+  `imagPart_smul` (pointwise + bundled), `realComponent_smul` /
+  `imagComponent_smul` (`SmoothOneForm`-valued), `complexPeriod_smul_right
+  : complexPeriod c (z • om) = z * complexPeriod c om`, and the bundled
+  `complexPeriodLinearMap : HolomorphicOneForm X →ₗ[ℂ] ℂ` (with cycle
+  fixed). Closes the algebraic-mixing-of-Re/Im step that was orthogonal
+  to PL-3e's integrability work.
+
+
 - `Manifold/SmoothPathIntegrability.lean` (307 LOC) — proves
   `SmoothPath.intervalIntegrable_integrand` (the integrand of the path
   integral is `IntervalIntegrable` on `[0, 1]`) via pointwise
