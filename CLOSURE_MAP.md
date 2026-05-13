@@ -333,6 +333,56 @@ The mechanical glue through these four inputs to item 14 STRICT-CLOSED
 is now complete (zz331). Each remaining input is a concrete classical
 theorem with explicit textbook references (Forster Ch. 11).
 
+**Update 2026-05-13 part 3 (zz337–zz358 chain, ~3,000 LOC landed).**
+The `RiemannRochGenusZero X` input has been **architecturally
+reduced** to a single deeper open hypothesis. Specifically:
+
+* zz337 — decomposed `RiemannRochGenusZero X` into
+  `ExistsMeroSimplePole_GenusZero X` (existence) +
+  `MeroSinglePoleExtendsToDeg1Map X` (analytic bridge).
+* zz338–zz341 — closed the analytic bridge conditional on a named
+  `ChartPullback_Deriv_AtSimplePole_NeZero` regularity certificate:
+  ∞-fibre singleton, non-constancy from any pole,
+  `RegularValueWitness` builder, `degreeFiber = 1`.
+* zz342 — wrapped the bridge as a `UniformSimplePoleRegularity X`
+  universal hypothesis.
+* zz343–zz344 — proved `UniformSimplePoleRegularity X`
+  UNCONDITIONALLY via mathlib's `meromorphicOrderAt_eq_int_iff` +
+  analytic-reciprocal extension + `Filter.EventuallyEq.deriv_eq`,
+  bridging chart pullback with the south chart of `RiemannSphere`.
+* zz345 — single-input wiring; `RiemannRochGenusZero X` ⇐
+  `ExistsMeroSimplePole_GenusZero X` only.
+* zz346 — further split: `ExistsMeroSimplePole_GenusZero X` ⇐
+  `ExistsNonConstantBoundedByDeltaP_GenusZero X` (existence in L(δp))
+  + `LiouvilleOnCompactConnected X` (holomorphic functions on
+  compact connected RS are constant).
+* zz347–zz350 — proved `LiouvilleOnCompactConnected X`
+  UNCONDITIONALLY: chart-level max-modulus via
+  `Complex.eventually_eq_of_isLocalMax_norm` + clopen globalisation
+  on connected X.
+* zz352–zz358 — built the `linearSystemDeltaP p : Submodule ℂ
+  (X → ℂ)` infrastructure: `IsBoundedByDeltaP` predicate with
+  zero/add/smul/const closure laws, constants subspace, `finrank` of
+  constants = 1, strict-gt-constants iff exists-non-constant,
+  `RR_DimGE2_GenusZero` dimension form with forward bridge to
+  strict-gt, API extraction lemmas.
+
+**Item 14 frontier after zz337–zz358** (the `RiemannRochGenusZero X`
+input has been deepened to one open classical hypothesis):
+
+| Input | Status | Classical content | Est. LOC |
+|---|---|---|---|
+| `ExistsNonConstantBoundedByDeltaP_GenusZero X` (equivalent: `RR_DimGE2_GenusZero X` finrank ≥ 2 of `linearSystemDeltaP p`) | open | Riemann-Roch formula + Serre duality at `δp` for genus 0 | 6,000–10,000 |
+| `Surjective_of_NonConstant_Analytic_Manifold X RS` | open | Manifold open-mapping + clopen | 600–1,200 |
+| `BijectiveAnalyticIsBiholomorphism X` | open | Inverse function theorem at ram-idx = 1 | 800–1,500 |
+| Topological-sphere branch | open | Surface classification / uniformization-for-S² | 6,000–13,000 |
+
+The analytic bridge half of the Forster Theorem 16.9 route is
+unconditionally closed. The remaining `RiemannRochGenusZero`-thread
+work is the heavy Riemann-Roch formula + Serre duality classical
+content (multi-thousand-LOC L²-Hodge or sheaf cohomology, not in
+mathlib at the pin).
+
 ### D.3 — Phase 4 (item 1: `genus X` honest)
 
 `genus X = Module.finrank ℂ (HolomorphicOneForm X)` is the definition; the strict bar requires `HolomorphicOneForm X` to be the right object AND finite-dimensional.
