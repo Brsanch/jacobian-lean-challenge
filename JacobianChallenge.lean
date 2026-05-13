@@ -277,6 +277,7 @@ import JacobianChallenge.Manifold.SmoothPathIntegral
 import JacobianChallenge.Manifold.StokesCompactSurface
 import JacobianChallenge.Manifold.StokesDisk
 import JacobianChallenge.Manifold.StokesDiskClosedForm
+import JacobianChallenge.Manifold.ToRSNonConstantFromSinglePole
 import JacobianChallenge.Manifold.TopologicalDegree
 import JacobianChallenge.Manifold.WithinChartWitnessReduction
 import JacobianChallenge.Manifold.ZeroCountEqPoleCount
