@@ -64,8 +64,25 @@ items). 545 LOC across 3 new files.
   `complexPeriod c om := Re ∫_c om + i · Im ∫_c om` on
   `SmoothCycle 𝓘(ℝ, ℂ) X × HolomorphicOneForm X`, plus
   `complexPeriodHom` (additive in cycle arg) and `re_`/`im_`
-  projection lemmas. ℂ-linearity in the form arg is deferred
-  (needs `intervalIntegrable` chart-pullback witnesses).
+  projection lemmas. (ℂ-scaling in form arg still deferred.)
+
+**Period-lattice arc PL-3e closed 2026-05-13:** Scoreboard unchanged
+(PL-3e is structural; it closes the integrability gap that blocked
+form-side additivity of every chain/cycle integral, including
+`complexPeriod`). +307 LOC, 1 new file.
+- `Manifold/SmoothPathIntegrability.lean` (307 LOC) — proves
+  `SmoothPath.intervalIntegrable_integrand` (the integrand of the path
+  integral is `IntervalIntegrable` on `[0, 1]`) via pointwise
+  `Continuous.intervalIntegrable`, with continuity proved on chart-source
+  neighborhoods using `inTangentCoordinates` / `mfderiv_const` on the
+  velocity side, `cotangentSection_contMDiffAt_iff` on the form side,
+  and tangent-cocycle chart-invariance of the pairing. Drops the
+  integrability hypotheses from `SmoothPath.integrate_add`
+  (`integrate_add_unconditional`); promotes chain/cycle integrals to
+  form-additive (`SmoothChain.integrate_add_form`,
+  `SmoothCycle.integrate_add_form`); delivers
+  `complexPeriod_add_right` and the bundled `complexPeriodHomRight :
+  HolomorphicOneForm X →+ ℂ` in `ComplexPeriodPairing.lean`.
 
 **Germfield arc closed 2026-05-13 (HEAD `2e5cfb4`):** item 14's
 `genus_eq_zero_iff_homeo` reduced to **one classical input**
