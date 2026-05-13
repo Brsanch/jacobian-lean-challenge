@@ -94,6 +94,13 @@ lemma germLimitLift_eq_self_of_continuous {g : X → ℂ}
   ext x
   exact germLimitLift_eq_self_of_continuousAt h_cts.continuousAt
 
+/-- **The lift agrees with `g` everywhere when `g` is everywhere
+continuous** (alternative form, with the equality flipped). -/
+lemma self_eq_germLimitLift_of_continuous {g : X → ℂ}
+    (h_cts : Continuous g) :
+    g = germLimitLift g :=
+  (germLimitLift_eq_self_of_continuous h_cts).symm
+
 /-- **Idempotence under continuity.** If `g` is everywhere continuous,
 then applying `germLimitLift` twice equals applying it once (in fact
 both equal `g`). Tiny corollary of `germLimitLift_eq_self_of_continuous`. -/
