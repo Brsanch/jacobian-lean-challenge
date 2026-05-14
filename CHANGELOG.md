@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-05-14 — `mnRSInversion`: second principal-divisor generator on RS
+
+Sister chip to `mnRSSimplePole`. Builds the inversion function
+`RSInversion : RiemannSphere → ℂ` (`some z ↦ z⁻¹`, `∞ ↦ 0`)
+and packages it as a `MeromorphicNonzero RiemannSphere` with
+principal divisor `δ_∞ - δ_{some 0}` (simple zero at `∞`, simple
+pole at `some 0`).
+
+New file: `Manifold/MeromorphicNonzeroRSInversion.lean` (~200 LOC).
+
+* Chart-pullback identities: `RSInversion ∘ chartN.symm = (·)⁻¹`,
+  `RSInversion ∘ chartS.symm = id`.
+* `mnRSInversion : MeromorphicNonzero RiemannSphere` — packaged form.
+* Order at `∞` is `1` (chart-S pullback is `id`,
+  `meromorphicOrderAt_id`); order at finite is `≠ ⊤`; order at
+  `some 0` is `-1` (chart-N pullback is `(·)⁻¹`,
+  `meromorphicOrderAt_inv ∘ meromorphicOrderAt_id`).
+* Continuity at non-pole points: at finite `z ≠ 0` via
+  `continuousAt_inv₀`; at `∞` via `tendsto_inv₀_cobounded` (the
+  `1/w → 0` as `|w| → ∞` limit).
+
+Together with `mnRSSimplePole`, this gives two non-constant
+principal-divisor generators on RS whose divisors are
+sign-flipped (`δ_{some 0} - δ_∞` and `δ_∞ - δ_{some 0}`). Combined
+with future translation generators (`δ_{some a} - δ_∞`), they
+generate `Div0 RiemannSphere` and unblock unconditional
+`Subsingleton (Pic0 RiemannSphere)`.
+
+Build: 8707 jobs clean. Zero `sorry`, zero `axiom`.
+
 ## 2026-05-14 — `mnRSSimplePole`: first non-trivial principal-divisor generator on RS
 
 Lands the first non-constant `MeromorphicNonzero RiemannSphere` — the
