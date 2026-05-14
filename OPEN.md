@@ -350,17 +350,18 @@ linearSystemDivisor D` (the bundled embedding via
 `MeromorphicFunctionGerm X`). Gives the trivial `1 ≤ dim_ℂ L(D)` for
 effective `D` on a connected compact complex 1-manifold.
 
-**`dim_ℂ L(0) = 1` via Liouville landed 2026-05-13** (same branch):
+**`dim_ℂ L(0) = 1` UNCONDITIONAL landed 2026-05-13** (same branch):
 [`Topology/LinearSystemDivisorZeroLiouville.lean`](JacobianChallenge/Topology/LinearSystemDivisorZeroLiouville.lean)
-(~190 LOC) proves `linearSystemDivisor (0 : Div X) = constantsGerm X`
-conditional on `JacobianChallenge.LiouvilleOnCompactConnected X` (the
-existing named hypothesis from `Topology/ExistsMeroSimplePoleSplit.lean`;
-classical max-modulus content). Composes the canonicalize bridge
-`MMer.toMeromorphicNonzero` (from
-`Manifold/MeromorphicFunctionGermCanonicalize.lean`) with Liouville and
-`finrank_constantsGerm_eq_one` to give
-`finrank_linearSystemDivisor_zero_eq_one`. The remaining work for full
-genus-0 Riemann-Roch `dim_ℂ L(δp) ≥ 2` is `ExistsSimplePoleGerm` content.
+(~220 LOC) proves `linearSystemDivisor (0 : Div X) = constantsGerm X`
+**unconditionally** via composition with the existing
+`liouvilleOnCompactConnected_holds` discharge in
+[`Topology/HolomorphicLocallyConstantDischarge.lean`](JacobianChallenge/Topology/HolomorphicLocallyConstantDischarge.lean)
+(itself a clopen globalisation of `MaxModLocalConstancy`'s chart-level
+max-modulus + connectedness). Headline:
+`finrank_linearSystemDivisor_zero_eq_one_unconditional :
+Module.finrank ℂ (linearSystemDivisor 0) = 1`. The remaining work for
+full genus-0 Riemann-Roch `dim_ℂ L(δp) ≥ 2` is `ExistsSimplePoleGerm`
+content (the non-trivial RR + Serre-duality piece).
 
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 
