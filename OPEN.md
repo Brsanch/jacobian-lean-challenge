@@ -238,6 +238,24 @@ analytic-continuation argument. Either is genuinely a separate chip.
 1-manifold. Estimated 400–1,000 LOC on top of the two primitives
 above, modulo the ω-level structural caveat.
 
+## C3 sub-arc (genus-0 corner, 2026-05-14)
+
+`AbelHypothesis B` (Abel forward direction, `Manifold/AbelJacobiPic0.lean`)
+asserts that the divisor-level Abel-Jacobi map vanishes on every
+principal divisor. The general-genus content is the classical Stokes-on-2-chains
+argument (CLOSURE_MAP §F.3, est. 1,200–2,800 LOC of mathlib gaps).
+
+The **genus-0 corner** is now closed unconditionally in
+`Manifold/AbelHypothesisGenusZero.lean`. At `genus X = 0`:
+* `Fin (genus X) → ℂ = Fin 0 → ℂ` is `Unique` (`Pi.uniqueOfIsEmpty`).
+* `AnalyticJacobian = (Fin 0 → ℂ) ⧸ lattice` is therefore subsingleton.
+* `AbelHypothesis B` follows trivially — every value of
+  `B.abelJacobiDiv0Hom` is `0` in the subsingleton codomain.
+
+This closes one corner of C3 but does not flip any of items 4, 5, 10,
+11, 12, 13 (those are gated on the full `Pic⁰ ≃+ AnalyticJacobian`
+isomorphism at arbitrary genus, which still needs the Stokes content).
+
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 
 These are *not* part of the challenge directly, but the constructions for
