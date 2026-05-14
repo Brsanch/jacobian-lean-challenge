@@ -1,5 +1,67 @@
 # Changelog
 
+## 2026-05-14 — `feat/linear-system-divisor` branch (germ-field RR layer)
+
+15-commit branch (`957fdd0..380ac85`) building the full architectural
+reduction for genus-0 RR `dim_ℂ L(δp) ≥ 2` on the germ field. Net
++2807 LOC, zero `sorry`, zero `axiom`. After this branch, the
+content reduces to exactly two classical inputs: (i) uniformization at
+genus 0, and (ii) `LinearSystemGermDeltaPFiniteDim RiemannSphere`.
+
+**L(D) ambient on the germ field** (closes the architectural issue
+flagged earlier — pointwise `linearSystemDeltaP` was vacuously infinite
+via "blip" elements):
+- `Topology/LinearSystemDivisor.lean` — `linearSystemDivisor D :
+  Submodule ℂ (MeromorphicFunctionGerm X)` for any `D : Div X`, with
+  closure under `zero`/`add`/`smul`. Specialises to
+  `linearSystemGermDeltaP p` at `D = Div.single p`.
+- `Topology/LinearSystemDivisorConstants.lean` — `constantsToLinearSystemDivisor`
+  for effective `D`, with injectivity under `ConnectedSpace`.
+- `Topology/LinearSystemDivisorMono.lean` — monotonicity in `D`.
+- `Topology/LinearSystemDivisorMul.lean` — multiplicative grading
+  `L(D₁) · L(D₂) ⊆ L(D₁ + D₂)`.
+
+**Dim-bound layer**:
+- `Topology/LinearSystemDivisorZeroLiouville.lean` —
+  `linearSystemDivisor 0 = constantsGerm X` and
+  `finrank_linearSystemDivisor_zero_eq_one` (UNCONDITIONAL via
+  the existing `liouvilleOnCompactConnected_holds`).
+- `Topology/LinearSystemDivisorSimplePoleRank.lean` —
+  `LinearIndependent ℂ ![1, ψ]` from a simple-pole germ, then
+  `2 ≤ Module.rank ℂ (linearSystemGermDeltaP p)` (unconditional) and
+  `RR_DimGE2_GenusZero_Germ` discharge from `ExistsSimplePoleGerm` +
+  `LinearSystemGermDeltaPFiniteDim` (named hypothesis added).
+
+**Existence side — RS base case + transport**:
+- `Manifold/RiemannSphereSimplePole.lean` — explicit `RSSimplePole :
+  RiemannSphere → ℂ` (`some z ↦ z`, `∞ ↦ 0`), packaged as
+  `RSSimplePoleGerm` with simple pole at `∞`. Discharges
+  `ExistsSimplePoleGermAtSomePoint RiemannSphere` UNCONDITIONALLY.
+- `Manifold/MMeromorphicHolomorphicEquivTransport.lean` —
+  `mmeromorphicOrderAt` preservation through a `HolomorphicEquiv`
+  (composes existing `contMDiff_omega_analyticAt_chart_pullback` +
+  `deriv_chart_pullback_ne_zero_of_injective` + mathlib's
+  `meromorphicOrderAt_comp_of_deriv_ne_zero`).
+- `Topology/ExistsSimplePoleGermFromHolomorphicEquivRS.lean` —
+  `Nonempty (HolomorphicEquiv X RS) → ExistsSimplePoleGermAtSomePoint X`.
+
+**Finite-dim side — transport**:
+- `Manifold/MeromorphicFunctionGermHolomorphicEquivPullback.lean` —
+  germ-field pullback `MeromorphicFunctionGerm Y → MeromorphicFunctionGerm
+  X` via composition with `e`, preserving `orderAt`.
+- `Topology/LinearSystemGermDeltaPHolomorphicEquivTransport.lean` —
+  `IsBoundedByDeltaPGerm` iff under pullback; bundled `LinearMap`
+  between `L(δ(e p))` and `L(δp)`.
+- `Topology/LinearSystemGermDeltaPFiniteDimTransport.lean` —
+  `LinearEquiv` packaging + `Module.Finite.equiv` to transport
+  `LinearSystemGermDeltaPFiniteDim`.
+
+**Final assembly**:
+- `Topology/RRDimGE2FromUniformizationAndFiniteDim.lean` /
+  `Topology/RRDimGE2FromUniformizationAndFiniteDimRS.lean` —
+  `rr_DimGE2_GenusZero_Germ_of_uniformization_and_RSFiniteDim` and
+  variants. Headline assembly.
+
 ## 2026-05-13 — Period-lattice arc PL-1 closed + germfield arc to main
 
 **Germfield arc (item 14 reduction)** — `2e5cfb4..main`:

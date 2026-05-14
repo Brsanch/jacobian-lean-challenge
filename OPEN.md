@@ -34,126 +34,11 @@ spec. Three statuses, with one tag for partial progress:
   items **5, 11, 12, 13, 14, 16, 17, 18, 21** = 9 items. Item 16
   (`ofCurve_inj`) reverted from STUB to OPEN as CLOSURE_MAP predicted —
   it requires Abel-Jacobi (Phase 2).
-- **Previous scoreboard (2026-05-09, HEAD `5e601e8`):** 0/24 STRICT-CLOSED.
 
-**Period-lattice arc PL-1 closed 2026-05-13 (HEAD `8f4e0a7`):**
-Scoreboard unchanged (the PL-1 infrastructure does not directly flip
-items, but unblocks downstream PL-2 → PL-4 → period-lattice → items
-5/11/12/13/16/17/18/21).
-- `Manifold/ComplexManifoldRealification.lean` — `instance : IsManifold
-  𝓘(ℝ, ℂ) n X` from holomorphic structure.
-- `Manifold/HolomorphicOneFormRealComponent.lean` (400 LOC) — bundled
-  `realComponent` / `imagComponent : HolomorphicOneForm X → SmoothOneForm
-  𝓘(ℝ, ℂ) X` with full bundle-section smoothness chain (tangent-bundle
-  compatibility + cotangent commutativity + manifold scalar-restriction
-  bridge + section smoothness packaging).
-
-**Period-lattice arc PL-2 closed 2026-05-13 (HEAD `fbb137f`):** Scoreboard
-unchanged (PL-2 is structural; unblocks PL-3 / PL-4 / the period-lattice
-items). 545 LOC across 3 new files.
-- `Manifold/SmoothCycle.lean` (173 LOC) — `SmoothCycle I X :=
-  ker(SmoothChain.boundary) : AddSubgroup (SmoothChain I X)`, basic API,
-  cycle-restricted real `integrate` and `integratePairingHom`.
-- `Manifold/H1SmoothMod.lean` (256 LOC) — named-hypothesis bundle
-  `StokesBoundaryInvariance I X` carrying `boundaries`, `closedForms`,
-  and the invariance gap; `H1 := SmoothCycle ⧸ boundaries` quotient;
-  `periodPairing : H1 → closedForms → ℝ` factored via `Quotient.liftOn'`
-  with half-bilinearity (zero/scalar in form arg, full additive in
-  chain arg).
-- `Manifold/ComplexPeriodPairing.lean` (116 LOC) — complex-valued
-  `complexPeriod c om := Re ∫_c om + i · Im ∫_c om` on
-  `SmoothCycle 𝓘(ℝ, ℂ) X × HolomorphicOneForm X`, plus
-  `complexPeriodHom` (additive in cycle arg) and `re_`/`im_`
-  projection lemmas. (ℂ-scaling in form arg still deferred.)
-
-**Period-lattice arc PL-3e + ℂ-scaling closed 2026-05-13:** Scoreboard
-unchanged (structural; completes ℂ-linearity of the complex-valued
-period pairing in the form argument). +307 LOC PL-3e + 165 LOC ℂ-scaling,
-2 new files.
-
-* `Manifold/ComplexPeriodSmulRight.lean` (~205 LOC) — `realPart_smul` /
-  `imagPart_smul` (pointwise + bundled), `realComponent_smul` /
-  `imagComponent_smul` (`SmoothOneForm`-valued), `complexPeriod_smul_right
-  : complexPeriod c (z • om) = z * complexPeriod c om`, the bundled
-  `complexPeriodLinearMap : HolomorphicOneForm X →ₗ[ℂ] ℂ` (with cycle
-  fixed), and the fully bundled ℂ-bilinear pairing
-  `complexPeriodBilinear : SmoothCycle 𝓘(ℝ, ℂ) X →+ HolomorphicOneForm X →ₗ[ℂ] ℂ`
-  (cycle-additive + form-ℂ-linear). Closes the algebraic-mixing-of-Re/Im
-  step orthogonal to PL-3e's integrability work, and packages the full
-  pairing API.
-
-* `Manifold/ComplexPeriodH1.lean` (266 LOC) — factors the complex pairing
-  through the `StokesBoundaryInvariance.H1` quotient against
-  `closedHolomorphicForms S : Submodule ℂ (HolomorphicOneForm X)`
-  (holomorphic forms whose real and imaginary components are both
-  Stokes-closed). Delivers
-  `complexPeriodH1 S : S.H1 → S.closedHolomorphicForms → ℂ` and the
-  bundled `complexPeriodH1Bilinear S : S.H1 →+ S.closedHolomorphicForms
-  →ₗ[ℂ] ℂ` — the H₁-side of the eventual Abel-Jacobi map. ℂ-scaling
-  closure of `closedHolomorphicForms` uses the PL-3e ℂ-scaling
-  identities (`realComponent (z • ω)` as ℝ-linear combination).
-
-
-- `Manifold/SmoothPathIntegrability.lean` (307 LOC) — proves
-  `SmoothPath.intervalIntegrable_integrand` (the integrand of the path
-  integral is `IntervalIntegrable` on `[0, 1]`) via pointwise
-  `Continuous.intervalIntegrable`, with continuity proved on chart-source
-  neighborhoods using `inTangentCoordinates` / `mfderiv_const` on the
-  velocity side, `cotangentSection_contMDiffAt_iff` on the form side,
-  and tangent-cocycle chart-invariance of the pairing. Drops the
-  integrability hypotheses from `SmoothPath.integrate_add`
-  (`integrate_add_unconditional`); promotes chain/cycle integrals to
-  form-additive (`SmoothChain.integrate_add_form`,
-  `SmoothCycle.integrate_add_form`); delivers
-  `complexPeriod_add_right` and the bundled `complexPeriodHomRight :
-  HolomorphicOneForm X →+ ℂ` in `ComplexPeriodPairing.lean`.
-
-**Germfield arc closed 2026-05-13 (HEAD `2e5cfb4`):** item 14's
-`genus_eq_zero_iff_homeo` reduced to **one classical input**
-(`ExistsSimplePoleGermAtSomePoint X`) modulo the structural typeclass
-`[Subsingleton (HolomorphicOneForm X)]`. See `Topology/HTopFromSubsingleton.lean`
-for the single-input capstone.
-
-**Item 14 forward-leg refactor 2026-05-13 (HEAD `f38de0f`):**
-`Topology/Item14ForwardFromFiniteDim.lean` (129 LOC) replaces the
-`[Subsingleton (HolomorphicOneForm X)]` typeclass on the germfield
-capstone with the weaker, Hodge-standard `[FiniteDimensional ℂ
-(HolomorphicOneForm X)]`. Under finite-dim + `ExistsSimplePoleGerm`,
-the open hypothesis `Genus0ImpliesS2 X` (forward leg of
-`SurfaceClassificationGenus`) is discharged: `genus X = 0` →
-`Subsingleton` (via existing `holomorphicOneForm_subsingleton_of_genus_eq_zero`)
-→ germfield capstone fires → homeomorphism `X ≃ₜ S²`. The reverse leg
-`S2ImpliesGenus0 X` (topological→geometric genus bridge) remains an
-explicit named hypothesis. Scoreboard unchanged (12/24); item 14's
-forward leg now sits on the single Hodge gap
-(`HolomorphicOneFormFiniteDim`) plus the single RR-side existence input
-(`ExistsSimplePoleGermAtSomePoint`).
-
-**Item 14 RR-thread `LiftToMeromorphicNonzero` refactor 2026-05-13
-(HEAD `88511d1`):** five new files (~990 LOC) factoring zz362's
-five-fold `LiftDecomposition` onto two named classical hypotheses via
-the continuity-strengthening axis. Each input of the decomposition is
-discharged separately:
-- `Topology/UniversalGermCoherentFromContinuity.lean` (223 LOC) —
-  inputs related to germ-coherence under off-pole continuity
-  (strengthened `IsBoundedByDeltaPContinuous`).
-- `Topology/LiftMeroOrderFromContinuity.lean` (190 LOC) — inputs (i)
-  `LiftMMeromorphicOn` and (iv) `LiftOrderPreserved` via
-  `MeromorphicAt.congr` + `meromorphicOrderAt_congr`.
-- `Topology/LiftNonConstancyFromContinuity.lean` (165 LOC) — input
-  (v) `LiftNotConstant` via the at-pole-germ-compatibility
-  strengthening `IsBoundedByDeltaPContinuousAtPole`.
-- `Topology/LiftNonvanishingFromIdentityTheorem.lean` (230 LOC) —
-  input (ii) `LiftNonvanishingGerm` via the named
-  `MeromorphicIdentityPropagation X` hypothesis (classical identity
-  theorem on connected complex 1-manifolds).
-- `Topology/LiftToMeromorphicNonzeroFromTwo.lean` (170 LOC) — final
-  composition: `LiftToMeromorphicNonzero X` from the two named
-  hypotheses (universal at-pole-germ-compatible continuity strengthening
-  + `MeromorphicIdentityPropagation X`).
-
-**Item 14 open content, after this session, factors onto four precise
-named classical inputs (down from five, post-`meromorphicIdentityPropagation_holds`):**
+**Item 14 open content factors onto four named classical inputs**
+(`MeromorphicIdentityPropagation X` was discharged via
+`Topology/LiftNonvanishingFromIdentityTheorem.lean`'s
+`meromorphicIdentityPropagation_holds`):
 1. `HolomorphicOneFormFiniteDim X` — Hodge finite-dim gap
    (`Manifold/HodgeFiniteDimensional.lean`).
 2. `ExistsSimplePoleGermAtSomePoint X` — RR-existence at genus 0
@@ -185,48 +70,15 @@ named classical inputs (down from five, post-`meromorphicIdentityPropagation_hol
    (`Topology/LiftNonConstancyFromContinuity.lean`'s
    `IsBoundedByDeltaPContinuousAtPole`).
 
-~~5. `MeromorphicIdentityPropagation X`~~ — **discharged unconditionally
-2026-05-13** by `meromorphicIdentityPropagation_holds` in
-`Topology/LiftNonvanishingFromIdentityTheorem.lean`, as a direct
-contrapositive of the pre-existing
-`MeromorphicFunctionField.mmeromorphicOrderAt_ne_top_forall` (clopen-on-`X`
-argument over mathlib's chart-pullback `meromorphicOrderAt_eq_top_iff`).
-`LiftToMeromorphicNonzeroFromTwo.liftToMeromorphicNonzero_from_strengthening_and_identity`
-no longer takes the identity-theorem hypothesis as an argument.
+Each input above is citable textbook content. Item 14 remains OPEN;
+the four named inputs are real classical math not at the mathlib pin
+`8e3c989...`.
 
-**Note on consumption:** input (4) and the `LiftToMeromorphicNonzero*`
-thread feed `LiftToMeromorphicNonzeroFromTwo`, which is currently
-imported only by the top-level manifest — no Item 14 closure currently
-routes through it. The active Item 14 routes are
-`Item14ForwardFromFiniteDim` (inputs 1/2/3) and `Item14FromGermfield`
-(`RR_DimGE2_GenusZero_Germ` + topological-sphere uniformization). The
-five-input enumeration is the count if/when the pointwise-thread
-discharge route is wired in.
-
-Each is citable textbook content. Scoreboard remains 12/24 (item 14 is
-still OPEN; the four remaining inputs above are real classical math
-that isn't at the mathlib pin `8e3c989...`).
-
-**Period-lattice arc PL-3e closed 2026-05-13 (HEAD `9cc83c8`):** four
-new commits (~four files) closing the chart-pullback integrability of
-`SmoothPath.integrand` and lifting the complex period pairing to a
-fully bundled ℂ-bilinear `H₁ × closedHolomorphic →ₗ[ℂ] ℂ`. Files added:
-`Manifold/SmoothPathIntegrandIntegrability.lean`,
-`Manifold/ComplexPeriodPairing*.lean`'s ℂ-scaling and bilinear
-factor-through extensions. Net effect: the previously-deferred
-ℂ-linearity-in-form-arg from PL-2's `ComplexPeriodPairing.lean` is now
-fully wired through PL-3a's `PeriodPairingData` bridge into
-`PeriodLatticeOfRankTwoG`.
-
-(CLOSURE_MAP §A col 4 originally predicted 12 items flip; with item 9 now
-STRICT-CLOSED via `Manifold/HPkgUnconditional.lean` +
-`Manifold/DegreeWellDefined.lean` the actual is 12.)
-
-> **`CLOSURE_MAP.md` (authored 2026-05-09, repo root) is now the live
-> source of truth.** It has the per-item map, mathlib status verified
-> against this repo's pin (`8e3c989...`), Phase 1–4 chip plans with
-> per-component LOC ranges, dependency DAG, and verification audit log.
-> Update `CLOSURE_MAP.md`, not this file, when items flip.
+> **`CLOSURE_MAP.md` (repo root) is the live source of truth.** It has
+> the per-item map, mathlib status verified against this repo's pin
+> (`8e3c989...`), Phase 1–4 chip plans with per-component LOC ranges,
+> dependency DAG, and verification audit log. Update
+> `CLOSURE_MAP.md`, not this file, when items flip.
 
 **Remaining LOC for full 24/24 STRICT-CLOSED (verified per-component):
 31,500–59,700 LOC.** Phase 1 ~2k (chippable now), Phase 2 ~15.5–29.6k
@@ -234,18 +86,9 @@ STRICT-CLOSED via `Manifold/HPkgUnconditional.lean` +
 Phase 3 ~7.1–15k (surface classification, blocked), Phase 4 ~6.9–12.8k
 (Hodge, blocked). See `CLOSURE_MAP.md` section F.
 
-**Phase 0 LOC merged 2026-05-09:** net **+9,200** total (11,310 added /
-2,108 deleted, including doc files; .lean-only net +8,776). Repo size at
-end of 2026-05-09 session: 49,526 LOC total in `*.lean` files (49,323
-inside `JacobianChallenge/` + 203-line top-level import manifest).
-
-**Current repo size (post-2026-05-13, HEAD `9cc83c8`):** **78,454 LOC**
-total in `*.lean` files (78,093 inside `JacobianChallenge/` + 361-line
-top-level import manifest). Net **+28,928** LOC since 2026-05-09 across
-the germfield arc + period-lattice arc PL-1/PL-2/PL-3a-e + item-14
-forward refactor + item-14 RR-thread refactor (five-fold
-LiftDecomposition → two named hypotheses) + the zz302–zz388 /
-zz344–zz380 RR-thread chips + residue-theorem headline closure.
+**Current repo size:** **82,895 LOC** total in `*.lean` files
+(82,509 inside `JacobianChallenge/` + 386-line top-level import
+manifest). See `CHANGELOG.md` for the per-branch history.
 
 Do not regenerate this list from context — query this file. Update this file
 whenever a status changes.
@@ -328,129 +171,23 @@ LOC for the germ field, ~300–500 LOC for L(D)), not chip-scale.
 without rebuilding the ambient. Treat the RR-thread as blocked on the
 germ-field refactor.
 
-**Germ-field L(D) generalisation landed 2026-05-13** (HEAD on `feat/linear-system-divisor`):
-[`Topology/LinearSystemDivisor.lean`](JacobianChallenge/Topology/LinearSystemDivisor.lean)
-(~270 LOC) defines `IsBoundedByDivisor D φ := ∀ y, -D(y) ≤ φ.orderAt y`
-and packages `linearSystemDivisor D : Submodule ℂ (MeromorphicFunctionGerm
-X)` for **any** divisor `D : Div X`, with closure under `zero`/`add`/`smul`
-via chart-pullback `meromorphicOrderAt_add` and `meromorphicOrderAt_smul`.
-Specialisation `linearSystemDivisor (Div.single p) = linearSystemGermDeltaP
-p` recovers the existing single-pole subspace. This completes the
-divisor-level half of the germ-field ambient called for above; what
-remains for the RR thread is dim-bound content (`finrank ℂ` machinery on
-top of an existence input like `ExistsSimplePoleGermAtSomePoint X`).
+**Status of the architectural fix (germ-field RR layer):** the
+`feat/linear-system-divisor` branch builds out the full germ-field
+substitute for the broken `linearSystemDeltaP`, including the
+existence side (`ExistsSimplePoleGermAtSomePoint` from a
+`HolomorphicEquiv X RiemannSphere`) and the
+`LinearSystemGermDeltaPFiniteDim` transport. After that branch, the
+genus-0 RR `dim_ℂ L(δp) ≥ 2` content on the germ field reduces to
+exactly two classical inputs:
 
-**First dim-bound layer landed 2026-05-13** (same branch):
-[`Topology/LinearSystemDivisorConstants.lean`](JacobianChallenge/Topology/LinearSystemDivisorConstants.lean)
-(~170 LOC) ships `constantsToLinearSystemDivisor D hD : ℂ →ₗ[ℂ]
-linearSystemDivisor D` (the bundled embedding via
-`Algebra.linearMap.codRestrict`) for effective `D`, plus the injectivity
-`constantsToLinearSystemDivisor_injective` under `ConnectedSpace X` (via
-`RingHom.injective` from the `Field` instance on
-`MeromorphicFunctionGerm X`). Gives the trivial `1 ≤ dim_ℂ L(D)` for
-effective `D` on a connected compact complex 1-manifold.
+1. Uniformization at genus 0:
+   `genus X = 0 → Nonempty (HolomorphicEquiv X RiemannSphere)`.
+2. `LinearSystemGermDeltaPFiniteDim RiemannSphere` — finite-dim L(δp)
+   on the single reference manifold (a concrete Laurent-series
+   computation on `RS`).
 
-**Final assembly: genus-0 RR dim ≥ 2 reduces to uniformization + L(δp) finite-dim ON RS landed 2026-05-14** (same branch):
-[`Topology/RRDimGE2FromUniformizationAndFiniteDimRS.lean`](JacobianChallenge/Topology/RRDimGE2FromUniformizationAndFiniteDimRS.lean)
-(~75 LOC). Composes the existence transport, the finite-dim transport,
-and the dim-form discharge into the headline
-`rr_DimGE2_GenusZero_Germ_of_uniformization_and_RSFiniteDim`. After
-this chip, the genus-0 RR dim ≥ 2 content on the germ field reduces
-to two classical inputs: (i) uniformization at genus 0, and (ii)
-`LinearSystemGermDeltaPFiniteDim RiemannSphere` (the finite-dim claim
-on the SINGLE reference manifold `RS`, a concrete Laurent-series
-computation).
-
-**Transport infrastructure landed 2026-05-14** (same branch):
-* [`Manifold/MeromorphicFunctionGermHolomorphicEquivPullback.lean`](JacobianChallenge/Manifold/MeromorphicFunctionGermHolomorphicEquivPullback.lean)
-  (~155 LOC) — pullback on `MeromorphicFunctionGerm` via
-  `HolomorphicEquiv`, with `orderAt` preservation.
-* [`Topology/LinearSystemGermDeltaPHolomorphicEquivTransport.lean`](JacobianChallenge/Topology/LinearSystemGermDeltaPHolomorphicEquivTransport.lean)
-  (~210 LOC) — `IsBoundedByDeltaPGerm` iff under pullback; bundled
-  `LinearMap` between `L(δ(e p))` and `L(δp)`.
-* [`Topology/LinearSystemGermDeltaPFiniteDimTransport.lean`](JacobianChallenge/Topology/LinearSystemGermDeltaPFiniteDimTransport.lean)
-  (~205 LOC) — `LinearEquiv` packaging + `Module.Finite.equiv`
-  transport for `LinearSystemGermDeltaPFiniteDim`.
-
-**Transport: `ExistsSimplePoleGermAtSomePoint X` from `HolomorphicEquiv X RS` landed 2026-05-14** (same branch):
-[`Manifold/MMeromorphicHolomorphicEquivTransport.lean`](JacobianChallenge/Manifold/MMeromorphicHolomorphicEquivTransport.lean)
-(~265 LOC) + [`Topology/ExistsSimplePoleGermFromHolomorphicEquivRS.lean`](JacobianChallenge/Topology/ExistsSimplePoleGermFromHolomorphicEquivRS.lean)
-(~160 LOC) discharge the uniformization step:
-
-* `HolomorphicEquiv.chartTransition_analyticAt` — chart transition is
-  analytic (via existing `contMDiff_omega_analyticAt_chart_pullback`).
-* `HolomorphicEquiv.chartTransition_deriv_ne_zero` — derivative non-zero
-  (via existing `deriv_chart_pullback_ne_zero_of_injective`).
-* `mmeromorphicOrderAt_holomorphicEquiv_comp` — order equality
-  `mmeromorphicOrderAt (f ∘ e) x = mmeromorphicOrderAt f (e x)` via
-  mathlib's `meromorphicOrderAt_comp_of_deriv_ne_zero`.
-* `MMeromorphicAt.holomorphicEquiv_comp_iff` — same for MMeromorphicAt.
-* `existsSimplePoleGermAtSomePoint_of_holomorphicEquiv_RS` — headline:
-  `Nonempty (HolomorphicEquiv X RiemannSphere) → ExistsSimplePoleGermAtSomePoint X`.
-
-Composing this with the unconditional RS base case (from the prior
-chip), the genus-0 RR existence side now reduces to **the
-uniformization theorem alone**: `genus X = 0 → Nonempty (HolomorphicEquiv
-X RiemannSphere)`. That input is the remaining classical content.
-
-**Simple-pole germ on `RiemannSphere` landed 2026-05-13** (same branch):
-[`Manifold/RiemannSphereSimplePole.lean`](JacobianChallenge/Manifold/RiemannSphereSimplePole.lean)
-(~225 LOC) constructs `RSSimplePole : RiemannSphere → ℂ` (`some z ↦ z`,
-`∞ ↦ 0`), packages as `MMer RiemannSphere`, and proves the germ has
-`orderAt ∞ = -1` and `orderAt (some z₀) ≥ 0`. Composing through
-`linearSystemGermDeltaP` gives
-**`existsSimplePoleGermAtSomePoint_RiemannSphere : ExistsSimplePoleGermAtSomePoint
-RiemannSphere`** — the base case of the genus-0 RR existence side.
-
-The general statement `ExistsSimplePoleGermAtSomePoint X` for a compact
-connected complex 1-manifold `X` at genus 0 reduces to this via a
-`HolomorphicEquiv X RiemannSphere` (uniformization at genus 0). That
-transport is the next chip.
-
-**Multiplicative grading `L(D₁) · L(D₂) ⊆ L(D₁ + D₂)` landed 2026-05-13** (same branch):
-[`Topology/LinearSystemDivisorMul.lean`](JacobianChallenge/Topology/LinearSystemDivisorMul.lean)
-(~115 LOC) ships `MeromorphicFunctionGerm.orderAt_mul : (φ * ψ).orderAt y =
-φ.orderAt y + ψ.orderAt y` (via chart pullback + mathlib's
-`meromorphicOrderAt_mul`), then `IsBoundedByDivisor.mul` and the
-Submodule-level inclusion `linearSystemDivisor_mul_le_linearSystemDivisor_add`
-(using `Submodule.mul` from `Algebra/Algebra/Operations`). The L(D)
-family is a graded ℂ-subalgebra structure on `MeromorphicFunctionGerm X`.
-
-**`L(D)` monotonicity in `D` landed 2026-05-13** (same branch):
-[`Topology/LinearSystemDivisorMono.lean`](JacobianChallenge/Topology/LinearSystemDivisorMono.lean)
-(~125 LOC) ships `linearSystemDivisor_mono : D₁ ≤ D₂ →
-linearSystemDivisor D₁ ≤ linearSystemDivisor D₂` (pointwise divisor
-order from `Function.locallyFinsuppWithin.le_def`), plus
-`linearSystemDivisor_zero_le_of_effective : L(0) ≤ L(D)` for effective
-`D` and `constantsGerm_le_linearSystemDivisor_of_effective`. Factors
-the constants embedding through `constantsGerm = L(0) ≤ L(D)` for the
-effective case.
-
-**`rank L(δp) ≥ 2` from a simple-pole germ landed 2026-05-13** (same branch):
-[`Topology/LinearSystemDivisorSimplePoleRank.lean`](JacobianChallenge/Topology/LinearSystemDivisorSimplePoleRank.lean)
-(~150 LOC) shows `LinearIndependent ℂ ![1, ψ]` whenever `ψ.orderAt p =
--1` via `LinearIndependent.pair_iff'` and order arithmetic at the pole
-(constants have order `0` or `⊤`, never `-1`). Transfers through
-`LinearMap.linearIndependent_iff` on `Submodule.subtype` and
-`LinearIndependent.cardinal_lift_le_rank` to give
-`rank_linearSystemGermDeltaP_ge_two_of_existsSimplePole :
-ExistsSimplePoleGermAtSomePoint X → ∃ p, 2 ≤ Module.rank ℂ
-(linearSystemGermDeltaP p)`. (Cardinal-valued rank, unconditional. The
-`Module.finrank ≥ 2` form needs finite-dimensionality of L(δp), which
-is the Riemann-Roch upper-bound side.)
-
-**`dim_ℂ L(0) = 1` UNCONDITIONAL landed 2026-05-13** (same branch):
-[`Topology/LinearSystemDivisorZeroLiouville.lean`](JacobianChallenge/Topology/LinearSystemDivisorZeroLiouville.lean)
-(~220 LOC) proves `linearSystemDivisor (0 : Div X) = constantsGerm X`
-**unconditionally** via composition with the existing
-`liouvilleOnCompactConnected_holds` discharge in
-[`Topology/HolomorphicLocallyConstantDischarge.lean`](JacobianChallenge/Topology/HolomorphicLocallyConstantDischarge.lean)
-(itself a clopen globalisation of `MaxModLocalConstancy`'s chart-level
-max-modulus + connectedness). Headline:
-`finrank_linearSystemDivisor_zero_eq_one_unconditional :
-Module.finrank ℂ (linearSystemDivisor 0) = 1`. The remaining work for
-full genus-0 Riemann-Roch `dim_ℂ L(δp) ≥ 2` is `ExistsSimplePoleGerm`
-content (the non-trivial RR + Serre-duality piece).
+See `CHANGELOG.md` for the per-file map of the
+`feat/linear-system-divisor` branch.
 
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 
