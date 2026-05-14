@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-05-15 — C3 sub-arc: algebra closure + analytic foundations (6 chips)
+## 2026-05-15 — C3 sub-arc: algebra closure + path-lift infrastructure (11 chips)
 
 Six chips landed reducing the open content of `AbelHypothesis B`
 (the C3 named hypothesis) from "discharge `AbelGeneratorPeriodCondition
@@ -52,15 +52,68 @@ chain construction.
    `OpenPartialHomeomorph ℂ ℂ` via
    `HasStrictFDerivAt.toOpenPartialHomeomorph`.
 
-**Net open content after the six chips.** `AbelHypothesis B` (general
+**Manifold-level local sheet** (1 chip, +223 LOC inside `MeromorphicNonzeroLocalSheet.lean`).
+
+* `manifoldLocalOph` — `OpenPartialHomeomorph X RiemannSphere` built
+  via two `restrOpen`s of `c.trans (φ'.trans d.symm)`: planar source
+  ∩ `c.target`, then outer ∩ `f.toRiemannSphere ⁻¹' d.source`.  Resulting
+  underlying function agrees with `f.toRiemannSphere` on its source
+  via `d.left_inv`.
+* `manifoldLocalOph_apply` / `mem_source_manifoldLocalOph` /
+  `mem_target_manifoldLocalOph`.
+* `localSheetData_at_regular` — assembles `LocalSheetData
+  f.toRiemannSphere (f.toRiemannSphere x₀) x₀` from `manifoldLocalOph`'s
+  fields.
+
+**`IsLocalHomeomorphOn` packaging** (1 chip,
+`MeromorphicNonzeroLocalSheet.lean`, +39 LOC).
+
+* `isLocalHomeomorphOn_toRiemannSphere` — `IsLocalHomeomorphOn
+  f.toRiemannSphere f.regularSet` via `IsLocalHomeomorphOn.mk` +
+  `manifoldLocalOph` + `manifoldLocalOph_apply`.
+* `continuousAt_toRiemannSphere_of_regular` /
+  `map_nhds_eq_of_regular` — corollaries.
+
+**Fiber finiteness at regular values** (1 chip,
+`Manifold/MeromorphicNonzeroFiberFinite.lean`, ~135 LOC).
+
+* `fiber_isClosed` — preimage of singleton in T1 codomain under
+  continuous `f.toRiemannSphere`.
+* `mem_regularSet_of_preimage_regularValue` — preimages of regular
+  values are regular points.
+* `fiber_finite_of_mem_regularValueSet` — compactness + isolation via
+  `IsCompact.elim_nhds_subcover` + `choose!`.
+
+**`HurwitzPatchingData` at every regular value** (1 chip,
+`Manifold/MeromorphicNonzeroHurwitzPatching.lean`, ~90 LOC).
+
+* `hurwitzPatchingData_at_regularValue` — composes
+  `HurwitzPatchingData.ofLocalSheets` with chip 7 (`localSheetData_at_regular`)
+  and chip 9 (`fiber_finite_of_mem_regularValueSet`).  Provides the
+  evenly-covered nbhd structure of a topological covering map at every
+  regular value.
+
+**Continuous local path lift** (1 chip,
+`Manifold/MeromorphicNonzeroLocalPathLift.lean`, ~120 LOC).
+
+* `exists_continuous_local_lift_of_continuous` — for `β : ℝ →
+  RiemannSphere` continuous with `β t₀ ∈ f.regularValueSet` and any
+  preimage `x₀`, produces an open `W ⊆ ℝ` ∋ t₀, a continuous local lift
+  `γ : ℝ → X = sheet.g ∘ β`, with `γ t₀ = x₀` and
+  `f.toRiemannSphere (γ t) = β t` for all `t ∈ W`.
+
+**Net open content after the 11 chips.** `AbelHypothesis B` (general
 genus) reduces to: discharge `f ∈ dischargedGenerators B` for every
 `f : MeromorphicNonzero X` whose `toRiemannSphere` is non-constant. The
-classical level-set chain Stokes argument is the remaining content.
-The analytic foundations (regular-value set, planar local biholomorphism
-at every regular point) are in-tree axiom-free.
+covering-map structure on `f.toRiemannSphere : f.toRiemannSphere ⁻¹'
+regularValueSet → regularValueSet` is now in-tree (via `LocalSheetData`,
+`HurwitzPatchingData`, `IsLocalHomeomorphOn`, fiber-finiteness, and
+continuous local path lift).  The remaining classical content is the
+*smooth* upgrade of the lift, *global* lift over the unit interval,
+the level-set chain definition, and the Stokes argument.
 
-Build at HEAD: `taskpolicy lake build` green, 8728 jobs. Zero `sorry`,
-zero `axiom`. +~800 LOC across 5 new files.
+Build at HEAD: `taskpolicy lake build` green, 8731 jobs. Zero `sorry`,
+zero `axiom`. +~1,400 LOC across 7 new files.
 
 ## 2026-05-15 — C1 sub-arc CLOSED: `SmoothPathConnected` on any preconnected complex 1-manifold
 
