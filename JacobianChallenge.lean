@@ -383,6 +383,7 @@ import JacobianChallenge.Manifold.MeromorphicNonzeroRSSimplePole
 import JacobianChallenge.Manifold.MeromorphicNonzeroRSInversion
 import JacobianChallenge.Manifold.MeromorphicNonzeroRSAffineFactor
 import JacobianChallenge.Manifold.Pic0RiemannSphereTrivial
+import JacobianChallenge.Manifold.Pic0RiemannSphereSubsingleton
 import JacobianChallenge.Manifold.AbelJacobiPoint
 import JacobianChallenge.Manifold.SmoothPathConnected
 import JacobianChallenge.Manifold.SmoothPathLinearInChart
