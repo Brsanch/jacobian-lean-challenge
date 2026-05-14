@@ -306,6 +306,45 @@ noncomputable def localSheetData_at_regular
     rw [← f.manifoldLocalOph_apply hnc hx₀ hsy_src]
     exact (f.manifoldLocalOph hnc hx₀).right_inv hy
 
+/-! ## `IsLocalHomeomorphOn` on the regular set (chip 8) -/
+
+/-- **`f.toRiemannSphere` is a local homeomorphism on `f.regularSet`.**
+
+Direct consequence of `manifoldLocalOph` (chip 7) + `manifoldLocalOph_apply`
++ `IsLocalHomeomorphOn.mk` (which accepts the weaker
+`Set.EqOn f e e.source` rather than global function equality). -/
+theorem isLocalHomeomorphOn_toRiemannSphere
+    (f : MeromorphicNonzero X)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere) :
+    IsLocalHomeomorphOn f.toRiemannSphere f.regularSet := by
+  refine IsLocalHomeomorphOn.mk f.toRiemannSphere f.regularSet ?_
+  intro x hx
+  refine ⟨f.manifoldLocalOph hnc hx, f.mem_source_manifoldLocalOph hnc hx, ?_⟩
+  intro y hy
+  exact (f.manifoldLocalOph_apply hnc hx hy).symm
+
+/-- **`f.toRiemannSphere` is continuous at every regular point.**
+Direct corollary of `IsLocalHomeomorphOn.continuousAt`. (Holds globally
+via `MeromorphicNonzero.toRiemannSphere_contMDiff`, but this version is
+exposed for direct downstream consumption.) -/
+theorem continuousAt_toRiemannSphere_of_regular
+    (f : MeromorphicNonzero X)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere)
+    {x : X} (hx : x ∈ f.regularSet) :
+    ContinuousAt f.toRiemannSphere x :=
+  (f.isLocalHomeomorphOn_toRiemannSphere hnc).continuousAt hx
+
+/-- **`f.toRiemannSphere` is open as a map on the regular set.** For
+every `x ∈ f.regularSet` and every neighbourhood `U` of `x`, the image
+`f.toRiemannSphere '' U` is a neighbourhood of `f.toRiemannSphere x`.
+Direct corollary of `IsLocalHomeomorphOn.map_nhds_eq`. -/
+theorem map_nhds_eq_of_regular
+    (f : MeromorphicNonzero X)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere)
+    {x : X} (hx : x ∈ f.regularSet) :
+    (𝓝 x).map f.toRiemannSphere = 𝓝 (f.toRiemannSphere x) :=
+  (f.isLocalHomeomorphOn_toRiemannSphere hnc).map_nhds_eq hx
+
 end MeromorphicNonzero
 
 end JacobianChallenge
