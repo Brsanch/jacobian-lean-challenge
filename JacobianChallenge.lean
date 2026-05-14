@@ -390,6 +390,7 @@ import JacobianChallenge.Manifold.AbelJacobiPoint
 import JacobianChallenge.Manifold.SmoothPathConnected
 import JacobianChallenge.Manifold.SmoothPathLinearInChart
 import JacobianChallenge.Manifold.SmoothPathLocalConvex
+import JacobianChallenge.Manifold.SmoothPathReverse
 import JacobianChallenge.Manifold.JacobianOfLatticeFromBundle
 import JacobianChallenge.Manifold.PeriodLatticeDiscretenessFromBilinear
 import JacobianChallenge.Manifold.PeriodPairingDataFromSmoothCycle
