@@ -263,6 +263,81 @@ theorem abelJacobiPath_eq_of_shared_endpoints
   exact complexChainPeriodVector_single_diff_mem_periodLatticeImage
     (γ := γ') (γ' := γ) hsrc.symm htgt.symm α
 
+/-! ## PL-4-B: chain-level Abel-Jacobi as `AddMonoidHom`
+
+The pathwise class extends ℤ-linearly to a chain-level map, sending
+each smooth 1-chain `c` to `[complexChainPeriodVector α c] mod lattice`.
+On `single γ` it reduces to `abelJacobiPath α h γ`. -/
+
+/-- **Chain-level period-vector additivity.** -/
+lemma complexChainPeriodVector_add
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (c₁ c₂ : SmoothChain 𝓘(ℝ, ℂ) X) :
+    complexChainPeriodVector α (c₁ + c₂)
+      = complexChainPeriodVector α c₁ + complexChainPeriodVector α c₂ := by
+  funext j
+  show complexChainPeriod (c₁ + c₂) (α j)
+      = complexChainPeriod c₁ (α j) + complexChainPeriod c₂ (α j)
+  exact complexChainPeriod_add_left c₁ c₂ (α j)
+
+/-- **Chain period vector as an `AddMonoidHom`.** Bundles
+`complexChainPeriodVector` together with the zero and add identities. -/
+def complexChainPeriodVectorHom
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X)) :
+    SmoothChain 𝓘(ℝ, ℂ) X →+ (Fin (JacobianChallenge.genus X) → ℂ) where
+  toFun := complexChainPeriodVector α
+  map_zero' := complexChainPeriodVector_zero α
+  map_add' := complexChainPeriodVector_add α
+
+@[simp] lemma complexChainPeriodVectorHom_apply
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (c : SmoothChain 𝓘(ℝ, ℂ) X) :
+    complexChainPeriodVectorHom α c = complexChainPeriodVector α c := rfl
+
+/-- **Chain-level Abel-Jacobi map.** Composes the chain period vector
+with the quotient projection
+`(Fin g → ℂ) →+ AnalyticJacobian data α h`. Sends a smooth 1-chain to
+its period-vector class. -/
+def abelJacobiChain
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (h : PeriodLatticeDiscretenessBundle (PeriodPairingData.ofSmoothCycle X) α) :
+    SmoothChain 𝓘(ℝ, ℂ) X →+ AnalyticJacobian (PeriodPairingData.ofSmoothCycle X) α h :=
+  (QuotientAddGroup.mk' (PeriodLatticeOfRankTwoG.ofBundle
+    (PeriodPairingData.ofSmoothCycle X) α h).lattice).comp
+      (complexChainPeriodVectorHom α)
+
+@[simp] lemma abelJacobiChain_apply
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (h : PeriodLatticeDiscretenessBundle (PeriodPairingData.ofSmoothCycle X) α)
+    (c : SmoothChain 𝓘(ℝ, ℂ) X) :
+    abelJacobiChain α h c
+      = QuotientAddGroup.mk (complexChainPeriodVector α c) := rfl
+
+/-- **`abelJacobiChain` on `single γ` equals `abelJacobiPath`.** -/
+@[simp] lemma abelJacobiChain_single
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (h : PeriodLatticeDiscretenessBundle (PeriodPairingData.ofSmoothCycle X) α)
+    (γ : SmoothPath 𝓘(ℝ, ℂ) X) :
+    abelJacobiChain α h (SmoothChain.single γ) = abelJacobiPath α h γ := rfl
+
+/-- **`abelJacobiChain` vanishes on cycles whose period vector is in the
+lattice** — in particular, vanishes on cycles whose period vector
+matches `periodVector` of some cycle (always true via `ofSmoothCycle`,
+so every cycle's period image *equals* its lattice image). -/
+lemma abelJacobiChain_cycle_eq_zero
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (h : PeriodLatticeDiscretenessBundle (PeriodPairingData.ofSmoothCycle X) α)
+    (c : SmoothCycle 𝓘(ℝ, ℂ) X) :
+    abelJacobiChain α h (c : SmoothChain 𝓘(ℝ, ℂ) X) = 0 := by
+  change (QuotientAddGroup.mk
+            (complexChainPeriodVector α (c : SmoothChain 𝓘(ℝ, ℂ) X)) :
+          AnalyticJacobian _ α h) = 0
+  rw [QuotientAddGroup.eq_zero_iff]
+  rw [PeriodLatticeOfRankTwoG.ofBundle_lattice]
+  rw [complexChainPeriodVector_of_cycle_eq_periodVector]
+  -- Goal: periodVector (ofSmoothCycle X) α c ∈ periodLatticeImage (ofSmoothCycle X) α
+  exact ⟨c, rfl⟩
+
 end JacobianChallenge
 
 end
