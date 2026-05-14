@@ -19,15 +19,14 @@ spec. Three statuses, with one tag for partial progress:
   placeholders. Not closure; it's a tag indicating the proof is real even
   though the underlying object is a stub.
 
-**Current scoreboard (post-ZZ256 P1.5, 2026-05-12):**
+**Current scoreboard:**
 
 - **STRICT-CLOSED:** **12 / 24** — items **2, 3, 6, 7, 8, 9, 15, 19, 20, 22,
-  23, 24**. ZZ256 landed `PrincDiv := PrincDivHonestCandidate` and
-  `Pic0` (honest, with manifold instances) in
-  `Divisor/PrincipalDivisorRange.lean`. `Pic0.pushforward (hf)` uses P1.4
-  via `JacobianPushforward.lean`. `Pic0.pullbackWeighted (h_desc)` uses
-  the sister descent `Pic0.divPullbackWeighted_descent_of_smooth` in
-  `JacobianPullback.lean` (genuine analytic chip).
+  23, 24**. Honest `PrincDiv := PrincDivHonestCandidate` and `Pic0`
+  (honest, with manifold instances) live in
+  `Divisor/PrincipalDivisorRange.lean`. `Pic0.pushforward (hf)` uses
+  `JacobianPushforward.lean`; `Pic0.pullbackWeighted (h_desc)` uses
+  `Pic0.divPullbackWeighted_descent_of_smooth` in `JacobianPullback.lean`.
 - **STUB (placeholder topology / target / pending discharge):** items
   **1, 4, 10** = 3 items.
 - **OPEN (sorry in `Basic.lean` or transitively via downstream sorry):**
@@ -86,8 +85,8 @@ the four named inputs are real classical math not at the mathlib pin
 Phase 3 ~7.1–15k (surface classification, blocked), Phase 4 ~6.9–12.8k
 (Hodge, blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **82,895 LOC** total in `*.lean` files
-(82,509 inside `JacobianChallenge/` + 386-line top-level import
+**Current repo size:** **83,109 LOC** total in `*.lean` files
+(82,722 inside `JacobianChallenge/` + 387-line top-level import
 manifest). See `CHANGELOG.md` for the per-branch history.
 
 Do not regenerate this list from context — query this file. Update this file
@@ -115,7 +114,7 @@ whenever a status changes.
 | 11 | `instance : CompactSpace (Jacobian X)` | **OPEN** | `sorry` in `Basic.lean`. Compactness needs the analytic-Jacobian quotient topology (period-lattice), Phase 2. |
 | 12 | `instance : IsManifold ... ω (Jacobian X)` | **OPEN** | `sorry`. Requires analytic-Jacobian construction. `AnalyticTorus X` has an honest `IsManifold` instance modulo `Λ = ⊥`; not wired into `Jacobian`. |
 | 13 | `instance : LieAddGroup ... ω (Jacobian X)` | **OPEN** | `sorry`. Requires item 12 plus smoothness of group ops. |
-| 14 | `genus_eq_zero_iff_homeo` (anti-hack vs. `genus := 0`) | **OPEN** | `sorry`. Architecturally closed via zz331's `genus_eq_zero_iff_homeo_from_all_conditionals` ([Topology/Item14FinalComposition.lean](JacobianChallenge/Topology/Item14FinalComposition.lean)). After zz302–zz388 (~7,500+ LOC, 34 chips for RR-thread alone in zz337–zz370, +zz381 / zz382 / zz383–zz388). zz381 reduces `LiftRegularContinuousAt X` to germ-coherence (`UniversalGermCoherent`, `UniversalGermCoherentAtPole`) in [Topology/LiftRegularContinuousAtPole.lean](JacobianChallenge/Topology/LiftRegularContinuousAtPole.lean). zz382 discharges **input #3 unconditionally** (`Surjective_of_NonConstant_Analytic_Manifold X Y` is now a THEOREM in [Manifold/SurjectiveOfNonConstantDischarge.lean](JacobianChallenge/Manifold/SurjectiveOfNonConstantDischarge.lean), 412 LOC). zz383–zz388 discharge **input #4 unconditionally** (`BijectiveAnalyticIsBiholomorphism X` is now a THEOREM in [Manifold/BijectiveAnalyticDischarge.lean](JacobianChallenge/Manifold/BijectiveAnalyticDischarge.lean), 75 LOC, sitting on the Hurwitz-corollary chain `deriv_ne_zero_of_injOn_ball` (zz383) → chart-pullback inverse (zz384/zz385) → manifold inverse `ContMDiffAt` (zz386) → global `Function.invFun` smoothness (zz387)). **Status of remaining open inputs after 2026-05-13 architectural review + zz388 close:** (1) `RR_DimGE2_GenusZero X` — vacuously true under broken `linearSystemDeltaP` (see "Architectural issue" section below); needs germ-field refactor before it has Riemann-Roch content. (2) `LiftToMeromorphicNonzero X` — depends on sub-inputs #2/#3/#5/#6 of the six-input RR split which are false against the blip counterexample under current `linearSystemDeltaP`. (3) ~~`Surjective_of_NonConstant_Analytic_Manifold`~~ **CLOSED zz382**. (4) ~~`BijectiveAnalyticIsBiholomorphism`~~ **CLOSED zz388**. (5) topological-sphere-uniformization branch (`X ≃ₜ S² → ∃ HolomorphicEquiv X RS`) — multi-thousand LOC, classical surface theory. **Conclusion**: item 14 is blocked on either the germ-field refactor (RR side, inputs #1/#2) or the topological-sphere-uniformization branch (input #5). Inputs #3 and #4 are now closed. See CLOSURE_MAP.md §D.2 for the per-input LOC table. **Post-2026-05-13 (HEAD `88511d1`)**: forward leg + `LiftToMeromorphicNonzero` discharge both refactored. Item 14's open content now sits on exactly four named classical inputs: (1) `HolomorphicOneFormFiniteDim X`, (2) `ExistsSimplePoleGermAtSomePoint X`, (3) `S2ImpliesGenus0 X`, (4) universal at-pole-germ-compatible continuity strengthening of L(δp) [operational germ-field refactor]. The fifth `MeromorphicIdentityPropagation X` was discharged 2026-05-13 by `meromorphicIdentityPropagation_holds` (contrapositive of `MeromorphicFunctionField.mmeromorphicOrderAt_ne_top_forall`). See the chip log between `f38de0f` and the identity-theorem discharge for details. |
+| 14 | `genus_eq_zero_iff_homeo` (anti-hack vs. `genus := 0`) | **OPEN** | `sorry`. Architecturally closed via `genus_eq_zero_iff_homeo_from_all_conditionals` in [`Topology/Item14FinalComposition.lean`](JacobianChallenge/Topology/Item14FinalComposition.lean). Open content factors onto the four named classical inputs listed at the top of this file. |
 | 15 | `ofCurve_self : ofCurve P P = 0` | **STRICT-CLOSED** *(post-ZZ256)* | Real proof reducing to `[δP − δP] = 0` in honest `Pic⁰`. |
 | 16 | `ofCurve_inj` (anti-hack vs. `Jacobian := PUnit`) | **OPEN** *(post-ZZ256 regression)* | The previous STUB proof exploited `PrincDiv X = ⊥` to make the quotient faithful. Under honest `PrincDiv` that argument fails; `Jacobian.lean`'s `ofCurve_inj` is now `sorry` (Basic.lean transitively). Genuinely requires Abel–Jacobi (Phase 2). |
 | 17 | `Jacobian.ofCurve_contMDiff` | **OPEN** | `sorry`. Requires item 5 (`ChartedSpace`) plus a real `ofCurve`. |
@@ -127,9 +126,9 @@ whenever a status changes.
 | 23 | `pullback_comp_apply` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `pullbackHonest_of_rsum_comp` — the both-non-constant case delegates to `Div.fiberSumWeighted_comp_apply` with multiplicative ramification weights `manifoldRamificationIndex_comp_unconditional`. |
 | 24 | `pushforward_pullback : pushforward f (pullback f P) = degree f • P` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `pushforward_pullbackHonest_of_rsum` — case-splits on `IsConstantMap f`. Constant case: both sides zero. Non-constant: reduces to `Pic0.pushforward_pullbackWeighted` (in `JacobianPullback.lean`, using the new honest `Pic0.pushforward (hf)` signature). |
 
-## ⚠️ Architectural issue: RR-thread linear system (flagged 2026-05-13)
+## Architectural issue: RR-thread linear system (resolved on `feat/linear-system-divisor`)
 
-The current `linearSystemDeltaP p : Submodule ℂ (X → ℂ)` is defined over
+The legacy `linearSystemDeltaP p : Submodule ℂ (X → ℂ)` is defined over
 *pointwise* functions `X → ℂ`. This admits "essentially-zero" elements
 (e.g. `g(p_0) = 100, g(y) = 0 otherwise`) that satisfy `IsBoundedByDeltaP
 p g` and are not in `span ℂ {1}` (non-constant) yet have
@@ -151,43 +150,24 @@ Consequences:
    reduction stands cleanly; even so, the germ-coherence hypotheses
    themselves are about elements of the broken `linearSystemDeltaP`.
 
-**Fix requires germ-based ambient.** The honest L(δp) is a Submodule of
-germs (or equivalence classes modulo "essentially zero") of meromorphic
-functions, not raw `(X → ℂ)`. Patching `linearSystemDeltaP` to a
-sub-Submodule with the germ-canonicity predicate fails closure under
-addition (poles with cancelling residues create regular sums whose
-pointwise values at the pole are unconstrained → not germ-canonical).
-Similarly for `MeromorphicNonzero`-based formulations.
-
-**Right architecture**: define `MeromorphicFunctionField X` as the
-ℂ-algebra of germs of meromorphic functions on a connected complex
-1-manifold (using the existing `MMeromorphicOn` infrastructure but
-quotiented by punctured-nhd EventuallyEq), then `L(D)` as a Submodule of
-this field for any divisor `D`. This is mathlib-scale work (~800–1500
-LOC for the germ field, ~300–500 LOC for L(D)), not chip-scale.
-
-**Future-session guidance**: do not attempt to close inputs #2, #3, #5,
-#6 against the current `linearSystemDeltaP`. They cannot be discharged
-without rebuilding the ambient. Treat the RR-thread as blocked on the
-germ-field refactor.
-
-**Status of the architectural fix (germ-field RR layer):** the
-`feat/linear-system-divisor` branch builds out the full germ-field
-substitute for the broken `linearSystemDeltaP`, including the
-existence side (`ExistsSimplePoleGermAtSomePoint` from a
-`HolomorphicEquiv X RiemannSphere`) and the
-`LinearSystemGermDeltaPFiniteDim` transport. After that branch, the
-genus-0 RR `dim_ℂ L(δp) ≥ 2` content on the germ field reduces to
-exactly two classical inputs:
+**Resolution (`feat/linear-system-divisor` branch).** The germ-field
+ambient called for above has been built. `MeromorphicFunctionField X`
+(in `Manifold/MeromorphicFunctionField.lean`) provides the ℂ-algebra
+of meromorphic-function germs, and `linearSystemDivisor D` (in
+`Topology/LinearSystemDivisor.lean`) is the honest `L(D)` Submodule
+for any divisor `D : Div X`, with `linearSystemGermDeltaP p` as the
+`D = Div.single p` specialisation. The full chain — existence side
+via `HolomorphicEquiv X RiemannSphere` + finite-dim transport — is
+built, reducing the genus-0 RR `dim_ℂ L(δp) ≥ 2` content to three
+named classical inputs:
 
 1. Uniformization at genus 0:
    `genus X = 0 → Nonempty (HolomorphicEquiv X RiemannSphere)`.
-2. `LinearSystemGermDeltaPFiniteDim RiemannSphere` — finite-dim L(δp)
-   on the single reference manifold (a concrete Laurent-series
-   computation on `RS`).
+2. `LinearSystemAtInftyRS_BoundedBySimplePoleSpan` — polynomial-growth
+   Liouville bound at `∞ ∈ RS`.
+3. `ExistsMobiusToInftyRS` — Möbius transitivity on `RS`.
 
-See `CHANGELOG.md` for the per-file map of the
-`feat/linear-system-divisor` branch.
+See `CHANGELOG.md` for the per-file map.
 
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 
@@ -211,89 +191,27 @@ items 1, 2, 5, 8, 9 will need infrastructure not in mathlib at the pin.
 - **Honest period lattice** as a rank-`2g` `Submodule ℤ` of `ℂ^g` — requires
   H₁(X; ℤ) for compact Riemann surfaces (not in mathlib at the pin) plus
   period-pairing integration of holomorphic 1-forms over loops.
-- **Topological degree of proper holomorphic maps** between Riemann surfaces.
-  Three classical inputs were originally named in `Manifold/Degree.lean`. As of
-  2026-05-07: `fibres_finite_statement` and `regular_value_exists_statement`
-  are now **discharged unconditionally** in `Manifold/FibresFiniteUnconditional.lean`
-  and `Manifold/RegularValueExistsUnconditional.lean`. Only
-  `fibre_card_well_defined_statement` remains — and per ZZ127's audit the
-  original universe-quantified form is false at branched points; the viable
-  shape is `fibre_card_well_defined_at_regular_statement` (regular-value-restricted)
-  which still needs analytic local normal form `z ↦ z^k` (not in mathlib).
-  ZZ129 added a regular-value certificate to `RegularValueWitness`; ZZ134
-  reduced the regular-restricted statement to two analytic hypotheses.
+- **Topological degree of proper holomorphic maps** between Riemann
+  surfaces. `fibres_finite_statement` and `regular_value_exists_statement`
+  are discharged unconditionally (`Manifold/FibresFiniteUnconditional.lean`
+  / `RegularValueExistsUnconditional.lean`). Only
+  `fibre_card_well_defined_at_regular_statement` remains, and it still
+  needs the analytic local normal form `z ↦ z^k` (not at the mathlib pin).
 - **`genus_eq_zero_iff_homeo`** — closed-orientable-surface classification
   plus Riemann-sphere `ChartedSpace`. Multi-month.
 
-## Local infrastructure landed (honest, mathlib-PR-shape)
+## Local infrastructure
 
-- `Manifold/Cotangent.lean` (~285 LOC) — `CotangentBundle` as dual of `Tangent.lean`, with `ContMDiffVectorBundle` instance.
-- `Manifold/HolomorphicOneForm.lean` (~113 LOC) — `HolomorphicOneForm X` and `JacobianChallenge.genus X`.
-- `Manifold/MeromorphicAt.lean` (~580 LOC) — `MMeromorphicAt`, `MMeromorphicOn`, `mmeromorphicOrderAt`, **unconditional** chart-independence.
-- `Manifold/PathIntegral.lean` (~260 LOC) — `pathIntegralOnInterval` + 4 linearity lemmas.
-- `Manifold/RiemannSphere.lean` (~625 LOC) — `OnePoint ℂ` carrier, two-chart atlas, `IsManifold 𝓘(ℂ) ω` instance, `RiemannSphere ≃ₜ S²` homeomorphism.
-- `Manifold/PeriodLattice.lean` (~387 LOC) — `AnalyticTorus X := ℂ^g ⧸ ⊥` with full `ChartedSpace` + `IsManifold` instances modulo `Λ = ⊥` placeholder.
-- `Manifold/RiemannSphereMobius.lean` (~204 LOC) — `z ↦ −1/z` involution.
-- `Manifold/LocalMultiplicity.lean` (~155 LOC) — `degreeStub` (constant indicator).
-- `Manifold/Degree.lean` (~247 LOC, 2026-04-26) — `degreeFiber` + `RegularValueWitness` + named owed classical statements.
-- `Manifold/MeromorphicDivisor.lean` (~224 LOC, 2026-04-26) — `MMeromorphicOn.orderFun` + `divisor` packaging as `Function.locallyFinsuppWithin`.
-- `Divisor/FiberSum.lean` (~361 LOC, 2026-04-26) — `Div.fiberSum f hf` (divisor pullback under finite-fibres) + `fiberSum_id_apply` + `fiberSum_comp_apply` (full contravariant functoriality).
-- `Divisor/FiberPullback.lean` (~456 LOC after H1+H2+H3, 2026-04-26) — `Pic0.pullback (f, hf, N, hN)` via `divPullback` descent under constant-fibre-cardinality, plus full contravariant functoriality (`pullback_id`, `pullback_comp_apply`) and the divisor-side of item 24 (`Pic0.pushforward_pullback = N • id`, with `Div.singletonMap_fiberSum` as the divisor-level identity).
-- `Divisor/PrincipalDivisor.lean` (~350 LOC after I1, 2026-04-26) — `MeromorphicNonzero X` + `principalDivisorMap : MeromorphicNonzero X → Div X` + `CommMonoid (MeromorphicNonzero X)` + `principalDivisorMap_one` + `principalDivisorMap_mul` (multiplicativity).
-- `Divisor/PrincipalDivisorRange.lean` (~331 LOC, 2026-04-26) — `class PrincipalDivisorMultiplicative` (the `CommGroup`+lemmas typeclass) + `principalDivisorAddHom : Additive (MeromorphicNonzero X) →+ Div X` + `PrincDivHonestCandidate := principalDivisorAddHom.range` + `ResidueTheorem X : Prop` + `residueTheorem_iff_range_le_Div0` equivalence.
-- `Manifold/ResidueTheorem.lean` (2026-04-26, headline retired 2026-05-13) — five named statements `R1`–`R5` (Route A breakdown) + sorry-free `residue_theorem_of_routeA` conditional discharge. No `sorry`. Headline `JacobianChallenge.residue_theorem` lives in `Manifold/ResidueTheoremUnconditional.lean`; R1–R5 discharges in `Manifold/ResidueTheoremFromRsum.lean` + `Manifold/R4FibreSumBalance.lean` + `Manifold/R5Unconditional.lean`.
-- `Topology/SurfaceGenus.lean` (~108 LOC) — `TopologicalGenus = finrank ℚ H₁` + invariance.
-- `Divisor.lean` (~225 LOC) — `Div X`, `Div.degree`, `degreeHom`, `Div0`, `Pic0` modulo `PrincDiv := ⊥` placeholder.
-- `Divisor/Single.lean` (~150 LOC) — `Div.single`, `degree_single = 1`, `single_sub_single_mem_Div0`.
-- `Jacobian.lean` (~470 LOC) — honest `ofCurve`, honest `Pic⁰` pushforward via `Div.singletonMap`, zero-stub pullback.
+The repo's per-file map lives in `JacobianChallenge.lean` (the import
+manifest) and the file system. `CHANGELOG.md` documents which files
+landed in which branch / wave. This OPEN.md is intentionally not a
+duplicate file listing.
 
-### 2026-05-07 wave (R5 partition-of-unity-Stokes infrastructure + Hodge L² + period-lattice quotient + Hurwitz refactor)
+## Paths to the next STRICT-CLOSED
 
-- `Manifold/SmoothOneForm.lean` (~105 LOC, ZZ113) — `SmoothOneForm` type + `AddCommGroup` + `Module ℝ` + `CoeFun`.
-- `Manifold/CotangentInCoordinates.lean` (ZZ117) — `inCotangentCoordinates` analogue of mathlib's `inTangentCoordinates`.
-- `Manifold/CotangentBundleSmoothness.lean` (ZZ119) — `cotangentSection_contMDiffAt_iff` + `cotangentBundle_trivializationAt_snd_apply`.
-- `Manifold/ContMDiffAnalyticBridge.lean` (~119 LOC, ZZ124) — `contMDiffAt_omega_iff_analyticAt_chart_pullback` (full iff for analytic manifolds).
-- `Manifold/MFDerivTranspose.lean` (ZZ125) — `ContMDiffAt.mfderiv_transpose`.
-- `Manifold/CotangentPullbackBridge.lean` (ZZ133) — `pullback_section_in_cotangent_coordinates_apply`.
-- `Manifold/CotangentTangentBridge.lean` (ZZ141) — `inCotangentCoordinates_eq_compL_flip_inTangentCoordinates_apply`.
-- `Manifold/SmoothOneFormPullback.lean` (ZZ138/142) — `SmoothOneForm.pullback` end-to-end smooth.
-- `Manifold/SmoothChain.lean` (ZZ132) — `SmoothPath` + `SmoothChain` (Finsupp ℤ-linear).
-- `Manifold/SmoothPathIntegral.lean` (ZZ139) — `SmoothPath.integrate` + `SmoothChain.integrate` + linearity.
-- `Manifold/PeriodLatticeCompactQuotient.lean` (~53 LOC, ZZ114) — `compactSpace_quotient_of_zlattice`.
-- `Manifold/PeriodLatticeChartedSpace.lean` (~175 LOC, ZZ116) — `chartedSpace_quotient_of_zlattice` + `localChart` infrastructure.
-- `Manifold/PeriodLatticeLieGroup.lean` (ZZ118) — `IsManifold` instance on `E ⧸ L`.
-- `Manifold/PeriodLatticeOfRankTwoG_Wiring.lean` (ZZ137) — `compactSpaceHypothesis_holds`.
-- `Manifold/PeriodLatticeComplexQuotient.lean` (ZZ140) — `IsManifold 𝓘(ℂ, ·) ω` for the lattice quotient (analytic/complex variant).
-- `Analysis/L2OnManifold.lean` (ZZ128) — `L2NormSq` + `IsL2 := MemLp _ 2 _`.
-- `Analysis/CompactManifoldMeasure.lean` (ZZ135) — `partitionPushforwardSum` finite-measure helper.
-- `Analysis/CompactManifoldMeasureExistence.lean` (ZZ136) — `compactManifoldMeasureOfData` conditional on `SubordinateChartData`.
-- `Analysis/CompactManifoldMeasureFromCharts.lean` (ZZ143) — unconditional `SubordinateChartData.ofCompactManifold`.
-- `Topology/OnePointHomeoSphere.lean` (~68 LOC, ZZ130) — `TopologicalGenus RiemannSphere = TopologicalGenus StandardS2`.
-- `Manifold/FibresFiniteUnconditional.lean` (ZZ46/47-era, surfaced 2026-05-07) — discharges `fibres_finite_statement` unconditionally.
-- `Manifold/RegularValueExistsUnconditional.lean` (same) — discharges `regular_value_exists_statement`.
-- `Manifold/FibreCardOnRegularSubset.lean` (ZZ134) — `fibre_card_well_defined_on_regular_subset_holds_of_locallyConstant` (conditional on 2 analytic hypotheses).
-- `Manifold/NcardMultiplicityBridge.lean` (ZZ105) — real ncard↔multiplicity bridge for regular fibres at `{0}`/`{∞}`.
-- `Manifold/AnalyticLocalNormalForm.lean` (ZZ151) — `analytic_local_normal_form`: for analytic `f` at `x₀` with `analyticOrderAt (f - w₀) x₀ = k`, builds analytic `ψ` on closed ball with `ψ x₀ = 0`, `deriv ψ x₀ ≠ 0`, `f z = w₀ + (ψ z)^k`. **Hurwitz local model — the deepest classical content.**
-- `Manifold/LocalBiholomorphism.lean` (ZZ152) — `AnalyticAt.exists_local_biholomorphism` packaging `HasStrictFDerivAt.toOpenPartialHomeomorph` + `AnalyticAt.analyticAt_localInverse` into a biholomorphism witness.
-- `Manifold/FibreCardLocallyConstantFromNormalForm.lean` (ZZ153) — `HurwitzPatchingData` + `fibreCard_isLocallyConstant_on_subset_of_pointwiseHurwitz` (locally constant from patching data).
-- `Manifold/RegularSubsetPreconnected.lean` (ZZ154) — `regularSubset_isPreconnected_of_finite_complement_hypothesis`: complement of finite C is preconnected on Y.
-- `Manifold/HurwitzPatchingDataConstruction.lean` (ZZ157) — `HurwitzPatchingData.ofRegularValue`: constructs the patching data unconditionally at a regular value from ZZ151+ZZ152.
-- `Manifold/FibreCardWellDefinedAtRegular.lean` (ZZ155) — `fibre_card_well_defined_at_regular_holds_of_lc_ncard_and_topo`: composes ZZ134+ZZ153+ZZ154 into the unfolded Hurwitz constant-card statement.
-- `Manifold/DegreeUnconditional.lean` (ZZ156) — `Basic.lean`'s `ContMDiff.degree` aligns with honest `degreeFiber` (signature-preserving swap demonstrated).
-
-Cumulative across all sessions: **~37,840+ LOC across 162+ files**. ZZ256 (P1.5) routed `PrincDiv := PrincDivHonestCandidate` (the multiplicative range of `principalDivisorAddHom`) — this bypassed the R5 gap as the entry path for strict-closing the functoriality stack. The residue theorem itself (R5 / `PrincDiv ⊆ Div⁰`) is now **discharged unconditionally** in `Manifold/ResidueTheoremUnconditional.lean` (2026-05-13), so the `PrincDivHonestCandidate ≤ Div0`/R5 trigger in `Divisor/StrictClosurePath.lean` is no longer conditional; what remains for item 11 (`CompactSpace (Jacobian X)`) is the Phase-2 period-lattice quotient topology, not the residue theorem. Eleven items strict-closed via the P1.4/P1.5 cascade: items 2, 3 (honest `Jacobian` + group), 6, 7, 8 (honest `ofCurve`, pushforward, pullback through divisor-level descent), 15, 19, 20 (proof-honest functoriality bodies, now over honest objects), 22, 23, 24 (honest pullback functoriality + degree formula via `pushforward_pullbackHonest_of_rsum`).
-
-## Honest scoring (post-ZZ256, 2026-05-12)
-
-- **STRICT-CLOSED**: **12** — items 2, 3, 6, 7, 8, 9, 15, 19, 20, 22, 23, 24.
-- **STUB**: **3** — items 1 (`genus` needs Hodge finite-dimensionality),
-  4 (discrete `TopologicalSpace`, wants Phase 2 manifold topology),
-  10 (T2 honest but underlying topology stub).
-- **OPEN**: **9** — items 5, 11, 12, 13, 14, 16, 17, 18, 21.
-
-Reaching the next **STRICT-CLOSED** requires landing one of: (a) Hurwitz
-constant-card across regular values (flips item 9, builds on the ZZ151-156
-chain already ~50-80% landed), (b) honest period lattice → `ChartedSpace`
-on `Jacobian` (flips items 4, 5, 10, plus 11/12/13 cascade), (c) Abel-Jacobi
-(flips item 16), (d) closed-orientable-surface classification (item 14), or
-(e) Hodge L² finite-dimensionality of `HolomorphicOneForm` (item 1).
+Reaching the next **STRICT-CLOSED** requires landing one of:
+(a) honest period lattice → `ChartedSpace` on `Jacobian` (flips items 4,
+5, 10, plus 11/12/13 cascade),
+(b) Abel-Jacobi (flips item 16),
+(c) closed-orientable-surface classification (item 14), or
+(d) Hodge L² finite-dimensionality of `HolomorphicOneForm` (item 1).
