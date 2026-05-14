@@ -350,6 +350,28 @@ linearSystemDivisor D` (the bundled embedding via
 `MeromorphicFunctionGerm X`). Gives the trivial `1 ≤ dim_ℂ L(D)` for
 effective `D` on a connected compact complex 1-manifold.
 
+**Final assembly: genus-0 RR dim ≥ 2 reduces to uniformization + L(δp) finite-dim ON RS landed 2026-05-14** (same branch):
+[`Topology/RRDimGE2FromUniformizationAndFiniteDimRS.lean`](JacobianChallenge/Topology/RRDimGE2FromUniformizationAndFiniteDimRS.lean)
+(~75 LOC). Composes the existence transport, the finite-dim transport,
+and the dim-form discharge into the headline
+`rr_DimGE2_GenusZero_Germ_of_uniformization_and_RSFiniteDim`. After
+this chip, the genus-0 RR dim ≥ 2 content on the germ field reduces
+to two classical inputs: (i) uniformization at genus 0, and (ii)
+`LinearSystemGermDeltaPFiniteDim RiemannSphere` (the finite-dim claim
+on the SINGLE reference manifold `RS`, a concrete Laurent-series
+computation).
+
+**Transport infrastructure landed 2026-05-14** (same branch):
+* [`Manifold/MeromorphicFunctionGermHolomorphicEquivPullback.lean`](JacobianChallenge/Manifold/MeromorphicFunctionGermHolomorphicEquivPullback.lean)
+  (~155 LOC) — pullback on `MeromorphicFunctionGerm` via
+  `HolomorphicEquiv`, with `orderAt` preservation.
+* [`Topology/LinearSystemGermDeltaPHolomorphicEquivTransport.lean`](JacobianChallenge/Topology/LinearSystemGermDeltaPHolomorphicEquivTransport.lean)
+  (~210 LOC) — `IsBoundedByDeltaPGerm` iff under pullback; bundled
+  `LinearMap` between `L(δ(e p))` and `L(δp)`.
+* [`Topology/LinearSystemGermDeltaPFiniteDimTransport.lean`](JacobianChallenge/Topology/LinearSystemGermDeltaPFiniteDimTransport.lean)
+  (~205 LOC) — `LinearEquiv` packaging + `Module.Finite.equiv`
+  transport for `LinearSystemGermDeltaPFiniteDim`.
+
 **Transport: `ExistsSimplePoleGermAtSomePoint X` from `HolomorphicEquiv X RS` landed 2026-05-14** (same branch):
 [`Manifold/MMeromorphicHolomorphicEquivTransport.lean`](JacobianChallenge/Manifold/MMeromorphicHolomorphicEquivTransport.lean)
 (~265 LOC) + [`Topology/ExistsSimplePoleGermFromHolomorphicEquivRS.lean`](JacobianChallenge/Topology/ExistsSimplePoleGermFromHolomorphicEquivRS.lean)
