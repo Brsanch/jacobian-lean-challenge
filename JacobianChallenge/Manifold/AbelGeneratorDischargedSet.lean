@@ -137,6 +137,91 @@ theorem mul_invMer_mem_dischargedGenerators (B : AbelJacobiInput α h)
     f * MeromorphicNonzero.invMer g ∈ B.dischargedGenerators :=
   B.mul_mem_dischargedGenerators hf (B.invMer_mem_dischargedGenerators hg)
 
+/-! ## Constant-function discharge
+
+If `f.toFun` is a literal constant function `fun _ => c` with `c ≠ 0`,
+then `principalDivisorMap f = 0` (by `mmeromorphicOrderAt_const_ne_zero`)
+and hence `f` is discharged.  The case `c = 0` cannot occur because
+`MeromorphicNonzero.nonvanishing_germ` forbids the identically-zero germ.
+
+These pieces produce the **case-split reduction**
+`abelGeneratorPeriodCondition_of_forall_nonconst_toFun`:  closing
+`AbelGeneratorPeriodCondition B` reduces to closing it on
+`MeromorphicNonzero X` representatives whose underlying function is
+*not* a constant.  All actual classical content (level-set chains,
+Stokes) lives on that non-constant side. -/
+
+/-- **Constant-function principal divisor is zero.** Any
+`f : MeromorphicNonzero X` whose underlying function is the literal
+constant `fun _ => c` with `c ≠ 0` has zero principal divisor.
+
+Direct corollary of `mmeromorphicOrderAt_const_ne_zero`. -/
+theorem principalDivisorMap_of_toFun_const
+    (f : MeromorphicNonzero X) (c : ℂ) (hc : c ≠ 0)
+    (hf : f.toFun = fun _ : X => c) :
+    principalDivisorMap f = 0 := by
+  classical
+  ext x
+  show JacobianChallenge.MMeromorphicOn.orderFun 𝓘(ℂ, ℂ) f.toFun x
+      = (0 : Div X) x
+  unfold JacobianChallenge.MMeromorphicOn.orderFun
+  rw [hf, mmeromorphicOrderAt_const_ne_zero hc]
+  rfl
+
+/-- **Constant-function discharge.** `f.toFun = fun _ => c` with
+`c ≠ 0` ⇒ `f ∈ dischargedGenerators`. -/
+theorem toFun_const_mem_dischargedGenerators (B : AbelJacobiInput α h)
+    {f : MeromorphicNonzero X} {c : ℂ} (hc : c ≠ 0)
+    (hf : f.toFun = fun _ : X => c) :
+    f ∈ B.dischargedGenerators :=
+  B.mem_dischargedGenerators_of_principalDivisor_zero
+    (principalDivisorMap_of_toFun_const f c hc hf)
+
+/-- **The zero-germ obstruction.** `f.toFun` cannot equal the literal
+constant `fun _ => 0` — by `mmeromorphicOrderAt_const` with `c = 0`
+that would force `mmeromorphicOrderAt f.toFun x = ⊤`, violating
+`f.nonvanishing_germ`. -/
+theorem toFun_ne_const_zero (f : MeromorphicNonzero X) [Nonempty X] :
+    f.toFun ≠ fun _ : X => (0 : ℂ) := by
+  classical
+  intro hf
+  obtain ⟨x⟩ := ‹Nonempty X›
+  apply f.nonvanishing_germ x
+  show mmeromorphicOrderAt 𝓘(ℂ, ℂ) f.toFun x = ⊤
+  rw [hf]
+  show meromorphicOrderAt ((fun _ : X => (0 : ℂ)) ∘ (chartAt ℂ x).symm)
+      ((chartAt ℂ x) x) = ⊤
+  have h_comp : ((fun _ : X => (0 : ℂ)) ∘ (chartAt ℂ x).symm)
+      = (fun _ : ℂ => (0 : ℂ)) := rfl
+  rw [h_comp, meromorphicOrderAt_const ((chartAt ℂ x) x) (0 : ℂ)]
+  simp
+
+/-- **Case-split reduction of `AbelGeneratorPeriodCondition`.** Closing
+the per-generator period condition reduces to closing it on those
+`f : MeromorphicNonzero X` whose underlying function is *not* a literal
+constant — the case where genuine classical content
+(level-set chains, Stokes) is required.
+
+The constant-`toFun` case is closed unconditionally above via
+`toFun_const_mem_dischargedGenerators`. -/
+theorem abelGeneratorPeriodCondition_of_forall_nonconst_toFun
+    (B : AbelJacobiInput α h)
+    (h_nc : ∀ f : MeromorphicNonzero X,
+              (∀ c : ℂ, f.toFun ≠ fun _ : X => c) →
+                f ∈ B.dischargedGenerators) :
+    AbelGeneratorPeriodCondition B := by
+  intro f
+  by_cases hexists : ∃ c : ℂ, f.toFun = fun _ : X => c
+  · obtain ⟨c, hc⟩ := hexists
+    by_cases hc_zero : c = 0
+    · -- `c = 0` contradicts `nonvanishing_germ` via `toFun_ne_const_zero`.
+      exfalso
+      apply toFun_ne_const_zero f
+      rw [hc, hc_zero]
+    · exact B.toFun_const_mem_dischargedGenerators hc_zero hc
+  · push Not at hexists
+    exact h_nc f hexists
+
 /-! ## Reduction of `AbelGeneratorPeriodCondition` to the discharged-set form -/
 
 /-- **`AbelGeneratorPeriodCondition` ↔ universal discharge.** The
