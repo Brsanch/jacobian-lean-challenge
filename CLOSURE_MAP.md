@@ -607,26 +607,96 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
    │       └── flips item 1
 ```
 
-## F. Net realistic ceiling at this pin (verified per-component)
+## F. Net realistic ceiling at this pin (revised 2026-05-14 after `feat/linear-system-divisor` + PL-4)
 
-| Phase | LOC range (verified) | Items flipped |
+### F.0 Measured ground truth
+
+- **Total `.lean`:** **83,109 LOC** (82,722 in `JacobianChallenge/` + 387-line manifest), **397 files**.
+- **Per-directory:** `Manifold/` 65,937 / 305 · `Topology/` 8,880 / 64 · `Divisor/` 4,440 / 15 · `Analysis/` 886 / 6 · root 2,579 / 7.
+- **Scoreboard:** 12 STRICT-CLOSED · 3 STUB · 9 OPEN.
+- **Per-chip-file LOC density** (measured across germfield arc, PL-4 scaffolding, `feat/linear-system-divisor`): **140–275 LOC**, mean ≈ 200.
+
+### F.1 Past-wave LOC (grounds the remaining estimates)
+
+| Wave | Files | LOC | Per-file avg |
+|---|---|---|---|
+| Germfield arc (item 14 reduction) | 9 | 2,454 | 273 |
+| PL-4 Abel–Jacobi scaffolding (`AbelJacobi*.lean`) | 6 | 1,052 | 175 |
+| `feat/linear-system-divisor` (this branch, 18 commits) | 16 | 3,064 | 191 |
+| Existing Hodge files (`Hodge*.lean`) | 4 | 524 | 131 |
+| Existing period-lattice files (`PeriodLattice*.lean`) | 11 | 2,239 | 204 |
+
+### F.2 Named hypotheses (verified by grep)
+
+**PL-4 / period-lattice (1 landed, 5 open):**
+
+| Hypothesis | File | Status |
 |---|---|---|
-| Phase 0 (done this session) | ~12,000 already merged | 8, 22, 23, 24 (Buzzard bar; strict-bar requires Phase 1's `Jacobian` honest) |
-| **Phase 1** (chippable now) | **2,050–2,250** | 12 items: 2, 3, 6, 7, 8, 9, 15, 19, 20, 22, 23, 24 (strict bar) |
-| **Phase 2** (period lattice + Abel-Jacobi) | **15,500–29,600** | 10 items: 4, 5, 10, 11, 12, 13, 16, 17, 18, 21 |
-| **Phase 3** (surface classification) | **7,100–15,000** | 1 item: 14 |
-| **Phase 4** (Hodge / finite-dim of forms) | **6,900–12,800** | 1 item: 1 |
+| `AbelJacobiHypothesisBundle` | `Manifold/AbelJacobiArcSummary.lean` | **landed** |
+| `HolomorphicOneFormFiniteDim` | `Manifold/HodgeFiniteDimensional.lean` | open |
+| `PeriodLatticeDiscretenessBundle` | `Manifold/PeriodLatticeDiscretenessFromBilinear.lean` | open |
+| `AbelJacobiInput` | `Manifold/AbelJacobiPoint.lean` | open (`SmoothPath.const` landed) |
+| `AbelHypothesis` | `Manifold/AbelJacobiPic0.lean` | open |
+| `JacobiInversion` | `Manifold/AbelJacobiIso.lean` | open |
 
-**Total LOC remaining for 24/24 STRICT-CLOSED**: **31,550–59,650 LOC**.
+**Genus-0 RR `dim L(δp) ≥ 2` chain (3 open, this branch):**
 
-The repo currently sits at **49,526 LOC** (`*.lean` files, all of `JacobianChallenge/` + top-level import manifest). **Final-state projection**: ~81,000–109,000 LOC for full closure.
+| Hypothesis | File | Status |
+|---|---|---|
+| `LinearSystemAtInftyRS_BoundedBySimplePoleSpan` | `Topology/LinearSystemGermDeltaPFiniteDimRSFromInputs.lean` | open |
+| `ExistsMobiusToInftyRS` | same | open |
+| Uniformization at genus 0 (`genus X = 0 → Nonempty (HolomorphicEquiv X RS)`) | — | not yet named in-tree |
 
-Calibration buffer (today's pattern: ~1.5x estimates exceeded due to architectural defect surfacing during attempts): **realistic upper bound ~90,000 LOC remaining**, **realistic lower bound ~30,000 LOC remaining**.
+### F.3 Remaining LOC per cluster (real-number estimates)
 
-**Order in which items can flip**:
-1. Phase 1 (Phase 1's ~2k LOC is the immediate next wave) → 12 STRICT-CLOSED
-2. Phases 3 + 4 + part of Phase 2 (cellular homology framework) → could in principle proceed in parallel; Phase 2's items depend on Phase 3 for the standard CW structure
-3. Phase 2 final items (16, 17, 18, 21) follow once Abel-Jacobi machinery (2.K-2.O) lands
+| Cluster | Content | Estimate |
+|---|---|---|
+| **A1** | `LinearSystemAtInftyRS_BoundedBySimplePoleSpan` (chart-side Cauchy estimate; mathlib has `norm_iteratedDeriv_le_of_forall_mem_sphere_norm_le`) | **400–900** |
+| **A2** | `ExistsMobiusToInftyRS` (antipode + translation packaged as `HolomorphicEquiv RS RS`; two-chart smoothness) | **500–1,100** |
+| **B** | `HolomorphicOneFormFiniteDim X` (L² Hodge / elliptic regularity; mathlib gap) | **3,000–7,000** |
+| **C1** | `AbelJacobiInput` (smooth-path-connectedness; `linearInChart` + chart-cover) | **600–1,500** |
+| **C2** | `PeriodLatticeDiscretenessBundle` (H₁ rank-2g + Riemann bilinear; mathlib gap) | **1,800–3,800** |
+| **C3** | `AbelHypothesis` (Stokes on principal-divisor 2-chains) | **1,200–2,800** |
+| **C4** | `JacobiInversion` (Abel–Jacobi surjective; classical degree or theta) | **1,200–2,800** |
+| **D** | Item 14 `S2ImpliesGenus0` (simply-connectedness route via π₁(S²)=0 + Liouville on universal cover; bypasses uniformization) | **1,200–3,000** |
+| **E** | Items 17/18/21 smoothness (`ofCurve_contMDiff`, `pushforward_contMDiff`, `pullback_contMDiff`) — flips with ChartedSpace on `Jacobian X` | **500–1,200** |
+| **F** | `Basic.lean` instance wiring (Topology / Compact / Manifold / LieAddGroup); `ofCurve_inj` via Abel injectivity | **400–900** |
+| **G** | Polish, integration, contingency | **1,000–2,200** |
+
+**Uniformization at genus 0** is left **out of scope** of this map. Mathlib-style formalization is **8,000–20,000+ LOC** and multi-month; the realistic plan keeps it as a named classical hypothesis.
+
+### F.4 Totals
+
+| Scenario | Range | Final scoreboard |
+|---|---|---|
+| **Defer uniformization** (recommended) | **11,800–27,200 LOC** | **23/24 STRICT-CLOSED** (item 14 stays OPEN with uniformization as the one owed classical input) |
+| **Attempt uniformization in-tree** | ~20k–47k LOC | 24/24 |
+
+**Recommended working range: 13,000–24,000 LOC** for the realistic 23/24 target.
+
+**Final-state projection** (23/24 path): repo grows from 83,109 → **~96,000–107,000 LOC**.
+
+### F.5 Recommended priority order
+
+1. **A1 + A2 (~900–2,000 LOC).** Discharge the two RS-FiniteDim inputs ⇒ `RR_DimGE2_GenusZero_Germ X` unconditional on uniformization alone. Concrete, mathlib-driven.
+2. **C1 `AbelJacobiInput` (~600–1,500).** Cheapest PL-4 hypothesis; `SmoothPath.const` is the launch pad.
+3. **C3 `AbelHypothesis` + C4 `JacobiInversion` (~2,400–5,600 combined).** Completes `Pic⁰ ≃+ AnalyticJacobian` unconditionally. **Highest-leverage chunk: flips items 4, 5, 10, 11, 12, 13 simultaneously (6 items)** via the existing bundle.
+4. **E + F (~900–2,100).** Wire `Basic.lean` instance bodies + smoothness lemmas. Flips items 17, 18, 21, and item 16 (`ofCurve_inj` falls out of Abel injectivity).
+5. **C2 `PeriodLatticeDiscretenessBundle` (~1,800–3,800).** Required if `PeriodLatticeDiscretenessBundle` should be honest rather than a named hypothesis. Can defer if 23/24 is the target.
+6. **B `HolomorphicOneFormFiniteDim` (~3,000–7,000).** Flips item 1. Largest single chunk.
+7. **D Item 14 finish (~1,200–3,000).** Simply-connectedness route is the simpler of the two routes documented in `Topology/S2ImpliesGenus0*.lean`.
+8. **G polish (~1,000–2,200).**
+
+### F.6 Expected scoreboard progression
+
+| Milestone | After steps | STRICT-CLOSED |
+|---|---|---|
+| (start) | — | 12/24 |
+| PL-4 discharge done | 1–3 | **18/24** (gain 4, 5, 10, 11, 12, 13) |
+| Basic.lean wiring | 4 | **22/24** (gain 16, 17, 18, 21) |
+| Hodge finite-dim | 6 | **23/24** (gain 1) |
+| Item 14 (deferring uniformization) | 7 | **23/24** — item 14 remains OPEN with uniformization + `S2ImpliesGenus0` named |
+| Full closure | requires uniformization in-tree | 24/24 |
 
 ## G. Calibration
 
