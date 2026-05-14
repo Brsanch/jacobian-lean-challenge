@@ -351,6 +351,7 @@ import JacobianChallenge.Topology.LiouvilleFromLocalConstancy
 import JacobianChallenge.Topology.MeromorphicNonzeroBuilder
 import JacobianChallenge.Topology.Item14FromUniformization
 import JacobianChallenge.Manifold.AbelJacobiPath
+import JacobianChallenge.Manifold.AbelJacobiPoint
 import JacobianChallenge.Manifold.JacobianOfLatticeFromBundle
 import JacobianChallenge.Manifold.PeriodLatticeDiscretenessFromBilinear
 import JacobianChallenge.Manifold.PeriodPairingDataFromSmoothCycle
