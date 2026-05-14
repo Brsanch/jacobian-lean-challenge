@@ -303,6 +303,7 @@ import JacobianChallenge.Manifold.SmoothCycle
 import JacobianChallenge.Manifold.SmoothOneForm
 import JacobianChallenge.Manifold.SmoothOneFormAlgebra
 import JacobianChallenge.Manifold.SmoothPathChartCompat
+import JacobianChallenge.Manifold.SmoothPathCompSmooth
 import JacobianChallenge.Manifold.SmoothPathConcat
 import JacobianChallenge.Manifold.SmoothPathConnectedRiemannSphere
 import JacobianChallenge.Manifold.SmoothPathConst
