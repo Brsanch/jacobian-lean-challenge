@@ -167,6 +167,56 @@ theorem rank_linearSystemGermDeltaP_ge_two_of_existsSimplePole
   obtain ⟨p, ψ, hψ_in, hψ_ord⟩ := hSP
   exact ⟨p, rank_linearSystemGermDeltaP_ge_two_of_simplePoleGerm hψ_in hψ_ord⟩
 
+/-! ## `finrank ≥ 2` under a finite-dimensionality hypothesis
+
+The cardinal-valued `rank ≥ 2` becomes `finrank ≥ 2` once
+`Module.Finite ℂ (linearSystemGermDeltaP p)` is known. That
+finite-dimensionality is the classical Riemann–Roch upper-bound piece
+(`dim L(D) ≤ deg D + 1 - g + dim L(K - D)`), not in this chip. It is
+exposed here as a named hypothesis. -/
+
+/-- **Named hypothesis:** every `linearSystemGermDeltaP p` is
+finite-dimensional over ℂ. Classical Riemann-Roch content. -/
+def LinearSystemGermDeltaPFiniteDim (X : Type u)
+    [TopologicalSpace X] [T2Space X] [CompactSpace X]
+    [ConnectedSpace X]
+    [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X] : Prop :=
+  ∀ p : X, Module.Finite ℂ (linearSystemGermDeltaP (X := X) p)
+
+/-- **`2 ≤ Module.finrank ℂ (linearSystemGermDeltaP p)` for some `p`**
+from a simple-pole germ + finite-dimensionality. -/
+theorem finrank_linearSystemGermDeltaP_ge_two_of_simplePoleGerm_finiteDim
+    {p : X} {ψ : MeromorphicFunctionGerm X}
+    (hψ_in : ψ ∈ linearSystemGermDeltaP p)
+    (hψ_ord : ψ.orderAt p = ((-1 : ℤ) : WithTop ℤ))
+    (hFD : Module.Finite ℂ (linearSystemGermDeltaP (X := X) p)) :
+    2 ≤ Module.finrank ℂ (linearSystemGermDeltaP p) := by
+  have h_rank :=
+    rank_linearSystemGermDeltaP_ge_two_of_simplePoleGerm hψ_in hψ_ord
+  -- Under finite-dim: `Module.rank = ↑(finrank)`.
+  haveI := hFD
+  rw [← Module.finrank_eq_rank] at h_rank
+  exact_mod_cast h_rank
+
+/-- **`RR_DimGE2_GenusZero_Germ X`** discharged from
+`ExistsSimplePoleGermAtSomePoint X` + `LinearSystemGermDeltaPFiniteDim X`.
+
+This is the dim-form companion of `RR_StrictLt_of_existsSimplePoleGerm`:
+the simple-pole germ supplies linear independence with the constant `1`
+(via `linearIndependent_one_simplePoleGerm`), and finite-dimensionality
+converts the unconditional rank inequality into the finrank shape used
+in `RR_DimGE2_GenusZero_Germ`. -/
+theorem rr_DimGE2_GenusZero_Germ_of_existsSimplePoleGerm_finiteDim
+    (hSP :
+      JacobianChallenge.MeromorphicFunctionField.ExistsSimplePoleGermAtSomePoint X)
+    (hFD : LinearSystemGermDeltaPFiniteDim X) :
+    RR_DimGE2_GenusZero_Germ X := by
+  intro _hg
+  obtain ⟨p, ψ, hψ_in, hψ_ord⟩ := hSP
+  refine ⟨p, ?_⟩
+  exact finrank_linearSystemGermDeltaP_ge_two_of_simplePoleGerm_finiteDim
+    hψ_in hψ_ord (hFD p)
+
 end JacobianChallenge.MeromorphicFunctionField
 
 end
