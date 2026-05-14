@@ -77,7 +77,7 @@ chosen via `Classical.choose` from `γ.smooth`. -/
 def ambient (γ : SmoothPath I X) : ℝ → X := Classical.choose γ.smooth
 
 lemma ambient_contMDiff (γ : SmoothPath I X) :
-    ContMDiff (𝓘(ℝ, ℝ)) I ⊤ γ.ambient :=
+    ContMDiff (𝓘(ℝ, ℝ)) I ((⊤ : ℕ∞) : WithTop ℕ∞) γ.ambient :=
   (Classical.choose_spec γ.smooth).1
 
 lemma ambient_eq_on_unitInterval (γ : SmoothPath I X) (t : unitInterval) :
