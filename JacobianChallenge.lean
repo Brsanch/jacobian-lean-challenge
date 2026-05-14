@@ -346,6 +346,7 @@ import JacobianChallenge.Topology.LinearSystemDivisor
 import JacobianChallenge.Topology.LinearSystemDivisorConstants
 import JacobianChallenge.Topology.LinearSystemDivisorZeroLiouville
 import JacobianChallenge.Topology.LinearSystemDivisorSimplePoleRank
+import JacobianChallenge.Topology.LinearSystemDivisorMono
 import JacobianChallenge.Topology.RRDimensionFormGerm
 import JacobianChallenge.Topology.RRGenusZeroGermComposition
 import JacobianChallenge.Topology.Item14FromGermfield
