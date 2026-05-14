@@ -350,6 +350,16 @@ linearSystemDivisor D` (the bundled embedding via
 `MeromorphicFunctionGerm X`). Gives the trivial `1 ≤ dim_ℂ L(D)` for
 effective `D` on a connected compact complex 1-manifold.
 
+**`L(D)` monotonicity in `D` landed 2026-05-13** (same branch):
+[`Topology/LinearSystemDivisorMono.lean`](JacobianChallenge/Topology/LinearSystemDivisorMono.lean)
+(~125 LOC) ships `linearSystemDivisor_mono : D₁ ≤ D₂ →
+linearSystemDivisor D₁ ≤ linearSystemDivisor D₂` (pointwise divisor
+order from `Function.locallyFinsuppWithin.le_def`), plus
+`linearSystemDivisor_zero_le_of_effective : L(0) ≤ L(D)` for effective
+`D` and `constantsGerm_le_linearSystemDivisor_of_effective`. Factors
+the constants embedding through `constantsGerm = L(0) ≤ L(D)` for the
+effective case.
+
 **`rank L(δp) ≥ 2` from a simple-pole germ landed 2026-05-13** (same branch):
 [`Topology/LinearSystemDivisorSimplePoleRank.lean`](JacobianChallenge/Topology/LinearSystemDivisorSimplePoleRank.lean)
 (~150 LOC) shows `LinearIndependent ℂ ![1, ψ]` whenever `ψ.orderAt p =
