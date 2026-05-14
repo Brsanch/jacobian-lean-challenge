@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-05-14 — C4 bridge: Subsingleton (Pic0 X) ↔ every Div0 is principal
+
+New file: `Manifold/Pic0SubsingletonBridge.lean` (~85 LOC).
+
+* `subsingleton_pic0_iff_every_div0_principal` — the bridge.
+  Forward via `Subsingleton.elim` + `QuotientAddGroup.eq_zero_iff`;
+  backward via `QuotientAddGroup.induction_on`.
+* `subsingleton_pic0_of_every_div0_principal` — one-way form.
+
+Why this matters: lets a future discharge of `Subsingleton (Pic0
+RiemannSphere)` produce the equivalent existential statement —
+constructing explicit meromorphic representatives (rational
+functions on `ℂ`) for every degree-0 divisor on `RS`.
+
+Build: 8705 jobs clean. Zero `sorry`, zero `axiom`.
+
+## 2026-05-14 — Abel-Jacobi iso on `RiemannSphere` from Pic⁰(ℙ¹) = 0
+
+New file: `Manifold/AbelJacobiEquivRiemannSphere.lean` (~75 LOC).
+Specialises `abelJacobiEquiv_of_genus_zero` to `X = RiemannSphere`
+using the unconditional `genus_RiemannSphere_eq_zero`.
+
+* `abelJacobiEquiv_of_RiemannSphere` — from `Subsingleton (Pic0
+  RiemannSphere)` and an AJ input, build `Pic0 RS ≃+ AnalyticJacobian`.
+  After this commit the Abel-Jacobi iso on RS sits on exactly one
+  named classical input.
+
+Build: 8704 jobs clean. Zero `sorry`, zero `axiom`.
+
 ## 2026-05-14 — C4 genus-0: JacobiInversion ← Subsingleton (Pic0 X)
 
 Parallel chip to the C3 genus-0 corner, closing the C4 (Jacobi
