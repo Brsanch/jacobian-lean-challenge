@@ -1,5 +1,54 @@
 # Changelog
 
+## 2026-05-15 — C1 sub-arc CLOSED: `SmoothPathConnected` on any preconnected complex 1-manifold
+
+The four chips of 2026-05-15 (SmoothPath refactor, `linearInChartSegment`,
+`concat`, local-convex + open-closed) close the C1 sub-arc of
+CLOSURE_MAP §F.3 unconditionally for any preconnected complex
+1-manifold.
+
+**`Manifold/SmoothPathLocalConvex.lean`** (182 LOC, new). Two
+top-level theorems:
+
+* `exists_smooth_path_connected_chart_nbhd p` — for every `p : X`,
+  there is an open neighborhood `U ∋ p` such that any two points of
+  `U` are joined by a smooth path. Construction: `U := φ.source ∩
+  φ ⁻¹' Metric.ball z r` where `φ = chartAt ℂ p`, `z = φ p`,
+  `r > 0` with `Metric.ball z r ⊆ φ.target`. Convexity of the ball
+  plus `linearInChartSegment` gives the smooth-path-connected
+  property of `U`.
+
+* `smoothPathConnected_of_preconnected [PreconnectedSpace X] :
+   SmoothPathConnected 𝓘(ℝ, ℂ) X` — the open-closed argument
+  applied to the reachable set
+  `reachableFrom p := {x | ∃ γ : SmoothPath I X, γ.src = p ∧
+   γ.tgt = x}`. Helper lemmas (private):
+  - `p_mem_reachableFrom` via `SmoothPath.const`.
+  - `reachableFrom_isOpen` via `concat` + local lemma.
+  - `compl_reachableFrom_isOpen` via the symmetric argument.
+  - `reachableFrom_isClopen` combines.
+  Then `IsClopen.eq_univ` closes it.
+
+**`Manifold/SmoothPathConnectedRiemannSphere.lean`** (223 LOC,
+landed earlier today). `smoothPathConnected_RiemannSphere` + the
+composed `nonempty_abelJacobiInput_RiemannSphere`.
+
+**`Manifold/SmoothPathConcat.lean`** (337 LOC, landed earlier
+today). `SmoothPath.concat` via bump-flatten reparameterisations
+`concatRepLeft t = σ(4(t - 1/8))` and `concatRepRight t = σ(4(t -
+5/8))` (with `σ = Real.smoothTransition`), making both halves
+identically equal to the junction point on `(3/8, 5/8)`.
+
+Net (combined with `nonempty_of_smoothPathConnected` from
+`Manifold/SmoothPathConnected.lean`): **`Nonempty (AbelJacobiInput
+α h)` is now unconditional on any nonempty preconnected complex
+1-manifold.** Items 4/5/10/11/12/13 remain blocked on the C3 and
+C4 general-genus discharges (Stokes-on-2-chains, Abel converse,
+Jacobi inversion).
+
+Build across all four chips: `taskpolicy lake build` green, 8713
+jobs at HEAD. Zero `sorry`, zero `axiom`. +742 LOC total.
+
 ## 2026-05-15 — `SmoothPath` refactored ω → C^∞ + `linearInChartSegment`
 
 **Headline.** The `SmoothPath` structure's smoothness witness was
