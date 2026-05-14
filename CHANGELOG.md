@@ -1,5 +1,50 @@
 # Changelog
 
+## 2026-05-14 — RS-FiniteDim architectural reduction (feat/linear-system-divisor cont.)
+
+New file `Topology/LinearSystemGermDeltaPFiniteDimRSFromInputs.lean`
+(~210 LOC) architecturally reduces `LinearSystemGermDeltaPFiniteDim
+RiemannSphere` (the second of the two remaining classical inputs in
+the genus-0 RR `dim_ℂ L(δp) ≥ 2` chain) to **exactly two** named
+classical inputs:
+
+1. `LinearSystemAtInftyRS_BoundedBySimplePoleSpan` — polynomial-growth
+   Liouville bound at `∞`: `linearSystemGermDeltaP (∞ : RS) ≤
+   Submodule.span ℂ {1, RSSimplePoleGerm}`. Classical content: entire
+   `ℂ → ℂ` with `|f| = O(|z|)` at ∞ is a polynomial of degree ≤ 1.
+   Mathlib at the pin has basic Liouville
+   (`Complex.liouville_theorem_aux`) but not the polynomial-growth
+   extension; Cauchy-estimate-based proof.
+2. `ExistsMobiusToInftyRS` — Möbius transitivity on RS: ∀ `p : RS`,
+   `∃ e : HolomorphicEquiv RS RS, e p = ∞`. Concrete witnesses are
+   identity (for `p = ∞`) and antipode-composed-with-translation
+   (for finite `p = z₀`); packaging requires checking smoothness on
+   the two-chart atlas.
+
+Helpers:
+- `linearSystemGermDeltaP_finite_of_holomorphicEquiv` — per-point
+  version of the existing `LinearSystemGermDeltaPFiniteDim.of_holomorphicEquiv`
+  (the ∀-quantified one). Direct `Module.Finite.equiv` wrap of
+  `linearSystemGermDeltaPLinearEquiv_via_holomorphicEquiv`.
+- `linearSystemGermDeltaP_finite_of_le_span_pair` — pure linear-algebra:
+  `L(δp) ≤ span ℂ {1, ψ} ⇒ Module.Finite ℂ (L(δp))`. Proof via
+  `Module.Finite.span_of_finite` + `Module.Finite.of_injective` on
+  `Submodule.inclusion`.
+
+Headline `linearSystemGermDeltaPFiniteDim_RiemannSphere` composes the
+two: the polynomial bound gives finiteness at `∞`; transitivity
+transports it to every `p` via per-point transport.
+
+**Post-this-commit state.** Combined with the existing
+`feat/linear-system-divisor` branch, the genus-0 RR `dim_ℂ L(δp) ≥ 2`
+on the germ field reduces to exactly **three** named classical inputs:
+(i) uniformization at genus 0 (`genus X = 0 → Nonempty (HolomorphicEquiv
+X RS)`), (ii) `LinearSystemAtInftyRS_BoundedBySimplePoleSpan`
+(polynomial-growth Liouville on RS at ∞), (iii) `ExistsMobiusToInftyRS`
+(Möbius transitivity on RS). All three are citable textbook content;
+(ii) and (iii) are smaller-scale than (i) (which is full uniformization
+theory). Zero `sorry`, zero `axiom`.
+
 ## 2026-05-14 — `feat/linear-system-divisor` branch (germ-field RR layer)
 
 15-commit branch (`957fdd0..380ac85`) building the full architectural
