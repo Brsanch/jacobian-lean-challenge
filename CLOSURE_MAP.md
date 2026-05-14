@@ -607,14 +607,14 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
    │       └── flips item 1
 ```
 
-## F. Net realistic ceiling at this pin (revised 2026-05-14 after A1 discharge + C1 primitives)
+## F. Net realistic ceiling at this pin (revised 2026-05-14 after A1 + A2 discharges + C1 primitives)
 
 ### F.0 Measured ground truth
 
-- **Total `.lean`:** **84,354 LOC** (83,963 in `JacobianChallenge/` + 391-line manifest), **402 files**.
-- **Recent waves:** A1 discharge (+870 LOC, 2 files, 2026-05-14 morning); C1 primitives (`feat/c1-smooth-path-connected`, +371 LOC, 2 files, merged 2026-05-14).
-- **Scoreboard:** 12 STRICT-CLOSED · 3 STUB · 9 OPEN.
-- **Per-chip-file LOC density** (measured across germfield arc, PL-4 scaffolding, `feat/linear-system-divisor`, A1, C1 primitives): **140–275 LOC**, mean ≈ 200.
+- **Total `.lean`:** **85,123 LOC** (84,728 in `JacobianChallenge/` + 395-line manifest), **406 files**.
+- **Recent waves:** A1 discharge (+870 LOC, 2 files, 2026-05-14 morning); C1 primitives (`feat/c1-smooth-path-connected`, +371 LOC, 2 files, merged 2026-05-14); A2 discharge from `feat/antipode-smoothness` (+660 LOC, 3 files, merged 2026-05-14) + unconditional headline (+109 LOC, 1 file, this branch).
+- **Scoreboard:** 12 STRICT-CLOSED · 3 STUB · 9 OPEN (item flips await Phase 2 wiring, not RR-chain closure).
+- **Per-chip-file LOC density** (measured across germfield arc, PL-4 scaffolding, `feat/linear-system-divisor`, A1, A2, C1 primitives): **140–322 LOC**, mean ≈ 210.
 
 ### F.1 Past-wave LOC (grounds the remaining estimates)
 
@@ -639,13 +639,20 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 | `AbelHypothesis` | `Manifold/AbelJacobiPic0.lean` | open |
 | `JacobiInversion` | `Manifold/AbelJacobiIso.lean` | open |
 
-**Genus-0 RR `dim L(δp) ≥ 2` chain (1 open after A1 discharge, this branch):**
+**Genus-0 RR `dim L(δp) ≥ 2` chain (0 open after A1 + A2 discharges, this branch):**
 
 | Hypothesis | File | Status |
 |---|---|---|
 | `LinearSystemAtInftyRS_BoundedBySimplePoleSpan` | `Topology/LinearSystemAtInftyRSDischarge.lean` | **landed** (A1, 2026-05-14) |
-| `ExistsMobiusToInftyRS` | `Topology/LinearSystemGermDeltaPFiniteDimRSFromInputs.lean` | open (A2) |
-| Uniformization at genus 0 (`genus X = 0 → Nonempty (HolomorphicEquiv X RS)`) | — | not yet named in-tree |
+| `ExistsMobiusToInftyRS` | `Manifold/MobiusTransitivityRS.lean` + bridge in `Topology/LinearSystemGermDeltaPFiniteDimRSUnconditional.lean` | **landed** (A2, 2026-05-14) |
+| Uniformization at genus 0 (`genus X = 0 → Nonempty (HolomorphicEquiv X RS)`) | — | named hypothesis only; out of scope of in-tree closure |
+
+**Unconditional headlines (post-A1 + A2):**
+
+| Theorem | File |
+|---|---|
+| `linearSystemGermDeltaPFiniteDim_RiemannSphere_unconditional` | `Topology/LinearSystemGermDeltaPFiniteDimRSUnconditional.lean` |
+| `rr_DimGE2_GenusZero_Germ_of_uniformization_unconditional_RSFiniteDim` | same |
 
 **C1 sub-arc primitives (toward `AbelJacobiInput` discharge,
 `feat/c1-smooth-path-connected` merged 2026-05-14):**
@@ -663,7 +670,7 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 | Cluster | Content | Estimate |
 |---|---|---|
 | ~~**A1**~~ | ~~`LinearSystemAtInftyRS_BoundedBySimplePoleSpan`~~ — **LANDED 2026-05-14** (`Analysis/PolynomialLiouville.lean` + `Topology/LinearSystemAtInftyRSDischarge.lean`, 870 LOC actual; estimate had been 400–900). | **done** |
-| **A2** | `ExistsMobiusToInftyRS` (antipode + translation packaged as `HolomorphicEquiv RS RS`; two-chart smoothness) | **500–1,100** |
+| ~~**A2**~~ | ~~`ExistsMobiusToInftyRS`~~ — **LANDED 2026-05-14** (`Manifold/RiemannSphereAntipodeSmooth.lean` 255 LOC + `Manifold/RiemannSphereTranslate.lean` 322 LOC + `Manifold/MobiusTransitivityRS.lean` 80 LOC + headline bridge `Topology/LinearSystemGermDeltaPFiniteDimRSUnconditional.lean` 109 LOC = 766 LOC total; estimate had been 500–1,100). | **done** |
 | **B** | `HolomorphicOneFormFiniteDim X` (L² Hodge / elliptic regularity; mathlib gap) | **3,000–7,000** |
 | **C1** | `AbelJacobiInput` (smooth-path-connectedness; `linearInChart` + chart-cover) — 2 primitives landed 2026-05-14 (`SmoothPathConnected` predicate + `linearInChart` at ω with line-in-target hypothesis, 371 LOC). Remaining: chart-cover lift. ω-level structural caveat documented (line vs segment). | **400–1,100** *remaining* |
 | **C2** | `PeriodLatticeDiscretenessBundle` (H₁ rank-2g + Riemann bilinear; mathlib gap) | **1,800–3,800** |
@@ -687,13 +694,19 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 
 **Final-state projection** (23/24 path): repo grows from 83,109 → **~96,000–107,000 LOC**.
 
-### F.5 Recommended priority order (revised 2026-05-14 post A1 + C1 primitives)
+### F.5 Recommended priority order (revised 2026-05-14 post A1 + A2 + C1 primitives)
 
-1. ~~**A1 + A2 (~900–2,000 LOC).**~~ A1 **landed 2026-05-14**
-   (`Analysis/PolynomialLiouville.lean` +
-   `Topology/LinearSystemAtInftyRSDischarge.lean`, 870 LOC). **A2
-   (~500–1,100 LOC)** is the remaining piece: ⇒ `RR_DimGE2_GenusZero_Germ X`
-   unconditional on uniformization alone. Concrete, two-chart smoothness.
+1. ~~**A1 + A2 (~900–2,000 LOC).**~~ Both **landed 2026-05-14**.
+   A1 via `Analysis/PolynomialLiouville.lean` +
+   `Topology/LinearSystemAtInftyRSDischarge.lean` (870 LOC). A2 via
+   `Manifold/RiemannSphereAntipodeSmooth.lean` +
+   `Manifold/RiemannSphereTranslate.lean` +
+   `Manifold/MobiusTransitivityRS.lean` (657 LOC). Composed in
+   `Topology/LinearSystemGermDeltaPFiniteDimRSUnconditional.lean`
+   (109 LOC). **`RR_DimGE2_GenusZero_Germ X` is now unconditional
+   on uniformization alone** — the genus-0 RR `dim_ℂ L(δp) ≥ 2`
+   chain on the germ field reduces to a single named classical
+   input.
 2. **C1 chart-cover lift (~400–1,100 LOC remaining).** Two primitives
    landed (`Manifold/SmoothPathConnected.lean` predicate +
    `Manifold/SmoothPathLinearInChart.lean` linearInChart at ω with
@@ -736,10 +749,13 @@ Beyond these, every other claim in this map is verified against `.lake/packages/
 ## H. Verification audit log
 
 **2026-05-14 update:** A1 discharge merged on `feat/linear-system-divisor`
-(commit `bdd9ba0`); C1 primitives merged from `feat/c1-smooth-path-connected`.
-Post-merge `taskpolicy lake build` clean (8696 jobs). All grep facts
-below are from the pre-merge state and remain valid (the merged
-files are new, not modifications).
+(commit `bdd9ba0`); C1 primitives merged from `feat/c1-smooth-path-connected`
+(merge commit `8b32243`); A2 discharge merged from
+`feat/antipode-smoothness` (3 commits `d05cd90..a0569bd` + chore
+`6b63aad`); headline unconditional file added (`2909a6b`). Post-merge
+`taskpolicy lake build` clean (**8700 jobs**, up from 8694 pre-merges).
+All grep facts below are from the pre-merge state and remain valid
+(the merged files are new, not modifications).
 
 The facts in this map were checked by automated grep against this repo and the mathlib pin at `.lake/packages/mathlib`. Results:
 

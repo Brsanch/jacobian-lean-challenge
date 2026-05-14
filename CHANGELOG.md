@@ -1,5 +1,58 @@
 # Changelog
 
+## 2026-05-14 — A2 closed + genus-0 RR chain unconditional (modulo uniformization)
+
+Merges `feat/antipode-smoothness` (parallel branch off `main`) into
+the linear-system-divisor trunk and composes with the A1 discharge
+that landed earlier today. The genus-0 Riemann–Roch `dim_ℂ L(δp) ≥
+2` chain on the germ field is now reduced to exactly **one** named
+classical input — uniformization at genus 0.
+
+New files merged from `feat/antipode-smoothness` (660 LOC total):
+
+* `Manifold/RiemannSphereAntipodeSmooth.lean` (255 LOC) — discharges
+  the `contMDiff_antipode_TODO` follow-up from
+  `RiemannSphereMobius.lean`: `ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω antipode` via
+  `contMDiffAt_iff_of_mem_source` on the three-case `OnePoint.rec`
+  split (chart pairs at `∞`, at `coe 0`, and at `coe w` with `w ≠
+  0`; chart-coord maps `z ↦ -z` for the first two and `z ↦ -z⁻¹`
+  for the third). Packages as `antipodeEquiv : HolomorphicEquiv RS RS`
+  (self-inverse).
+* `Manifold/RiemannSphereTranslate.lean` (322 LOC) — `translateBy c`
+  on RS (fixing `∞`, `coe z ↦ coe (z + c)`) as `ContMDiff 𝓘(ℂ) 𝓘(ℂ)
+  ω` and packaged as `translateEquiv c : HolomorphicEquiv RS RS`
+  with inverse `translateEquiv (-c)`.
+* `Manifold/MobiusTransitivityRS.lean` (80 LOC) —
+  `RiemannSphere.existsMobiusToInftyRS`: ∀ `p : RS`, ∃ `e :
+  HolomorphicEquiv RS RS`, `e p = ∞`. Concrete witnesses: identity
+  for `p = ∞`; `translateEquiv(-z₀).trans antipodeEquiv` for `p =
+  coe z₀` (sending `coe z₀ ↦ coe 0 ↦ ∞`).
+
+New trunk-side file (this commit):
+
+* `Topology/LinearSystemGermDeltaPFiniteDimRSUnconditional.lean`
+  (109 LOC) — composes the two unconditional discharges:
+  - `existsMobiusToInftyRS_holds : ExistsMobiusToInftyRS` — 1-line
+    bridge identifying the in-tree theorem with the named-hypothesis
+    Prop (definitionally equal, `rfl`-level).
+  - `linearSystemGermDeltaPFiniteDim_RiemannSphere_unconditional :
+    LinearSystemGermDeltaPFiniteDim RiemannSphere` — the headline,
+    no hypothesis.
+  - `rr_DimGE2_GenusZero_Germ_of_uniformization_unconditional_RSFiniteDim`
+    — for any compact connected complex 1-manifold `X`, genus-0 RR
+    dim ≥ 2 on the germ field reduces to genus-conditional
+    uniformization alone.
+
+**Net post-this-commit state.** The genus-0 RR `dim_ℂ L(δp) ≥ 2`
+content on:
+
+* **`RiemannSphere`**: **unconditional**.
+* **Arbitrary compact connected complex 1-manifold `X`**: depends on
+  **one** named classical input — `genus X = 0 → Nonempty
+  (HolomorphicEquiv X RiemannSphere)` (uniformization at genus 0).
+
+Build: 8700 jobs clean. Zero `sorry`, zero `axiom`.
+
 ## 2026-05-14 — `feat/c1-smooth-path-connected` merged: SmoothPathConnected predicate + linearInChart (ω-level)
 
 Two-commit branch off `main` (`d97dcd5..c189052`) merged into
