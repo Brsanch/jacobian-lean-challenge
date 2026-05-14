@@ -375,6 +375,7 @@ import JacobianChallenge.Manifold.AbelJacobiIso
 import JacobianChallenge.Manifold.AbelJacobiPath
 import JacobianChallenge.Manifold.AbelJacobiPic0
 import JacobianChallenge.Manifold.AbelHypothesisGenusZero
+import JacobianChallenge.Manifold.AbelHypothesisFromPeriodCondition
 import JacobianChallenge.Manifold.AbelJacobiPoint
 import JacobianChallenge.Manifold.SmoothPathConnected
 import JacobianChallenge.Manifold.SmoothPathLinearInChart
