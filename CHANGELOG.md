@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-05-14 — `mnRSSimplePole`: first non-trivial principal-divisor generator on RS
+
+Lands the first non-constant `MeromorphicNonzero RiemannSphere` — the
+explicit packaging of `RSSimplePole : RiemannSphere → ℂ` (zero at
+`some 0`, simple pole at `∞`) — used as the base case for any
+constructive discharge of `Subsingleton (Pic0 RiemannSphere)`.
+
+New file: `Manifold/MeromorphicNonzeroRSSimplePole.lean` (~110 LOC).
+
+* `RSSimplePole_continuousAt_coe` — continuity at every finite
+  point, via the open embedding `(↑) : ℂ → RiemannSphere`.
+* `mnRSSimplePole : MeromorphicNonzero RiemannSphere` — bundled
+  packaging via `MeromorphicNonzero.ofRegularContinuous`.
+
+The non-vanishing-germ proof at finite points uses
+`meromorphicOrderAt_ne_top_iff_eventually_ne_zero` on the
+chart-pulled-back `id`. The `regular_continuousAt` field is
+discharged at finite points via the continuity lemma above;
+at `∞` the order is `-1`, making the hypothesis vacuous (proven
+by contradiction on `0 ≤ -1`).
+
+The principal divisor of `mnRSSimplePole` is `δ_{some 0} - δ_∞`.
+Future chips build the translation `δ_{some a} - δ_∞` and inversion
+`δ_∞ - δ_{some 0}` generators, plus the closure argument turning
+these into a full discharge of `Subsingleton (Pic0 RiemannSphere)`
+(equivalently `Pic⁰(ℙ¹) = 0`).
+
+Build: 8706 jobs clean. Zero `sorry`, zero `axiom`.
+
 ## 2026-05-14 — C4 bridge: Subsingleton (Pic0 X) ↔ every Div0 is principal
 
 New file: `Manifold/Pic0SubsingletonBridge.lean` (~85 LOC).
