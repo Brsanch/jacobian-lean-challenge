@@ -19,9 +19,10 @@ smooth paths.
 
 * `SmoothPath I X` — a wrapper around mathlib's `Path src tgt` carrying
   a `C^∞` smoothness proof of the underlying continuous map
-  `unitInterval → X`. Smoothness is phrased as `ContMDiff` between the
-  trivial model `𝓘(ℝ, ℝ)` on `unitInterval` (viewed as a topological
-  subspace of `ℝ`) and the manifold model `I` on `X`.
+  `unitInterval → X`. Smoothness is phrased as `ContMDiff` at the C^∞
+  regularity level `∞ : WithTop ℕ∞` between the trivial model
+  `𝓘(ℝ, ℝ)` on `unitInterval` (viewed as a topological subspace of
+  `ℝ`) and the manifold model `I` on `X`.
 
 * `SmoothChain I X` — finite formal `ℤ`-linear combinations of
   `SmoothPath I X`, modelled as `SmoothPath I X →₀ ℤ`. This inherits
@@ -37,7 +38,11 @@ smooth paths.
 The smoothness condition is recorded against the trivial model
 `𝓘(ℝ, ℝ)` on `unitInterval` (the chart for the `Subtype` is the
 inclusion into `ℝ`) and the model `I` on `X`. The target regularity is
-`⊤` (= `C^∞`), matching `SmoothOneForm`.
+`∞` (= `C^∞`, = `((⊤ : ℕ∞) : WithTop ℕ∞)` via the `ContDiff` notation
+scope). This is intentionally *one level below* the analytic regularity
+`⊤` (= `ω`); the C^∞ choice is what permits concatenation and
+chart-cover arguments, which germ-determination obstructs at the
+analytic level.
 
 We deliberately do *not* define integration here: that requires
 `SmoothOneForm` pullback and `intervalIntegral`, which is the next
@@ -63,14 +68,19 @@ structure SmoothPath where
   tgt : X
   /-- Underlying continuous path from mathlib's `Path` type. -/
   toPath : Path src tgt
-  /-- Smoothness witness: there exists a smooth ambient map
+  /-- Smoothness witness: there exists a `C^∞` ambient map
   `ℝ → X` (against the trivial model `𝓘(ℝ, ℝ)` on `ℝ` and the manifold
   model `I` on `X`) which agrees with the underlying path on
   `unitInterval`. Avoiding a direct `ChartedSpace` instance on
   `unitInterval` keeps the typeclass picture trivial and lets later
-  chips work on the ambient `ℝ`. -/
+  chips work on the ambient `ℝ`. The regularity is `C^∞` (= `∞` in
+  `WithTop ℕ∞`), not the stronger analytic level `ω` (= `⊤`): this is
+  what concatenation and chart-cover arguments require — analytic
+  functions are germ-determined and cannot in general be glued across
+  charts, so a strictly `ω` smoothness witness would make basic path
+  algebra (`Path.trans`, chart-cover lifts) generically impossible. -/
   smooth : ∃ f : ℝ → X,
-    ContMDiff (𝓘(ℝ, ℝ)) I ⊤ f ∧
+    ContMDiff (𝓘(ℝ, ℝ)) I ∞ f ∧
       ∀ t : unitInterval, f t.val = toPath t
 
 namespace SmoothPath

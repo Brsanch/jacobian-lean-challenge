@@ -82,15 +82,15 @@ theorem integrate_eq_intervalIntegral (γ : SmoothPath I X)
 
 /-- Auxiliary: the ambient extension `γ.ambient : ℝ → X` is
 `MDifferentiableAt` at every parameter `t`. This is just the
-`MDifferentiable` projection of its `ContMDiff ⊤` smoothness. -/
+`MDifferentiable` projection of its `C^∞` smoothness. -/
 lemma mdifferentiableAt_ambient (γ : SmoothPath I X) (t : ℝ) :
     MDifferentiableAt 𝓘(ℝ, ℝ) I γ.ambient t := by
-  have h : ContMDiff 𝓘(ℝ, ℝ) I ⊤ γ.ambient := γ.ambient_contMDiff
-  -- `ContMDiffAt ⊤ ⇒ MDifferentiableAt` (since `1 ≤ ⊤`).
-  have hAt : ContMDiffAt 𝓘(ℝ, ℝ) I ⊤ γ.ambient t := h t
-  -- `ContMDiffAt.mdifferentiableAt` needs `n ≠ 0`; here `n = ⊤ ≠ 0`.
+  have h : ContMDiff 𝓘(ℝ, ℝ) I ((⊤ : ℕ∞) : WithTop ℕ∞) γ.ambient :=
+    γ.ambient_contMDiff
+  have hAt : ContMDiffAt 𝓘(ℝ, ℝ) I ((⊤ : ℕ∞) : WithTop ℕ∞) γ.ambient t := h t
+  -- `ContMDiffAt.mdifferentiableAt` needs `n ≠ 0`; here `n = ∞ ≠ 0`.
   refine hAt.mdifferentiableAt ?_
-  exact (lt_of_lt_of_le (zero_lt_one' (WithTop ℕ∞)) le_top).ne'
+  decide
 
 /-- Each chart of the manifold `X` is `MDifferentiableAt` every point
 of its source, against the model `I` on both sides. This is the

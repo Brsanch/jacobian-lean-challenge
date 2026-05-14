@@ -99,13 +99,14 @@ def chartVelocity (γ : SmoothPath I X) (t₀ : ℝ) (t : ℝ) : E :=
       (fun s => mfderiv 𝓘(ℝ, ℝ) I γ.ambient s) t₀ t) (1 : ℝ)
 
 lemma contMDiffAt_chartVelocity (γ : SmoothPath I X) (t₀ : ℝ) :
-    ContMDiffAt 𝓘(ℝ, ℝ) 𝓘(ℝ, E) ⊤ (γ.chartVelocity I t₀) t₀ := by
+    ContMDiffAt 𝓘(ℝ, ℝ) 𝓘(ℝ, E) ∞ (γ.chartVelocity I t₀) t₀ := by
   have h_inT :
-      ContMDiffAt 𝓘(ℝ, ℝ) 𝓘(ℝ, ℝ →L[ℝ] E) ⊤
+      ContMDiffAt 𝓘(ℝ, ℝ) 𝓘(ℝ, ℝ →L[ℝ] E) ∞
         (inTangentCoordinates 𝓘(ℝ, ℝ) I id γ.ambient
           (fun s => mfderiv 𝓘(ℝ, ℝ) I γ.ambient s) t₀) t₀ := by
-    have h_amb : ContMDiffAt 𝓘(ℝ, ℝ) I ⊤ γ.ambient t₀ := γ.ambient_contMDiff t₀
-    have h_top : (⊤ : WithTop ℕ∞) + 1 ≤ ⊤ := by simp
+    have h_amb : ContMDiffAt 𝓘(ℝ, ℝ) I ∞ γ.ambient t₀ := γ.ambient_contMDiff t₀
+    -- `∞ + 1 = ∞` in `WithTop ℕ∞` (top is absorptive in `ℕ∞`).
+    have h_top : (∞ : WithTop ℕ∞) + 1 ≤ ∞ := by simp
     exact h_amb.mfderiv_const h_top
   exact h_inT.clm_apply contMDiffAt_const
 
