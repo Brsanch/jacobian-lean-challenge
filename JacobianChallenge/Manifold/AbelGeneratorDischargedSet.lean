@@ -114,6 +114,29 @@ theorem mul_mem_dischargedGenerators (B : AbelJacobiInput α h)
   rw [principalDivisorMap_mul]
   exact complexChainPeriodVector_principalDivisorAJChain_add_mem B hf hg
 
+/-- **Inversion closure of the discharged set.** Composes
+`principalDivisorMap_invMer` (inversion negates the principal divisor)
+with `complexChainPeriodVector_principalDivisorAJChain_neg_mem`
+(lattice membership is preserved under negation). -/
+theorem invMer_mem_dischargedGenerators (B : AbelJacobiInput α h)
+    {f : MeromorphicNonzero X}
+    (hf : f ∈ B.dischargedGenerators) :
+    MeromorphicNonzero.invMer f ∈ B.dischargedGenerators := by
+  show complexChainPeriodVector α
+      (B.principalDivisorAJChain (principalDivisorMap (MeromorphicNonzero.invMer f)))
+        ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α
+  rw [principalDivisorMap_invMer]
+  exact complexChainPeriodVector_principalDivisorAJChain_neg_mem B hf
+
+/-- **Quotient closure** (no `Div` instance on `MeromorphicNonzero X`,
+so this is stated for the literal product `f * invMer g`). Combines
+`mul_mem_dischargedGenerators` and `invMer_mem_dischargedGenerators`. -/
+theorem mul_invMer_mem_dischargedGenerators (B : AbelJacobiInput α h)
+    {f g : MeromorphicNonzero X}
+    (hf : f ∈ B.dischargedGenerators) (hg : g ∈ B.dischargedGenerators) :
+    f * MeromorphicNonzero.invMer g ∈ B.dischargedGenerators :=
+  B.mul_mem_dischargedGenerators hf (B.invMer_mem_dischargedGenerators hg)
+
 /-! ## Reduction of `AbelGeneratorPeriodCondition` to the discharged-set form -/
 
 /-- **`AbelGeneratorPeriodCondition` ↔ universal discharge.** The
