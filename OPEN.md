@@ -198,46 +198,52 @@ Headline composition lives in
 
 See `CHANGELOG.md` for the per-file map.
 
-## Smooth-path-connectedness sub-arc (C1 progress, 2026-05-14)
+## Smooth-path-connectedness sub-arc (C1 progress, 2026-05-14 and 2026-05-15)
 
 The `AbelJacobiInput α h` named-hypothesis bundle
 (`Manifold/AbelJacobiPoint.lean`) is the C1 input of CLOSURE_MAP §F.3.
 Its existence on a compact connected complex 1-manifold is classical
-("smooth path-connectedness + a chosen base point"). The 2026-05-14
-`feat/c1-smooth-path-connected` branch (merged to main) lands two
-primitives toward the discharge:
+("smooth path-connectedness + a chosen base point"). Three primitives
+land toward the discharge:
 
-1. `SmoothPathConnected I X : Prop` (`Manifold/SmoothPathConnected.lean`)
-   — the classical predicate "every two points of `X` joined by a
-   smooth path", with `AbelJacobiInput.ofSmoothPathConnected` /
-   `nonempty_of_smoothPathConnected` reducing `AbelJacobiInput α h`
+1. `SmoothPathConnected I X : Prop` (`Manifold/SmoothPathConnected.lean`,
+   2026-05-14) — the classical predicate "every two points of `X`
+   joined by a smooth path", with `AbelJacobiInput.ofSmoothPathConnected`
+   / `nonempty_of_smoothPathConnected` reducing `AbelJacobiInput α h`
    existence to `SmoothPathConnected 𝓘(ℝ, ℂ) X + Nonempty X`. This is
    the named-hypothesis layer for the sub-arc.
 
-2. `SmoothPath.linearInChart` (`Manifold/SmoothPathLinearInChart.lean`)
-   — the analytic affine constructor: given a chart `φ ∈ atlas ℂ X`,
-   two points in `φ.source`, and the hypothesis that the entire
-   chart-coordinate line through their images lies in `φ.target`,
-   produce a `SmoothPath 𝓘(ℝ, ℂ) X` between them.
+2. `SmoothPath.linearInChart` (`Manifold/SmoothPathLinearInChart.lean`,
+   2026-05-14) — the analytic affine constructor: given a chart
+   `φ ∈ atlas ℂ X`, two points in `φ.source`, and the hypothesis that
+   the entire chart-coordinate line through their images lies in
+   `φ.target`, produce a `SmoothPath 𝓘(ℝ, ℂ) X` between them. Now
+   downcast at C^∞ via `ContMDiffAt.of_le` since the structure was
+   relaxed to C^∞.
 
-**ω-level structural caveat** documented in
-`Manifold/SmoothPathLinearInChart.lean`: the `SmoothPath` structure
-demands `ContMDiff ⊤` with `⊤ : WithTop ℕ∞`, which mathlib treats as
-`ω` (analytic). Globally analytic functions are germ-determined, so
-constant smooth extensions outside `[0, 1]` do not produce an
-analytic path. This forces `linearInChart` to require the entire
-chart-coordinate *line* (not merely the segment) in `φ.target`. The
-hypothesis is unconditional on the affine chart of `RiemannSphere`
-(target = ℂ) but generically fails on bounded chart targets.
-Closing the "segment-only" case at the ω level needs either a
-`SmoothPath`-side refactor (downgrade to `C^∞`) or an
-analytic-continuation argument. Either is genuinely a separate chip.
+3. `SmoothPath.linearInChartSegment` (same file, 2026-05-15) — the
+   C^∞ constructor with **segment-in-target** hypothesis (strict
+   weakening of `linearInChart`'s line-in-target). Built on the
+   `bumpedSegment a b t = (1 - σ t) • a + σ t • b` reparameterisation
+   where `σ = Real.smoothTransition`, whose image on ℝ lies in the
+   closed segment `[a, b]`. The "segment-only" case at the chart
+   level is now discharged.
 
-**Remaining for C1 full discharge.** Chart-cover argument lifting
-`linearInChart` (line-in-target hypothesis) to
-`SmoothPathConnected 𝓘(ℝ, ℂ) X` on a compact connected complex
-1-manifold. Estimated 400–1,000 LOC on top of the two primitives
-above, modulo the ω-level structural caveat.
+**ω-level caveat resolved (2026-05-15).** The `SmoothPath` structure
+was refactored from `ContMDiff ⊤` (= ω = analytic) to `ContMDiff ∞`
+(= C^∞) — the docstring intent. Concatenation and segment-in-chart
+reparameterisations are now both directly available; analytic
+germ-determination no longer obstructs them. The five-file refactor
+(`SmoothChain` + `SmoothPathIntegral` + `SmoothPathChartCompat` +
+`SmoothPathIntegrability` + `SmoothPathLinearInChart`) leaves the
+full project build clean (8710 jobs).
+
+**Remaining for C1 full discharge.** Chart-cover argument on a
+compact connected complex 1-manifold: cover by finitely many charts
+with convex (e.g., ball) targets, splice `linearInChartSegment`
+paths through overlap regions using C^∞ concatenation. The
+concatenation primitive is the next sub-chip (~150–300 LOC at C^∞
+via partition of unity); the cover argument is then ~400–800 LOC.
 
 ## C3 + C4 sub-arc progress (2026-05-14, 12 chips; merged to main)
 
