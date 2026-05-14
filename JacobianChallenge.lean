@@ -298,6 +298,7 @@ import JacobianChallenge.Manifold.SinglePoleInftyFibre
 import JacobianChallenge.Manifold.SinglePoleLaurentExtractionDischarge
 import JacobianChallenge.Manifold.SmoothChain
 import JacobianChallenge.Manifold.SmoothChainBoundary
+import JacobianChallenge.Manifold.SmoothChainPushforward
 import JacobianChallenge.Manifold.SmoothChainIntegralLinearity
 import JacobianChallenge.Manifold.SmoothCycle
 import JacobianChallenge.Manifold.SmoothOneForm
