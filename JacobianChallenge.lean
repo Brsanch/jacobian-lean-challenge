@@ -350,6 +350,7 @@ import JacobianChallenge.Topology.LinearSystemSubLemmas
 import JacobianChallenge.Topology.LiouvilleFromLocalConstancy
 import JacobianChallenge.Topology.MeromorphicNonzeroBuilder
 import JacobianChallenge.Topology.Item14FromUniformization
+import JacobianChallenge.Manifold.AbelJacobiArcSummary
 import JacobianChallenge.Manifold.AbelJacobiDiv
 import JacobianChallenge.Manifold.AbelJacobiIso
 import JacobianChallenge.Manifold.AbelJacobiPath
