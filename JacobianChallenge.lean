@@ -386,6 +386,7 @@ import JacobianChallenge.Manifold.AbelJacobiIso
 import JacobianChallenge.Manifold.AbelJacobiPath
 import JacobianChallenge.Manifold.AbelJacobiPic0
 import JacobianChallenge.Manifold.AbelHypothesisGenusZero
+import JacobianChallenge.Manifold.AbelGeneratorDischargedSet
 import JacobianChallenge.Manifold.AbelGeneratorGenusZero
 import JacobianChallenge.Manifold.AbelHypothesisFromPeriodCondition
 import JacobianChallenge.Manifold.JacobiInversionGenusZero
