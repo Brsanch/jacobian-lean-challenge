@@ -350,6 +350,27 @@ linearSystemDivisor D` (the bundled embedding via
 `MeromorphicFunctionGerm X`). Gives the trivial `1 ≤ dim_ℂ L(D)` for
 effective `D` on a connected compact complex 1-manifold.
 
+**Transport: `ExistsSimplePoleGermAtSomePoint X` from `HolomorphicEquiv X RS` landed 2026-05-14** (same branch):
+[`Manifold/MMeromorphicHolomorphicEquivTransport.lean`](JacobianChallenge/Manifold/MMeromorphicHolomorphicEquivTransport.lean)
+(~265 LOC) + [`Topology/ExistsSimplePoleGermFromHolomorphicEquivRS.lean`](JacobianChallenge/Topology/ExistsSimplePoleGermFromHolomorphicEquivRS.lean)
+(~160 LOC) discharge the uniformization step:
+
+* `HolomorphicEquiv.chartTransition_analyticAt` — chart transition is
+  analytic (via existing `contMDiff_omega_analyticAt_chart_pullback`).
+* `HolomorphicEquiv.chartTransition_deriv_ne_zero` — derivative non-zero
+  (via existing `deriv_chart_pullback_ne_zero_of_injective`).
+* `mmeromorphicOrderAt_holomorphicEquiv_comp` — order equality
+  `mmeromorphicOrderAt (f ∘ e) x = mmeromorphicOrderAt f (e x)` via
+  mathlib's `meromorphicOrderAt_comp_of_deriv_ne_zero`.
+* `MMeromorphicAt.holomorphicEquiv_comp_iff` — same for MMeromorphicAt.
+* `existsSimplePoleGermAtSomePoint_of_holomorphicEquiv_RS` — headline:
+  `Nonempty (HolomorphicEquiv X RiemannSphere) → ExistsSimplePoleGermAtSomePoint X`.
+
+Composing this with the unconditional RS base case (from the prior
+chip), the genus-0 RR existence side now reduces to **the
+uniformization theorem alone**: `genus X = 0 → Nonempty (HolomorphicEquiv
+X RiemannSphere)`. That input is the remaining classical content.
+
 **Simple-pole germ on `RiemannSphere` landed 2026-05-13** (same branch):
 [`Manifold/RiemannSphereSimplePole.lean`](JacobianChallenge/Manifold/RiemannSphereSimplePole.lean)
 (~225 LOC) constructs `RSSimplePole : RiemannSphere → ℂ` (`some z ↦ z`,
