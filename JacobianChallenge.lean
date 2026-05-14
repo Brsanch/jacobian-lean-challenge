@@ -275,6 +275,7 @@ import JacobianChallenge.Manifold.ResidueTheoremStokes
 import JacobianChallenge.Manifold.ResidueTheoremUnconditional
 import JacobianChallenge.Manifold.ResidueViaTopologicalDegree
 import JacobianChallenge.Manifold.RiemannSphere
+import JacobianChallenge.Manifold.RiemannSphereSimplePole
 import JacobianChallenge.Manifold.RiemannSphereChartCoefficients
 import JacobianChallenge.Manifold.RiemannSphereChartNHolomorphy
 import JacobianChallenge.Manifold.RiemannSphereChartSCoeffOverlap
