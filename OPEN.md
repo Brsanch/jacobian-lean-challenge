@@ -160,6 +160,26 @@ named classical inputs (down from five, post-`meromorphicIdentityPropagation_hol
    (`Topology/RRStrictLtFromSimplePole.lean`).
 3. `S2ImpliesGenus0 X` — geometric-vs-topological genus bridge
    (`Topology/SurfaceClassificationGenus.lean`).
+
+   **Two architectural reductions exist for input 3**; downstream callers
+   can pick whichever route their auxiliary inputs match best:
+
+   * *Uniformization route* (`Topology/S2ImpliesGenus0Unconditional.lean`):
+     reduces to `HolomorphicOneFormEquivRiemannSphere X` (a ℂ-linear
+     equivalence between `H⁰(X, Ω¹)` and `H⁰(RS, Ω¹)`). The Riemann-sphere
+     side is unconditional via `genus_RiemannSphere_statement_holds`. The
+     remaining open input is the linear equivalence itself, which
+     classically follows from uniformization + 1-form pullback.
+
+   * *Simple-connectedness route* (new 2026-05-13,
+     `Topology/S2ImpliesGenus0FromSimplyConnected.lean`): reduces to
+     two precise classical facts — (a) `SimplyConnectedS2`
+     (= `SimplyConnectedSpace StandardS2`, a small mathlib gap on
+     π₁(S²) = 0), and (b) `HolomorphicOneFormSubsingletonOfSimplyConnected
+     X` (the analytic chain `simply connected ⇒ closed 1-forms have
+     primitives via Stokes ⇒ primitive is constant by Liouville ⇒ form
+     is zero`). This route bypasses uniformization entirely.
+
 4. Universal at-pole-germ-compatible continuity strengthening of L(δp)
    — operational germ-field refactor
    (`Topology/LiftNonConstancyFromContinuity.lean`'s
