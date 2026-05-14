@@ -1,5 +1,120 @@
 # Changelog
 
+## 2026-05-14 — `feat/c1-smooth-path-connected` merged: SmoothPathConnected predicate + linearInChart (ω-level)
+
+Two-commit branch off `main` (`d97dcd5..c189052`) merged into
+`feat/linear-system-divisor` after the A1 discharge below. Net +371
+LOC, two new files in `JacobianChallenge/Manifold/`, zero `sorry`,
+zero `axiom`. Full `taskpolicy lake build` green post-merge (8696
+jobs). Disjoint from the linear-system-divisor RR work: files live
+in `Manifold/SmoothPath*` only.
+
+**Smooth-path-connectedness layer** — `Manifold/SmoothPathConnected.lean`
+(177 LOC):
+
+- `SmoothPathConnected I X : Prop` — every two points of `X` joined
+  by a `SmoothPath I X`; smooth analogue of mathlib's
+  `PathConnectedSpace`.
+- `SmoothPathConnected.diagonal` — the `p = p` case is uniform via
+  `SmoothPath.const`.
+- `AbelJacobiInput.ofSmoothPathConnected` — constructor producing
+  the bundle from `SmoothPathConnected 𝓘(ℝ, ℂ) X` + a chosen base
+  point. Path-picker via `Classical.choose`.
+- `AbelJacobiInput.nonempty_of_smoothPathConnected` — packaging:
+  `Nonempty X + SmoothPathConnected 𝓘(ℝ, ℂ) X ⇒ Nonempty
+  (AbelJacobiInput α h)`.
+- `AbelJacobiInput.exists_smoothPath_from_basePoint` — one-sided
+  back-projection.
+
+Splits the `AbelJacobiInput α h` named-hypothesis bundle along a
+textbook fault line: from "base point + per-target picker" down to
+the classical predicate plus `Nonempty X`. CLOSURE_MAP §F.5 step 2
+(C1) now factors through `SmoothPathConnected` as a single citable
+classical input.
+
+**Linear-in-chart primitive** — `Manifold/SmoothPathLinearInChart.lean`
+(192 LOC):
+
+- `affineSegment a b t = (1 - t) • a + t • b` — affine map `ℝ → ℂ`
+  with `affineSegment_zero/one` endpoint identities.
+- `contDiff_affineSegment` / `contMDiff_affineSegment` — affine maps
+  are `C^ω`; manifold-side lift via `contMDiff_iff_contDiff`.
+- `SmoothPath.linearInChart φ h_atlas p q hp hq h_line` — constructor
+  of a `SmoothPath 𝓘(ℝ, ℂ) X` between `p, q` whose chart-coordinate
+  line `{(1-t) • φ p + t • φ q : t ∈ ℝ}` lies entirely in
+  `φ.target`. Ambient `t ↦ φ.symm (affineSegment (φ p) (φ q) t)`,
+  smooth at ω-regularity via `contMDiffAt_symm_of_mem_maximalAtlas
+  ∘ contMDiff_affineSegment`.
+- `SmoothPath.linearInChart_src` / `_tgt` — endpoint identities.
+
+**ω-level structural finding** (documented in the file's docstring
+and accompanying commit):
+
+The `SmoothPath` structure demands `ContMDiff 𝓘(ℝ, ℝ) I ⊤ f` with
+`⊤ : WithTop ℕ∞`, which mathlib's `Mathlib.Analysis.Calculus.ContDiff.FTaylorSeries`
+notes equals `ω` (analytic). Globally analytic functions are
+germ-determined, so the standard `C^∞` trick of smoothly extending
+by constants outside `[0, 1]` does *not* produce an analytic path.
+This forces `linearInChart` to require the *entire chart-coordinate
+line* (not merely the segment) in `φ.target`. The hypothesis is
+unconditional on the affine chart of `RiemannSphere` (target = ℂ);
+on a generic Riemann surface chart with bounded target it fails.
+Closing the "segment-only" case at the ω level genuinely requires
+either changing the `SmoothPath` definition (downgrade to `C^∞`) or
+an analytic-continuation argument; neither is in scope of this chip.
+
+**Net post-this-merge state.** CLOSURE_MAP §F.5 step 2 (C1
+`AbelJacobiInput`) factors through `SmoothPathConnected 𝓘(ℝ, ℂ) X +
+Nonempty X`, with `linearInChart` as the first chart-side primitive.
+Full chart-cover discharge remains open.
+
+## 2026-05-14 — A1 closed: `LinearSystemAtInftyRS_BoundedBySimplePoleSpan` discharged
+
+Two new files (~870 LOC total) discharging the polynomial-growth
+Liouville bound at `∞` on the Riemann sphere, the first of the two
+remaining classical inputs in the genus-0 RR `dim_ℂ L(δp) ≥ 2`
+chain.
+
+`Analysis/PolynomialLiouville.lean` (~180 LOC) — foundational
+mathlib-style lemma: an entire `f : ℂ → ℂ` with `‖f z‖ ≤ C ‖z‖` for
+`‖z‖ ≥ R₀` is an affine function `f z = f 0 + (deriv f 0) · z`.
+Proven via the Cauchy first-derivative estimate
+(`Complex.norm_deriv_le_of_forall_mem_sphere_norm_le`) plus basic
+Liouville (`Differentiable.exists_const_forall_eq_of_bounded`) and
+constancy from zero derivative (`is_const_of_deriv_eq_zero`).
+
+`Topology/LinearSystemAtInftyRSDischarge.lean` (~690 LOC) —
+discharge of `LinearSystemAtInftyRS_BoundedBySimplePoleSpan` for an
+arbitrary germ in `linearSystemGermDeltaP (∞ : RS)`:
+
+1. Affine-chart restriction `affineChartFun f := f.toFun ∘ some`,
+   with `mmeromorphicOrderAt (some z) = meromorphicOrderAt
+   (affineChartFun f) z`.
+2. Entire normal-form representative `entireRep f := toMeromorphicNFOn
+   (affineChartFun f) Set.univ`, analytic on all of `ℂ` by
+   `MeromorphicNFOn.divisor_nonneg_iff_analyticOnNhd`.
+3. Linear growth bound at infinity: `id ∘ (f ∘ chartS.symm)` has
+   order `≥ 0` at `0` (additivity), so bounded near `0` by
+   `tendsto_nhds_of_meromorphicOrderAt_nonneg`. Translating via the
+   substitution `w = z⁻¹` gives `‖entireRep f z‖ ≤ M ‖z‖` for `‖z‖`
+   large (limit-comparison lift across continuity).
+4. Polynomial Liouville: `entireRep f w = a + b w` for all `w`.
+5. Germ identity at `some 0`: `f.toFun =ᶠ[𝓝[≠] (some 0)] (a + b ·
+   RSSimplePole)` by composing the chart-side EvEq with the
+   polynomial identity.
+6. Identity theorem (`mmeromorphicOrderAt_ne_top_forall`):
+   single-point germ identity propagates globally to all of RS.
+7. Final: `mk f = a • 1 + b • RSSimplePoleGerm ∈ span ℂ {1,
+   RSSimplePoleGerm}`.
+
+**Net post-this-commit state.** `LinearSystemGermDeltaPFiniteDim
+RiemannSphere` reduces to a single remaining classical input
+(`ExistsMobiusToInftyRS` — Möbius transitivity on RS). Combined
+with uniformization at genus 0, the genus-0 RR `dim_ℂ L(δp) ≥ 2`
+chain reduces to **two** named classical inputs: uniformization +
+Möbius transitivity. Build: 8694 jobs clean (pre-C1 merge). Zero
+`sorry`, zero `axiom`.
+
 ## 2026-05-14 — RS-FiniteDim architectural reduction (feat/linear-system-divisor cont.)
 
 New file `Topology/LinearSystemGermDeltaPFiniteDimRSFromInputs.lean`

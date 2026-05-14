@@ -80,17 +80,19 @@ the four named inputs are real classical math not at the mathlib pin
 > `CLOSURE_MAP.md`, not this file, when items flip.
 
 **Remaining LOC for full 24/24 STRICT-CLOSED (verified per-component):
-31,500–59,700 LOC.** Phase 1 ~2k (chippable now), Phase 2 ~15.5–29.6k
-(period lattice + Abel-Jacobi, blocked on classical mathlib gaps),
-Phase 3 ~7.1–15k (surface classification, blocked), Phase 4 ~6.9–12.8k
-(Hodge, blocked). See `CLOSURE_MAP.md` section F.
+~30,500–58,500 LOC.** Phase 1 ~1k (chippable now, A2 + the chart-cover
+lift of the C1 sub-arc), Phase 2 ~15.5–29.6k (period lattice +
+Abel-Jacobi, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
+(surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
+blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **83,109 LOC** total in `*.lean` files
-(82,722 inside `JacobianChallenge/` + 387-line top-level import
-manifest). See `CHANGELOG.md` for the per-branch history.
+**Current repo size:** **84,354 LOC** total in `*.lean` files
+(83,963 inside `JacobianChallenge/` across 401 files + 391-line
+top-level import manifest). See `CHANGELOG.md` for the per-branch
+history.
 
 **Remaining LOC to 24/24** (full breakdown in `CLOSURE_MAP.md` §F):
-**13,000–24,000 LOC** for the realistic **23/24** target (deferring
+**~12,500–22,500 LOC** for the realistic **23/24** target (deferring
 uniformization at genus 0 as a named classical hypothesis).
 Highest-leverage chunk: PL-4 discharge (steps 1–3 of the priority order)
 flips 6 items (4, 5, 10, 11, 12, 13) for ~3,300–7,600 LOC.
@@ -165,16 +167,63 @@ of meromorphic-function germs, and `linearSystemDivisor D` (in
 for any divisor `D : Div X`, with `linearSystemGermDeltaP p` as the
 `D = Div.single p` specialisation. The full chain — existence side
 via `HolomorphicEquiv X RiemannSphere` + finite-dim transport — is
-built, reducing the genus-0 RR `dim_ℂ L(δp) ≥ 2` content to three
+built. After the 2026-05-14 A1 discharge
+(`Analysis/PolynomialLiouville.lean` +
+`Topology/LinearSystemAtInftyRSDischarge.lean`), the genus-0 RR
+`dim_ℂ L(δp) ≥ 2` content reduces to exactly **two** remaining
 named classical inputs:
 
 1. Uniformization at genus 0:
    `genus X = 0 → Nonempty (HolomorphicEquiv X RiemannSphere)`.
-2. `LinearSystemAtInftyRS_BoundedBySimplePoleSpan` — polynomial-growth
-   Liouville bound at `∞ ∈ RS`.
-3. `ExistsMobiusToInftyRS` — Möbius transitivity on `RS`.
+2. `ExistsMobiusToInftyRS` — Möbius transitivity on `RS`
+   (the only remaining piece on the RS side; A2 in `CLOSURE_MAP.md`
+   §F.3, est. 500–1,100 LOC).
+
+`LinearSystemAtInftyRS_BoundedBySimplePoleSpan` is **discharged**
+(A1 closed 2026-05-14); see `CHANGELOG.md` for the proof outline.
 
 See `CHANGELOG.md` for the per-file map.
+
+## Smooth-path-connectedness sub-arc (C1 progress, 2026-05-14)
+
+The `AbelJacobiInput α h` named-hypothesis bundle
+(`Manifold/AbelJacobiPoint.lean`) is the C1 input of CLOSURE_MAP §F.3.
+Its existence on a compact connected complex 1-manifold is classical
+("smooth path-connectedness + a chosen base point"). The 2026-05-14
+`feat/c1-smooth-path-connected` branch (merged in) lands two
+primitives toward the discharge:
+
+1. `SmoothPathConnected I X : Prop` (`Manifold/SmoothPathConnected.lean`)
+   — the classical predicate "every two points of `X` joined by a
+   smooth path", with `AbelJacobiInput.ofSmoothPathConnected` /
+   `nonempty_of_smoothPathConnected` reducing `AbelJacobiInput α h`
+   existence to `SmoothPathConnected 𝓘(ℝ, ℂ) X + Nonempty X`. This is
+   the named-hypothesis layer for the sub-arc.
+
+2. `SmoothPath.linearInChart` (`Manifold/SmoothPathLinearInChart.lean`)
+   — the analytic affine constructor: given a chart `φ ∈ atlas ℂ X`,
+   two points in `φ.source`, and the hypothesis that the entire
+   chart-coordinate line through their images lies in `φ.target`,
+   produce a `SmoothPath 𝓘(ℝ, ℂ) X` between them.
+
+**ω-level structural caveat** documented in
+`Manifold/SmoothPathLinearInChart.lean`: the `SmoothPath` structure
+demands `ContMDiff ⊤` with `⊤ : WithTop ℕ∞`, which mathlib treats as
+`ω` (analytic). Globally analytic functions are germ-determined, so
+constant smooth extensions outside `[0, 1]` do not produce an
+analytic path. This forces `linearInChart` to require the entire
+chart-coordinate *line* (not merely the segment) in `φ.target`. The
+hypothesis is unconditional on the affine chart of `RiemannSphere`
+(target = ℂ) but generically fails on bounded chart targets.
+Closing the "segment-only" case at the ω level needs either a
+`SmoothPath`-side refactor (downgrade to `C^∞`) or an
+analytic-continuation argument. Either is genuinely a separate chip.
+
+**Remaining for C1 full discharge.** Chart-cover argument lifting
+`linearInChart` (line-in-target hypothesis) to
+`SmoothPathConnected 𝓘(ℝ, ℂ) X` on a compact connected complex
+1-manifold. Estimated 400–1,000 LOC on top of the two primitives
+above, modulo the ω-level structural caveat.
 
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 

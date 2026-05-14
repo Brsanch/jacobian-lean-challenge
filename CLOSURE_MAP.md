@@ -607,14 +607,14 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
    │       └── flips item 1
 ```
 
-## F. Net realistic ceiling at this pin (revised 2026-05-14 after `feat/linear-system-divisor` + PL-4)
+## F. Net realistic ceiling at this pin (revised 2026-05-14 after A1 discharge + C1 primitives)
 
 ### F.0 Measured ground truth
 
-- **Total `.lean`:** **83,109 LOC** (82,722 in `JacobianChallenge/` + 387-line manifest), **397 files**.
-- **Per-directory:** `Manifold/` 65,937 / 305 · `Topology/` 8,880 / 64 · `Divisor/` 4,440 / 15 · `Analysis/` 886 / 6 · root 2,579 / 7.
+- **Total `.lean`:** **84,354 LOC** (83,963 in `JacobianChallenge/` + 391-line manifest), **402 files**.
+- **Recent waves:** A1 discharge (+870 LOC, 2 files, 2026-05-14 morning); C1 primitives (`feat/c1-smooth-path-connected`, +371 LOC, 2 files, merged 2026-05-14).
 - **Scoreboard:** 12 STRICT-CLOSED · 3 STUB · 9 OPEN.
-- **Per-chip-file LOC density** (measured across germfield arc, PL-4 scaffolding, `feat/linear-system-divisor`): **140–275 LOC**, mean ≈ 200.
+- **Per-chip-file LOC density** (measured across germfield arc, PL-4 scaffolding, `feat/linear-system-divisor`, A1, C1 primitives): **140–275 LOC**, mean ≈ 200.
 
 ### F.1 Past-wave LOC (grounds the remaining estimates)
 
@@ -639,22 +639,33 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 | `AbelHypothesis` | `Manifold/AbelJacobiPic0.lean` | open |
 | `JacobiInversion` | `Manifold/AbelJacobiIso.lean` | open |
 
-**Genus-0 RR `dim L(δp) ≥ 2` chain (3 open, this branch):**
+**Genus-0 RR `dim L(δp) ≥ 2` chain (1 open after A1 discharge, this branch):**
 
 | Hypothesis | File | Status |
 |---|---|---|
-| `LinearSystemAtInftyRS_BoundedBySimplePoleSpan` | `Topology/LinearSystemGermDeltaPFiniteDimRSFromInputs.lean` | open |
-| `ExistsMobiusToInftyRS` | same | open |
+| `LinearSystemAtInftyRS_BoundedBySimplePoleSpan` | `Topology/LinearSystemAtInftyRSDischarge.lean` | **landed** (A1, 2026-05-14) |
+| `ExistsMobiusToInftyRS` | `Topology/LinearSystemGermDeltaPFiniteDimRSFromInputs.lean` | open (A2) |
 | Uniformization at genus 0 (`genus X = 0 → Nonempty (HolomorphicEquiv X RS)`) | — | not yet named in-tree |
+
+**C1 sub-arc primitives (toward `AbelJacobiInput` discharge,
+`feat/c1-smooth-path-connected` merged 2026-05-14):**
+
+| Primitive | File | Status |
+|---|---|---|
+| `SmoothPathConnected I X` predicate | `Manifold/SmoothPathConnected.lean` | **landed** |
+| `AbelJacobiInput.ofSmoothPathConnected` | same | **landed** |
+| `SmoothPath.linearInChart` (line-in-target ω hypothesis) | `Manifold/SmoothPathLinearInChart.lean` | **landed** |
+| Chart-cover lift `linearInChart → SmoothPathConnected` | — | open |
+| ω-level structural caveat (line vs segment) | docstring of `SmoothPathLinearInChart.lean` | documented |
 
 ### F.3 Remaining LOC per cluster (real-number estimates)
 
 | Cluster | Content | Estimate |
 |---|---|---|
-| **A1** | `LinearSystemAtInftyRS_BoundedBySimplePoleSpan` (chart-side Cauchy estimate; mathlib has `norm_iteratedDeriv_le_of_forall_mem_sphere_norm_le`) | **400–900** |
+| ~~**A1**~~ | ~~`LinearSystemAtInftyRS_BoundedBySimplePoleSpan`~~ — **LANDED 2026-05-14** (`Analysis/PolynomialLiouville.lean` + `Topology/LinearSystemAtInftyRSDischarge.lean`, 870 LOC actual; estimate had been 400–900). | **done** |
 | **A2** | `ExistsMobiusToInftyRS` (antipode + translation packaged as `HolomorphicEquiv RS RS`; two-chart smoothness) | **500–1,100** |
 | **B** | `HolomorphicOneFormFiniteDim X` (L² Hodge / elliptic regularity; mathlib gap) | **3,000–7,000** |
-| **C1** | `AbelJacobiInput` (smooth-path-connectedness; `linearInChart` + chart-cover) | **600–1,500** |
+| **C1** | `AbelJacobiInput` (smooth-path-connectedness; `linearInChart` + chart-cover) — 2 primitives landed 2026-05-14 (`SmoothPathConnected` predicate + `linearInChart` at ω with line-in-target hypothesis, 371 LOC). Remaining: chart-cover lift. ω-level structural caveat documented (line vs segment). | **400–1,100** *remaining* |
 | **C2** | `PeriodLatticeDiscretenessBundle` (H₁ rank-2g + Riemann bilinear; mathlib gap) | **1,800–3,800** |
 | **C3** | `AbelHypothesis` (Stokes on principal-divisor 2-chains) | **1,200–2,800** |
 | **C4** | `JacobiInversion` (Abel–Jacobi surjective; classical degree or theta) | **1,200–2,800** |
@@ -676,10 +687,23 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 
 **Final-state projection** (23/24 path): repo grows from 83,109 → **~96,000–107,000 LOC**.
 
-### F.5 Recommended priority order
+### F.5 Recommended priority order (revised 2026-05-14 post A1 + C1 primitives)
 
-1. **A1 + A2 (~900–2,000 LOC).** Discharge the two RS-FiniteDim inputs ⇒ `RR_DimGE2_GenusZero_Germ X` unconditional on uniformization alone. Concrete, mathlib-driven.
-2. **C1 `AbelJacobiInput` (~600–1,500).** Cheapest PL-4 hypothesis; `SmoothPath.const` is the launch pad.
+1. ~~**A1 + A2 (~900–2,000 LOC).**~~ A1 **landed 2026-05-14**
+   (`Analysis/PolynomialLiouville.lean` +
+   `Topology/LinearSystemAtInftyRSDischarge.lean`, 870 LOC). **A2
+   (~500–1,100 LOC)** is the remaining piece: ⇒ `RR_DimGE2_GenusZero_Germ X`
+   unconditional on uniformization alone. Concrete, two-chart smoothness.
+2. **C1 chart-cover lift (~400–1,100 LOC remaining).** Two primitives
+   landed (`Manifold/SmoothPathConnected.lean` predicate +
+   `Manifold/SmoothPathLinearInChart.lean` linearInChart at ω with
+   line-in-target hypothesis). Remaining: chart-cover argument
+   lifting `linearInChart` to `SmoothPathConnected 𝓘(ℝ, ℂ) X`.
+   ω-level structural caveat documented (line vs segment); resolving
+   the caveat at the ω level needs either a `SmoothPath`-side
+   refactor (downgrade to `C^∞`, then `Real.smoothTransition` makes
+   linearInChart unconditional on chart-shape) or analytic
+   continuation across charts — both are genuine separate sub-chips.
 3. **C3 `AbelHypothesis` + C4 `JacobiInversion` (~2,400–5,600 combined).** Completes `Pic⁰ ≃+ AnalyticJacobian` unconditionally. **Highest-leverage chunk: flips items 4, 5, 10, 11, 12, 13 simultaneously (6 items)** via the existing bundle.
 4. **E + F (~900–2,100).** Wire `Basic.lean` instance bodies + smoothness lemmas. Flips items 17, 18, 21, and item 16 (`ofCurve_inj` falls out of Abel injectivity).
 5. **C2 `PeriodLatticeDiscretenessBundle` (~1,800–3,800).** Required if `PeriodLatticeDiscretenessBundle` should be honest rather than a named hypothesis. Can defer if 23/24 is the target.
@@ -710,6 +734,12 @@ This map should now be the highest-fidelity it can be without actually attemptin
 Beyond these, every other claim in this map is verified against `.lake/packages/mathlib/Mathlib` (jacobian repo's pin) and `Basic.lean` HEAD `1fa030a`.
 
 ## H. Verification audit log
+
+**2026-05-14 update:** A1 discharge merged on `feat/linear-system-divisor`
+(commit `bdd9ba0`); C1 primitives merged from `feat/c1-smooth-path-connected`.
+Post-merge `taskpolicy lake build` clean (8696 jobs). All grep facts
+below are from the pre-merge state and remain valid (the merged
+files are new, not modifications).
 
 The facts in this map were checked by automated grep against this repo and the mathlib pin at `.lake/packages/mathlib`. Results:
 
