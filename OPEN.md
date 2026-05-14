@@ -82,6 +82,17 @@ period pairing in the form argument). +307 LOC PL-3e + 165 LOC ℂ-scaling,
   step orthogonal to PL-3e's integrability work, and packages the full
   pairing API.
 
+* `Manifold/ComplexPeriodH1.lean` (266 LOC) — factors the complex pairing
+  through the `StokesBoundaryInvariance.H1` quotient against
+  `closedHolomorphicForms S : Submodule ℂ (HolomorphicOneForm X)`
+  (holomorphic forms whose real and imaginary components are both
+  Stokes-closed). Delivers
+  `complexPeriodH1 S : S.H1 → S.closedHolomorphicForms → ℂ` and the
+  bundled `complexPeriodH1Bilinear S : S.H1 →+ S.closedHolomorphicForms
+  →ₗ[ℂ] ℂ` — the H₁-side of the eventual Abel-Jacobi map. ℂ-scaling
+  closure of `closedHolomorphicForms` uses the PL-3e ℂ-scaling
+  identities (`realComponent (z • ω)` as ℝ-linear combination).
+
 
 - `Manifold/SmoothPathIntegrability.lean` (307 LOC) — proves
   `SmoothPath.intervalIntegrable_integrand` (the integrand of the path
