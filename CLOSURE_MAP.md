@@ -622,7 +622,8 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 |---|---|---|---|
 | Germfield arc (item 14 reduction) | 9 | 2,454 | 273 |
 | PL-4 Abel–Jacobi scaffolding (`AbelJacobi*.lean`) | 6 | 1,052 | 175 |
-| `feat/linear-system-divisor` (this branch, 18 commits) | 16 | 3,064 | 191 |
+| `feat/linear-system-divisor` germ-field RR layer (18 commits, pre-2026-05-14) | 16 | 3,064 | 191 |
+| 2026-05-14 A1 + A2 + C1 + reductions + RS unconditional (~30 commits) | 25 | ~3,800 | ~150 |
 | Existing Hodge files (`Hodge*.lean`) | 4 | 524 | 131 |
 | Existing period-lattice files (`PeriodLattice*.lean`) | 11 | 2,239 | 204 |
 
@@ -639,13 +640,20 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 | `AbelHypothesis` | `Manifold/AbelJacobiPic0.lean` | open |
 | `JacobiInversion` | `Manifold/AbelJacobiIso.lean` | open |
 
-**Genus-0 RR `dim L(δp) ≥ 2` chain (0 open after A1 + A2 discharges, this branch):**
+**Genus-0 RR `dim L(δp) ≥ 2` chain (0 open after A1 + A2 discharges; merged to main 2026-05-14):**
 
 | Hypothesis | File | Status |
 |---|---|---|
 | `LinearSystemAtInftyRS_BoundedBySimplePoleSpan` | `Topology/LinearSystemAtInftyRSDischarge.lean` | **landed** (A1, 2026-05-14) |
 | `ExistsMobiusToInftyRS` | `Manifold/MobiusTransitivityRS.lean` + bridge in `Topology/LinearSystemGermDeltaPFiniteDimRSUnconditional.lean` | **landed** (A2, 2026-05-14) |
 | Uniformization at genus 0 (`genus X = 0 → Nonempty (HolomorphicEquiv X RS)`) | — | named hypothesis only; out of scope of in-tree closure |
+
+**Abel-Jacobi iso on RS (0 open, merged to main 2026-05-14):**
+
+| Hypothesis | File | Status |
+|---|---|---|
+| `Subsingleton (Pic0 RiemannSphere)` | `Manifold/Pic0RiemannSphereSubsingleton.lean` | **landed** unconditionally |
+| `AbelJacobiInput.abelJacobiEquiv_of_RiemannSphere_unconditional` | same | **landed** — `Pic⁰ RS ≃+ AnalyticJacobian RS` axiom-free |
 
 **Unconditional headlines (post-A1 + A2):**
 
@@ -695,11 +703,11 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 | **Defer uniformization** (recommended) | **11,800–27,200 LOC** | **23/24 STRICT-CLOSED** (item 14 stays OPEN with uniformization as the one owed classical input) |
 | **Attempt uniformization in-tree** | ~20k–47k LOC | 24/24 |
 
-**Recommended working range: 13,000–24,000 LOC** for the realistic 23/24 target.
+**Recommended working range: 11,000–22,000 LOC** for the realistic 23/24 target (after 2026-05-14's substantial work).
 
-**Final-state projection** (23/24 path): repo grows from 83,109 → **~96,000–107,000 LOC**.
+**Final-state projection** (23/24 path): repo grows from current **86,894 LOC** → **~97,000–109,000 LOC**.
 
-### F.5 Recommended priority order (revised 2026-05-14 post A1 + A2 + C1 primitives)
+### F.5 Recommended priority order (revised 2026-05-14 post A1 + A2 + C1 primitives + Pic⁰(ℙ¹) = 0 unconditional)
 
 1. ~~**A1 + A2 (~900–2,000 LOC).**~~ Both **landed 2026-05-14**.
    A1 via `Analysis/PolynomialLiouville.lean` +
