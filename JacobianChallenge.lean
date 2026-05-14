@@ -380,6 +380,7 @@ import JacobianChallenge.Manifold.JacobiInversionGenusZero
 import JacobianChallenge.Manifold.AbelJacobiEquivRiemannSphere
 import JacobianChallenge.Manifold.Pic0SubsingletonBridge
 import JacobianChallenge.Manifold.MeromorphicNonzeroRSSimplePole
+import JacobianChallenge.Manifold.MeromorphicNonzeroRSInversion
 import JacobianChallenge.Manifold.AbelJacobiPoint
 import JacobianChallenge.Manifold.SmoothPathConnected
 import JacobianChallenge.Manifold.SmoothPathLinearInChart
