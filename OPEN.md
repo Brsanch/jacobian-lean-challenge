@@ -80,19 +80,20 @@ the four named inputs are real classical math not at the mathlib pin
 > `CLOSURE_MAP.md`, not this file, when items flip.
 
 **Remaining LOC for full 24/24 STRICT-CLOSED (verified per-component):
-~30,500–58,500 LOC.** Phase 1 ~1k (chippable now, A2 + the chart-cover
-lift of the C1 sub-arc), Phase 2 ~15.5–29.6k (period lattice +
-Abel-Jacobi, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
+~30,000–57,500 LOC.** Phase 1 essentially done (A1 + A2 discharged
+2026-05-14; chart-cover lift of the C1 sub-arc remains, blocked on
+the ω-level structural caveat). Phase 2 ~15.5–29.6k (period lattice
++ Abel-Jacobi, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **84,354 LOC** total in `*.lean` files
-(83,963 inside `JacobianChallenge/` across 401 files + 391-line
+**Current repo size:** **85,123 LOC** total in `*.lean` files
+(84,728 inside `JacobianChallenge/` across 405 files + 395-line
 top-level import manifest). See `CHANGELOG.md` for the per-branch
 history.
 
 **Remaining LOC to 24/24** (full breakdown in `CLOSURE_MAP.md` §F):
-**~12,500–22,500 LOC** for the realistic **23/24** target (deferring
+**~12,000–22,000 LOC** for the realistic **23/24** target (deferring
 uniformization at genus 0 as a named classical hypothesis).
 Highest-leverage chunk: PL-4 discharge (steps 1–3 of the priority order)
 flips 6 items (4, 5, 10, 11, 12, 13) for ~3,300–7,600 LOC.
@@ -167,20 +168,32 @@ of meromorphic-function germs, and `linearSystemDivisor D` (in
 for any divisor `D : Div X`, with `linearSystemGermDeltaP p` as the
 `D = Div.single p` specialisation. The full chain — existence side
 via `HolomorphicEquiv X RiemannSphere` + finite-dim transport — is
-built. After the 2026-05-14 A1 discharge
-(`Analysis/PolynomialLiouville.lean` +
-`Topology/LinearSystemAtInftyRSDischarge.lean`), the genus-0 RR
-`dim_ℂ L(δp) ≥ 2` content reduces to exactly **two** remaining
-named classical inputs:
+built. After the 2026-05-14 A1 + A2 discharges, the genus-0 RR
+`dim_ℂ L(δp) ≥ 2` content on the germ field reduces to **one**
+remaining named classical input:
 
-1. Uniformization at genus 0:
+1. **Uniformization at genus 0**:
    `genus X = 0 → Nonempty (HolomorphicEquiv X RiemannSphere)`.
-2. `ExistsMobiusToInftyRS` — Möbius transitivity on `RS`
-   (the only remaining piece on the RS side; A2 in `CLOSURE_MAP.md`
-   §F.3, est. 500–1,100 LOC).
 
-`LinearSystemAtInftyRS_BoundedBySimplePoleSpan` is **discharged**
-(A1 closed 2026-05-14); see `CHANGELOG.md` for the proof outline.
+Both of the RS-side inputs are now **discharged unconditionally**:
+
+* `LinearSystemAtInftyRS_BoundedBySimplePoleSpan` (A1, 2026-05-14):
+  via `Analysis/PolynomialLiouville.lean` +
+  `Topology/LinearSystemAtInftyRSDischarge.lean` (~870 LOC).
+* `ExistsMobiusToInftyRS` (A2, 2026-05-14): via
+  `Manifold/RiemannSphereAntipodeSmooth.lean` (~255 LOC) +
+  `Manifold/RiemannSphereTranslate.lean` (~322 LOC) +
+  `Manifold/MobiusTransitivityRS.lean` (~80 LOC).
+
+Headline composition lives in
+`Topology/LinearSystemGermDeltaPFiniteDimRSUnconditional.lean`:
+
+* `linearSystemGermDeltaPFiniteDim_RiemannSphere_unconditional :
+  LinearSystemGermDeltaPFiniteDim RiemannSphere` —
+  **unconditional**.
+* `rr_DimGE2_GenusZero_Germ_of_uniformization_unconditional_RSFiniteDim`
+  — for any compact connected complex 1-manifold `X`, RR dim ≥ 2 on
+  the germ field reduces to genus-conditional uniformization alone.
 
 See `CHANGELOG.md` for the per-file map.
 
