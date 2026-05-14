@@ -1,5 +1,64 @@
 # Changelog
 
+## 2026-05-14 — `Subsingleton (Pic0 RiemannSphere)` UNCONDITIONAL — Pic⁰(ℙ¹) = 0 in-tree
+
+**Headline.** Closes the closure decomposition for every degree-zero
+divisor on the Riemann sphere as a finite ℤ-linear combination of
+elementary divisors `Div.single (some a) - Div.single ∞`, each of
+which is the principal divisor `principalDivisorMap (mnRSAffineFactor
+a)`. Result: `Subsingleton (Pic0 RiemannSphere)` is **unconditional**,
+and consequently `Pic⁰ RiemannSphere ≃+ AnalyticJacobian RiemannSphere`
+is unconditional too.
+
+New file: `Manifold/Pic0RiemannSphereSubsingleton.lean` (~190 LOC).
+
+* `Div.finset_sum_apply` — `(∑ n ∈ s, F n : Div RS) y = ∑ n ∈ s, F n y`.
+  Pointwise eval pushed through finite sums via `Finset.induction` plus
+  the existing `Div.add_apply`.
+
+* `single_sub_infty_mem_PrincDiv` — `Div.single x - Div.single ∞ ∈
+  PrincDiv RS` for any `x ≠ ∞`, via `elementaryDivisor_mem_PrincDiv`.
+
+* `sum_elementary_eq_div0 D y` — for `D : Div0 RS`,
+  `(∑ x ∈ supp(D).filter (· ≠ ∞), D(x) • (Div.single x - Div.single ∞)) y
+   = D y`. Split on `y = ∞` (uses `D.degree = 0` to balance contributions
+  via `Finset.sum_filter_add_sum_filter_not`) vs `y` finite (isolates
+  the `y`-th term via `Finset.sum_eq_single_of_mem`).
+
+* `subsingleton_pic0_RiemannSphere : Subsingleton (Pic0 RiemannSphere)`
+  — the final discharge. `AddSubgroup.sum_mem` plus
+  `AddSubgroup.zsmul_mem` plus the elementary divisor lemma combine
+  through the reconstruction.
+
+* `AbelJacobiInput.abelJacobiEquiv_of_RiemannSphere_unconditional` —
+  full Abel-Jacobi iso `Pic0 RS ≃+ AnalyticJacobian RS` on RS,
+  **axiom-free**.
+
+Build: `taskpolicy lake build` green, 8710 jobs. Zero `sorry`, zero
+`axiom`.
+
+## 2026-05-14 — `mnRSAffineFactor` + elementary-divisor identity
+
+Lands the translation generator `f(z) = z - a` on the Riemann sphere
+as `MeromorphicNonzero RS`, with principal divisor `δ_{some a} - δ_∞`.
+
+New files (302 LOC across two):
+
+* `Manifold/MeromorphicNonzeroRSAffineFactor.lean` (~190 LOC) —
+  `RSAffineFactor a = RSSimplePole - (const a)`, packaged as
+  `mnRSAffineFactor a : MeromorphicNonzero RiemannSphere`. The
+  chart-S pullback proof reuses `RSSimplePole_comp_chartS_symm_eq`
+  to reduce to `w⁻¹ - a` on a punctured nbhd of `0`, whose
+  meromorphic order is `-1` (via factoring `w⁻¹ - a = (1 - a w)/w`
+  and `meromorphicOrderAt_div`).
+
+* `Manifold/Pic0RiemannSphereTrivial.lean` (~140 LOC) —
+  `principalDivisorMap_mnRSAffineFactor a` and
+  `elementaryDivisor_mem_PrincDiv`. The divisor computation uses
+  `meromorphicOrderAt_comp_of_deriv_ne_zero` (translating `id` by
+  `-a`) for the order-`1` zero at `some a`, plus
+  `analyticOrderAt_eq_zero` for the order-`0` regular points.
+
 ## 2026-05-14 — `mnRSInversion`: second principal-divisor generator on RS
 
 Sister chip to `mnRSSimplePole`. Builds the inversion function
