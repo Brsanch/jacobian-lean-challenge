@@ -334,6 +334,95 @@ theorem complexChainPeriodVector_principalDivisorAJChain_neg_mem
   rw [h_neg_pv]
   exact AddSubgroup.neg_mem _ hD
 
+/-! ## Reduction to single-meromorphic-function generators
+
+`PrincDiv X = AddSubgroup.closure (Set.range principalDivisorMap)`
+(see `Divisor/PrincipalDivisorRange.lean`), so every element of
+`PrincDiv X` is a finite integer combination of `principalDivisorMap f`
+for `f : MeromorphicNonzero X`. Together with the closure of the
+period-vector condition under addition and negation, this lets us
+reduce `AbelChainPeriodCondition` to a per-generator statement.
+-/
+
+/-- **Per-generator period condition.** For every meromorphic nonzero
+`f : MeromorphicNonzero X`, the period vector of the AJ chain of the
+principal divisor `(f) = principalDivisorMap f` lies in
+`periodLatticeImage`.
+
+This is the **atomic** form of Abel forward: closing C3 in full
+amounts to discharging this single statement, one meromorphic
+function at a time. -/
+def AbelGeneratorPeriodCondition (B : AbelJacobiInput α h) : Prop :=
+  ∀ f : MeromorphicNonzero X,
+    complexChainPeriodVector α (B.principalDivisorAJChain (principalDivisorMap f))
+      ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α
+
+/-- **Reduction to generators.** `AbelGeneratorPeriodCondition B` is
+strictly weaker than `AbelChainPeriodCondition B`; this proof shows
+the implication.
+
+Closure induction on `PrincDiv X = AddSubgroup.closure
+(Set.range principalDivisorMap)` uses three steps:
+
+* Generators: by hypothesis.
+* Identity (zero divisor): `principalDivisorAJChain 0 = 0`, whose
+  period vector is `0 ∈ periodLatticeImage`.
+* Closure under negation and addition: the algebra-side lemmas
+  above (`complexChainPeriodVector_principalDivisorAJChain_neg_mem`,
+  `_add_mem`).
+
+Since `D ∈ PrincDiv X ↔ (D : Div X) ∈ closure (Set.range
+principalDivisorMap)`, `AbelChainPeriodCondition` follows.
+-/
+theorem abelChainPeriodCondition_of_abelGeneratorPeriodCondition
+    (B : AbelJacobiInput α h)
+    (hGen : AbelGeneratorPeriodCondition B) :
+    AbelChainPeriodCondition B := by
+  intro D hD
+  -- `(D : Div X) ∈ PrincDiv X = AddSubgroup.closure (Set.range principalDivisorMap)`.
+  change (D : Div X) ∈ PrincDivHonestCandidate X at hD
+  unfold PrincDivHonestCandidate at hD
+  -- Induct on the closure. Use a named motive to keep beta-reduction clean.
+  let P : (E : Div X) → E ∈ AddSubgroup.closure (Set.range (principalDivisorMap (X := X)))
+          → Prop :=
+    fun E _ => complexChainPeriodVector α (B.principalDivisorAJChain E)
+        ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α
+  change P (D : Div X) hD
+  refine AddSubgroup.closure_induction (p := P) ?_ ?_ ?_ ?_ hD
+  · -- Generators: `E = principalDivisorMap f` for some `f`.
+    rintro E ⟨f, hf⟩
+    show complexChainPeriodVector α (B.principalDivisorAJChain E)
+        ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α
+    rw [← hf]
+    exact hGen f
+  · -- Zero case.
+    show complexChainPeriodVector α (B.principalDivisorAJChain (0 : Div X))
+        ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α
+    rw [B.principalDivisorAJChain_zero, complexChainPeriodVector_zero α]
+    exact zero_mem _
+  · -- Sum case.
+    intro E₁ E₂ _hE₁ _hE₂ hP₁ hP₂
+    show complexChainPeriodVector α (B.principalDivisorAJChain (E₁ + E₂))
+        ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α
+    exact complexChainPeriodVector_principalDivisorAJChain_add_mem B hP₁ hP₂
+  · -- Negation case.
+    intro E _hE hP
+    show complexChainPeriodVector α (B.principalDivisorAJChain (-E))
+        ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α
+    exact complexChainPeriodVector_principalDivisorAJChain_neg_mem B hP
+
+/-- **`AbelHypothesis` from per-generator period condition.** Composes
+`abelChainPeriodCondition_of_abelGeneratorPeriodCondition` with the
+chain-level reduction. After this lemma, closing C3 fully reduces to
+discharging `AbelGeneratorPeriodCondition` for an arbitrary
+`f : MeromorphicNonzero X` — the cleanest form of Abel forward. -/
+theorem abelHypothesis_of_abelGeneratorPeriodCondition
+    (B : AbelJacobiInput α h)
+    (hGen : AbelGeneratorPeriodCondition B) :
+    AbelHypothesis B :=
+  abelHypothesis_of_abelChainPeriodCondition B
+    (abelChainPeriodCondition_of_abelGeneratorPeriodCondition B hGen)
+
 /-! ## Verifying the chain-level reduction on the genus-0 corner -/
 
 /-- **Sanity check.** At genus 0 the chain-level condition is trivially
