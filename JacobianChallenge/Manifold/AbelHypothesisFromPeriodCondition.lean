@@ -115,6 +115,63 @@ lemma principalDivisorAJChain_eq_sum_of_supportFinset_subset
   rw [hempty]
   exact Finset.sum_empty
 
+/-! ## Additivity of the principal-divisor AJ chain -/
+
+/-- **Additivity.** `principalDivisorAJChain` is additive in the divisor:
+`principalDivisorAJChain (D₁ + D₂) = principalDivisorAJChain D₁ +
+principalDivisorAJChain D₂`. Standard `Finset.sum_subset` + `add_smul`
+manipulation. -/
+lemma principalDivisorAJChain_add (B : AbelJacobiInput α h) (D₁ D₂ : Div X) :
+    B.principalDivisorAJChain (D₁ + D₂)
+      = B.principalDivisorAJChain D₁ + B.principalDivisorAJChain D₂ := by
+  classical
+  set S : Finset X :=
+    (D₁ + D₂).supportFinset ∪ D₁.supportFinset ∪ D₂.supportFinset with hS_def
+  have h12 : (D₁ + D₂).supportFinset ⊆ S := by
+    intro x hx
+    exact Finset.mem_union_left _ (Finset.mem_union_left _ hx)
+  have h1 : D₁.supportFinset ⊆ S := by
+    intro x hx
+    exact Finset.mem_union_left _ (Finset.mem_union_right _ hx)
+  have h2 : D₂.supportFinset ⊆ S := by
+    intro x hx
+    exact Finset.mem_union_right _ hx
+  rw [B.principalDivisorAJChain_eq_sum_of_supportFinset_subset h12,
+      B.principalDivisorAJChain_eq_sum_of_supportFinset_subset h1,
+      B.principalDivisorAJChain_eq_sum_of_supportFinset_subset h2]
+  have hpt : ∀ x : X, ((D₁ + D₂ : Div X) : X → ℤ) x
+      = (D₁ : X → ℤ) x + (D₂ : X → ℤ) x := by
+    intro x
+    simp [Function.locallyFinsuppWithin.coe_add, Pi.add_apply]
+  rw [show (∑ x ∈ S,
+            ((D₁ + D₂ : Div X) : X → ℤ) x • SmoothChain.single (B.pathFromBase x))
+        = ∑ x ∈ S,
+            ((D₁ : X → ℤ) x + (D₂ : X → ℤ) x)
+              • SmoothChain.single (B.pathFromBase x) from by
+        refine Finset.sum_congr rfl ?_
+        intro x _; rw [hpt]]
+  rw [show (∑ x ∈ S,
+            ((D₁ : X → ℤ) x + (D₂ : X → ℤ) x)
+              • SmoothChain.single (B.pathFromBase x))
+        = ∑ x ∈ S,
+            ((D₁ : X → ℤ) x • SmoothChain.single (B.pathFromBase x)
+              + (D₂ : X → ℤ) x • SmoothChain.single (B.pathFromBase x)) from by
+        refine Finset.sum_congr rfl ?_
+        intro x _
+        exact _root_.add_smul (D₁ x) (D₂ x) (SmoothChain.single (B.pathFromBase x))]
+  exact Finset.sum_add_distrib
+
+/-- **Bundled `AddMonoidHom` form** of `principalDivisorAJChain`. -/
+noncomputable def principalDivisorAJChainHom (B : AbelJacobiInput α h) :
+    Div X →+ SmoothChain 𝓘(ℝ, ℂ) X where
+  toFun := B.principalDivisorAJChain
+  map_zero' := B.principalDivisorAJChain_zero
+  map_add' := B.principalDivisorAJChain_add
+
+@[simp] lemma principalDivisorAJChainHom_apply (B : AbelJacobiInput α h)
+    (D : Div X) :
+    B.principalDivisorAJChainHom D = B.principalDivisorAJChain D := rfl
+
 /-! ## Diagram identity: chain → AJ -/
 
 /-- **The diagram identity.** `abelJacobiChain` applied to
@@ -207,6 +264,75 @@ theorem abelHypothesis_of_abelChainPeriodCondition
   rw [QuotientAddGroup.eq_zero_iff]
   rw [PeriodLatticeOfRankTwoG.ofBundle_lattice]
   exact hPer D hPrinc
+
+/-! ## Closure properties of `AbelChainPeriodCondition`
+
+`PrincDiv X` is an `AddSubgroup` of `Div X` via `PrincDivHonestCandidate`.
+The lemmas below show that the `complexChainPeriodVector` membership in
+`periodLatticeImage` propagates through addition and negation. Combined
+with the `AddSubgroup` structure of `PrincDiv X`, this means a future
+discharge of `AbelChainPeriodCondition` can proceed by reducing to a
+generating set of `PrincDiv X` (the principal divisors of single
+meromorphic functions, `div(f)`).
+-/
+
+/-- **Closure under addition.** If `AbelChainPeriodCondition` is known
+on a Div0-pair `(D₁, D₂)` of principal divisors, it descends to their
+sum `D₁ + D₂`. Two ingredients:
+
+* Additivity of the AJ chain (`principalDivisorAJChain_add`),
+* `periodLatticeImage` is an `AddSubgroup` (closed under addition).
+
+This is the algebraic skeleton that lets a future discharge of
+`AbelChainPeriodCondition` proceed by reducing to a *generating set*
+of `PrincDiv X` (the principal divisors of single meromorphic
+functions, `div(f)`). -/
+theorem complexChainPeriodVector_principalDivisorAJChain_add_mem
+    (B : AbelJacobiInput α h)
+    {D₁ D₂ : Div X}
+    (h₁ : complexChainPeriodVector α (B.principalDivisorAJChain D₁)
+            ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α)
+    (h₂ : complexChainPeriodVector α (B.principalDivisorAJChain D₂)
+            ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α) :
+    complexChainPeriodVector α (B.principalDivisorAJChain (D₁ + D₂))
+      ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α := by
+  rw [B.principalDivisorAJChain_add]
+  -- `complexChainPeriodVector` is additive (it's `complexChainPeriodVectorHom`-applied).
+  rw [show complexChainPeriodVector α
+        (B.principalDivisorAJChain D₁ + B.principalDivisorAJChain D₂)
+      = complexChainPeriodVector α (B.principalDivisorAJChain D₁)
+        + complexChainPeriodVector α (B.principalDivisorAJChain D₂) from
+        complexChainPeriodVector_add α _ _]
+  exact AddSubgroup.add_mem _ h₁ h₂
+
+/-- **Closure under negation.** -/
+theorem complexChainPeriodVector_principalDivisorAJChain_neg_mem
+    (B : AbelJacobiInput α h)
+    {D : Div X}
+    (hD : complexChainPeriodVector α (B.principalDivisorAJChain D)
+            ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α) :
+    complexChainPeriodVector α (B.principalDivisorAJChain (-D))
+      ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α := by
+  -- `principalDivisorAJChain (-D) = -principalDivisorAJChain D` by additivity.
+  have h_sum_zero :
+      B.principalDivisorAJChain D + B.principalDivisorAJChain (-D) = 0 := by
+    rw [← B.principalDivisorAJChain_add, add_neg_cancel,
+        B.principalDivisorAJChain_zero]
+  have h_neg : B.principalDivisorAJChain (-D) = -B.principalDivisorAJChain D :=
+    eq_neg_of_add_eq_zero_right h_sum_zero
+  rw [h_neg]
+  -- `complexChainPeriodVector α (-c) = -complexChainPeriodVector α c`.
+  have h_pv_sum :
+      complexChainPeriodVector α (B.principalDivisorAJChain D)
+        + complexChainPeriodVector α (-B.principalDivisorAJChain D) = 0 := by
+    rw [← complexChainPeriodVector_add α, add_neg_cancel,
+        complexChainPeriodVector_zero α]
+  have h_neg_pv :
+      complexChainPeriodVector α (-B.principalDivisorAJChain D)
+        = -complexChainPeriodVector α (B.principalDivisorAJChain D) :=
+    eq_neg_of_add_eq_zero_right h_pv_sum
+  rw [h_neg_pv]
+  exact AddSubgroup.neg_mem _ hD
 
 /-! ## Verifying the chain-level reduction on the genus-0 corner -/
 
