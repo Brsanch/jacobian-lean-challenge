@@ -350,6 +350,15 @@ linearSystemDivisor D` (the bundled embedding via
 `MeromorphicFunctionGerm X`). Gives the trivial `1 ≤ dim_ℂ L(D)` for
 effective `D` on a connected compact complex 1-manifold.
 
+**Multiplicative grading `L(D₁) · L(D₂) ⊆ L(D₁ + D₂)` landed 2026-05-13** (same branch):
+[`Topology/LinearSystemDivisorMul.lean`](JacobianChallenge/Topology/LinearSystemDivisorMul.lean)
+(~115 LOC) ships `MeromorphicFunctionGerm.orderAt_mul : (φ * ψ).orderAt y =
+φ.orderAt y + ψ.orderAt y` (via chart pullback + mathlib's
+`meromorphicOrderAt_mul`), then `IsBoundedByDivisor.mul` and the
+Submodule-level inclusion `linearSystemDivisor_mul_le_linearSystemDivisor_add`
+(using `Submodule.mul` from `Algebra/Algebra/Operations`). The L(D)
+family is a graded ℂ-subalgebra structure on `MeromorphicFunctionGerm X`.
+
 **`L(D)` monotonicity in `D` landed 2026-05-13** (same branch):
 [`Topology/LinearSystemDivisorMono.lean`](JacobianChallenge/Topology/LinearSystemDivisorMono.lean)
 (~125 LOC) ships `linearSystemDivisor_mono : D₁ ≤ D₂ →
