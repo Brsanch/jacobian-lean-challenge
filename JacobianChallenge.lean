@@ -378,6 +378,7 @@ import JacobianChallenge.Manifold.AbelHypothesisGenusZero
 import JacobianChallenge.Manifold.AbelHypothesisFromPeriodCondition
 import JacobianChallenge.Manifold.JacobiInversionGenusZero
 import JacobianChallenge.Manifold.AbelJacobiEquivRiemannSphere
+import JacobianChallenge.Manifold.Pic0SubsingletonBridge
 import JacobianChallenge.Manifold.AbelJacobiPoint
 import JacobianChallenge.Manifold.SmoothPathConnected
 import JacobianChallenge.Manifold.SmoothPathLinearInChart
