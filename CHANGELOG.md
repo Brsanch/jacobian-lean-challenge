@@ -1,5 +1,44 @@
 # Changelog
 
+## 2026-05-14 — C3 chain-level reduction: AbelHypothesis ← AbelChainPeriodCondition
+
+Second piece of C3 (Abel's theorem forward direction). Lands a
+concrete chain-level reduction of `AbelHypothesis B` to a single,
+textbook-citable hypothesis `AbelChainPeriodCondition B` on period
+vectors of explicit Abel-Jacobi chains. After this commit, the open
+content of C3 at arbitrary genus is exactly the period-vector
+condition.
+
+New file: `Manifold/AbelHypothesisFromPeriodCondition.lean` (~210
+LOC).
+
+* `AbelJacobiInput.principalDivisorAJChain B D` — explicit
+  Abel-Jacobi chain for any `D : Div X`:
+  `Σ x ∈ D.supportFinset, D(x) • SmoothChain.single (B.pathFromBase x)`.
+  Boundary on `Div0` equals `D` as a 0-chain.
+
+* `abelJacobiChain_principalDivisorAJChain_eq_abelJacobiDivHom` —
+  diagram identity routing the chain through the AJ formalism
+  (`map_sum` + `AddMonoidHom.map_zsmul` + `abelJacobiChain_single`).
+
+* `complexChainPeriodVector_principalDivisorAJChain` — period-
+  vector form of the chain.
+
+* `AbelChainPeriodCondition B : Prop` — the reduction hypothesis:
+  for every principal divisor `D`, the period vector of its AJ
+  chain lies in `periodLatticeImage`. Classical content: for `D
+  = div(f)`, the period vector decomposes as an integer
+  combination of basis periods via the level-set chain of `f`.
+
+* `abelHypothesis_of_abelChainPeriodCondition` — the reduction
+  itself. Proof via the diagram identity + `QuotientAddGroup.eq_zero_iff`
+  + `PeriodLatticeOfRankTwoG.ofBundle_lattice`.
+
+* `abelChainPeriodCondition_of_genus_zero` — sanity check
+  recovering the prior genus-0 discharge through the new reduction.
+
+Build: 8702 jobs clean. Zero `sorry`, zero `axiom`.
+
 ## 2026-05-14 — C3 corner: AbelHypothesis trivially holds at genus 0
 
 Lands a small but real piece of C3 (Abel's theorem). At genus 0 the

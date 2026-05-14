@@ -238,23 +238,39 @@ analytic-continuation argument. Either is genuinely a separate chip.
 1-manifold. Estimated 400–1,000 LOC on top of the two primitives
 above, modulo the ω-level structural caveat.
 
-## C3 sub-arc (genus-0 corner, 2026-05-14)
+## C3 sub-arc (genus-0 corner + chain-level reduction, 2026-05-14)
 
 `AbelHypothesis B` (Abel forward direction, `Manifold/AbelJacobiPic0.lean`)
 asserts that the divisor-level Abel-Jacobi map vanishes on every
-principal divisor. The general-genus content is the classical Stokes-on-2-chains
-argument (CLOSURE_MAP §F.3, est. 1,200–2,800 LOC of mathlib gaps).
+principal divisor. Two pieces landed today:
 
-The **genus-0 corner** is now closed unconditionally in
-`Manifold/AbelHypothesisGenusZero.lean`. At `genus X = 0`:
+**Genus-0 corner** (`Manifold/AbelHypothesisGenusZero.lean`). At
+`genus X = 0`:
 * `Fin (genus X) → ℂ = Fin 0 → ℂ` is `Unique` (`Pi.uniqueOfIsEmpty`).
-* `AnalyticJacobian = (Fin 0 → ℂ) ⧸ lattice` is therefore subsingleton.
-* `AbelHypothesis B` follows trivially — every value of
-  `B.abelJacobiDiv0Hom` is `0` in the subsingleton codomain.
+* `AnalyticJacobian = (Fin 0 → ℂ) ⧸ lattice` is therefore
+  subsingleton.
+* `AbelHypothesis B` follows trivially.
 
-This closes one corner of C3 but does not flip any of items 4, 5, 10,
-11, 12, 13 (those are gated on the full `Pic⁰ ≃+ AnalyticJacobian`
-isomorphism at arbitrary genus, which still needs the Stokes content).
+**Chain-level reduction** (`Manifold/AbelHypothesisFromPeriodCondition.lean`).
+* `principalDivisorAJChain B D` — explicit AJ chain for `D : Div X`,
+  built as `Σ D(x) • single (B.pathFromBase x)`.
+* `AbelChainPeriodCondition B : Prop` — for every principal divisor
+  `D`, the period vector of its AJ chain lies in `periodLatticeImage`.
+* `abelHypothesis_of_abelChainPeriodCondition` — the reduction:
+  `AbelChainPeriodCondition B → AbelHypothesis B`.
+
+After these two commits, the open content of C3 at arbitrary genus
+is exactly `AbelChainPeriodCondition B` — a single textbook-citable
+classical statement (Abel forward in period-vector form). The
+next sub-chip toward closing C3 in full discharges this condition
+for an arbitrary principal divisor via the level-set chain of a
+meromorphic representative `f` with `D = div(f)`. The remaining
+mathlib content sits on Stokes-on-2-chains (CLOSURE_MAP §F.3,
+~1,000–2,500 LOC remaining after this reduction).
+
+Neither piece flips any of items 4, 5, 10, 11, 12, 13 yet — those
+need both `AbelChainPeriodCondition` discharged AND `JacobiInversion`
+(C4).
 
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 
