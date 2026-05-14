@@ -1,5 +1,67 @@
 # Changelog
 
+## 2026-05-15 — C3 sub-arc: algebra closure + analytic foundations (6 chips)
+
+Six chips landed reducing the open content of `AbelHypothesis B`
+(the C3 named hypothesis) from "discharge `AbelGeneratorPeriodCondition
+B` for every `f : MeromorphicNonzero X`" to "discharge it on a
+multiplicative generating set of *non-constant* meromorphic functions."
+The chips also lay analytic foundations (regular-value set, planar
+local biholomorphism at every regular point) consumed by the level-set
+chain construction.
+
+**Algebra-side closure** (3 chips, `Manifold/AbelGeneratorDischargedSet.lean`,
+~280 LOC).
+
+* `dischargedGenerators B := { f | period vector of AJ chain of (f) ∈
+   periodLatticeImage }`. Closed under `1` (`one_mem`), constants
+   (`const_mem`), `*` (`mul_mem`), `invMer` (`invMer_mem`), and
+   quotients (`mul_invMer_mem`).
+* `mem_dischargedGenerators_of_principalDivisor_zero` — vacuous-divisor
+   discharge.
+* `principalDivisorMap_of_toFun_const` + `toFun_const_mem_dischargedGenerators`
+   — closes the constant-function case via
+   `mmeromorphicOrderAt_const_ne_zero`.
+* `toFun_ne_const_zero` — the `c = 0` branch is blocked by
+   `nonvanishing_germ`.
+* `abelGeneratorPeriodCondition_iff_dischargedGenerators_eq_univ` and
+  `abelGeneratorPeriodCondition_of_forall_nonconst_toFun` — case-split
+   reduction to the non-constant `toFun` case.
+
+**Regular-value set** (1 chip,
+`Manifold/MeromorphicNonzeroRegularValueSet.lean`, ~120 LOC).
+
+* `MeromorphicNonzero.regularValueSet f := (f.criticalValues)ᶜ`.
+* `criticalValues_finite` / `criticalValues_isClosed` /
+  `regularValueSet_isOpen` under non-constancy.
+
+**Planar local biholomorphism at every regular point** (2 chips,
+~280 LOC).
+
+* `MeromorphicNonzero.chartPullback f x := (chartAt ℂ (f.toRiemannSphere
+   x)) ∘ f.toRiemannSphere ∘ (chartAt ℂ x).symm`
+  (`Manifold/MeromorphicNonzeroLocalBiholomorphism.lean`).
+* `analyticAt_chartPullback` — ω-smoothness ⇒ analytic chart pullback.
+* `deriv_chartPullback_ne_zero_of_regular` — non-zero derivative at
+   every regular point, pulled directly from `DerivBridgeData.hCompat`
+   via the existing `criticalSet_finite_unconditional` infrastructure.
+* `exists_local_biholomorphism_chartPullback` — planar local inverse via
+   `AnalyticAt.exists_local_biholomorphism`.
+* `chartPullback_oph` (`Manifold/MeromorphicNonzeroLocalSheet.lean`,
+   ~120 LOC) — packages the planar inverse as a canonical
+   `OpenPartialHomeomorph ℂ ℂ` via
+   `HasStrictFDerivAt.toOpenPartialHomeomorph`.
+
+**Net open content after the six chips.** `AbelHypothesis B` (general
+genus) reduces to: discharge `f ∈ dischargedGenerators B` for every
+`f : MeromorphicNonzero X` whose `toRiemannSphere` is non-constant. The
+classical level-set chain Stokes argument is the remaining content.
+The analytic foundations (regular-value set, planar local biholomorphism
+at every regular point) are in-tree axiom-free.
+
+Build at HEAD: `taskpolicy lake build` green, 8728 jobs. Zero `sorry`,
+zero `axiom`. +~800 LOC across 5 new files.
+
 ## 2026-05-15 — C1 sub-arc CLOSED: `SmoothPathConnected` on any preconnected complex 1-manifold
 
 The four chips of 2026-05-15 (SmoothPath refactor, `linearInChartSegment`,
