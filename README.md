@@ -13,8 +13,30 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-Initial scaffold (v0.1.0). All challenge items are `sorry`. See `OPEN.md` for
-the current open list and `CHANGELOG.md` for the sequence of closures.
+**Current state (2026-05-14):** 12 of 24 items STRICT-CLOSED, 3 STUB, 9 OPEN.
+**86,894 LOC** across 416 files. `taskpolicy lake build` clean
+(8710 jobs, zero `sorry`, zero `axiom`).
+
+Major recent landings (all on `main`):
+
+* **A1 + A2 closed unconditionally** — the two RS-side classical inputs
+  of the genus-0 Riemann–Roch chain (`LinearSystemAtInftyRS_BoundedBySimplePoleSpan`
+  via polynomial-growth Liouville at ∞; `ExistsMobiusToInftyRS` via
+  antipode + translation as `HolomorphicEquiv RS RS`).
+* **`Pic⁰(ℙ¹) = 0` unconditional in-tree** — every degree-zero divisor
+  on the Riemann sphere is principal. Headline:
+  `AbelJacobiInput.abelJacobiEquiv_of_RiemannSphere_unconditional`
+  gives `Pic⁰ RS ≃+ AnalyticJacobian RS` axiom-free.
+* **C3 + C4 reduced to atomic textbook hypotheses at general genus** —
+  `AbelHypothesis B` factors through `AbelGeneratorPeriodCondition B`
+  (per meromorphic function); `JacobiInversion` at genus 0 reduces to
+  `Subsingleton (Pic0 X)`.
+
+The remaining 12 items either depend on classical content not at the
+mathlib pin (Hodge L² finite-dim, period lattice for genus ≥ 1, surface
+classification, Abel–Jacobi at genus ≥ 1) or on the named-hypothesis
+inputs above. See `OPEN.md` for the per-item map and `CHANGELOG.md`
+for the per-commit history.
 
 ## Layout
 
@@ -24,7 +46,7 @@ JacobianChallenge/
   Basic.lean                    -- Buzzard's challenge signature, verbatim
   ...                           -- additional modules added as content lands
 lakefile.toml                   -- mathlib pinned to commit 8e3c989...
-lean-toolchain                  -- v4.29.0
+lean-toolchain                  -- v4.30.0-rc1
 .github/workflows/              -- CI (lean-action, release-on-toolchain, mathlib update)
 DEVELOPMENT.md                  -- workstation rules + CI-as-default workflow
 OPEN.md                         -- sorry inventory mapped to challenge items

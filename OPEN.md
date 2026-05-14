@@ -137,7 +137,7 @@ whenever a status changes.
 | 23 | `pullback_comp_apply` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `pullbackHonest_of_rsum_comp` — the both-non-constant case delegates to `Div.fiberSumWeighted_comp_apply` with multiplicative ramification weights `manifoldRamificationIndex_comp_unconditional`. |
 | 24 | `pushforward_pullback : pushforward f (pullback f P) = degree f • P` | **STRICT-CLOSED** *(post-ZZ256)* | Body: `pushforward_pullbackHonest_of_rsum` — case-splits on `IsConstantMap f`. Constant case: both sides zero. Non-constant: reduces to `Pic0.pushforward_pullbackWeighted` (in `JacobianPullback.lean`, using the new honest `Pic0.pushforward (hf)` signature). |
 
-## Architectural issue: RR-thread linear system (resolved on `feat/linear-system-divisor`)
+## Architectural issue: RR-thread linear system (resolved, merged to main 2026-05-14)
 
 The legacy `linearSystemDeltaP p : Submodule ℂ (X → ℂ)` is defined over
 *pointwise* functions `X → ℂ`. This admits "essentially-zero" elements
@@ -161,7 +161,7 @@ Consequences:
    reduction stands cleanly; even so, the germ-coherence hypotheses
    themselves are about elements of the broken `linearSystemDeltaP`.
 
-**Resolution (`feat/linear-system-divisor` branch).** The germ-field
+**Resolution (`feat/linear-system-divisor`, merged to main 2026-05-14).** The germ-field
 ambient called for above has been built. `MeromorphicFunctionField X`
 (in `Manifold/MeromorphicFunctionField.lean`) provides the ℂ-algebra
 of meromorphic-function germs, and `linearSystemDivisor D` (in
@@ -204,7 +204,7 @@ The `AbelJacobiInput α h` named-hypothesis bundle
 (`Manifold/AbelJacobiPoint.lean`) is the C1 input of CLOSURE_MAP §F.3.
 Its existence on a compact connected complex 1-manifold is classical
 ("smooth path-connectedness + a chosen base point"). The 2026-05-14
-`feat/c1-smooth-path-connected` branch (merged in) lands two
+`feat/c1-smooth-path-connected` branch (merged to main) lands two
 primitives toward the discharge:
 
 1. `SmoothPathConnected I X : Prop` (`Manifold/SmoothPathConnected.lean`)
@@ -239,7 +239,7 @@ analytic-continuation argument. Either is genuinely a separate chip.
 1-manifold. Estimated 400–1,000 LOC on top of the two primitives
 above, modulo the ω-level structural caveat.
 
-## C3 + C4 sub-arc progress (2026-05-14, 12 chips on `feat/linear-system-divisor`)
+## C3 + C4 sub-arc progress (2026-05-14, 12 chips; merged to main)
 
 `AbelHypothesis B` (Abel forward, `Manifold/AbelJacobiPic0.lean`)
 and `JacobiInversion B hAbel` (`Manifold/AbelJacobiIso.lean`) are
@@ -247,8 +247,13 @@ the C3 + C4 named hypotheses. Together they give `Pic⁰ X ≃+
 AnalyticJacobian X` (`abelJacobiEquiv`) — the gate for items 4, 5,
 10, 11, 12, 13.
 
-Five chips landed today reducing the named-hypothesis content of
-C3 to a single sharp atomic statement, plus closing C4 at genus 0:
+Twelve chips landed 2026-05-14 reducing C3 to a single sharp
+atomic statement, closing C4 at genus 0, and unconditionally
+discharging `Pic⁰(ℙ¹) = 0` to make the Abel-Jacobi iso on the
+Riemann sphere axiom-free. All on `main` (merged from
+`feat/linear-system-divisor`).
+
+First half (named-hypothesis reductions, 7 chips):
 
 **C3 (1) genus-0 corner** (`Manifold/AbelHypothesisGenusZero.lean`).
 At `genus X = 0`, `AnalyticJacobian` is subsingleton, so
@@ -289,7 +294,7 @@ At `genus X = 0`, `AnalyticJacobian` is subsingleton, so
 * `abelJacobiEquiv_of_genus_zero` — the full Abel-Jacobi iso `Pic0
   X ≃+ AnalyticJacobian` at genus 0, given `Subsingleton (Pic0 X)`.
 
-**Additional chips landed later in the session.**
+Second half (RS-side unconditional discharge, 5 chips):
 
 **RS principal-divisor generators (3 chips):**
 * `mnRSSimplePole` (`Manifold/MeromorphicNonzeroRSSimplePole.lean`,
