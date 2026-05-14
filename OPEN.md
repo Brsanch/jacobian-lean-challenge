@@ -152,8 +152,8 @@ discharged separately:
   hypotheses (universal at-pole-germ-compatible continuity strengthening
   + `MeromorphicIdentityPropagation X`).
 
-**Item 14 open content, after this session, factors onto five precise
-named classical inputs:**
+**Item 14 open content, after this session, factors onto four precise
+named classical inputs (down from five, post-`meromorphicIdentityPropagation_holds`):**
 1. `HolomorphicOneFormFiniteDim X` — Hodge finite-dim gap
    (`Manifold/HodgeFiniteDimensional.lean`).
 2. `ExistsSimplePoleGermAtSomePoint X` — RR-existence at genus 0
@@ -164,12 +164,28 @@ named classical inputs:**
    — operational germ-field refactor
    (`Topology/LiftNonConstancyFromContinuity.lean`'s
    `IsBoundedByDeltaPContinuousAtPole`).
-5. `MeromorphicIdentityPropagation X` — classical identity theorem
-   (`Topology/LiftNonvanishingFromIdentityTheorem.lean`).
+
+~~5. `MeromorphicIdentityPropagation X`~~ — **discharged unconditionally
+2026-05-13** by `meromorphicIdentityPropagation_holds` in
+`Topology/LiftNonvanishingFromIdentityTheorem.lean`, as a direct
+contrapositive of the pre-existing
+`MeromorphicFunctionField.mmeromorphicOrderAt_ne_top_forall` (clopen-on-`X`
+argument over mathlib's chart-pullback `meromorphicOrderAt_eq_top_iff`).
+`LiftToMeromorphicNonzeroFromTwo.liftToMeromorphicNonzero_from_strengthening_and_identity`
+no longer takes the identity-theorem hypothesis as an argument.
+
+**Note on consumption:** input (4) and the `LiftToMeromorphicNonzero*`
+thread feed `LiftToMeromorphicNonzeroFromTwo`, which is currently
+imported only by the top-level manifest — no Item 14 closure currently
+routes through it. The active Item 14 routes are
+`Item14ForwardFromFiniteDim` (inputs 1/2/3) and `Item14FromGermfield`
+(`RR_DimGE2_GenusZero_Germ` + topological-sphere uniformization). The
+five-input enumeration is the count if/when the pointwise-thread
+discharge route is wired in.
 
 Each is citable textbook content. Scoreboard remains 12/24 (item 14 is
-still OPEN; the five inputs above are real classical math that isn't
-at the mathlib pin `8e3c989...`).
+still OPEN; the four remaining inputs above are real classical math
+that isn't at the mathlib pin `8e3c989...`).
 
 **Period-lattice arc PL-3e closed 2026-05-13 (HEAD `9cc83c8`):** four
 new commits (~four files) closing the chart-pullback integrability of
@@ -236,7 +252,7 @@ whenever a status changes.
 | 11 | `instance : CompactSpace (Jacobian X)` | **OPEN** | `sorry` in `Basic.lean`. Compactness needs the analytic-Jacobian quotient topology (period-lattice), Phase 2. |
 | 12 | `instance : IsManifold ... ω (Jacobian X)` | **OPEN** | `sorry`. Requires analytic-Jacobian construction. `AnalyticTorus X` has an honest `IsManifold` instance modulo `Λ = ⊥`; not wired into `Jacobian`. |
 | 13 | `instance : LieAddGroup ... ω (Jacobian X)` | **OPEN** | `sorry`. Requires item 12 plus smoothness of group ops. |
-| 14 | `genus_eq_zero_iff_homeo` (anti-hack vs. `genus := 0`) | **OPEN** | `sorry`. Architecturally closed via zz331's `genus_eq_zero_iff_homeo_from_all_conditionals` ([Topology/Item14FinalComposition.lean](JacobianChallenge/Topology/Item14FinalComposition.lean)). After zz302–zz388 (~7,500+ LOC, 34 chips for RR-thread alone in zz337–zz370, +zz381 / zz382 / zz383–zz388). zz381 reduces `LiftRegularContinuousAt X` to germ-coherence (`UniversalGermCoherent`, `UniversalGermCoherentAtPole`) in [Topology/LiftRegularContinuousAtPole.lean](JacobianChallenge/Topology/LiftRegularContinuousAtPole.lean). zz382 discharges **input #3 unconditionally** (`Surjective_of_NonConstant_Analytic_Manifold X Y` is now a THEOREM in [Manifold/SurjectiveOfNonConstantDischarge.lean](JacobianChallenge/Manifold/SurjectiveOfNonConstantDischarge.lean), 412 LOC). zz383–zz388 discharge **input #4 unconditionally** (`BijectiveAnalyticIsBiholomorphism X` is now a THEOREM in [Manifold/BijectiveAnalyticDischarge.lean](JacobianChallenge/Manifold/BijectiveAnalyticDischarge.lean), 75 LOC, sitting on the Hurwitz-corollary chain `deriv_ne_zero_of_injOn_ball` (zz383) → chart-pullback inverse (zz384/zz385) → manifold inverse `ContMDiffAt` (zz386) → global `Function.invFun` smoothness (zz387)). **Status of remaining open inputs after 2026-05-13 architectural review + zz388 close:** (1) `RR_DimGE2_GenusZero X` — vacuously true under broken `linearSystemDeltaP` (see "Architectural issue" section below); needs germ-field refactor before it has Riemann-Roch content. (2) `LiftToMeromorphicNonzero X` — depends on sub-inputs #2/#3/#5/#6 of the six-input RR split which are false against the blip counterexample under current `linearSystemDeltaP`. (3) ~~`Surjective_of_NonConstant_Analytic_Manifold`~~ **CLOSED zz382**. (4) ~~`BijectiveAnalyticIsBiholomorphism`~~ **CLOSED zz388**. (5) topological-sphere-uniformization branch (`X ≃ₜ S² → ∃ HolomorphicEquiv X RS`) — multi-thousand LOC, classical surface theory. **Conclusion**: item 14 is blocked on either the germ-field refactor (RR side, inputs #1/#2) or the topological-sphere-uniformization branch (input #5). Inputs #3 and #4 are now closed. See CLOSURE_MAP.md §D.2 for the per-input LOC table. **Post-2026-05-13 (HEAD `88511d1`)**: forward leg + `LiftToMeromorphicNonzero` discharge both refactored. Item 14's open content now sits on exactly five named classical inputs: (1) `HolomorphicOneFormFiniteDim X`, (2) `ExistsSimplePoleGermAtSomePoint X`, (3) `S2ImpliesGenus0 X`, (4) universal at-pole-germ-compatible continuity strengthening of L(δp) [operational germ-field refactor], (5) `MeromorphicIdentityPropagation X`. See the chip log between `f38de0f` and `88511d1` for the discharges. |
+| 14 | `genus_eq_zero_iff_homeo` (anti-hack vs. `genus := 0`) | **OPEN** | `sorry`. Architecturally closed via zz331's `genus_eq_zero_iff_homeo_from_all_conditionals` ([Topology/Item14FinalComposition.lean](JacobianChallenge/Topology/Item14FinalComposition.lean)). After zz302–zz388 (~7,500+ LOC, 34 chips for RR-thread alone in zz337–zz370, +zz381 / zz382 / zz383–zz388). zz381 reduces `LiftRegularContinuousAt X` to germ-coherence (`UniversalGermCoherent`, `UniversalGermCoherentAtPole`) in [Topology/LiftRegularContinuousAtPole.lean](JacobianChallenge/Topology/LiftRegularContinuousAtPole.lean). zz382 discharges **input #3 unconditionally** (`Surjective_of_NonConstant_Analytic_Manifold X Y` is now a THEOREM in [Manifold/SurjectiveOfNonConstantDischarge.lean](JacobianChallenge/Manifold/SurjectiveOfNonConstantDischarge.lean), 412 LOC). zz383–zz388 discharge **input #4 unconditionally** (`BijectiveAnalyticIsBiholomorphism X` is now a THEOREM in [Manifold/BijectiveAnalyticDischarge.lean](JacobianChallenge/Manifold/BijectiveAnalyticDischarge.lean), 75 LOC, sitting on the Hurwitz-corollary chain `deriv_ne_zero_of_injOn_ball` (zz383) → chart-pullback inverse (zz384/zz385) → manifold inverse `ContMDiffAt` (zz386) → global `Function.invFun` smoothness (zz387)). **Status of remaining open inputs after 2026-05-13 architectural review + zz388 close:** (1) `RR_DimGE2_GenusZero X` — vacuously true under broken `linearSystemDeltaP` (see "Architectural issue" section below); needs germ-field refactor before it has Riemann-Roch content. (2) `LiftToMeromorphicNonzero X` — depends on sub-inputs #2/#3/#5/#6 of the six-input RR split which are false against the blip counterexample under current `linearSystemDeltaP`. (3) ~~`Surjective_of_NonConstant_Analytic_Manifold`~~ **CLOSED zz382**. (4) ~~`BijectiveAnalyticIsBiholomorphism`~~ **CLOSED zz388**. (5) topological-sphere-uniformization branch (`X ≃ₜ S² → ∃ HolomorphicEquiv X RS`) — multi-thousand LOC, classical surface theory. **Conclusion**: item 14 is blocked on either the germ-field refactor (RR side, inputs #1/#2) or the topological-sphere-uniformization branch (input #5). Inputs #3 and #4 are now closed. See CLOSURE_MAP.md §D.2 for the per-input LOC table. **Post-2026-05-13 (HEAD `88511d1`)**: forward leg + `LiftToMeromorphicNonzero` discharge both refactored. Item 14's open content now sits on exactly four named classical inputs: (1) `HolomorphicOneFormFiniteDim X`, (2) `ExistsSimplePoleGermAtSomePoint X`, (3) `S2ImpliesGenus0 X`, (4) universal at-pole-germ-compatible continuity strengthening of L(δp) [operational germ-field refactor]. The fifth `MeromorphicIdentityPropagation X` was discharged 2026-05-13 by `meromorphicIdentityPropagation_holds` (contrapositive of `MeromorphicFunctionField.mmeromorphicOrderAt_ne_top_forall`). See the chip log between `f38de0f` and the identity-theorem discharge for details. |
 | 15 | `ofCurve_self : ofCurve P P = 0` | **STRICT-CLOSED** *(post-ZZ256)* | Real proof reducing to `[δP − δP] = 0` in honest `Pic⁰`. |
 | 16 | `ofCurve_inj` (anti-hack vs. `Jacobian := PUnit`) | **OPEN** *(post-ZZ256 regression)* | The previous STUB proof exploited `PrincDiv X = ⊥` to make the quotient faithful. Under honest `PrincDiv` that argument fails; `Jacobian.lean`'s `ofCurve_inj` is now `sorry` (Basic.lean transitively). Genuinely requires Abel–Jacobi (Phase 2). |
 | 17 | `Jacobian.ofCurve_contMDiff` | **OPEN** | `sorry`. Requires item 5 (`ChartedSpace`) plus a real `ofCurve`. |

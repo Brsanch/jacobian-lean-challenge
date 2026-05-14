@@ -8,10 +8,15 @@ import JacobianChallenge.Topology.RRGenusZeroFinrankChain
 
 set_option diagnostics.threshold 100
 
-/-! # `LiftToMeromorphicNonzero X` from two named hypotheses
+/-! # `LiftToMeromorphicNonzero X` from a single named hypothesis
 
 This is the final-composition chip of the four-chip
-continuity-strengthening-axis arc:
+continuity-strengthening-axis arc. As of the
+`meromorphicIdentityPropagation_holds` discharge in
+`Topology/LiftNonvanishingFromIdentityTheorem.lean`, the
+identity-theorem-hypothesis component is unconditional, so the
+composition takes only the universal at-pole-germ-compatible
+continuity strengthening as input. The four chips:
 
 * `UniversalGermCoherentFromContinuity.lean` discharges inputs
   (i)/(iii)/(iv) of zz362's `LiftDecomposition` under
@@ -93,9 +98,12 @@ order bounds and non-constancy. The representative is `germLimitLift
 g`, the canonicalisation of `g` to its punctured-nhd germ limit. -/
 theorem liftToMeromorphicNonzero_from_strengthening_and_identity
     (h_strong_univ : ∀ p : X, ∀ g : X → ℂ,
-      IsBoundedByDeltaP p g → IsBoundedByDeltaPContinuousAtPole X p g)
-    (h_identity : MeromorphicIdentityPropagation X) :
+      IsBoundedByDeltaP p g → IsBoundedByDeltaPContinuousAtPole X p g) :
     LiftToMeromorphicNonzero X := by
+  -- The identity-theorem hypothesis is now unconditional via
+  -- `meromorphicIdentityPropagation_holds`.
+  have h_identity : MeromorphicIdentityPropagation X :=
+    meromorphicIdentityPropagation_holds X
   intro p g hg_in hg_nin
   -- The strengthening on this specific (p, g).
   have h_str : IsBoundedByDeltaPContinuousAtPole X p g := h_strong_univ p g hg_in

@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Topology.LiftNonConstancyFromContinuity
+import JacobianChallenge.Manifold.MeromorphicFunctionField
 
 set_option diagnostics.threshold 100
 
@@ -91,8 +92,13 @@ zero on a punctured nhd of every point.
 
 This is the manifold-level analogue of mathlib's
 `meromorphicOrderAt_eq_top_iff` combined with the analytic identity
-theorem on a connected manifold. mathlib at the pin has the chart-
-level pieces but not the global manifold-level propagation. -/
+theorem on a connected manifold. The propagation itself was proved
+in `Manifold/MeromorphicFunctionField.lean` as
+`mmeromorphicOrderAt_ne_top_forall` (clopen-on-`X` argument over the
+chart-pullback `meromorphicOrderAt_eq_top_iff`); this `def` is the
+contrapositive packaging used by the `Lift*` thread, and is
+discharged unconditionally by `meromorphicIdentityPropagation_holds`
+at the bottom of this file. -/
 def MeromorphicIdentityPropagation : Prop :=
   ∀ (g : X → ℂ),
     MMeromorphicOn (𝓘(ℂ, ℂ)) g Set.univ →
@@ -253,6 +259,29 @@ theorem liftNonvanishingGerm_at_x_via_identity_theorem
     (p := p) (g := g) h_str.1.continuousAt_off_forall x
   rw [h_eq]
   exact not_top_order_of_non_const_under_strengthening X h_identity h_str h_nc x
+
+/-! ## Unconditional discharge of `MeromorphicIdentityPropagation X`
+
+The named identity-theorem hypothesis is in fact already a theorem in
+this repository: `MeromorphicFunctionField.mmeromorphicOrderAt_ne_top_forall`
+proves it by the clopen-on-`X` argument (open-and-closedness of the
+"essentially-zero" set on a connected complex 1-manifold) over mathlib's
+chart-pullback `meromorphicOrderAt_eq_top_iff`. Re-packaging the
+contrapositive matches `MeromorphicIdentityPropagation`'s shape. -/
+
+/-- **`MeromorphicIdentityPropagation X` is a theorem.** Direct
+contrapositive of
+`MeromorphicFunctionField.mmeromorphicOrderAt_ne_top_forall`. -/
+theorem meromorphicIdentityPropagation_holds :
+    MeromorphicIdentityPropagation X := by
+  intro g hg ⟨x₀, hx₀⟩ y
+  -- Contrapositive of `mmeromorphicOrderAt_ne_top_forall`: assume
+  -- `mmeromorphicOrderAt _ g y ≠ ⊤` and derive a contradiction with
+  -- `hx₀ : mmeromorphicOrderAt _ g x₀ = ⊤`.
+  by_contra h_y
+  have h_all_ne_top : ∀ z, mmeromorphicOrderAt 𝓘(ℂ, ℂ) g z ≠ ⊤ :=
+    MeromorphicFunctionField.mmeromorphicOrderAt_ne_top_forall g hg ⟨y, h_y⟩
+  exact h_all_ne_top x₀ hx₀
 
 end JacobianChallenge
 
