@@ -607,14 +607,14 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
    │       └── flips item 1
 ```
 
-## F. Net realistic ceiling at this pin (revised 2026-05-14 after A1 + A2 discharges + C1 primitives)
+## F. Net realistic ceiling at this pin (revised 2026-05-14 after A1+A2+C1+C3+C4 work + Pic⁰(ℙ¹) = 0 unconditional)
 
 ### F.0 Measured ground truth
 
-- **Total `.lean`:** **85,123 LOC** (84,728 in `JacobianChallenge/` + 395-line manifest), **406 files**.
-- **Recent waves:** A1 discharge (+870 LOC, 2 files, 2026-05-14 morning); C1 primitives (`feat/c1-smooth-path-connected`, +371 LOC, 2 files, merged 2026-05-14); A2 discharge from `feat/antipode-smoothness` (+660 LOC, 3 files, merged 2026-05-14) + unconditional headline (+109 LOC, 1 file, this branch).
-- **Scoreboard:** 12 STRICT-CLOSED · 3 STUB · 9 OPEN (item flips await Phase 2 wiring, not RR-chain closure).
-- **Per-chip-file LOC density** (measured across germfield arc, PL-4 scaffolding, `feat/linear-system-divisor`, A1, A2, C1 primitives): **140–322 LOC**, mean ≈ 210.
+- **Total `.lean`:** **86,894 LOC** (86,489 in `JacobianChallenge/` + 405-line manifest), **416 files**.
+- **Recent waves (2026-05-14):** A1 discharge (+870 LOC); C1 primitives (`feat/c1-smooth-path-connected`, +371 LOC); A2 from `feat/antipode-smoothness` (+660 LOC) + unconditional headline (+109 LOC); seven C3+C4 named-hypothesis reductions (~800 LOC); five RS-side principal-divisor chips closing `Pic⁰(ℙ¹) = 0` unconditionally (~830 LOC).
+- **Scoreboard:** 12 STRICT-CLOSED · 3 STUB · 9 OPEN (item flips await Phase 2 wiring of the Abel-Jacobi iso on arbitrary `X`, not the genus-0 corner).
+- **Per-chip-file LOC density** (measured across all 2026-05-14 chips): **90–322 LOC**, mean ≈ 195.
 
 ### F.1 Past-wave LOC (grounds the remaining estimates)
 
@@ -675,7 +675,9 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 | **C1** | `AbelJacobiInput` (smooth-path-connectedness; `linearInChart` + chart-cover) — 2 primitives landed 2026-05-14 (`SmoothPathConnected` predicate + `linearInChart` at ω with line-in-target hypothesis, 371 LOC). Remaining: chart-cover lift. ω-level structural caveat documented (line vs segment). | **400–1,100** *remaining* |
 | **C3 (genus-0 corner)** | `AbelHypothesis_of_genus_zero` (via `Subsingleton (AnalyticJacobian)` at `genus X = 0`) — landed 2026-05-14 (`Manifold/AbelHypothesisGenusZero.lean`, 99 LOC). | **done** |
 | **C3 (chain-level + algebra + per-generator)** | `AbelHypothesis B ← AbelChainPeriodCondition B ← AbelGeneratorPeriodCondition B` (`Manifold/AbelHypothesisFromPeriodCondition.lean`, ~525 LOC across 4 commits 2026-05-14). Reduces C3 to a single sharp atomic statement: for each `f : MeromorphicNonzero X`, the period vector of the AJ chain of `div(f)` lies in `periodLatticeImage`. The remaining mathlib content is the classical Abel-forward chain construction (level-set chain of `f`) and its Stokes-invariance. | **1,000–2,500** *remaining* (general-genus discharge of `AbelGeneratorPeriodCondition`) |
-| **C4 (genus-0)** | `jacobiInversion_of_genus_zero_and_subsingleton_pic0` (`Manifold/JacobiInversionGenusZero.lean`, 90 LOC). At genus 0, `JacobiInversion B hAbel` reduces to `Subsingleton (Pic0 X)` (the classical Pic⁰(ℙ¹) = 0, genus-0 case of Abel's converse). | **done** at genus 0 modulo `Subsingleton (Pic0 X)`; ~1,200–2,800 LOC remaining for general genus |
+| **C4 (genus-0)** | `jacobiInversion_of_genus_zero_and_subsingleton_pic0` (`Manifold/JacobiInversionGenusZero.lean`, 90 LOC). At genus 0, `JacobiInversion B hAbel` reduces to `Subsingleton (Pic0 X)`. | **done** at genus 0 modulo `Subsingleton (Pic0 X)` |
+| **C4 RS (Pic⁰(ℙ¹) = 0)** | `subsingleton_pic0_RiemannSphere` (`Manifold/Pic0RiemannSphereSubsingleton.lean`, 190 LOC, built on `mnRSSimplePole` 110 LOC + `mnRSInversion` 200 LOC + `mnRSAffineFactor` 190 LOC + elementary-divisor identity in `Pic0RiemannSphereTrivial.lean` 140 LOC) — **unconditional** in-tree. `AbelJacobiInput.abelJacobiEquiv_of_RiemannSphere_unconditional` ships the full Abel-Jacobi iso `Pic0 RS ≃+ AnalyticJacobian RS` axiom-free. | **done** (Pic⁰(ℙ¹) = 0 unconditional) |
+| **C4 general genus** | Abel converse (injectivity) + Jacobi inversion theorem (surjectivity) — classical content not at the pin. | **~1,200–2,800** *remaining* |
 | **C2** | `PeriodLatticeDiscretenessBundle` (H₁ rank-2g + Riemann bilinear; mathlib gap) | **1,800–3,800** |
 | **C3** | `AbelHypothesis` (Stokes on principal-divisor 2-chains) | **1,200–2,800** |
 | **C4** | `JacobiInversion` (Abel–Jacobi surjective; classical degree or theta) | **1,200–2,800** |
@@ -720,7 +722,11 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
    refactor (downgrade to `C^∞`, then `Real.smoothTransition` makes
    linearInChart unconditional on chart-shape) or analytic
    continuation across charts — both are genuine separate sub-chips.
-3. **C3 `AbelHypothesis` + C4 `JacobiInversion` (~2,400–5,600 combined; ~2,200–5,300 *remaining* after 2026-05-14 work).** Completes `Pic⁰ ≃+ AnalyticJacobian` unconditionally. **Highest-leverage chunk: flips items 4, 5, 10, 11, 12, 13 simultaneously (6 items)** via the existing bundle. *(Five C3+C4 pieces landed 2026-05-14, reducing the open content to two sharp atomic statements: (i) `AbelGeneratorPeriodCondition B` — for each `f : MeromorphicNonzero X`, period vector of AJ chain of `div(f)` ∈ `periodLatticeImage` (`Manifold/AbelHypothesisFromPeriodCondition.lean`); (ii) `Subsingleton (Pic0 X)` at genus 0 — the classical Pic⁰(ℙ¹) = 0 — handled in `Manifold/JacobiInversionGenusZero.lean`. The general-genus C3 still needs the Stokes-on-2-chains content; the general-genus C4 still needs Abel-converse + Jacobi-inversion theorems.)*
+3. **C3 `AbelHypothesis` + C4 `JacobiInversion` — ~2,200–5,300 LOC *remaining*** for full general-genus discharge. Completes `Pic⁰ ≃+ AnalyticJacobian` unconditionally. **Highest-leverage chunk: flips items 4, 5, 10, 11, 12, 13 simultaneously (6 items)** via the existing bundle. *Twelve C3+C4 chips landed 2026-05-14:*
+   * **Genus-0 + reduction layer (7 chips, 2026-05-14 morning/midday):** genus-0 trivial discharge of `AbelHypothesis`; chain-level reduction to `AbelChainPeriodCondition`; algebra layer (additivity + closure); per-generator reduction to `AbelGeneratorPeriodCondition`; genus-0 C4 from `Subsingleton (Pic0 X)`; Abel-Jacobi iso on RS conditional; `Pic0` subsingleton bridge.
+   * **RS unconditional layer (5 chips, 2026-05-14 evening):** `mnRSSimplePole` + `mnRSInversion` + `mnRSAffineFactor` (three `MeromorphicNonzero RS` generators); elementary-divisor identity `principalDivisorMap (mnRSAffineFactor a) = Div.single (some a) - Div.single ∞`; closure decomposition for every `Div0 RS` plus `subsingleton_pic0_RiemannSphere` final discharge — **`Pic⁰ RS ≃+ AnalyticJacobian RS` axiom-free**.
+
+   The remaining work is the general-genus content: discharging `AbelGeneratorPeriodCondition B` for arbitrary X (Stokes-on-2-chains content), and general-genus C4 (Abel converse + Jacobi inversion theorem).
 4. **E + F (~900–2,100).** Wire `Basic.lean` instance bodies + smoothness lemmas. Flips items 17, 18, 21, and item 16 (`ofCurve_inj` falls out of Abel injectivity).
 5. **C2 `PeriodLatticeDiscretenessBundle` (~1,800–3,800).** Required if `PeriodLatticeDiscretenessBundle` should be honest rather than a named hypothesis. Can defer if 23/24 is the target.
 6. **B `HolomorphicOneFormFiniteDim` (~3,000–7,000).** Flips item 1. Largest single chunk.
@@ -751,14 +757,28 @@ Beyond these, every other claim in this map is verified against `.lake/packages/
 
 ## H. Verification audit log
 
-**2026-05-14 update:** A1 discharge merged on `feat/linear-system-divisor`
-(commit `bdd9ba0`); C1 primitives merged from `feat/c1-smooth-path-connected`
-(merge commit `8b32243`); A2 discharge merged from
-`feat/antipode-smoothness` (3 commits `d05cd90..a0569bd` + chore
-`6b63aad`); headline unconditional file added (`2909a6b`). Post-merge
-`taskpolicy lake build` clean (**8700 jobs**, up from 8694 pre-merges).
-All grep facts below are from the pre-merge state and remain valid
-(the merged files are new, not modifications).
+**2026-05-14 update:** Twenty-plus commits landed on
+`feat/linear-system-divisor` in one day:
+
+* A1 discharge (`bdd9ba0`); A2 from `feat/antipode-smoothness`
+  (3 commits + chore + merge); unconditional RR-chain headline
+  (`2909a6b`).
+* C1 primitives from `feat/c1-smooth-path-connected` (merge `8b32243`).
+* Twelve C3+C4 chips: `9faa9bc` (C3 genus-0), `ee8d225` (C3 chain
+  reduction), `f3b4fff` (C3 algebra), `8e26bf7` (C3 per-generator),
+  `2a60032` (C4 genus-0), `a8fe501` (RS bridge), `9d6196f` (Pic0
+  subsingleton bridge), `56c914e` (mnRSSimplePole), `8e1cceb`
+  (mnRSInversion), `f4575d7` (mnRSAffineFactor), `4aa4152`
+  (elementary divisor), `c505ba9` (**Pic⁰(ℙ¹) = 0 unconditional**).
+* Multiple docs commits interleaved.
+
+Post-final-commit `taskpolicy lake build` clean (**8710 jobs**, up
+from 8694 pre-day). Zero `sorry`, zero `axiom` across all chips.
+Genus-0 Abel-Jacobi isomorphism on `RiemannSphere` is now
+**unconditional in-tree**.
+
+All grep facts below are from the pre-2026-05-14 state and remain
+valid (the new files are additions, not modifications to prior content).
 
 The facts in this map were checked by automated grep against this repo and the mathlib pin at `.lake/packages/mathlib`. Results:
 

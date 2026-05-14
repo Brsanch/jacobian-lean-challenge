@@ -80,20 +80,21 @@ the four named inputs are real classical math not at the mathlib pin
 > `CLOSURE_MAP.md`, not this file, when items flip.
 
 **Remaining LOC for full 24/24 STRICT-CLOSED (verified per-component):
-~30,000–57,500 LOC.** Phase 1 essentially done (A1 + A2 discharged
-2026-05-14; chart-cover lift of the C1 sub-arc remains, blocked on
-the ω-level structural caveat). Phase 2 ~15.5–29.6k (period lattice
-+ Abel-Jacobi, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
+~28,500–55,000 LOC.** Phase 1 essentially done (A1 + A2 discharged;
+genus-0 Abel-Jacobi iso on RiemannSphere now **unconditional** in-tree
+post-2026-05-14; C1 chart-cover lift remains, blocked on the ω-level
+structural caveat). Phase 2 ~14–28k (period lattice + Abel-Jacobi at
+genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **85,123 LOC** total in `*.lean` files
-(84,728 inside `JacobianChallenge/` across 405 files + 395-line
+**Current repo size:** **86,894 LOC** total in `*.lean` files
+(86,489 inside `JacobianChallenge/` across 415 files + 405-line
 top-level import manifest). See `CHANGELOG.md` for the per-branch
 history.
 
 **Remaining LOC to 24/24** (full breakdown in `CLOSURE_MAP.md` §F):
-**~12,000–22,000 LOC** for the realistic **23/24** target (deferring
+**~11,000–21,000 LOC** for the realistic **23/24** target (deferring
 uniformization at genus 0 as a named classical hypothesis).
 Highest-leverage chunk: PL-4 discharge (steps 1–3 of the priority order)
 flips 6 items (4, 5, 10, 11, 12, 13) for ~3,300–7,600 LOC.
@@ -238,7 +239,7 @@ analytic-continuation argument. Either is genuinely a separate chip.
 1-manifold. Estimated 400–1,000 LOC on top of the two primitives
 above, modulo the ω-level structural caveat.
 
-## C3 + C4 sub-arc progress (2026-05-14, 5 chips)
+## C3 + C4 sub-arc progress (2026-05-14, 12 chips on `feat/linear-system-divisor`)
 
 `AbelHypothesis B` (Abel forward, `Manifold/AbelJacobiPic0.lean`)
 and `JacobiInversion B hAbel` (`Manifold/AbelJacobiIso.lean`) are
@@ -288,19 +289,47 @@ At `genus X = 0`, `AnalyticJacobian` is subsingleton, so
 * `abelJacobiEquiv_of_genus_zero` — the full Abel-Jacobi iso `Pic0
   X ≃+ AnalyticJacobian` at genus 0, given `Subsingleton (Pic0 X)`.
 
-**Net open content** after these five chips:
+**Additional chips landed later in the session.**
+
+**RS principal-divisor generators (3 chips):**
+* `mnRSSimplePole` (`Manifold/MeromorphicNonzeroRSSimplePole.lean`,
+  ~110 LOC) — `MeromorphicNonzero RS` packaging of the function
+  `some z ↦ z`, with principal divisor `δ_{some 0} - δ_∞`.
+* `mnRSInversion` (`Manifold/MeromorphicNonzeroRSInversion.lean`,
+  ~200 LOC) — packaging of `z ↦ z⁻¹`, with principal divisor
+  `δ_∞ - δ_{some 0}`.
+* `mnRSAffineFactor a` (`Manifold/MeromorphicNonzeroRSAffineFactor.lean`,
+  ~190 LOC) — packaging of `z ↦ z - a`, with principal divisor
+  `δ_{some a} - δ_∞`. Built as `RSSimplePole - (const a)`.
+
+**Elementary divisor identity (1 chip):**
+* `Manifold/Pic0RiemannSphereTrivial.lean` (~140 LOC) —
+  `principalDivisorMap_mnRSAffineFactor a = Div.single (some a) -
+  Div.single ∞`, and `elementaryDivisor_mem_PrincDiv` corollary.
+
+**Closure decomposition + final discharge (1 chip):**
+* `Manifold/Pic0RiemannSphereSubsingleton.lean` (~190 LOC) — the
+  reconstruction sum `Σ_{x ∈ supp(D), x ≠ ∞} D(x) • (Div.single x -
+  Div.single ∞)` equals `D` pointwise for any `D : Div0 RS`.
+  `subsingleton_pic0_RiemannSphere : Subsingleton (Pic0 RiemannSphere)`
+  is now **unconditional**, and via the bridge from earlier in the
+  day, `AbelJacobiInput.abelJacobiEquiv_of_RiemannSphere_unconditional`
+  gives `Pic0 RS ≃+ AnalyticJacobian RS` axiom-free.
+
+**Net open content after today's 12 chips:**
 
 | Input | Open content |
 |---|---|
 | `AbelHypothesis B` (general genus) | `AbelGeneratorPeriodCondition B` — discharge for each `f : MeromorphicNonzero X` (Abel forward via level-set chain, ~1,000–2,500 LOC of Stokes content) |
-| `AbelHypothesis B` (genus 0) | **done** |
+| `AbelHypothesis B` (genus 0) | **done** unconditionally |
 | `JacobiInversion B hAbel` (general genus) | Abel converse (injectivity) + Jacobi inversion theorem (surjectivity) |
-| `JacobiInversion B hAbel` (genus 0) | `Subsingleton (Pic0 X)` (genus-0 Abel converse, classical Pic⁰(ℙ¹) = 0) |
+| `JacobiInversion B hAbel` (genus 0) | **done** unconditionally (`Subsingleton (Pic0 X)` for `X = RS` discharged) |
+| `Pic⁰ RS ≃+ AnalyticJacobian RS` | **done** unconditionally |
+| `Pic⁰ X ≃+ AnalyticJacobian X` (general `X`) | Needs both C3 general-genus and C4 general-genus |
 
-None of these chips flip items 4, 5, 10, 11, 12, 13 yet — those need
-both halves of `Pic⁰ ≃+ AnalyticJacobian` unconditionally at the
-relevant `X`. But the structural infrastructure is now in place: the
-remaining work is two textbook-citable atomic discharges.
+Items 4, 5, 10, 11, 12, 13 still STUB/OPEN — the unconditional iso
+on `RiemannSphere` does not flip them because they require the iso on
+**arbitrary** compact connected complex 1-manifolds `X`.
 
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 
