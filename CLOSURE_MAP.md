@@ -673,6 +673,7 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 | ~~**A2**~~ | ~~`ExistsMobiusToInftyRS`~~ — **LANDED 2026-05-14** (`Manifold/RiemannSphereAntipodeSmooth.lean` 255 LOC + `Manifold/RiemannSphereTranslate.lean` 322 LOC + `Manifold/MobiusTransitivityRS.lean` 80 LOC + headline bridge `Topology/LinearSystemGermDeltaPFiniteDimRSUnconditional.lean` 109 LOC = 766 LOC total; estimate had been 500–1,100). | **done** |
 | **B** | `HolomorphicOneFormFiniteDim X` (L² Hodge / elliptic regularity; mathlib gap) | **3,000–7,000** |
 | **C1** | `AbelJacobiInput` (smooth-path-connectedness; `linearInChart` + chart-cover) — 2 primitives landed 2026-05-14 (`SmoothPathConnected` predicate + `linearInChart` at ω with line-in-target hypothesis, 371 LOC). Remaining: chart-cover lift. ω-level structural caveat documented (line vs segment). | **400–1,100** *remaining* |
+| **C3 (genus-0 corner)** | `AbelHypothesis_of_genus_zero` (via `Subsingleton (AnalyticJacobian)` at `genus X = 0`) — landed 2026-05-14 (`Manifold/AbelHypothesisGenusZero.lean`, 99 LOC). Genus-0 corner of C3 closed; general-genus Stokes-on-2-chains content unaffected. | **1,200–2,800** *remaining* (general genus) |
 | **C2** | `PeriodLatticeDiscretenessBundle` (H₁ rank-2g + Riemann bilinear; mathlib gap) | **1,800–3,800** |
 | **C3** | `AbelHypothesis` (Stokes on principal-divisor 2-chains) | **1,200–2,800** |
 | **C4** | `JacobiInversion` (Abel–Jacobi surjective; classical degree or theta) | **1,200–2,800** |
@@ -717,7 +718,7 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
    refactor (downgrade to `C^∞`, then `Real.smoothTransition` makes
    linearInChart unconditional on chart-shape) or analytic
    continuation across charts — both are genuine separate sub-chips.
-3. **C3 `AbelHypothesis` + C4 `JacobiInversion` (~2,400–5,600 combined).** Completes `Pic⁰ ≃+ AnalyticJacobian` unconditionally. **Highest-leverage chunk: flips items 4, 5, 10, 11, 12, 13 simultaneously (6 items)** via the existing bundle.
+3. **C3 `AbelHypothesis` + C4 `JacobiInversion` (~2,400–5,600 combined).** Completes `Pic⁰ ≃+ AnalyticJacobian` unconditionally. **Highest-leverage chunk: flips items 4, 5, 10, 11, 12, 13 simultaneously (6 items)** via the existing bundle. *(Genus-0 corner of C3 closed 2026-05-14 — `AbelHypothesis_of_genus_zero` via subsingleton AnalyticJacobian, `Manifold/AbelHypothesisGenusZero.lean`. The Stokes-on-2-chains content at genus ≥ 1 is unaffected and remains the open content of C3.)*
 4. **E + F (~900–2,100).** Wire `Basic.lean` instance bodies + smoothness lemmas. Flips items 17, 18, 21, and item 16 (`ofCurve_inj` falls out of Abel injectivity).
 5. **C2 `PeriodLatticeDiscretenessBundle` (~1,800–3,800).** Required if `PeriodLatticeDiscretenessBundle` should be honest rather than a named hypothesis. Can defer if 23/24 is the target.
 6. **B `HolomorphicOneFormFiniteDim` (~3,000–7,000).** Flips item 1. Largest single chunk.

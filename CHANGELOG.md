@@ -1,5 +1,32 @@
 # Changelog
 
+## 2026-05-14 — C3 corner: AbelHypothesis trivially holds at genus 0
+
+Lands a small but real piece of C3 (Abel's theorem). At genus 0 the
+analytic Jacobian collapses to a single point, so the named
+hypothesis `AbelHypothesis B` of `Manifold/AbelJacobiPic0.lean`
+holds vacuously. The general-genus content of `AbelHypothesis`
+(classical Abel forward via Stokes on a 2-chain whose boundary
+represents the principal divisor) is unaffected by this corner; it
+remains the open content of C3 (CLOSURE_MAP §F.3, est.
+1,200–2,800 LOC).
+
+New file: `Manifold/AbelHypothesisGenusZero.lean` (99 LOC).
+
+* `subsingleton_pi_fin_genus_zero` — `Subsingleton (Fin (genus X)
+  → ℂ)` whenever `genus X = 0` (via `Pi.uniqueOfIsEmpty`).
+* `Subsingleton.analyticJacobian_of_genus_zero` — the analytic
+  Jacobian collapses to a single point at genus 0, since
+  `JacobianOfLattice = (Fin (genus X) → ℂ) ⧸ lattice` quotients a
+  subsingleton group.
+* `AbelJacobiInput.abelHypothesis_of_genus_zero` — `AbelHypothesis
+  B` unconditionally from `genus X = 0`. Every value of
+  `B.abelJacobiDiv0Hom` collapses to `0` in the subsingleton
+  codomain.
+
+Build: `taskpolicy lake build` green, 8701 jobs. Zero `sorry`,
+zero `axiom`.
+
 ## 2026-05-14 — A2 closed + genus-0 RR chain unconditional (modulo uniformization)
 
 Merges `feat/antipode-smoothness` (parallel branch off `main`) into
