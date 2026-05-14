@@ -89,6 +89,13 @@ Phase 3 ~7.1–15k (surface classification, blocked), Phase 4 ~6.9–12.8k
 (82,722 inside `JacobianChallenge/` + 387-line top-level import
 manifest). See `CHANGELOG.md` for the per-branch history.
 
+**Remaining LOC to 24/24** (full breakdown in `CLOSURE_MAP.md` §F):
+**13,000–24,000 LOC** for the realistic **23/24** target (deferring
+uniformization at genus 0 as a named classical hypothesis).
+Highest-leverage chunk: PL-4 discharge (steps 1–3 of the priority order)
+flips 6 items (4, 5, 10, 11, 12, 13) for ~3,300–7,600 LOC.
+Closing item 14 strictly requires uniformization in-tree (multi-month).
+
 Do not regenerate this list from context — query this file. Update this file
 whenever a status changes.
 
