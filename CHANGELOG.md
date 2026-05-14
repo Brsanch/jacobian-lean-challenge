@@ -1,5 +1,58 @@
 # Changelog
 
+## 2026-05-15 — `SmoothPath` refactored ω → C^∞ + `linearInChartSegment`
+
+**Headline.** The `SmoothPath` structure's smoothness witness was
+declared at `ContMDiff ... ⊤` where `⊤ : WithTop ℕ∞` resolves to the
+analytic level `ω` despite a docstring stating the intent was `C^∞`.
+The mismatch obstructed chart-cover lifts (analytic functions on `ℝ`
+are germ-determined; concatenation across charts cannot satisfy the
+analytic-germ agreement at junction points). The refactor brings the
+implementation in line with the docstring and unblocks the C1
+chart-cover sub-arc.
+
+Files modified (5):
+
+* `Manifold/SmoothChain.lean` — SmoothPath.smooth field type
+  `ContMDiff (𝓘(ℝ, ℝ)) I ∞ f` (C^∞ = `((⊤ : ℕ∞) : WithTop ℕ∞)`)
+  instead of `⊤`. File docstring updated.
+
+* `Manifold/SmoothPathIntegral.lean` — `ambient_contMDiff` returns
+  `ContMDiff (𝓘(ℝ, ℝ)) I ((⊤ : ℕ∞) : WithTop ℕ∞)` (the explicit form
+  is used because `open scoped ContDiff` would clash with the file's
+  `ω : SmoothOneForm I X` binders).
+
+* `Manifold/SmoothPathChartCompat.lean` — `mdifferentiableAt_ambient`
+  consumes the C^∞ witness; `n ≠ 0` discharged by `decide`.
+
+* `Manifold/SmoothPathIntegrability.lean` —
+  `contMDiffAt_chartVelocity` returns C^∞; `ContMDiffAt.mfderiv_const`
+  invoked with `∞ + 1 ≤ ∞` (top of `ℕ∞` is absorptive in `WithTop`).
+
+* `Manifold/SmoothPathLinearInChart.lean` — existing `linearInChart`
+  retained; its ω-level chart-inverse smoothness is downcast to C^∞
+  via `ContMDiffAt.of_le (by decide)`. New constructors:
+    - `bumpedSegment a b t = (1 - σ t) • a + σ t • b` where
+      `σ = Real.smoothTransition`.
+    - `bumpedSegment_mem_segment`: image of `bumpedSegment a b` on
+      all of `ℝ` lies in `segment ℝ a b` (the closed convex hull).
+    - `contDiff_bumpedSegment` / `contMDiff_bumpedSegment` at `∞`.
+    - `SmoothPath.linearInChartSegment` — **segment-in-target**
+      smooth path constructor. Strict weakening of
+      `linearInChart`'s line-in-target hypothesis. Only available at
+      C^∞ because `Real.smoothTransition` is C^∞ but not analytic.
+    - `linearInChartSegment_src` / `_tgt`.
+
+Build: `taskpolicy lake build` green, 8710 jobs. Zero `sorry`, zero
+`axiom`. +212 / -68 LOC.
+
+Net unblock: chart-cover lift to `SmoothPathConnected I X` on a
+compact connected complex 1-manifold is no longer obstructed by
+analytic germ-determination. The remaining steps are (i) a C^∞
+concatenation primitive (next sub-chip, ~150–300 LOC via partition
+of unity); (ii) a chart-cover argument exploiting convex chart
+targets to discharge segment-in-target trivially (~400–800 LOC).
+
 ## 2026-05-14 — `Subsingleton (Pic0 RiemannSphere)` UNCONDITIONAL — Pic⁰(ℙ¹) = 0 in-tree
 
 **Headline.** Closes the closure decomposition for every degree-zero
