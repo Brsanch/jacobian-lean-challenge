@@ -350,6 +350,20 @@ linearSystemDivisor D` (the bundled embedding via
 `MeromorphicFunctionGerm X`). Gives the trivial `1 ≤ dim_ℂ L(D)` for
 effective `D` on a connected compact complex 1-manifold.
 
+**Simple-pole germ on `RiemannSphere` landed 2026-05-13** (same branch):
+[`Manifold/RiemannSphereSimplePole.lean`](JacobianChallenge/Manifold/RiemannSphereSimplePole.lean)
+(~225 LOC) constructs `RSSimplePole : RiemannSphere → ℂ` (`some z ↦ z`,
+`∞ ↦ 0`), packages as `MMer RiemannSphere`, and proves the germ has
+`orderAt ∞ = -1` and `orderAt (some z₀) ≥ 0`. Composing through
+`linearSystemGermDeltaP` gives
+**`existsSimplePoleGermAtSomePoint_RiemannSphere : ExistsSimplePoleGermAtSomePoint
+RiemannSphere`** — the base case of the genus-0 RR existence side.
+
+The general statement `ExistsSimplePoleGermAtSomePoint X` for a compact
+connected complex 1-manifold `X` at genus 0 reduces to this via a
+`HolomorphicEquiv X RiemannSphere` (uniformization at genus 0). That
+transport is the next chip.
+
 **Multiplicative grading `L(D₁) · L(D₂) ⊆ L(D₁ + D₂)` landed 2026-05-13** (same branch):
 [`Topology/LinearSystemDivisorMul.lean`](JacobianChallenge/Topology/LinearSystemDivisorMul.lean)
 (~115 LOC) ships `MeromorphicFunctionGerm.orderAt_mul : (φ * ψ).orderAt y =
