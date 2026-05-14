@@ -198,13 +198,15 @@ Headline composition lives in
 
 See `CHANGELOG.md` for the per-file map.
 
-## Smooth-path-connectedness sub-arc (C1 progress, 2026-05-14 and 2026-05-15)
+## Smooth-path-connectedness sub-arc (C1, **CLOSED** 2026-05-15)
 
 The `AbelJacobiInput α h` named-hypothesis bundle
 (`Manifold/AbelJacobiPoint.lean`) is the C1 input of CLOSURE_MAP §F.3.
 Its existence on a compact connected complex 1-manifold is classical
-("smooth path-connectedness + a chosen base point"). Three primitives
-land toward the discharge:
+("smooth path-connectedness + a chosen base point"). The full chain
+is now **closed unconditionally** for any preconnected complex
+1-manifold (which includes every compact connected complex 1-manifold).
+Five primitives ship:
 
 1. `SmoothPathConnected I X : Prop` (`Manifold/SmoothPathConnected.lean`,
    2026-05-14) — the classical predicate "every two points of `X`
@@ -221,29 +223,59 @@ land toward the discharge:
    downcast at C^∞ via `ContMDiffAt.of_le` since the structure was
    relaxed to C^∞.
 
-3. `SmoothPath.linearInChartSegment` (same file, 2026-05-15) — the
-   C^∞ constructor with **segment-in-target** hypothesis (strict
-   weakening of `linearInChart`'s line-in-target). Built on the
-   `bumpedSegment a b t = (1 - σ t) • a + σ t • b` reparameterisation
-   where `σ = Real.smoothTransition`, whose image on ℝ lies in the
-   closed segment `[a, b]`. The "segment-only" case at the chart
-   level is now discharged.
+3. `SmoothPath.linearInChartSegment` (`Manifold/SmoothPathLinearInChart.lean`,
+   2026-05-15) — the C^∞ constructor with **segment-in-target**
+   hypothesis. Strict weakening of `linearInChart`'s line-in-target,
+   built on `bumpedSegment a b t = (1 - σ t) • a + σ t • b` where
+   `σ = Real.smoothTransition`.
+
+4. `SmoothPath.concat`
+   (`Manifold/SmoothPathConcat.lean`, 2026-05-15) — binary
+   concatenation of two smooth paths sharing an endpoint, via
+   bump-flatten reparameterisations
+   `concatRepLeft t = σ(4(t - 1/8))` and
+   `concatRepRight t = σ(4(t - 5/8))` that make both halves
+   identically equal to the junction point on `(3/8, 5/8)`. C^∞
+   globally; would be obstructed at ω by analytic germ-determination.
+
+5. `exists_smooth_path_connected_chart_nbhd p`
+   (`Manifold/SmoothPathLocalConvex.lean`, 2026-05-15) — local
+   smooth-path-connected neighborhood at every point, via the
+   chart-restricted-to-Euclidean-ball construction
+   `U := φ.source ∩ φ ⁻¹' Metric.ball z r` (where `z = φ p` and
+   `r > 0` with `ball z r ⊆ φ.target`). Convexity of the ball plus
+   `SmoothPath.linearInChartSegment` gives the smooth-path-connected
+   property of `U`.
 
 **ω-level caveat resolved (2026-05-15).** The `SmoothPath` structure
 was refactored from `ContMDiff ⊤` (= ω = analytic) to `ContMDiff ∞`
 (= C^∞) — the docstring intent. Concatenation and segment-in-chart
 reparameterisations are now both directly available; analytic
-germ-determination no longer obstructs them. The five-file refactor
-(`SmoothChain` + `SmoothPathIntegral` + `SmoothPathChartCompat` +
-`SmoothPathIntegrability` + `SmoothPathLinearInChart`) leaves the
-full project build clean (8710 jobs).
+germ-determination no longer obstructs them.
 
-**Remaining for C1 full discharge.** Chart-cover argument on a
-compact connected complex 1-manifold: cover by finitely many charts
-with convex (e.g., ball) targets, splice `linearInChartSegment`
-paths through overlap regions using C^∞ concatenation. The
-concatenation primitive is the next sub-chip (~150–300 LOC at C^∞
-via partition of unity); the cover argument is then ~400–800 LOC.
+**Headlines (2026-05-15).**
+
+* `smoothPathConnected_RiemannSphere : SmoothPathConnected 𝓘(ℝ, ℂ)
+   RiemannSphere`
+  (`Manifold/SmoothPathConnectedRiemannSphere.lean`) — first
+  end-to-end discharge on a concrete compact connected complex
+  1-manifold. Case-splits on the two-chart cover with
+  `SmoothPath.concat` for the `{∞, (0 : ℂ)}` edge case.
+
+* `smoothPathConnected_of_preconnected [PreconnectedSpace X] :
+   SmoothPathConnected 𝓘(ℝ, ℂ) X`
+  (`Manifold/SmoothPathLocalConvex.lean`) — **the general
+  discharge**. The standard open-closed argument applied to the
+  reachable set `{q | ∃ γ, γ.src = p ∧ γ.tgt = q}`, which is open
+  by `concat` with the local lemma, and closed by the symmetric
+  argument on its complement. A nonempty clopen set in a
+  preconnected space is the whole space (`IsClopen.eq_univ`); `p`
+  is in its own reachable set via `SmoothPath.const`.
+
+**Net.** Via `AbelJacobiInput.nonempty_of_smoothPathConnected`,
+`Nonempty (AbelJacobiInput α h)` is now **unconditional on any
+nonempty preconnected complex 1-manifold**. The C1 input of
+CLOSURE_MAP §F.3 is closed.
 
 ## C3 + C4 sub-arc progress (2026-05-14, 12 chips; merged to main)
 
