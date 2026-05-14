@@ -350,6 +350,19 @@ linearSystemDivisor D` (the bundled embedding via
 `MeromorphicFunctionGerm X`). Gives the trivial `1 ≤ dim_ℂ L(D)` for
 effective `D` on a connected compact complex 1-manifold.
 
+**`rank L(δp) ≥ 2` from a simple-pole germ landed 2026-05-13** (same branch):
+[`Topology/LinearSystemDivisorSimplePoleRank.lean`](JacobianChallenge/Topology/LinearSystemDivisorSimplePoleRank.lean)
+(~150 LOC) shows `LinearIndependent ℂ ![1, ψ]` whenever `ψ.orderAt p =
+-1` via `LinearIndependent.pair_iff'` and order arithmetic at the pole
+(constants have order `0` or `⊤`, never `-1`). Transfers through
+`LinearMap.linearIndependent_iff` on `Submodule.subtype` and
+`LinearIndependent.cardinal_lift_le_rank` to give
+`rank_linearSystemGermDeltaP_ge_two_of_existsSimplePole :
+ExistsSimplePoleGermAtSomePoint X → ∃ p, 2 ≤ Module.rank ℂ
+(linearSystemGermDeltaP p)`. (Cardinal-valued rank, unconditional. The
+`Module.finrank ≥ 2` form needs finite-dimensionality of L(δp), which
+is the Riemann-Roch upper-bound side.)
+
 **`dim_ℂ L(0) = 1` UNCONDITIONAL landed 2026-05-13** (same branch):
 [`Topology/LinearSystemDivisorZeroLiouville.lean`](JacobianChallenge/Topology/LinearSystemDivisorZeroLiouville.lean)
 (~220 LOC) proves `linearSystemDivisor (0 : Div X) = constantsGerm X`
