@@ -328,6 +328,18 @@ LOC for the germ field, ~300–500 LOC for L(D)), not chip-scale.
 without rebuilding the ambient. Treat the RR-thread as blocked on the
 germ-field refactor.
 
+**Germ-field L(D) generalisation landed 2026-05-13** (HEAD on `feat/linear-system-divisor`):
+[`Topology/LinearSystemDivisor.lean`](JacobianChallenge/Topology/LinearSystemDivisor.lean)
+(~270 LOC) defines `IsBoundedByDivisor D φ := ∀ y, -D(y) ≤ φ.orderAt y`
+and packages `linearSystemDivisor D : Submodule ℂ (MeromorphicFunctionGerm
+X)` for **any** divisor `D : Div X`, with closure under `zero`/`add`/`smul`
+via chart-pullback `meromorphicOrderAt_add` and `meromorphicOrderAt_smul`.
+Specialisation `linearSystemDivisor (Div.single p) = linearSystemGermDeltaP
+p` recovers the existing single-pole subspace. This completes the
+divisor-level half of the germ-field ambient called for above; what
+remains for the RR thread is dim-bound content (`finrank ℂ` machinery on
+top of an existence input like `ExistsSimplePoleGermAtSomePoint X`).
+
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 
 These are *not* part of the challenge directly, but the constructions for
