@@ -238,39 +238,69 @@ analytic-continuation argument. Either is genuinely a separate chip.
 1-manifold. Estimated 400–1,000 LOC on top of the two primitives
 above, modulo the ω-level structural caveat.
 
-## C3 sub-arc (genus-0 corner + chain-level reduction, 2026-05-14)
+## C3 + C4 sub-arc progress (2026-05-14, 5 chips)
 
-`AbelHypothesis B` (Abel forward direction, `Manifold/AbelJacobiPic0.lean`)
-asserts that the divisor-level Abel-Jacobi map vanishes on every
-principal divisor. Two pieces landed today:
+`AbelHypothesis B` (Abel forward, `Manifold/AbelJacobiPic0.lean`)
+and `JacobiInversion B hAbel` (`Manifold/AbelJacobiIso.lean`) are
+the C3 + C4 named hypotheses. Together they give `Pic⁰ X ≃+
+AnalyticJacobian X` (`abelJacobiEquiv`) — the gate for items 4, 5,
+10, 11, 12, 13.
 
-**Genus-0 corner** (`Manifold/AbelHypothesisGenusZero.lean`). At
-`genus X = 0`:
-* `Fin (genus X) → ℂ = Fin 0 → ℂ` is `Unique` (`Pi.uniqueOfIsEmpty`).
-* `AnalyticJacobian = (Fin 0 → ℂ) ⧸ lattice` is therefore
-  subsingleton.
-* `AbelHypothesis B` follows trivially.
+Five chips landed today reducing the named-hypothesis content of
+C3 to a single sharp atomic statement, plus closing C4 at genus 0:
 
-**Chain-level reduction** (`Manifold/AbelHypothesisFromPeriodCondition.lean`).
+**C3 (1) genus-0 corner** (`Manifold/AbelHypothesisGenusZero.lean`).
+At `genus X = 0`, `AnalyticJacobian` is subsingleton, so
+`AbelHypothesis B` is trivially true.
+
+**C3 (2) chain-level reduction**
+(`Manifold/AbelHypothesisFromPeriodCondition.lean`).
 * `principalDivisorAJChain B D` — explicit AJ chain for `D : Div X`,
-  built as `Σ D(x) • single (B.pathFromBase x)`.
+  `Σ D(x) • single (B.pathFromBase x)`.
+* `abelJacobiChain_principalDivisorAJChain_eq_abelJacobiDivHom` —
+  the diagram identity.
 * `AbelChainPeriodCondition B : Prop` — for every principal divisor
   `D`, the period vector of its AJ chain lies in `periodLatticeImage`.
-* `abelHypothesis_of_abelChainPeriodCondition` — the reduction:
-  `AbelChainPeriodCondition B → AbelHypothesis B`.
+* `abelHypothesis_of_abelChainPeriodCondition` — the reduction.
 
-After these two commits, the open content of C3 at arbitrary genus
-is exactly `AbelChainPeriodCondition B` — a single textbook-citable
-classical statement (Abel forward in period-vector form). The
-next sub-chip toward closing C3 in full discharges this condition
-for an arbitrary principal divisor via the level-set chain of a
-meromorphic representative `f` with `D = div(f)`. The remaining
-mathlib content sits on Stokes-on-2-chains (CLOSURE_MAP §F.3,
-~1,000–2,500 LOC remaining after this reduction).
+**C3 (3) algebra layer** (same file).
+* `principalDivisorAJChain_add` — chain is additive in `D`.
+* `principalDivisorAJChainHom : Div X →+ SmoothChain 𝓘(ℝ, ℂ) X` —
+  bundled `AddMonoidHom`.
+* `complexChainPeriodVector_principalDivisorAJChain_{add,neg}_mem` —
+  closure of "period vector ∈ periodLatticeImage" under + and -.
 
-Neither piece flips any of items 4, 5, 10, 11, 12, 13 yet — those
-need both `AbelChainPeriodCondition` discharged AND `JacobiInversion`
-(C4).
+**C3 (4) per-generator reduction** (same file).
+* `AbelGeneratorPeriodCondition B : Prop` — for each `f :
+  MeromorphicNonzero X`, period vector of AJ chain of `div(f)`
+  ∈ `periodLatticeImage`. **The sharpest atomic form of Abel
+  forward — one meromorphic function at a time.**
+* `abelChainPeriodCondition_of_abelGeneratorPeriodCondition` —
+  closure induction on `PrincDiv X = AddSubgroup.closure (Set.range
+  principalDivisorMap)`.
+* `abelHypothesis_of_abelGeneratorPeriodCondition` — composite.
+
+**C4 (genus-0)** (`Manifold/JacobiInversionGenusZero.lean`).
+* `jacobiInversion_of_genus_zero_and_subsingleton_pic0` — builds
+  `JacobiInversion B hAbel` from `genus X = 0` + `Subsingleton (Pic0
+  X)`. Surjectivity automatic (codomain subsingleton); injectivity
+  reduces to source subsingleton.
+* `abelJacobiEquiv_of_genus_zero` — the full Abel-Jacobi iso `Pic0
+  X ≃+ AnalyticJacobian` at genus 0, given `Subsingleton (Pic0 X)`.
+
+**Net open content** after these five chips:
+
+| Input | Open content |
+|---|---|
+| `AbelHypothesis B` (general genus) | `AbelGeneratorPeriodCondition B` — discharge for each `f : MeromorphicNonzero X` (Abel forward via level-set chain, ~1,000–2,500 LOC of Stokes content) |
+| `AbelHypothesis B` (genus 0) | **done** |
+| `JacobiInversion B hAbel` (general genus) | Abel converse (injectivity) + Jacobi inversion theorem (surjectivity) |
+| `JacobiInversion B hAbel` (genus 0) | `Subsingleton (Pic0 X)` (genus-0 Abel converse, classical Pic⁰(ℙ¹) = 0) |
+
+None of these chips flip items 4, 5, 10, 11, 12, 13 yet — those need
+both halves of `Pic⁰ ≃+ AnalyticJacobian` unconditionally at the
+relevant `X`. But the structural infrastructure is now in place: the
+remaining work is two textbook-citable atomic discharges.
 
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 

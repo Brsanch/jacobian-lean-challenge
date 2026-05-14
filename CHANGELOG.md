@@ -1,5 +1,64 @@
 # Changelog
 
+## 2026-05-14 — C4 genus-0: JacobiInversion ← Subsingleton (Pic0 X)
+
+Parallel chip to the C3 genus-0 corner, closing the C4 (Jacobi
+inversion) input at genus 0 down to a single textbook hypothesis.
+
+New file: `Manifold/JacobiInversionGenusZero.lean` (~90 LOC).
+
+* `jacobiInversion_of_genus_zero_and_subsingleton_pic0` — builds
+  `JacobiInversion B hAbel` from `genus X = 0` + `Subsingleton (Pic0
+  X)`. Surjectivity is automatic at genus 0 (codomain subsingleton);
+  injectivity reduces to source-side subsingleton.
+* `abelJacobiEquiv_of_genus_zero` — packages the full Abel-Jacobi
+  isomorphism `Pic0 X ≃+ AnalyticJacobian` at genus 0 by composing
+  `abelHypothesis_of_genus_zero` with the new JacobiInversion discharge.
+
+After this commit, both halves of `Pic⁰ ≃+ AnalyticJacobian` at
+genus 0 reduce to a single classical input — `Subsingleton (Pic0 X)`
+(genus-0 case of Abel's converse, equivalent to Pic⁰(ℙ¹) = 0). The
+general-genus content of C4 remains the open work.
+
+Build: 8703 jobs clean. Zero `sorry`, zero `axiom`.
+
+## 2026-05-14 — C3 per-generator reduction: AbelChainPeriodCondition ← AbelGeneratorPeriodCondition
+
+Fourth C3 piece. Reduces `AbelChainPeriodCondition B` to the
+per-generator statement `AbelGeneratorPeriodCondition B`: for each
+`f : MeromorphicNonzero X`, the period vector of the AJ chain of
+`div(f)` lies in `periodLatticeImage`. This is Abel forward in its
+sharpest atomic form — one meromorphic function at a time.
+
+Extends `Manifold/AbelHypothesisFromPeriodCondition.lean`.
+
+* `AbelGeneratorPeriodCondition B : Prop` — per-`f` form of the
+  period-lattice condition.
+* `abelChainPeriodCondition_of_abelGeneratorPeriodCondition` —
+  closure induction on `PrincDiv X = AddSubgroup.closure (Set.range
+  principalDivisorMap)` using the algebra-side closure lemmas.
+* `abelHypothesis_of_abelGeneratorPeriodCondition` — direct
+  composite to `AbelHypothesis`.
+
+Build: 8702 jobs clean. Zero `sorry`, zero `axiom`.
+
+## 2026-05-14 — C3 algebra layer: additivity + closure of AbelChainPeriodCondition
+
+Third C3 piece. Algebraic infrastructure for the C3 chain-level
+reduction.
+
+Extends `Manifold/AbelHypothesisFromPeriodCondition.lean`.
+
+* `principalDivisorAJChain_add` — additivity of the AJ chain in the
+  divisor.
+* `principalDivisorAJChainHom : Div X →+ SmoothChain 𝓘(ℝ, ℂ) X` —
+  bundled `AddMonoidHom` form.
+* `complexChainPeriodVector_principalDivisorAJChain_add_mem` and
+  `_neg_mem` — closure of "period vector ∈ periodLatticeImage" under
+  addition and negation of divisors.
+
+Build: 8702 jobs clean. Zero `sorry`, zero `axiom`.
+
 ## 2026-05-14 — C3 chain-level reduction: AbelHypothesis ← AbelChainPeriodCondition
 
 Second piece of C3 (Abel's theorem forward direction). Lands a
