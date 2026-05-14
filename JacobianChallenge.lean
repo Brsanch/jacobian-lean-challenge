@@ -343,6 +343,7 @@ import JacobianChallenge.Topology.RRGenusZeroFinrankChain
 import JacobianChallenge.Topology.LinearSystemDeltaP
 import JacobianChallenge.Topology.LinearSystemGermDeltaP
 import JacobianChallenge.Topology.LinearSystemDivisor
+import JacobianChallenge.Topology.LinearSystemDivisorConstants
 import JacobianChallenge.Topology.RRDimensionFormGerm
 import JacobianChallenge.Topology.RRGenusZeroGermComposition
 import JacobianChallenge.Topology.Item14FromGermfield
