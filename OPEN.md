@@ -340,6 +340,28 @@ divisor-level half of the germ-field ambient called for above; what
 remains for the RR thread is dim-bound content (`finrank ℂ` machinery on
 top of an existence input like `ExistsSimplePoleGermAtSomePoint X`).
 
+**First dim-bound layer landed 2026-05-13** (same branch):
+[`Topology/LinearSystemDivisorConstants.lean`](JacobianChallenge/Topology/LinearSystemDivisorConstants.lean)
+(~170 LOC) ships `constantsToLinearSystemDivisor D hD : ℂ →ₗ[ℂ]
+linearSystemDivisor D` (the bundled embedding via
+`Algebra.linearMap.codRestrict`) for effective `D`, plus the injectivity
+`constantsToLinearSystemDivisor_injective` under `ConnectedSpace X` (via
+`RingHom.injective` from the `Field` instance on
+`MeromorphicFunctionGerm X`). Gives the trivial `1 ≤ dim_ℂ L(D)` for
+effective `D` on a connected compact complex 1-manifold.
+
+**`dim_ℂ L(0) = 1` via Liouville landed 2026-05-13** (same branch):
+[`Topology/LinearSystemDivisorZeroLiouville.lean`](JacobianChallenge/Topology/LinearSystemDivisorZeroLiouville.lean)
+(~190 LOC) proves `linearSystemDivisor (0 : Div X) = constantsGerm X`
+conditional on `JacobianChallenge.LiouvilleOnCompactConnected X` (the
+existing named hypothesis from `Topology/ExistsMeroSimplePoleSplit.lean`;
+classical max-modulus content). Composes the canonicalize bridge
+`MMer.toMeromorphicNonzero` (from
+`Manifold/MeromorphicFunctionGermCanonicalize.lean`) with Liouville and
+`finrank_constantsGerm_eq_one` to give
+`finrank_linearSystemDivisor_zero_eq_one`. The remaining work for full
+genus-0 Riemann-Roch `dim_ℂ L(δp) ≥ 2` is `ExistsSimplePoleGerm` content.
+
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 
 These are *not* part of the challenge directly, but the constructions for
