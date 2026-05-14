@@ -311,6 +311,7 @@ import JacobianChallenge.Manifold.SmoothPathConcat
 import JacobianChallenge.Manifold.SmoothPathConnectedRiemannSphere
 import JacobianChallenge.Manifold.SmoothPathConst
 import JacobianChallenge.Manifold.SmoothPathIntegrability
+import JacobianChallenge.Manifold.SmoothPathIntegrateConst
 import JacobianChallenge.Manifold.SmoothPathIntegral
 import JacobianChallenge.Manifold.StokesCompactSurface
 import JacobianChallenge.Manifold.StokesDisk
