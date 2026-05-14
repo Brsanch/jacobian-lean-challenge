@@ -109,9 +109,11 @@ the *types*:
 
 so no extra `pairing_add` / `pairing_smul` fields are needed; they fall out
 of `AddMonoidHom.map_add` and `LinearMap.map_add` / `LinearMap.map_smul`. -/
-structure PeriodPairingData where
-  /-- Carrier for the first integer homology `H₁(X; ℤ)`. -/
-  H1 : Type
+structure PeriodPairingData.{v} where
+  /-- Carrier for the first integer homology `H₁(X; ℤ)`. Universe-poly
+  so concrete instantiations (e.g. `SmoothCycle 𝓘(ℝ, ℂ) X` for `X : Type*`)
+  can supply a carrier in the natural universe rather than `Type 0`. -/
+  H1 : Type v
   /-- `H1` is an `AddCommGroup`. -/
   [H1_addCommGroup : AddCommGroup H1]
   /-- The period pairing as an `AddMonoidHom` from `H1` into the space of
