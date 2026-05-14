@@ -6,6 +6,7 @@ Authors: Bryan Sanchez
 import JacobianChallenge.Topology.LinearSystemDivisorConstants
 import JacobianChallenge.Topology.RRDimensionFormGerm
 import JacobianChallenge.Topology.ExistsMeroSimplePoleSplit
+import JacobianChallenge.Topology.HolomorphicLocallyConstantDischarge
 import JacobianChallenge.Manifold.MeromorphicFunctionGermCanonicalize
 
 set_option diagnostics true
@@ -184,6 +185,30 @@ theorem finrank_linearSystemDivisor_zero_eq_one
         (linearSystemDivisor (0 : JacobianChallenge.Div X)) = 1 := by
   rw [linearSystemDivisor_zero_eq_constantsGerm hLiou]
   exact finrank_constantsGerm_eq_one X
+
+/-! ## Unconditional versions
+
+The Liouville hypothesis `LiouvilleOnCompactConnected X` is **discharged
+unconditionally** in `Topology/HolomorphicLocallyConstantDischarge.lean`
+via the clopen globalisation of the chart-level max-modulus principle
+(`MaxModLocalConstancy.eventually_eq_const_at_max` + compactness
++ connectedness of `X`). Composing gives unconditional analogues of the
+above. -/
+
+/-- **`linearSystemDivisor 0 = constantsGerm X`** — unconditional on a
+compact connected complex 1-manifold modeled on `ℂ`. -/
+theorem linearSystemDivisor_zero_eq_constantsGerm_unconditional :
+    linearSystemDivisor (0 : JacobianChallenge.Div X) = constantsGerm X :=
+  linearSystemDivisor_zero_eq_constantsGerm
+    (JacobianChallenge.liouvilleOnCompactConnected_holds X)
+
+/-- **`dim_ℂ L(0) = 1`** — unconditional canonical genus-0 Riemann-Roch
+instance at the zero divisor on a compact connected complex 1-manifold. -/
+theorem finrank_linearSystemDivisor_zero_eq_one_unconditional :
+    Module.finrank ℂ
+        (linearSystemDivisor (0 : JacobianChallenge.Div X)) = 1 :=
+  finrank_linearSystemDivisor_zero_eq_one
+    (JacobianChallenge.liouvilleOnCompactConnected_holds X)
 
 end JacobianChallenge.MeromorphicFunctionField
 
