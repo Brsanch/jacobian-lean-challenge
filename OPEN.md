@@ -58,11 +58,18 @@ spec. Three statuses, with one tag for partial progress:
    * *Simple-connectedness route* (new 2026-05-13,
      `Topology/S2ImpliesGenus0FromSimplyConnected.lean`): reduces to
      two precise classical facts — (a) `SimplyConnectedS2`
-     (= `SimplyConnectedSpace StandardS2`, a small mathlib gap on
-     π₁(S²) = 0), and (b) `HolomorphicOneFormSubsingletonOfSimplyConnected
+     (= `SimplyConnectedSpace StandardS2`, formerly the small mathlib
+     gap on π₁(S²) = 0), and (b) `HolomorphicOneFormSubsingletonOfSimplyConnected
      X` (the analytic chain `simply connected ⇒ closed 1-forms have
      primitives via Stokes ⇒ primitive is constant by Liouville ⇒ form
-     is zero`). This route bypasses uniformization entirely.
+     is zero`). **`SimplyConnectedS2` is now UNCONDITIONAL** at the
+     mathlib pin via the 15-chip Phase-3 smoothing arc landed on
+     `feat/phase3-s2-simply-connected` on 2026-05-15: chart cover →
+     Lebesgue partition → stereographic straight-line approximation →
+     line-segment empty interior → finite-union Baire argument → loop
+     non-surjectivity (`simplyConnectedS2_holds` in
+     `Topology/SimplyConnectedS2Unconditional.lean`). The simple-
+     connectedness route now reduces to input (b) ALONE.
 
 4. Universal at-pole-germ-compatible continuity strengthening of L(δp)
    — operational germ-field refactor

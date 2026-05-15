@@ -1,5 +1,86 @@
 # Changelog
 
+## 2026-05-15 — `SimplyConnectedS2` UNCONDITIONAL via polygonal approximation (15 chips, branch `feat/phase3-s2-simply-connected`)
+
+Closes the Phase-3 item-14 reverse-leg's named hypothesis
+`SimplyConnectedS2 = SimplyConnectedSpace JacobianChallenge.StandardS2`
+unconditionally at this mathlib pin. The simple-connectedness route in
+`Topology/S2ImpliesGenus0FromSimplyConnected.lean` now reduces to a
+single remaining input — the analytic chain
+`HolomorphicOneFormSubsingletonOfSimplyConnected X` — instead of two.
+
+**Reduction-chain chips** (chips 1-3, ~390 LOC).
+
+* `SimplyConnectedS2Reduction.lean` — narrows `SimplyConnectedS2` to
+  `S2LoopsNullHomotopic` by discharging path-connectedness of the
+  unit sphere in `EuclideanSpace ℝ (Fin 3)`
+  (`isPathConnected_sphere` + rank ≥ 2 + subtype lift).
+* `S2PuncturedSimplyConnected.lean` — for any unit `v`, the punctured
+  sphere `↥(stereographic hv).source` is `ContractibleSpace` via the
+  stereographic homeomorphism into `(ℝ ∙ v)ᗮ` (a real top vec space),
+  hence `SimplyConnectedSpace`. `s2LoopAvoidingNullHomotopic` follows
+  by lifting the loop through the inclusion + `paths_homotopic` +
+  `Path.Homotopic.map`.
+* `S2LoopsNullHomotopicReduction.lean` — single-hypothesis composition.
+
+**Smoothing-infrastructure chips** (chips 4a-c, ~430 LOC).
+
+* `S2TwoChartCover.lean` — two stereographic charts at `v` and `-v`
+  cover the sphere (witness `ne_neg_self_of_norm_one`).
+* `S2LoopLebesgueSubdivision.lean` — `lebesgue_number_lemma` applied
+  to the two-chart preimage cover of `unitInterval`, converted to a
+  metric `δ > 0` via `Metric.mem_uniformity_dist`.
+* `S2LoopChartPartition.lean` — equidistant `Fin N → Set` chart
+  assignment with `1/N < δ` from `exists_nat_gt`; midpoint argument
+  bounds each `[k/N, (k+1)/N]` inside `Metric.ball (ck k) δ`.
+
+**Smoothing reduction** (chips 4e, 4i', 4i'', ~250 LOC).
+
+* `S2LoopAvoidingFromNonSurjective.lean` — reduces
+  `S2LoopHomotopicToAvoidingLoop` to the pure-topology hypothesis
+  `EveryS2LoopHomotopicToNonSurjective`. Picks the missing point as
+  the chart's pole.
+* `S2SingleChartLoopNonSurjective.lean` — single-chart corollary.
+* `S2PartitionVertices.lean` — `Fin (N+1) → unitInterval`, `k ↦ ⟨k/N, _⟩`.
+
+**Dimensional argument** (chips 4d, 4f, 4g, 4h, ~580 LOC).
+
+* `S2EquatorialBeltPathConnected.lean` — `S² ∖ {v, -v}` is
+  path-connected. Uses `finrank_orthogonal_span_singleton` to show
+  `(ℝ ∙ v)ᗮ` has rank 2, then `isPathConnected_compl_singleton_of_one_lt_rank`
+  on `(ℝ ∙ v)ᗮ ∖ {0}` and transport via the stereographic
+  homeomorphism (using `stereographic_apply_neg` to identify
+  `⟨-v, _⟩ ↦ 0`).
+* `S2StereographicStraightLine.lean` — canonical
+  `(stereographic hv).symm`-pullback of a line segment in `(ℝ ∙ v)ᗮ`
+  as a `Path p q`. Any in-chart `γ` is `Path.Homotopic` to it via
+  chip 2's `S2Punctured.instSimplyConnectedSpace`.
+* `S2SegmentEmptyInterior.lean` — line segment in `(ℝ ∙ v)ᗮ` has
+  empty interior. Uses `Convex.interior_nonempty_iff_affineSpan_eq_top`
+  + `vectorSpan_pair` + `finrank_span_singleton ≤ 1` vs `finrank ⊤ = 2`.
+* `S2StraightLineNowhereDense.lean` — transports the segment's
+  empty-interior result to the sphere level via the stereographic
+  homeomorphism + `Homeomorph.isOpenMap`.
+
+**Polygonal closure** (chip 4j, ~370 LOC + capstone, ~50 LOC).
+
+* `S2EveryLoopHomotopicNonSurjective.lean` — `everyS2LoopHomotopicToNonSurjective_holds`.
+  Builds `γ' := Path.concat (γ ∘ partitionVertex) stereographicStraightLine_k . cast _ _`,
+  shows `γ ≃ γ'` via `Path.Homotopic.concat_subpath.symm + concat_hcomp`
+  + a `Path.cast = γ.subpath (pV 0) (pV last)` path-equality via
+  `DFunLike.coe_injective + Icc.coe_convexCombo + ring`. Cast across
+  endpoint types via local `homotopyRecastEndpoints` helper
+  (reusing the underlying continuous function). Non-surjectivity
+  via `range_concat_subset_iUnion_of_pos + interior_iUnion_closed_empty`
+  Baire-style induction.
+* `SimplyConnectedS2Unconditional.lean` — capstone:
+  `simplyConnectedS2_holds : SimplyConnectedS2` by composing
+  `everyS2LoopHomotopicToNonSurjective_holds` with the chip-1/3/4e
+  reduction chain. **Zero hypotheses.**
+
+Total: **15 chips, ~3000 LOC, zero `sorry`, zero `axiom`**, all
+locally verified via `LEAN_NUM_THREADS=1 lake env lean FILE.lean`.
+
 ## 2026-05-15 — C3 sub-arc: algebra closure + path-lift infrastructure (25 chips)
 
 Continued past the 19-chip set above with six further chips on the
@@ -111,7 +192,6 @@ remaining classical content.
 
 Build at HEAD: `taskpolicy lake build` green, 8740 jobs. Zero `sorry`,
 zero `axiom`. +~2,200 LOC across 14 new files.
-
 ## 2026-05-15 — C3 sub-arc: algebra closure + path-lift infrastructure (11 chips)
 
 Six chips landed reducing the open content of `AbelHypothesis B`
