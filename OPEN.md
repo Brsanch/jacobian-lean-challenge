@@ -95,19 +95,35 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **~98,776 LOC** total in `*.lean` files
-(98,306 inside `JacobianChallenge/` across 490 files + 480-line
-top-level import manifest). Re-measured 2026-05-16 at main HEAD after
-ten chips today: `h_AJ_boundary` (+125), regular β: 0→∞ existence
-(+431), concrete regular level-set chain (+146), real-model RS
-manifold + open-set realification (+96), pointwise cotangent pullback
-primitive (+94), pointwise trace `f_*ω` at a regular value (+117),
-`SmoothOneFormOn` partial-section type (+74 + 14 LOC restrictOnSet),
-scalar evaluation of cotangent pullback and trace (+123),
-`ContinuousOn` variant of `path_lift_eqOn_Icc` (+131), and local
-identification of `sourceFiberPath` with `sheet.g ∘ β ∘ σ`
-(+222 LOC). Cumulative delta vs. 2026-05-14 snapshot: +75 files /
-+11,882 LOC. See `CHANGELOG.md` for the per-branch history.
+**Current repo size:** **98,800 LOC** total in `*.lean` files
+(98,320 inside `JacobianChallenge/` across 490 files + 480-line
+top-level import manifest). Re-measured 2026-05-16 at main HEAD
+`a07eb4f` (pushed) via `find ... -name '*.lean' | wc -l` and
+`-exec wc -l +` for ground truth. **Ten chips landed 2026-05-16**,
+totalling **+1,573 LOC** in new files plus small refactor deltas
+(net +1,597 LOC vs. 2026-05-15 evening's 97,203 LOC baseline):
+
+* `h_AJ_boundary` discharge (+125) — `PrincipalDivisorAJChainBoundary.lean`.
+* Regular β: 0→∞ existence on ℙ¹ (+431) — `MeromorphicNonzeroRegularPath.lean`.
+* Concrete regular level-set chain + boundary identification (+146)
+  — `MeromorphicNonzeroConcreteLevelSetChain.lean`.
+* Real-model RS manifold + open-set realification (+96)
+  — `RiemannSphereRealManifold.lean`.
+* Pointwise cotangent pullback primitive (+94) — `CotangentPullbackAt.lean`.
+* Pointwise trace `f_*ω` at a regular value (+117)
+  — `MeromorphicNonzeroTraceAt.lean`.
+* `SmoothOneFormOn` partial-section type + `restrictOnSet` (+88)
+  — `SmoothOneFormOn.lean`.
+* Scalar evaluation of cotangent pullback and trace (+123)
+  — `CotangentPullbackAtApply.lean`.
+* `ContinuousOn` variant of `path_lift_eqOn_Icc` (+131)
+  — `MeromorphicNonzeroPathLiftUniqueOnContinuousOn.lean`.
+* Local identification of `sourceFiberPath` with `sheet.g ∘ β ∘ σ`
+  (+222) — `MeromorphicNonzeroSourceFiberPathSheetEq.lean`.
+
+Cumulative delta vs. 2026-05-14 snapshot (86,894 LOC / 416 files):
+**+11,906 LOC / +75 files**. Build green at 8786 jobs, zero `sorry`,
+zero `axiom`. See `CHANGELOG.md` for the per-branch history.
 
 **Remaining LOC to 24/24** (full breakdown in `CLOSURE_MAP.md` §F):
 **~11,000–21,000 LOC** for the realistic **23/24** target (deferring
@@ -475,7 +491,7 @@ level-set chain.  All on `main`, build green at 8746 jobs, zero
 | 7d-c. Order = -1 at simple pole (regular value ∞) | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroPrincipalDivisorAtPole.lean`, 188 LOC; uses `MMeromorphicAt.iff_of_isManifold` for chart-independence → `MeromorphicOn.eventually_analyticAt` for pole isolation → `meromorphicOrderAt_inv` to flip sign) | 150–250 |
 | 7d-d. Final identification ∂(levelSetChain) = −principalDivisorMap f pointwise | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroLevelSetPrincipalDivisorIdentification.lean`, 147 LOC; `boundary_levelSetChain_eq_neg_principalDivisorMap_pointwise` via case-split on sourceFiber/targetFiber/off-fiber, composing 7d-a/b/c) | 100–200 |
 | 8. Pushforward 1-form `f_*ω` + integral identity | **LANDED 2026-05-15 (bookkeeping)** (`Manifold/MeromorphicNonzeroLevelSetIntegrate.lean`, 98 LOC; `integrate_levelSetChain` Finset-sum expansion via `SmoothChain.integrateLinearMap` + `integrateLinearMap_single`. Substantive `f_*ω` construction layered on top via existing `SmoothPath.integrate_compSmoothPath`.) | 300–500 |
-| 9. Structural reduction `AbelGenerator ← (Z period in lattice) + (Z boundary = -principalDivisor)` | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroAbelGeneratorFromLevelSet.lean`, 138 LOC; `abelGeneratorPeriodCondition_of_levelSet_lattice` — cycle Z+AJ has boundary 0, period vector in lattice tautologically; linearity gives AJ's period as lattice element. Named input: `h_struct` (the Z with right boundary AND lattice period). `h_AJ_boundary` (AJ chain's boundary identity) **DISCHARGED 2026-05-16** in `Manifold/PrincipalDivisorAJChainBoundary.lean` (~125 LOC; pure ℤ-linearity + `JacobianChallenge.residue_theorem`) and inlined into the step-9 proof. The β-existence input for the boundary clause of `h_struct` (smooth path 0→∞ avoiding critical values) **DISCHARGED 2026-05-16** in `Manifold/MeromorphicNonzeroRegularPath.lean` (~431 LOC; `exists_regular_path_zero_to_infty` via two `linearInChartSegment` paths through `r := some(s + i)` for generic `s`, concat'd). Concrete witness `regularLevelSetChain f hnc h0 h∞` with its boundary identity (`boundary = -principalDivisorMap f` pointwise) shipped in `Manifold/MeromorphicNonzeroConcreteLevelSetChain.lean` (~146 LOC; `Classical.choose` extraction + composition with step 7d-d). Discharging the lattice clause of `h_struct` is the residual `f_*ω + Stokes` content of full step 9.) | 400–800 |
+| 9. Structural reduction `AbelGenerator ← (Z period in lattice) + (Z boundary = -principalDivisor)` | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroAbelGeneratorFromLevelSet.lean`, 138 LOC; `abelGeneratorPeriodCondition_of_levelSet_lattice` — cycle Z+AJ has boundary 0, period vector in lattice tautologically; linearity gives AJ's period as lattice element. Named input: `h_struct` (the Z with right boundary AND lattice period). `h_AJ_boundary` (AJ chain's boundary identity) **DISCHARGED 2026-05-16** in `Manifold/PrincipalDivisorAJChainBoundary.lean` (~125 LOC; pure ℤ-linearity + `JacobianChallenge.residue_theorem`) and inlined into the step-9 proof. The β-existence input for the boundary clause of `h_struct` (smooth path 0→∞ avoiding critical values) **DISCHARGED 2026-05-16** in `Manifold/MeromorphicNonzeroRegularPath.lean` (~431 LOC; `exists_regular_path_zero_to_infty` via two `linearInChartSegment` paths through `r := some(s + i)` for generic `s`, concat'd). Concrete witness `regularLevelSetChain f hnc h0 h∞` with its boundary identity (`boundary = -principalDivisorMap f` pointwise) shipped in `Manifold/MeromorphicNonzeroConcreteLevelSetChain.lean` (~146 LOC; `Classical.choose` extraction + composition with step 7d-d). **f_*ω stack scaffolded 2026-05-16**: real-model RS manifold instance (`RiemannSphereRealManifold.lean`, ~96 LOC), pointwise cotangent pullback primitive (`CotangentPullbackAt.lean`, ~94 LOC), pointwise trace `f_*ω` at regular values (`MeromorphicNonzeroTraceAt.lean`, ~117 LOC), `SmoothOneFormOn` partial-section type (`SmoothOneFormOn.lean`, ~88 LOC), scalar evaluation of pullback + trace (`CotangentPullbackAtApply.lean`, ~123 LOC), `ContinuousOn` variant of `path_lift_eqOn_Icc` (`MeromorphicNonzeroPathLiftUniqueOnContinuousOn.lean`, ~131 LOC), and local identification `sourceFiberPath ↔ sheet.g ∘ β ∘ σ` on a sub-interval (`MeromorphicNonzeroSourceFiberPathSheetEq.lean`, ~222 LOC). The chain-rule pathway from `(levelSetChain f β).integrate om` to `∫ applyCotangent (traceAt ...) (β.velocity ·)` is now scaffolded end-to-end pointwise; only the global identification (Lebesgue subdivision over sheet-domain cover) + Stokes/residue argument for the lattice clause remain.) | 400–800 |
 
 **Caveat on estimates.** Today's 25 chips delivered ~2,900 LOC, much
 more than the ~300–500 LOC pre-session estimate for "global path
