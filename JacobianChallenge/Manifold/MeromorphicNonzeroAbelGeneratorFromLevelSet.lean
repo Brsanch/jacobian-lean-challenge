@@ -8,6 +8,7 @@ import JacobianChallenge.Manifold.AbelHypothesisFromPeriodCondition
 import JacobianChallenge.Manifold.AbelJacobiPic0
 import JacobianChallenge.Manifold.AbelJacobiPath
 import JacobianChallenge.Manifold.PeriodPairingDataFromSmoothCycle
+import JacobianChallenge.Manifold.PrincipalDivisorAJChainBoundary
 
 set_option diagnostics.threshold 100
 set_option linter.unusedSectionVars false
@@ -43,6 +44,12 @@ with `-principalDivisorMap f` is `step 7d-d`, and whose period
 lattice membership is the residual f-pushforward + Stokes content of
 step 9 proper) closes C3 in full.
 
+The companion boundary identity `(boundary AJ).toFun x = D x` on the
+principal-divisor AJ chain side is discharged unconditionally by
+`AbelJacobiInput.boundary_principalDivisorAJChain_principalDivisorMap`
+in `PrincipalDivisorAJChainBoundary.lean` (pure ℤ-linearity +
+`JacobianChallenge.residue_theorem`).
+
 No `sorry`, no `axiom`. -/
 
 noncomputable section
@@ -67,7 +74,12 @@ variable {h : PeriodLatticeDiscretenessBundle
 
 /-- **Structural reduction.** If a chain `Z` with `boundary Z = -principalDivisorMap f`
 (pointwise) and `complexChainPeriodVector α Z ∈ periodLatticeImage` exists
-for every `f`, then `JacobianChallenge.AbelJacobiInput.AbelGeneratorPeriodCondition B` holds. -/
+for every `f`, then `JacobianChallenge.AbelJacobiInput.AbelGeneratorPeriodCondition B` holds.
+
+The boundary identity for the AJ chain side is discharged unconditionally
+via `AbelJacobiInput.boundary_principalDivisorAJChain_principalDivisorMap`
+(in `PrincipalDivisorAJChainBoundary.lean`), so only the existence of `Z`
+remains as a named input. -/
 theorem abelGeneratorPeriodCondition_of_levelSet_lattice
     (B : JacobianChallenge.AbelJacobiInput α h)
     (h_struct : ∀ f : MeromorphicNonzero X,
@@ -76,17 +88,19 @@ theorem abelGeneratorPeriodCondition_of_levelSet_lattice
           (SmoothChain.boundary Z).toFun x
             = -((principalDivisorMap f : X → ℤ) x)) ∧
         complexChainPeriodVector α Z
-          ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α)
-    (h_AJ_boundary : ∀ f : MeromorphicNonzero X,
-      ∀ x : X,
-        (SmoothChain.boundary
-            (B.principalDivisorAJChain (principalDivisorMap f))).toFun x
-          = ((principalDivisorMap f : X → ℤ) x)) :
+          ∈ periodLatticeImage (PeriodPairingData.ofSmoothCycle X) α) :
     JacobianChallenge.AbelJacobiInput.AbelGeneratorPeriodCondition B := by
   intro f
   obtain ⟨Z, h_Z_boundary, h_Z_period⟩ := h_struct f
   set AJ : SmoothChain 𝓘(ℝ, ℂ) X :=
     B.principalDivisorAJChain (principalDivisorMap f) with hAJ_def
+  -- Discharge of `h_AJ_boundary` via the in-tree boundary identity at
+  -- a degree-zero divisor + residue theorem.
+  have h_AJ_boundary : ∀ x : X,
+      (SmoothChain.boundary AJ).toFun x
+        = ((principalDivisorMap f : X → ℤ) x) :=
+    fun x => AbelJacobiInput.boundary_principalDivisorAJChain_principalDivisorMap
+      B f x
   -- Boundary of Z + AJ is 0 (Finsupp-pointwise).
   have h_sum_boundary_pointwise : ∀ x : X,
       (SmoothChain.boundary (Z + AJ)).toFun x = 0 := by
@@ -95,7 +109,7 @@ theorem abelGeneratorPeriodCondition_of_levelSet_lattice
     change ((SmoothChain.boundary Z) + (SmoothChain.boundary AJ) : X →₀ ℤ) x = 0
     rw [Finsupp.add_apply]
     change (SmoothChain.boundary Z).toFun x + (SmoothChain.boundary AJ).toFun x = 0
-    rw [h_Z_boundary x, h_AJ_boundary f x]
+    rw [h_Z_boundary x, h_AJ_boundary x]
     ring
   -- Finsupp pointwise equality ⇒ Finsupp equality.
   have h_sum_boundary : SmoothChain.boundary (Z + AJ) = 0 := by
