@@ -441,6 +441,7 @@ import JacobianChallenge.Topology.S2SegmentEmptyInterior
 import JacobianChallenge.Topology.S2StraightLineNowhereDense
 import JacobianChallenge.Topology.S2SingleChartLoopNonSurjective
 import JacobianChallenge.Topology.S2PartitionVertices
+import JacobianChallenge.Topology.S2EveryLoopHomotopicNonSurjective
 import JacobianChallenge.Topology.SurfaceClassificationGenus
 import JacobianChallenge.Topology.SurfaceGenus
 import JacobianChallenge.Topology.MeroSinglePoleBridgeConditional
