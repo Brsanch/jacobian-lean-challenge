@@ -71,4 +71,18 @@ instance instCoeFun : CoeFun (SmoothOneFormOn I X s)
 
 end SmoothOneFormOn
 
+/-! ## Restriction from a global smooth 1-form -/
+
+/-- **Canonical restriction.** Every global `SmoothOneForm I X` restricts
+to a `SmoothOneFormOn I X s` for any subset `s ⊆ X`. The total-space
+smoothness on `s` follows from global smoothness via `ContMDiff.contMDiffOn`. -/
+def SmoothOneForm.restrictOnSet (om : SmoothOneForm I X) (s : Set X) :
+    SmoothOneFormOn I X s where
+  toFun := om.toFun
+  contMDiffOn_section := om.contMDiff_toFun.contMDiffOn
+
+@[simp] lemma restrictOnSet_toFun_apply
+    (om : SmoothOneForm I X) (s : Set X) (x : X) :
+    (SmoothOneForm.restrictOnSet (I := I) (X := X) om s).toFun x = om x := rfl
+
 end
