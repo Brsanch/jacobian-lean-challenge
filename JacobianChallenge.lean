@@ -67,6 +67,7 @@ import JacobianChallenge.Manifold.Cotangent
 import JacobianChallenge.Manifold.CotangentBundleSmoothness
 import JacobianChallenge.Manifold.CotangentInCoordinates
 import JacobianChallenge.Manifold.CotangentPullbackAt
+import JacobianChallenge.Manifold.CotangentPullbackAtApply
 import JacobianChallenge.Manifold.CotangentPullbackBridge
 import JacobianChallenge.Manifold.CotangentTangentBridge
 import JacobianChallenge.Manifold.CriticalSetClosed
