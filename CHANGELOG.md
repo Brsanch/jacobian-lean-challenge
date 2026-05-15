@@ -1,5 +1,85 @@
 # Changelog
 
+## 2026-05-17 — Global integrand-trace integral identity (4 chips, ~640 LOC, direct to `main`)
+
+Lifts the lifted-point local-identification arc to a **global**
+integrand-trace integral identity:
+
+```
+SmoothChain.integrate (levelSetChain f β) om
+  = ∫ t in 0..1, derivσ(t) *
+      applyCotangent (traceAt … (β(σ t)) om) (mfderiv β (σ t) 1)
+```
+
+This is the **integrated source-side equality** with the traceAt-based
+RHS in `derivσ` factored form — exactly the shape needed for the
+σ-reparametrisation change-of-variables (which would convert to
+`∫ s in 0..1, applyCotangent (traceAt … (β s) om) (mfderiv β s 1) ds`,
+modulo continuity of the integrand-as-function-of-s = f_*ω smoothness).
+
+**4 new files** (`JacobianChallenge/Manifold/`):
+
+* `SourceFiberPathIntegrandChainAtT.lean` (~238 LOC) — chain-rule-
+  unfolded per-fibre integrand at general `t₀`. Composes local
+  identification with two `mfderiv_comp_apply` applications and
+  `applyCotangent_cotangentPullbackAt`. Headline:
+  ```
+  ∃ a b ∈ [0,1], a ≤ t₀ ≤ b, ∀ u ∈ Ioo a b,
+    (sourceFiberPath p).integrand om u
+      = applyCotangent (cotangentPullbackAt sheet_q.g (β(σ u)) om)
+          (mfderiv β (σ u) (mfderiv σ u 1))
+  ```
+  Required exposing strict bounds `0 < t₀ → a < t₀` and `t₀ < 1 → t₀ < b`
+  in upstream chips (SourceFiberPathExtendEqSheetGAtT,
+  SourceFiberPathIntegrandLocalSheetGAtT) for downstream use at
+  `u = t` strictly.
+
+* `GlobalIntegrandTraceIdentity.lean` (~165 LOC) — global per-`t`
+  identity at any `t ∈ Ioo 0 1`:
+  ```
+  ∑ p, (sourceFiberPath p).integrand om t
+    = applyCotangent (traceAt f hnc hβσt_reg om)
+        (mfderiv β (σ t) (mfderiv σ t 1))
+  ```
+  No sub-interval restriction. Composes per-fibre chain-rule + Finset
+  bijection (sourceFiber ↔ fiberFinset(β(σ t)) via `extend t`) +
+  `applyCotangent_traceAt`. Boundary cases `t = 0, 1` are Lebesgue-
+  null and not needed for integration.
+
+* `IntegrateLevelSetChainEqTraceAt.lean` (~125 LOC) — integrated
+  identity:
+  ```
+  SmoothChain.integrate (levelSetChain f β) om
+    = ∫ t in 0..1, applyCotangent (traceAt … (β(σ t)) om)
+        (mfderiv β (σ t) (mfderiv σ t 1))
+  ```
+  Composes `integrate_levelSetChain` (chain → ∑_p path-integrals) +
+  `intervalIntegral.integral_finset_sum` (swap ∑ and ∫) +
+  `intervalIntegral.integral_congr_ae` (boundary `{1}` measure-zero) +
+  global per-`t` identity.
+
+* `IntegrandSigmaSmulFactor.lean` (~162 LOC) — factors out `derivσ(t)`:
+  ```
+  ∫ t in 0..1, applyCotangent (…) (mfderiv β (σ t) (mfderiv σ t 1))
+    = ∫ t in 0..1, derivσ(t) * applyCotangent (…) (mfderiv β (σ t) 1)
+  ```
+  Via `mfderiv_eq_fderiv` (mfderiv σ t 1 = derivσ(t) on ℝ → ℝ),
+  `ContinuousLinearMap.map_smul` (mfderiv β linearity), and
+  `cotangentEquiv` ℝ-linearity (applyCotangent φ (c • w) = c * apply
+  Cotangent φ w).
+
+Build green at **8842 jobs** (up from 8838). Zero `sorry`, zero
+`axiom`. No item flips.
+
+**Remaining for `RegularLevelSetLatticeClause` discharge:**
+1. σ-reparametrisation `s = σ t` via
+   `intervalIntegral.integral_comp_mul_deriv`. Requires
+   continuity of the integrand-as-function-of-s, which is the
+   `f_*ω` smooth-on-`regularValueSet` packaging.
+2. `f_*ω` smooth-on-`regularValueSet` packaging.
+3. Residue theorem adaptation `principalDivisorMap → f_*ω` on ℙ¹
+   → period ∈ `periodLatticeImage`.
+
 ## 2026-05-17 — Lifted-point local identification at general t₀ (2 chips, ~345 LOC, direct to `main`)
 
 Generalises the existing local-identification chip
