@@ -125,13 +125,16 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **~105,000 LOC** total in `*.lean` files,
+**Current repo size:** **~108,000 LOC** total in `*.lean` files,
 combining the 2026-05-17 Hodge finite-dim Forster scaffolding
 (+2,948 LOC, 16 chips) with the 2026-05-16 evening C3 structural-
 reduction + chain-rule pathway arc (+2,280 LOC, 13 chips,
 fast-forward-merged from `feat/abel-generator-input-independence`)
-plus the 2026-05-17 evening RegularLevelSetLatticeClause per-`t`
-trace identity (+~975 LOC, 6 chips).
+plus three 2026-05-17 evening waves: per-`t` trace identity (+~975 LOC,
+6 chips), eventually-form composition (+~720 LOC, 6 chips), and
+**global integrand-trace integral identity (+~985 LOC, 6 chips)**
+that completes steps 1–5 of the `RegularLevelSetLatticeClause`
+discharge. Build green at **8842 jobs**.
 
 **2026-05-17 evening — `RegularLevelSetLatticeClause` per-`t` trace identity.**
 The arc closes the **algebraic** content of the per-`t` lattice clause
@@ -156,11 +159,16 @@ cotangent pullback identification. Six chips:
   = traceAt f hnc hβσt_reg ω`, parametrized over the sub-interval +
   lift-equality conditions (discharged downstream on uniform-δ).
 
-**Remaining for `RegularLevelSetLatticeClause`:** Lebesgue gluing
-across Hurwitz subdivision (composes per-sheet sub-interval identities
-to global `[0,1]`), σ-reparametrisation, and residue theorem
-adaptation from `principalDivisorMap` to `f_*ω`'s residue divisor on
-ℙ¹.
+**Remaining for `RegularLevelSetLatticeClause`:** σ-reparametrisation
+(`s = σ t`, requires integrand-as-function-of-s continuity = `f_*ω`
+smoothness), `f_*ω` smooth-on-`regularValueSet` packaging, and residue
+theorem adaptation from `principalDivisorMap` to `f_*ω`'s residue
+divisor on ℙ¹.
+
+**Lebesgue gluing is no longer required** — the lifted-point sheet
+breakthrough (2026-05-17 late evening) gave a global integrand
+identity at any `t ∈ Ioo 0 1` directly, bypassing Hurwitz
+subdivision.
 
 **2026-05-17 evening — Integrand-trace identity in full eventually
 form (5 additional chips, ~720 LOC).** Lifts the algebraic per-`t`
@@ -190,6 +198,54 @@ Five chips:
 This is the integrand of `(levelSetChain f β).integrate ω` equating
 to the integrand of the line integral of `f_*ω` along β (modulo
 σ-reparam). Build at **8836 jobs**.
+
+**2026-05-17 late evening — Lifted-point local identification +
+global integrand-trace integral identity (8 chips, ~1,330 LOC).**
+Architectural breakthrough: the **lifted-point sheet** `sheet_q` at
+`q := extend t₀ p` automatically satisfies the sub-interval
+condition (`sheet_q.V ∋ β(σ t₀)` by construction), so the chain
+rule based at `sheet_q` works at **every** `t₀` — bypassing
+Hurwitz subdivision entirely. Eight chips:
+
+* `SourceFiberPathExtendEqSheetGAtT.lean` (~218 LOC) — local
+  identification at general `t₀` via lifted-point sheet.
+* `SourceFiberPathIntegrandLocalSheetGAtT.lean` (~127 LOC) — per-
+  fibre integrand at general `t₀` via lifted-point sheet (composes
+  with `integrand_eq_of_ambient_eqOn_Icc_fun`).
+* `SourceFiberPathIntegrandChainAtT.lean` (~238 LOC) — chain-rule-
+  unfolded per-fibre integrand at general `t₀` via two
+  `mfderiv_comp_apply` applications + `applyCotangent_cotangentPullbackAt`.
+* `GlobalIntegrandTraceIdentity.lean` (~165 LOC) — global per-`t`
+  identity at any `t ∈ Ioo 0 1`:
+  ```
+  ∑ p, (sourceFiberPath p).integrand om t
+    = applyCotangent (traceAt f hnc hβσt_reg om)
+        (mfderiv β (σ t) (mfderiv σ t 1))
+  ```
+  No sub-interval restriction. Composes per-fibre chain-rule + Finset
+  bijection (sourceFiber ↔ fiberFinset(β(σ t))) +
+  `applyCotangent_traceAt`.
+* `IntegrateLevelSetChainEqTraceAt.lean` (~125 LOC) — integrated
+  identity: `SmoothChain.integrate (levelSetChain f β) om = ∫ t in
+  0..1, applyCotangent (traceAt … (β(σ t)) om) (mfderiv β (σ t)
+  (mfderiv σ t 1))`. Composes via `integrate_levelSetChain` (chain →
+  ∑_p) + `intervalIntegral.integral_finset_sum` (swap ∑/∫) +
+  `intervalIntegral.integral_congr_ae` (boundary `{1}` measure-zero)
+  + global per-`t` identity.
+* `IntegrandSigmaSmulFactor.lean` (~162 LOC) — factors out
+  `derivσ(t)`:
+  ```
+  SmoothChain.integrate (levelSetChain f β) om
+    = ∫ t in 0..1, derivσ(t) *
+        applyCotangent (traceAt … (β(σ t)) om) (mfderiv β (σ t) 1)
+  ```
+  Via `mfderiv_eq_fderiv` + ℝ-linearity of CLM and `cotangentEquiv`.
+  This is exactly the shape required by
+  `intervalIntegral.integral_comp_mul_deriv` for the σ-reparam
+  conversion to `∫ s in 0..1, applyCotangent (traceAt … (β s) om)
+  (mfderiv β s 1) ds`.
+
+Build green at **8842 jobs**. Zero `sorry`, zero `axiom`.
 
 **2026-05-16 evening — C3 structural reduction + chain-rule pathway 1-3.**
 The arc delivers a two-tier reduction of `AbelHypothesis B`:

@@ -13,8 +13,8 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-15):** 12 of 24 items STRICT-CLOSED, 3 STUB, 9 OPEN.
-`taskpolicy lake build` clean post-merge (zero `sorry`, zero `axiom`).
+**Current state (2026-05-17):** 12 of 24 items STRICT-CLOSED, 3 STUB, 9 OPEN.
+Build clean at **8842 jobs** (zero `sorry`, zero `axiom`).
 
 Major recent landings (all on `main`):
 
@@ -40,6 +40,28 @@ Major recent landings (all on `main`):
   route for item 14's reverse leg from two named classical inputs to
   one (the Stokes + Liouville analytic chain
   `HolomorphicOneFormSubsingletonOfSimplyConnected X`).
+* **Hodge finite-dim Forster scaffolding** (2026-05-17, 16 chips,
+  +2,948 LOC) — `HolomorphicOneFormFiniteDim X` proof reduced to two
+  remaining steps: seminorm convergence (inner-disk uniform → outer-
+  disk seminorm via multi-chart density bound) and Riesz application
+  via `FiniteDimensional.of_isCompact_closedBall₀`.
+* **`RegularLevelSetLatticeClause` discharge — algebraic side
+  complete** (2026-05-17 evening, 19 chips, ~3,460 LOC). Three waves:
+  (i) per-`t` trace identity at sub-interval (6 chips); (ii) full
+  eventually-form composition near `t = 0` (6 chips); (iii)
+  **lifted-point chain rule + global integrand-trace integral
+  identity** (8 chips). The lifted-point breakthrough — sheets
+  centered at the lifted point `q := extend t₀ p` automatically
+  satisfy the sub-interval condition — bypasses Hurwitz subdivision
+  entirely. Headline now in tree:
+  ```
+  SmoothChain.integrate (levelSetChain f β) om
+    = ∫ t in 0..1, derivσ(t) *
+        applyCotangent (traceAt … (β(σ t)) om) (mfderiv β (σ t) 1)
+  ```
+  Remaining for full clause discharge: σ-reparametrisation,
+  `f_*ω` smooth-on-`regularValueSet` packaging, residue theorem
+  adaptation `principalDivisorMap → f_*ω` on ℙ¹.
 
 The remaining 12 items either depend on classical content not at the
 mathlib pin (Hodge L² finite-dim, period lattice for genus ≥ 1, surface
