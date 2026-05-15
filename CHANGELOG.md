@@ -1,5 +1,118 @@
 # Changelog
 
+## 2026-05-17 — Hodge finite-dim Forster scaffolding through HolomorphicOneForm packaging (16 chips, 2948 LOC, direct to `main`)
+
+End-to-end scaffolding of the elementary Forster/Montel/Riesz proof of
+`HolomorphicOneFormFiniteDim X` for compact complex 1-manifolds. The
+final chip packages the limit of a seminorm-bounded subsequence as an
+honest `HolomorphicOneForm X`; only the seminorm-convergence upgrade
+(inner-disk uniform → outer-disk seminorm) and the Riesz application
+remain.
+
+**16 new files** (`JacobianChallenge/Manifold/`):
+
+* `HolomorphicOneFormChartCoeff.lean` (340 LOC) — chart-coord coefficient
+  `localCoeff om y : ℂ → ℂ` of a holomorphic 1-form `om` via canonical
+  chart at base point `y`. Pointwise linearity (`_zero`, `_add`, `_neg`,
+  `_sub`, `_smul`) + ℂ-linear map `localCoeffₗ y`. `ContMDiffAt` at the
+  chart image of `y` via `cotangentSection_contMDiffAt_iff`.
+  **Supersedes the prior `chartCoeffAt` API from the 2026-05-16
+  HolomorphicOneFormSubsingleton arc** — the local-coeff content is a
+  proper extension; downstream `chartCoeffAt`-only consumers can rebase
+  onto `localCoeff`.
+* `HolomorphicOneFormChartCoeffOnTarget.lean` (338 LOC) —
+  `localCoeff_contMDiffOn` on the whole chart target via the cocycle
+  transport: at any `y' ∈ (chartAt ℂ y).source`, the chart-`y'` and
+  chart-`y` frames are bridged by `coordChange_comp` applied through
+  `ContMDiffAt.clm_apply` on the chart-`y'`-frame smoothness (canonical
+  bridge) and chart-transition smoothness from
+  `cotangentBundleCore.isContMDiff`.
+* `CompactDiskChartCover.lean` (201 LOC) — `DiskChartCover X` structure:
+  finite base points with outer/inner radii (`outerRadius > innerRadius
+  > 0`), `closedDisk_in_target`, and chart-preimage of inner ball
+  covers `X`. Existence via `IsCompact.elim_finite_subcover` on
+  compact nonempty `X`.
+* `DiskChartCoverSeminorm.lean` (252 LOC) — `localCoeffMax cover x om`
+  = sup of `‖localCoeff om x ·‖` on the outer closed disk. Bounded
+  via `IsCompact.exists_isMaxOn`. Subadditive / smul-homogeneous /
+  sign-invariant via `Real.sSup_smul_of_nonneg` + standard sSup api.
+* `DiskChartCoverSeminormAggregate.lean` (119 LOC) — `seminormVal cover
+  om` = `Finset.sup'` of `localCoeffMax` over base points. Seminorm
+  axioms (`_zero`, `_neg`, `_add_le`, `_smul`) via `Finset.sup'_le`,
+  `Finset.sup'_congr`, `Finset.mul₀_sup'`.
+* `DiskChartCoverCauchyEstimate.lean` (204 LOC) — Cauchy's first-derivative
+  estimate on the inner disk via `Complex.norm_deriv_le_of_forall_mem_sphere_norm_le`
+  with radius `R := outerRadius - dist w (center)`, sharpened to
+  `localCoeffMax / (outerRadius - innerRadius)` via
+  `div_le_div_of_nonneg_left`.
+* `DiskChartCoverLipschitz.lean` (154 LOC) — Lipschitz bound on the
+  inner disk via `Convex.norm_image_sub_le_of_norm_hasFDerivWithin_le`
+  + `norm_deriv_eq_norm_fderiv` to bridge `deriv` (used in chip 4) and
+  `fderiv` (used by the convex MVT). Strengthened to
+  `localCoeff_lipschitz_innerDisk_of_seminorm_le`: Lipschitz constant
+  `M / (outerRadius - innerRadius)` independent of `om`.
+* `DiskChartCoverArzela.lean` (188 LOC) — per-chart Arzelà-Ascoli via
+  `BoundedContinuousFunction.arzela_ascoli`. Packages
+  `localCoeff om x | _closedBall (innerRadius)` as
+  `localCoeffBcf cover om hx : BoundedContinuousFunction
+  ↥(closedBall (innerRadius)) ℂ`. Equicontinuity input via chip 5a's
+  Lipschitz bound. Extracts a strictly monotone subsequence convergent
+  in the BCF metric.
+* `DiskChartCoverDiagonal.lean` (114 LOC) — diagonal subsequence
+  convergent at every base point. `Finset.induction_on` builds the
+  subseq one base point at a time, refining `ψ_S' ∘ φ` at each step.
+* `DiskChartCoverPointwiseLimit.lean` (113 LOC) — `chosenBasePoint cover
+  y` (via `Classical.choose` on `cover.covers y`) gives a base point
+  with `y` in its inner-ball preimage. `chartLimit_tendsto` produces a
+  scalar limit `c_y` for `localCoeff (om_n (ψ k)) (chosenBasePoint y)
+  ((chartAt ℂ ...) y) → c_y`.
+* `DiskChartCoverCLMLimit.lean` (192 LOC) — CLM-level pointwise limit:
+  `(om_n (ψ k)).toFun y → T_lim_y` in `ℂ →L[ℂ] ℂ` (cotangent fibre).
+  Uses `clm_eq_smulRight_value_at_one` (a `ℂ →L[ℂ] ℂ` CLM equals
+  `smulRight 1 (T 1)`) + `coordChange_comp` cocycle inverse for the
+  transport back from chart-`x_y` frame.
+* `DiskChartCoverLimitAnalytic.lean` (173 LOC) — `bcfExtend cover g_lim`
+  is `AnalyticOn ℂ` on the open inner ball. From BCF convergence on
+  closedBall (uniform via `BoundedContinuousFunction.dist_coe_le_dist`)
+  → `TendstoLocallyUniformlyOn` on ball (via
+  `TendstoUniformlyOn.tendstoLocallyUniformlyOn` + `.mono`) →
+  `DifferentiableOn` (via `TendstoLocallyUniformlyOn.differentiableOn`)
+  → `AnalyticOn` (via `DifferentiableOn.analyticOn`).
+* `DiskChartCoverLimitSection.lean` (79 LOC) — `limitSectionToFun cover
+  om_n h_diag : ∀ y, CotangentSpace 𝓘(ℂ) y` via `Classical.choose` on
+  the chip 5e existential. `limitSectionToFun_tendsto` packages
+  pointwise convergence.
+* `DiskChartCoverLimitSmooth.lean` (188 LOC) — chart-`x`-frame
+  identification: for `y` in `chart-x.source` with chart-image in the
+  inner closed disk, the chart-`x`-frame CLM at `y` of the limit
+  equals `smulRight 1 (g_lim_x ⟨(chartAt ℂ x) y, _⟩)`. Proof:
+  pointwise convergence (chip 5g) + continuity of `coordChange ...` +
+  `tendsto_nhds_unique` against the BCF point-evaluation convergence.
+* `DiskChartCoverLimitContMDiff.lean` (109 LOC) — composed
+  `smulRight 1 (bcfExtend cover g_lim_x ((chartAt ℂ x) y'))` is
+  `ContMDiffAt` at `y` in chart-`x` preimage of the open inner ball.
+  Composition of: `chartAt ℂ x` ContMDiffAt (via
+  `contMDiffOn_of_mem_maximalAtlas`), `bcfExtend` analytic → ContMDiffAt
+  via `AnalyticAt.contDiffAt` + `contMDiffAt_iff_contDiffAt`, and
+  `smulRight 1` continuous linear via
+  `ContinuousLinearMap.smulRightL`.
+* `DiskChartCoverLimitPackage.lean` (184 LOC) — **end-to-end packaging**:
+  `limitHolomorphicOneForm cover om_n h_diag : HolomorphicOneForm X`.
+  Uses mathlib's `Trivialization.contMDiffAt_section_iff` at
+  `trivializationAt _ x` (auto `MemTrivializationAtlas`) for each
+  base point `x = chosenBasePoint y`, identifies the snd component
+  with the chip 5h+5f form on a neighborhood (via
+  `cotangentBundle_trivializationAt_snd_apply` +
+  `chartFrame_limit_eq_smulRight` + `bcfExtend_apply`), then applies
+  `ContMDiffAt.congr_of_eventuallyEq` with chip 5i's composed
+  smoothness.
+
+Build green at **8802 jobs** (+16 from 8786 at session start), zero
+`sorry`, zero `axiom`. **2948 LOC across 16 commits.** Remaining
+~1,000-1,800 LOC: seminorm convergence (inner→outer multi-chart
+bound) + NormedAddCommGroup + separating + Riesz
+`FiniteDimensional.of_isCompact_closedBall₀`.
+
 ## 2026-05-16 — C3 structural reduction + chain-rule pathway segments 1-3 (13 chips, ~2,280 LOC, FF to `main`)
 
 Two-tier delivery on top of the May-15 path-lift infrastructure, off
