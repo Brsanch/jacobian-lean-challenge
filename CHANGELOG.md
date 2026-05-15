@@ -1,5 +1,39 @@
 # Changelog
 
+## 2026-05-16 — `SmoothOneFormOn` partial-section type (1 chip, ~74 LOC, direct to `main`)
+
+Foundational chip for the trace `f_*ω` as a smooth 1-form on the open
+subset `regularValueSet f`.
+
+**New file** (`Manifold/SmoothOneFormOn.lean`, 74 LOC):
+
+* `SmoothOneFormOn I X s` — a structure bundling:
+  - `toFun : ∀ x : X, CotangentSpace I x` (global function-valued
+    section; junk allowed outside `s`).
+  - `contMDiffOn_section` : the total-space lift
+    `x ↦ ⟨x, toFun x⟩ : X → Bundle.TotalSpace (E →L[ℝ] ℝ)
+    (CotangentSpace I)` is `ContMDiffOn I (I.prod 𝓘(ℝ, E →L[ℝ] ℝ)) ⊤`
+    on `s`.
+
+This mirrors `SmoothOneForm I X` (which uses `ContMDiffSection` for
+global sections) but allows the smoothness witness to be restricted to
+a subset. Required for `f_*ω` whose natural domain is the open subset
+`regularValueSet f ⊂ ℙ¹`.
+
+Subsequent chips will:
+
+* Show that the pointwise `traceAt f hnc hv om` (from
+  `MeromorphicNonzeroTraceAt.lean`) assembles into a
+  `SmoothOneFormOn 𝓘(ℝ, ℂ) RiemannSphere (regularValueSet f)`.
+* Define `SmoothPath.integrateOn` for paths landing in the partial
+  domain.
+
+This file ships only the type definition + a `CoeFun` instance.
+Algebra (`AddCommGroup`, `Module ℝ`) and a `restrictOn` map from
+`SmoothOneForm` are deferred.
+
+Build: 8783 jobs (was 8782), zero `sorry`, zero `axiom`.
+
 ## 2026-05-16 — Pointwise trace `f_*ω` at a regular value (1 chip, ~117 LOC, direct to `main`)
 
 Combines `cotangentPullbackAt` with the fibre-finiteness infrastructure
