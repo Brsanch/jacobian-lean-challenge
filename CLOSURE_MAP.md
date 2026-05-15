@@ -725,16 +725,17 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
    │       └── flips item 1
 ```
 
-## F. Net realistic ceiling at this pin (revised 2026-05-16 after f_*ω stack landed)
+## F. Net realistic ceiling at this pin (revised 2026-05-16 after `HolomorphicOneFormSubsingletonOfSimplyConnected` arc landed)
 
-### F.0 Measured ground truth (re-measured 2026-05-16, main `a07eb4f`)
+### F.0 Measured ground truth (re-measured 2026-05-16, main `1f49552`)
 
-- **Total `.lean`:** **98,800 LOC** (98,320 in `JacobianChallenge/` + 480-line manifest), **491 files** (490 inside `JacobianChallenge/` + 1 top-level manifest).
+- **Total `.lean`:** **100,317 LOC** (99,830 in `JacobianChallenge/` + 487-line manifest), **498 files** (497 inside `JacobianChallenge/` + 1 top-level manifest).
 - **Recent waves (2026-05-14):** A1 discharge (+870 LOC); C1 primitives (`feat/c1-smooth-path-connected`, +371 LOC); A2 from `feat/antipode-smoothness` (+660 LOC) + unconditional headline (+109 LOC); seven C3+C4 named-hypothesis reductions (~800 LOC); five RS-side principal-divisor chips closing `Pic⁰(ℙ¹) = 0` unconditionally (~830 LOC).
 - **Recent waves (2026-05-15 morning/afternoon):** c1_closed (14 files, ~2,400 LOC); c3_path_lift evening (19 files, ~2,900 LOC); SimplyConnectedS2 unconditional (15 files, ~3,000 LOC).
 - **Recent wave (2026-05-15 late evening, commit set 5567ba8…3746c0b):** **C3 staircase steps 1–9** — 15 chip files, +2,582 LOC. All nine HANDOFF staircase steps have chips landed (some as structural reductions with named-hypothesis inputs for the residual analytical content). Build delta 8746 → 8776 jobs.
-- **Recent wave (2026-05-16, commit set f42eb43…a07eb4f):** **f_*ω stack — 10 chips**: `h_AJ_boundary` discharge (+125), regular β: 0→∞ existence (+431), concrete regularLevelSetChain + boundary (+146), real-model RS manifold + open-set realification (+96), pointwise cotangent pullback (+94), pointwise trace `f_*ω` (+117), `SmoothOneFormOn` + `restrictOnSet` (+88), scalar evaluation of cotangent pullback + trace (+123), `ContinuousOn` variant of `path_lift_eqOn_Icc` (+131), local identification `sourceFiberPath ↔ sheet.g ∘ β ∘ σ` (+222). Total **+1,573 LOC**. Build delta 8776 → 8786 jobs.
-- **Cumulative net delta 2026-05-14 → 2026-05-16:** +75 files / +11,906 LOC across all five arcs (c1_closed + c3_path_lift + SimplyConnectedS2 + C3 staircase 1–9 + f_*ω stack).
+- **Recent wave (2026-05-16 earlier, commit set f42eb43…a07eb4f):** **f_*ω stack — 10 chips**: `h_AJ_boundary` discharge (+125), regular β: 0→∞ existence (+431), concrete regularLevelSetChain + boundary (+146), real-model RS manifold + open-set realification (+96), pointwise cotangent pullback (+94), pointwise trace `f_*ω` (+117), `SmoothOneFormOn` + `restrictOnSet` (+88), scalar evaluation of cotangent pullback + trace (+123), `ContinuousOn` variant of `path_lift_eqOn_Icc` (+131), local identification `sourceFiberPath ↔ sheet.g ∘ β ∘ σ` (+222). Total **+1,573 LOC**. Build delta 8776 → 8786 jobs.
+- **Recent wave (2026-05-16 later, commit set 033ede8…1f49552):** **`HolomorphicOneFormSubsingletonOfSimplyConnected` arc — 13 chips, 7 new files**: SmoothPath continuous homotopy from `SimplyConnectedSpace` (+111), `chartCoeffAt` for `HolomorphicOneForm X` + pointwise linearity (+100), unconditional Liouville for `ContMDiff ω F : X → ℂ` via exp trick (+373), Subsingleton ⇐ primitive existence + bridge to named predicate (+268), `complexChainPeriod` form-side algebra + ℂ-linear bundles + path operations (+244), `chartLocalPrimitive` data + basepoint identity (+236), E foundation joint continuity (`bumpedSegment`, `chart.symm ∘ bumpedSegment`, `chartCoordVelocity`) (+178). Total **+1,510 LOC**. Build delta 8786 → 8793 jobs.
+- **Cumulative net delta 2026-05-14 → 2026-05-16:** +82 files / +13,416 LOC across all six arcs (c1_closed + c3_path_lift + SimplyConnectedS2 + C3 staircase 1–9 + f_*ω stack + `HolomorphicOneFormSubsingletonOfSimplyConnected`).
 - **Scoreboard:** 12 STRICT-CLOSED · 3 STUB · 9 OPEN (item flips await Phase 2 wiring of the Abel-Jacobi iso on arbitrary `X`, not the genus-0 corner).
 - **Per-chip-file LOC density** (measured across all 2026-05-14 + 2026-05-15 + 2026-05-16 chips): **88–431 LOC**, mean ≈ 175.
 
@@ -827,7 +828,7 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 
 **Recommended working range: 8,500–20,500 LOC** for the realistic 23/24 target (after 2026-05-15's full C3 staircase landing). Remaining work centers on: (i) C3's residual analytical content — the `f_*ω` pushforward 1-form construction + Stokes/residue argument needed to discharge `h_struct`'s lattice clause in the structural step-9 reduction (`MeromorphicNonzeroAbelGeneratorFromLevelSet.lean`); (ii) `PeriodLatticeDiscretenessBundle` (Riemann bilinear); (iii) general-genus uniformization and the remaining named hypotheses listed in §F.2.
 
-**Final-state projection** (23/24 path): repo grows from current **98,800 LOC** → **~105,000–117,000 LOC**.
+**Final-state projection** (23/24 path): repo grows from current **100,317 LOC** → **~105,000–117,000 LOC**.
 
 ### F.5 Recommended priority order (revised 2026-05-14 post A1 + A2 + C1 primitives + Pic⁰(ℙ¹) = 0 unconditional)
 
