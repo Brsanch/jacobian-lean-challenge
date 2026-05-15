@@ -8,6 +8,7 @@ import JacobianChallenge.Manifold.SmoothPathIntegrability
 import JacobianChallenge.Manifold.HolomorphicOneFormRealComponentLinear
 import JacobianChallenge.Manifold.SmoothPathIntegrateReverse
 import JacobianChallenge.Manifold.SmoothPathIntegrateConcat
+import JacobianChallenge.Manifold.ComplexPeriodSmulRight
 
 /-! # Form-side linearity for `complexChainPeriod`
 
@@ -165,6 +166,78 @@ lemma complexChainPeriod_single_concat
     SmoothPath.integrate_concat]
   push_cast
   ring
+
+/-! ## Form-side ℂ-scaling of `complexChainPeriod` -/
+
+/-- **Form-side ℂ-scaling of `complexChainPeriod`.** Chain-level analog of
+`complexPeriod_smul_right` from `Manifold/ComplexPeriodSmulRight.lean`.
+
+The proof uses the `realComponent_smul` / `imagComponent_smul` mixing
+identities (PL-3d, in `ComplexPeriodSmulRight.lean`) and the chain-side
+`SmoothChain.integrate_add_form` / `SmoothChain.integrate_smul_form`
+(PL-3e, in `SmoothPathIntegrability.lean` / `SmoothChainIntegralLinearity.lean`),
+then reassembles the four real-side combinations
+`(Re z · R − Im z · I) + i · (Re z · I + Im z · R)` back to
+`(Re z + i · Im z)(R + i · I) = z · complexChainPeriod c om`. -/
+theorem complexChainPeriod_smul_complex_right
+    (c : SmoothChain 𝓘(ℝ, ℂ) X) (z : ℂ) (om : HolomorphicOneForm X) :
+    complexChainPeriod c (z • om) = z * complexChainPeriod c om := by
+  unfold complexChainPeriod
+  rw [realComponent_smul, imagComponent_smul]
+  rw [show (z.re • realComponent om - z.im • imagComponent om)
+        = z.re • realComponent om + (-z.im) • imagComponent om from by
+      rw [sub_eq_add_neg, neg_smul],
+    SmoothChain.integrate_add_form,
+    SmoothChain.integrate_smul_form, SmoothChain.integrate_smul_form,
+    SmoothChain.integrate_add_form,
+    SmoothChain.integrate_smul_form, SmoothChain.integrate_smul_form]
+  set R : ℝ := SmoothChain.integrate c (realComponent om)
+  set Im : ℝ := SmoothChain.integrate c (imagComponent om)
+  apply Complex.ext
+  all_goals
+    simp [Complex.add_re, Complex.add_im, Complex.mul_re, Complex.mul_im,
+      Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im]
+  all_goals try ring
+
+/-! ## Bundled `HolomorphicOneForm X →ₗ[ℂ] ℂ` and ℂ-bilinear pairing -/
+
+/-- **`complexChainPeriod` as a ℂ-linear functional in the form argument**,
+with the smooth chain held fixed. Chain-level analog of
+`complexPeriodLinearMap` from `Manifold/ComplexPeriodSmulRight.lean`. -/
+def complexChainPeriodLinearMap (c : SmoothChain 𝓘(ℝ, ℂ) X) :
+    HolomorphicOneForm X →ₗ[ℂ] ℂ where
+  toFun om := complexChainPeriod c om
+  map_add' om₁ om₂ := complexChainPeriod_add_right c om₁ om₂
+  map_smul' z om := by
+    change complexChainPeriod c (z • om) = z • complexChainPeriod c om
+    rw [complexChainPeriod_smul_complex_right, smul_eq_mul]
+
+@[simp] lemma complexChainPeriodLinearMap_apply
+    (c : SmoothChain 𝓘(ℝ, ℂ) X) (om : HolomorphicOneForm X) :
+    complexChainPeriodLinearMap c om = complexChainPeriod c om := rfl
+
+/-- **Fully bundled ℤ-additive ⊗ ℂ-linear chain-period pairing.** The
+chain argument is an additive group hom (ℤ-linear, since
+`SmoothChain I X` carries the formal-`ℤ`-linear-combinations
+structure); the form argument is a ℂ-linear functional. Chain-level
+analog of `complexPeriodBilinear` (which uses `SmoothCycle` for the
+chain side). -/
+def complexChainPeriodBilinear :
+    SmoothChain 𝓘(ℝ, ℂ) X →+ (HolomorphicOneForm X →ₗ[ℂ] ℂ) where
+  toFun c := complexChainPeriodLinearMap c
+  map_zero' := by
+    refine LinearMap.ext fun om => ?_
+    show complexChainPeriod (0 : SmoothChain 𝓘(ℝ, ℂ) X) om = 0
+    exact complexChainPeriod_zero_left om
+  map_add' c₁ c₂ := by
+    refine LinearMap.ext fun om => ?_
+    show complexChainPeriod (c₁ + c₂) om
+        = complexChainPeriod c₁ om + complexChainPeriod c₂ om
+    exact complexChainPeriod_add_left c₁ c₂ om
+
+@[simp] lemma complexChainPeriodBilinear_apply
+    (c : SmoothChain 𝓘(ℝ, ℂ) X) (om : HolomorphicOneForm X) :
+    complexChainPeriodBilinear c om = complexChainPeriod c om := rfl
 
 end JacobianChallenge
 
