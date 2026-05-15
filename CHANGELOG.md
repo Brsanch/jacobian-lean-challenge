@@ -1,5 +1,50 @@
 # Changelog
 
+## 2026-05-15 — C3 sub-arc: algebra closure + path-lift infrastructure (25 chips)
+
+Continued past the 19-chip set above with six further chips on the
+inductive global path lift:
+
+* `Manifold/MeromorphicNonzeroPathLiftAtPoint.lean` (chip 20) —
+  `exists_sheet_data_extending_to_right` and
+  `extend_continuous_lift_to_right`: per-point extension primitive
+  using local sheet at the current lift endpoint plus chip 19.
+
+* `Manifold/MeromorphicNonzeroPathLiftSequencePatch.lean` (chip 21) —
+  `lifts_agree_globally` and `lifts_agree_at`: choice-independence of
+  patched lifts via chip 16 (uniqueness).
+
+* `Manifold/MeromorphicNonzeroPathLiftUniqueOn.lean` (chip 22) —
+  `path_lift_eqOn_Icc`: strengthens chip 16 to lifts defined only on
+  `Icc a b`.  Clopen argument inside the connected subspace.
+
+* `Manifold/MeromorphicNonzeroPathLiftGlobal.lean` (chip 23) —
+  `liftReachable f β x₀ T` definition + `zero_mem_liftReachable` +
+  `liftReachable_downward_closed`.
+
+* `Manifold/MeromorphicNonzeroPathLiftGlobalOpen.lean` (chip 24) —
+  `liftReachable_extends_right`: openness via clip+if_le construction.
+  Globally-continuous lift built as `if t ≤ b then γ t else sheet.g
+  (β (clip t))` where `clip t := max b (min (b + ε) t)` keeps β
+  inside `sheet.V`; both pieces globally continuous + agreement at b
+  ⇒ `Continuous.if_le`.
+
+* `Manifold/MeromorphicNonzeroPathLiftGlobalClosed.lean` (chip 25) —
+  `liftReachable_subset_Icc`, `liftReachable_bddAbove`,
+  `sSup_liftReachable_le`, `sSup_liftReachable_nonneg`: boundedness +
+  sSup bounds setting up the closedness/clopen argument for the
+  global lift.
+
+**Net open content after the 25 chips.** Closing C3 (general genus)
+reduces to: (i) the substantive closedness `sSup ∈ liftReachable`
+(local-sheet-limit argument); (ii) clopen+univ in connected
+`[0, T]`; (iii) smoothness upgrade of the global lift to SmoothPath
+regularity; (iv) `levelSetChain f β` definition; (v) boundary
+computation + Stokes/lattice argument.
+
+Build at HEAD: `taskpolicy lake build` green, 8746 jobs. Zero `sorry`,
+zero `axiom`. +~2,900 LOC across 19 new files today.
+
 ## 2026-05-15 — C3 sub-arc: algebra closure + path-lift infrastructure (19 chips)
 
 Extending the same-day work past the 11-chip set, eight further chips
