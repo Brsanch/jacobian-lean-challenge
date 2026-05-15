@@ -93,7 +93,7 @@ This file replaces the high-level OPEN.md narrative with a per-item map citing e
 |---|---|---|
 | `Norm_f : Mero(X) → Mero(Y)` (multiplicative pushforward of meromorphic functions) | 7 (and 19/20 cascade) | Build inline in Phase 1 (~600 LOC) |
 | `class RiemannSurface` / `structure RiemannSurface` | foundation | Repo uses ad hoc `[ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ,ℂ)) ω X]` — fine, no class needed |
-| Closed-orientable-surface classification (genus → topology) | 14 | **Phase 3 entirely blocked** until upstream mathlib formalization |
+| Closed-orientable-surface classification (genus → topology) | 14 | Item-14 reverse leg (`S² → genus = 0`) **NO LONGER REQUIRES** classification: simple-connectedness route reduces it to `HolomorphicOneFormSubsingletonOfSimplyConnected X` after `simplyConnectedS2_holds` landed unconditional (2026-05-15, `Topology/SimplyConnectedS2Unconditional.lean`, see §D.2.6). Item-14 forward leg (`genus = 0 → S²`) still needs uniformization / classification |
 | Hodge decomposition for compact Riemann surfaces; `dim ℂ HolomorphicOneForm = genus` | 1 | **Phase 4 entirely blocked** until upstream mathlib formalization |
 | `H₁(X; ℤ) ≅ ℤ^{2g}` for compact connected Riemann surface | 4, 5, 11, 12, 13 (period lattice) | **Phase 2 entirely blocked** until upstream — even though `SingularHomology/Basic.lean` exists abstractly, computing `H₁` of a specific surface needs Phase 3's classification or independent CW-decomposition |
 | Period pairing `H₁(X;ℤ) × HolomorphicOneForm X → ℂ` (integration over loops) | 4, 5, 11, 12, 13 | **Phase 2 blocked** — `CircleIntegral` is local in ℂ; no integration over abstract simplicial chains in a manifold |
@@ -503,6 +503,71 @@ on par with the germ-field refactor — not a chip-sized commitment.
   "linear-equivalence-on-1-forms → genus = 0" reduction (weaker than
   full input #5, but already closed honestly under the linear-equivalence
   hypothesis).
+
+#### D.2.6 — `SimplyConnectedS2` UNCONDITIONAL (2026-05-15, 15-chip arc, merged at `df8efe0`)
+
+The Phase-3 item-14 reverse-leg's `SimplyConnectedS2` hypothesis
+(= `SimplyConnectedSpace JacobianChallenge.StandardS2`, the small
+mathlib gap on π₁(S²) = 0) is now **discharged unconditionally** at the
+mathlib pin via a 15-chip polygonal-approximation arc:
+
+* **Reduction chain** (chips 1-3): `SimplyConnectedS2` reduces to
+  `S2LoopsNullHomotopic`, then to `S2LoopHomotopicToAvoidingLoop`,
+  finally to the pure-topology hypothesis
+  `EveryS2LoopHomotopicToNonSurjective` (every continuous loop in `S²`
+  is path-homotopic to one with non-`univ` image).
+
+* **`EveryS2LoopHomotopicToNonSurjective_holds`** (chip 4j,
+  `Topology/S2EveryLoopHomotopicNonSurjective.lean`): builds γ' as
+  `Path.concat (γ ∘ partitionVertex) stereographicStraightLine_k . cast`
+  using `exists_chart_indexed_partition` (chip 4c) +
+  `stereographicStraightLine` (chip 4f); discharges `γ ≃ γ'` via
+  `Path.Homotopic.concat_subpath.symm + concat_hcomp` + an endpoint-type
+  cast helper `homotopicRecastEndpoints` that reuses the underlying
+  homotopy's continuous function; shows `range γ' ≠ univ` via Baire-style
+  finite-union of nowhere-dense `stereographicStraightLine` ranges
+  (chip 4h transports chip 4g's segment-empty-interior to the sphere
+  via `Homeomorph.isOpenMap` + chip 2's `stereographicHomeomorph`).
+
+* **Capstone**: `simplyConnectedS2_holds : SimplyConnectedS2` in
+  `Topology/SimplyConnectedS2Unconditional.lean`, zero hypotheses.
+
+**Net effect on item 14**: the *simple-connectedness route* in
+`Topology/S2ImpliesGenus0FromSimplyConnected.lean` previously reduced
+to two precise classical facts — (a) `SimplyConnectedS2` and
+(b) `HolomorphicOneFormSubsingletonOfSimplyConnected X` (Stokes →
+primitive → Liouville → ω = 0). With (a) now discharged, the route
+reduces to **input (b) ALONE**. The remaining classical content uses
+only repo-existing infrastructure
+(`liouvilleOnCompactConnected_holds` for the Liouville half,
+`StokesBoundaryInvariance` for the primitive-existence step) and is
+the natural next target for closing the reverse leg of item 14
+honestly without uniformization.
+
+**Reusable machinery introduced this arc** (useful for downstream
+analytic and topological chips):
+
+- Per-chart partition with chart-membership: `exists_chart_indexed_partition`
+  (chip 4c) — gives a `Fin N → Set` chart assignment per equidistant
+  sub-interval using `lebesgue_number_lemma` + `Metric.mem_uniformity_dist`.
+- Equidistant partition vertices: `partitionVertex N hN_pos k`
+  (chip 4i'', `Topology/S2PartitionVertices.lean`).
+- Endpoint-cast bridge for `Path.Homotopy`: `homotopicRecastEndpoints`
+  (chip 4j) — transport across propositional endpoint equalities by
+  reusing the underlying toFun.
+- Path equality via `DFunLike.coe_injective + Icc.coe_convexCombo + ring`
+  for `γ.cast = γ.subpath (pV 0) (pV (last))` identities.
+- Belt path-connectedness: `isPathConnected_equatorialBelt`
+  (chip 4d, `Topology/S2EquatorialBeltPathConnected.lean`) — `S² ∖ {v, -v}`
+  path-connected via `(ℝ ∙ v)ᗮ ∖ {0}` and stereographic transport.
+- Two-chart cover: `stereographic_source_union_neg_eq_univ`
+  (chip 4a, `Topology/S2TwoChartCover.lean`).
+
+Total: **15 chips, ~3000 LOC, zero `sorry`, zero `axiom`**, full
+`lake build` clean post-merge (3145 jobs). Cumulative scoreboard
+unchanged at 12/24 STRICT-CLOSED (the simple-connectedness reduction
+unblocks a Phase-3 *named hypothesis* but doesn't itself flip a
+challenge-item status).
 
 ### D.3 — Phase 4 (item 1: `genus X` honest)
 

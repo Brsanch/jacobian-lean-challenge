@@ -13,9 +13,8 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-14):** 12 of 24 items STRICT-CLOSED, 3 STUB, 9 OPEN.
-**86,894 LOC** across 416 files. `taskpolicy lake build` clean
-(8710 jobs, zero `sorry`, zero `axiom`).
+**Current state (2026-05-15):** 12 of 24 items STRICT-CLOSED, 3 STUB, 9 OPEN.
+`taskpolicy lake build` clean post-merge (zero `sorry`, zero `axiom`).
 
 Major recent landings (all on `main`):
 
@@ -31,12 +30,23 @@ Major recent landings (all on `main`):
   `AbelHypothesis B` factors through `AbelGeneratorPeriodCondition B`
   (per meromorphic function); `JacobiInversion` at genus 0 reduces to
   `Subsingleton (Pic0 X)`.
+* **`SimplyConnectedS2` UNCONDITIONAL** (2026-05-15, 15-chip
+  polygonal-approximation arc, capstone in
+  `Topology/SimplyConnectedS2Unconditional.lean`) — the mathlib gap
+  `SimplyConnectedSpace JacobianChallenge.StandardS2` is closed via a
+  two-chart stereographic cover + `lebesgue_number_lemma` partition +
+  canonical `stereographicStraightLine` per piece + Baire-style finite
+  union of nowhere-dense ranges. Reduces the simple-connectedness
+  route for item 14's reverse leg from two named classical inputs to
+  one (the Stokes + Liouville analytic chain
+  `HolomorphicOneFormSubsingletonOfSimplyConnected X`).
 
 The remaining 12 items either depend on classical content not at the
 mathlib pin (Hodge L² finite-dim, period lattice for genus ≥ 1, surface
-classification, Abel–Jacobi at genus ≥ 1) or on the named-hypothesis
-inputs above. See `OPEN.md` for the per-item map and `CHANGELOG.md`
-for the per-commit history.
+classification for item 14's forward leg, Abel–Jacobi at genus ≥ 1) or
+on the named-hypothesis inputs above. See `OPEN.md` for the per-item
+map, `CLOSURE_MAP.md` §D.2.6 for the SimplyConnectedS2 arc, and
+`CHANGELOG.md` for the per-commit history.
 
 ## Layout
 
