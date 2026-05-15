@@ -125,15 +125,16 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **~102,600 LOC** total in `*.lean` files
-(re-measured after the 13-chip C3 structural-reduction + chain-rule
-pathway arc merged at main HEAD `9a9d45c`, **+2,280 LOC across 13 new
-files**). `feat/abel-generator-input-independence` branch
-fast-forward-merged into `main`. The arc delivers a two-tier
-reduction:
+**Current repo size:** **~104,000 LOC** total in `*.lean` files,
+combining the 2026-05-17 Hodge finite-dim Forster scaffolding
+(+2,948 LOC, 16 chips) with the 2026-05-16 evening C3 structural-
+reduction + chain-rule pathway arc (+2,280 LOC, 13 chips,
+fast-forward-merged from `feat/abel-generator-input-independence`).
 
-**Tier 1 — Structural reductions** of `AbelHypothesis B` to **two
-named classical inputs**:
+**2026-05-16 evening — C3 structural reduction + chain-rule pathway 1-3.**
+The arc delivers a two-tier reduction of `AbelHypothesis B`:
+
+*Tier 1.* Two named classical inputs:
 
 * `RegularLevelSetLatticeClause X α h` — period vector of
   `regularLevelSetChain f hnc h0 h∞` ∈ `periodLatticeImage`. The
@@ -145,8 +146,8 @@ Headlines:
 `AbelJacobiInput.forall_abelHypothesis_of_split hRL hCR : ∀ B, AbelHypothesis B`,
 `dischargedGenerators_eq B B' : B.dischargedGenerators = B'.dischargedGenerators`.
 
-**Tier 2 — Chain-rule pathway segments 1-3** (structural per-`t`
-identity for the level-set chain integral on `Ioo 0 δ`):
+*Tier 2.* Structural per-`t` identity for the level-set chain integral
+on `Ioo 0 δ`:
 `∑_p integrand(sourceFiberPath p) ω t = applyCotangent (∑_p cotangentPullbackAt sheet_p.g (β(σ t)) ω) (β'(σ t) σ'(t))`.
 
 The **injection half** of the sourceFiber ↔ `f⁻¹(β(σ t))` bijection is
@@ -156,9 +157,58 @@ surjectivity half (cardinality argument via
 `degreeFiber_eq_card_of_regular_witness` or time-reversal at general
 `t`) remains.
 
-**Prior 2026-05-16 stack still applies** (10 chips earlier + 13 chips
-later, +1,510 LOC) for the `HolomorphicOneFormSubsingletonOfSimplyConnected`
-arc and the f_*ω pointwise scaffolding:
+**2026-05-17 — Hodge finite-dim Forster scaffolding.** Sixteen chips,
++2,948 LOC. The full Forster/Montel/Riesz proof of
+`HolomorphicOneFormFiniteDim X` is reduced to **two remaining steps**:
+(i) seminorm convergence (inner-disk uniform → outer-disk seminorm via
+the multi-chart density bound); (ii) `NormedAddCommGroup` wrapper +
+separating + Riesz `FiniteDimensional.of_isCompact_closedBall₀`.
+Per-chip breakdown:
+
+* `localCoeff` API (chart-coord coefficient of a holomorphic 1-form,
+  +340) — `HolomorphicOneFormChartCoeff.lean`.
+* `localCoeff_contMDiffOn` on chart target via cocycle (+338) —
+  `HolomorphicOneFormChartCoeffOnTarget.lean`.
+* `DiskChartCover X` (finite chart cover with disk hierarchy on
+  compact `X`, +201) — `CompactDiskChartCover.lean`.
+* `localCoeffMax` per-chart sup (+252) — `DiskChartCoverSeminorm.lean`.
+* `seminormVal` aggregation (+119) — `DiskChartCoverSeminormAggregate.lean`.
+* Cauchy first-derivative estimate (+204) —
+  `DiskChartCoverCauchyEstimate.lean`.
+* Lipschitz bound via MVT (+154) — `DiskChartCoverLipschitz.lean`.
+* Arzelà-Ascoli per chart (+188) — `DiskChartCoverArzela.lean`.
+* Diagonal subsequence across base points (+114) —
+  `DiskChartCoverDiagonal.lean`.
+* Scalar pointwise limit at any `y ∈ X` (+113) —
+  `DiskChartCoverPointwiseLimit.lean`.
+* CLM-level pointwise limit (+192) — `DiskChartCoverCLMLimit.lean`.
+* Analyticity of chart limit on inner ball via
+  `TendstoLocallyUniformlyOn.differentiableOn` (+173) —
+  `DiskChartCoverLimitAnalytic.lean`.
+* `limitSectionToFun` via `Classical.choose` (+79) —
+  `DiskChartCoverLimitSection.lean`.
+* Chart-frame CLM identification of the limit (+188) —
+  `DiskChartCoverLimitSmooth.lean`.
+* Composed `smulRight 1 ∘ bcfExtend ∘ chart-x` ContMDiffAt
+  (+109) — `DiskChartCoverLimitContMDiff.lean`.
+* End-to-end packaging as `HolomorphicOneForm X` (+184) —
+  `DiskChartCoverLimitPackage.lean`. Headline:
+  `DiskChartCover.limitHolomorphicOneForm cover om_n h_diag :
+  HolomorphicOneForm X` — given a `seminormVal`-bounded
+  sequence + the diagonal subsequence convergence at every base
+  point, packages the pointwise CLM limit as a smooth section.
+
+**Net effect.** The full Forster/Montel/Riesz proof of
+`HolomorphicOneFormFiniteDim X` is reduced to **two remaining steps**:
+(i) seminorm convergence — upgrade the per-inner-disk uniform
+convergence to outer-disk seminorm convergence (the standard fix uses
+the multi-chart density bound via the cotangent transition's
+continuity); (ii) `NormedAddCommGroup` wrapper + separating (cotangent
+coord-change invertibility on the fibre) + Riesz application
+(`FiniteDimensional.of_isCompact_closedBall₀`).
+
+**Prior 2026-05-16 wave** (10 chips, +1,573 LOC; cumulative session
+note retained for context):
 
 * `h_AJ_boundary` discharge (+125) — `PrincipalDivisorAJChainBoundary.lean`.
 * Regular β: 0→∞ existence on ℙ¹ (+431) — `MeromorphicNonzeroRegularPath.lean`.
@@ -199,8 +249,11 @@ arc and the f_*ω pointwise scaffolding:
   — `ChartLocalPrimitiveSmoothness.lean`.
 
 Cumulative delta vs. 2026-05-14 snapshot (86,894 LOC / 416 files):
-**+13,400 LOC / +82 files**. Build green at 8793 jobs, zero `sorry`,
-zero `axiom`. See `CHANGELOG.md` for the per-branch history.
+**+17,134 LOC / +104 files** (Hodge Forster +2,948 / 16 files plus
+the 2026-05-16-evening C3 reduction +2,280 / 13 files on top of the
+prior +13,400 / 82 files baseline). Build green at 8808 jobs (last
+verified at HEAD `59a72b1` pre-Hodge-rebase), zero `sorry`, zero
+`axiom`. See `CHANGELOG.md` for the per-branch history.
 
 **Remaining LOC to 24/24** (full breakdown in `CLOSURE_MAP.md` §F):
 **~11,000–21,000 LOC** for the realistic **23/24** target (deferring
