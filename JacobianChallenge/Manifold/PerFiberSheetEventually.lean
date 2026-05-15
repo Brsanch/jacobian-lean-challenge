@@ -88,6 +88,58 @@ theorem eventually_sheet_lift_eq
   filter_upwards [h_Icc_nhds] with t ht
   exact h_eq_on t ht
 
+/-- **Per-fibre `β(σ t) ∈ sheet_x.V` eventually near `0`.**
+Independent of the lift-equality chip: just continuity of `β ∘ σ` plus
+`β 0 ∈ sheet_x.V` (from `sheet_x.mem_V` modulo `f.toRiemannSphere x = β 0`). -/
+theorem eventually_betaSigma_in_sheetV
+    (f : MeromorphicNonzero X)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere)
+    {β : ℝ → RiemannSphere}
+    (hβ_smooth : ContMDiff 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) ∞ β)
+    (hβ_reg : ∀ t ∈ Icc (0 : ℝ) 1, β t ∈ f.regularValueSet)
+    {x : X} (hx : f.toRiemannSphere x = β 0) :
+    ∀ᶠ t in 𝓝 (0 : ℝ),
+      β (Real.smoothTransition t) ∈
+        (f.localSheetData_at_regular hnc
+          (f.mem_regularSet_of_preimage_regularValue
+            (hβ_reg 0 ⟨le_refl _, by norm_num⟩) hx)).V := by
+  classical
+  set sheet := f.localSheetData_at_regular hnc
+    (f.mem_regularSet_of_preimage_regularValue
+      (hβ_reg 0 ⟨le_refl _, by norm_num⟩) hx) with hsheet_def
+  have hβσ_cont : Continuous (fun t : ℝ => β (Real.smoothTransition t)) :=
+    hβ_smooth.continuous.comp Real.smoothTransition.continuous
+  have hβ0_in_V : β 0 ∈ sheet.V := by
+    have h_mem : f.toRiemannSphere x ∈ sheet.V := sheet.mem_V
+    exact Eq.subst (motive := fun w => w ∈ sheet.V) hx h_mem
+  have h0_in_pre : (0 : ℝ) ∈ (fun t : ℝ => β (Real.smoothTransition t))
+      ⁻¹' sheet.V := by
+    simp only [Set.mem_preimage, Real.smoothTransition.zero]; exact hβ0_in_V
+  exact (hβσ_cont.isOpen_preimage _ sheet.V_open).mem_nhds h0_in_pre
+
+/-- **Uniform-over-`sourceFiber` filter form of `β(σ t) ∈ sheet_p.V`.** -/
+theorem eventually_forall_betaSigma_in_sheetV
+    (f : MeromorphicNonzero X)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere)
+    {β : ℝ → RiemannSphere}
+    (hβ_smooth : ContMDiff 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) ∞ β)
+    (hβ_reg : ∀ t ∈ Icc (0 : ℝ) 1, β t ∈ f.regularValueSet) :
+    ∀ᶠ t in 𝓝 (0 : ℝ),
+      ∀ p : { x : X // x ∈ f.sourceFiber
+          (hβ_reg 0 ⟨le_refl _, by norm_num⟩) },
+        β (Real.smoothTransition t) ∈
+          (f.localSheetData_at_regular hnc
+            (f.mem_regularSet_of_preimage_regularValue
+              (hβ_reg 0 ⟨le_refl _, by norm_num⟩)
+              ((f.mem_sourceFiber_iff
+                (hβ_reg 0 ⟨le_refl _, by norm_num⟩) p.val).mp p.property))).V := by
+  classical
+  rw [Filter.eventually_all]
+  intro p
+  exact f.eventually_betaSigma_in_sheetV hnc hβ_smooth hβ_reg
+    ((f.mem_sourceFiber_iff
+      (hβ_reg 0 ⟨le_refl _, by norm_num⟩) p.val).mp p.property)
+
 /-- **Uniform-over-`sourceFiber` filter form of lift-equality.** Both
 properties hold eventually for every fibre point simultaneously, via
 `Finset.eventually_all`. -/
