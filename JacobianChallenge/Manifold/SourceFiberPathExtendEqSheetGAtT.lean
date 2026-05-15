@@ -86,6 +86,7 @@ theorem sourceFiberPath_toPath_extend_eq_sheet_g_locally_at
     let hq_reg : q ∈ f.regularSet :=
       f.mem_regularSet_of_preimage_regularValue hβσt₀_reg hq_lift
     ∃ a b : ℝ, a ∈ Icc (0 : ℝ) 1 ∧ b ∈ Icc (0 : ℝ) 1 ∧ a ≤ t₀ ∧ t₀ ≤ b ∧
+      (0 < t₀ → a < t₀) ∧ (t₀ < 1 → t₀ < b) ∧
       ∀ t ∈ Icc a b,
         γ t = (f.localSheetData_at_regular hnc hq_reg).g
           (β (Real.smoothTransition t)) := by
@@ -146,8 +147,25 @@ theorem sourceFiberPath_toPath_extend_eq_sheet_g_locally_at
   have ht₀_le_b : t₀ ≤ b := by
     refine le_min ht₀.2 ?_
     linarith
+  -- Strict bounds when t₀ ∈ Ioo 0 1.
+  have ha_lt_t₀ : 0 < t₀ → a < t₀ := by
+    intro ht₀_pos
+    -- a = max 0 (t₀ - ε/2). For t₀ - ε/2 ≥ 0, a = t₀ - ε/2 < t₀.
+    -- For t₀ - ε/2 < 0, a = 0 < t₀.
+    rcases le_or_gt 0 (t₀ - ε / 2) with h | h
+    · rw [show a = max 0 (t₀ - ε / 2) from rfl, max_eq_right h]
+      linarith
+    · rw [show a = max 0 (t₀ - ε / 2) from rfl, max_eq_left h.le]
+      exact ht₀_pos
+  have ht₀_lt_b : t₀ < 1 → t₀ < b := by
+    intro ht₀_lt_one
+    rcases le_or_gt (t₀ + ε / 2) 1 with h | h
+    · rw [show b = min 1 (t₀ + ε / 2) from rfl, min_eq_right h]
+      linarith
+    · rw [show b = min 1 (t₀ + ε / 2) from rfl, min_eq_left h.le]
+      exact ht₀_lt_one
   refine ⟨a, b, ⟨ha_nonneg, ha_le_one⟩, ⟨hb_nonneg, hb_le_one⟩,
-    ha_le_t₀, ht₀_le_b, ?_⟩
+    ha_le_t₀, ht₀_le_b, ha_lt_t₀, ht₀_lt_b, ?_⟩
   -- On [a, b], β(σ t) ∈ sheet.V and γ t ∈ sheet.U.
   have h_Iab_sub_ε : Icc a b ⊆ Metric.ball t₀ ε := by
     intro t ⟨hat, htb⟩
