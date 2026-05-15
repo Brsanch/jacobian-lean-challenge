@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-05-16 — Concrete regular level-set chain (1 chip, ~146 LOC, direct to `main`)
+
+Wires the β-existence chip into the level-set chain construction.
+
+**New file** (`Manifold/MeromorphicNonzeroConcreteLevelSetChain.lean`, 146 LOC):
+
+* `regularBeta f hnc h0_reg h_inf_reg : ℝ → RiemannSphere` — the
+  `Classical.choose` extraction of the regular path from
+  `exists_regular_path_zero_to_infty`.
+* `regularBeta_{smooth, zero, one, regular}` — the four spec properties,
+  re-exported from `Classical.choose_spec` as standalone lemmas
+  (`@[simp]` on the endpoint ones).
+* `regularLevelSetChain f hnc h0_reg h_inf_reg : SmoothChain 𝓘(ℝ, ℂ) X`
+  — the level-set chain on the concrete β, built by composing
+  `f.levelSetChain` with the smooth + regular witnesses.
+* `boundary_regularLevelSetChain` — the boundary identification
+  `(boundary regularLevelSetChain).toFun x = -principalDivisorMap f x`
+  pointwise. One-line composition of step 7d-d's
+  `boundary_levelSetChain_eq_neg_principalDivisorMap_pointwise` with
+  `regularBeta_zero` and `regularBeta_one`.
+
+**Net.** For `f` with `0, ∞ ∈ regularValueSet`, the boundary clause of
+`h_struct` in `abelGeneratorPeriodCondition_of_levelSet_lattice` is
+now **mechanically discharged** for the explicit witness
+`Z := f.regularLevelSetChain hnc h0_reg h_inf_reg`. Only the
+**lattice-period clause** remains — the analytical residual
+(`f_*ω` SmoothOneForm construction + Stokes/residue argument).
+
+Build: 8779 jobs (was 8778), zero `sorry`, zero `axiom`.
+
 ## 2026-05-16 — Regular β: 0→∞ existence on ℙ¹ (1 chip, ~431 LOC, direct to `main`)
 
 Lands the **β-existence input** for step 9's structural reduction. Given
