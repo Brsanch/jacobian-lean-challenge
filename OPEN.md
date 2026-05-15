@@ -465,7 +465,7 @@ level-set chain.  All on `main`, build green at 8746 jobs, zero
 | 7b. Target-map surjectivity onto target fiber | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroLevelSetTargetSurjective.lean`, 240 LOC; `sourceFiberPath_tgt_surjOn` via time-reverse β + step 4 at y + step 2 raw lift + double `path_lift_eqOn_Icc`) | (split from step 7) |
 | 7c. Boundary = `Σ targetFiber − Σ sourceFiber` (Finsupp form) | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroLevelSetTargetFiber.lean`, 193 LOC; `targetFiber` def + `sourceFiberPath_tgt_image_eq_targetFiber` (Finset bijection from 7a+7b) + `boundary_levelSetChain_eq_fiberDiff`) | (split from step 7) |
 | 7d. Identification with `−principalDivisorMap f` via order-1 matching | OPEN | 200–400 |
-| 8. Pushforward 1-form `f_*ω` + integral identity | OPEN | 300–500 |
+| 8. Pushforward 1-form `f_*ω` + integral identity | **LANDED 2026-05-15 (bookkeeping)** (`Manifold/MeromorphicNonzeroLevelSetIntegrate.lean`, 98 LOC; `integrate_levelSetChain` Finset-sum expansion via `SmoothChain.integrateLinearMap` + `integrateLinearMap_single`. Substantive `f_*ω` construction layered on top via existing `SmoothPath.integrate_compSmoothPath`.) | 300–500 |
 | 9. Lattice argument (Stokes/period mod lattice) | OPEN | 400–800 |
 
 **Caveat on estimates.** Today's 25 chips delivered ~2,900 LOC, much
