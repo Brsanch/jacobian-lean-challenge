@@ -135,6 +135,44 @@ lemma continuous_chartSymm_bumpedSegment
   rcases hp with ⟨hz_in, _⟩
   exact h_target_convex.segment_subset hz₀ hz_in (bumpedSegment_mem_segment z₀ p.1 p.2)
 
+/-! ## Chart-coordinate velocity is jointly continuous in `(z, t)`
+
+The time-derivative of `t ↦ bumpedSegment z₀ z t` is
+
+  `σ'(t) · (z − z₀)`,
+
+where `σ = Real.smoothTransition`. This is jointly continuous in
+`(z, t)` because `σ'` is continuous, `z − z₀` is continuous in `z`,
+and `ℂ`-multiplication is continuous. We expose this as the
+*chart-coordinate path velocity* — the explicit formula for the
+parametric path's derivative in chart coordinates, sidestepping the
+opaque `Classical.choose` of the manifold path's ambient extension. -/
+
+/-- The chart-coordinate path velocity: `σ'(t) · (z − z₀)`. This is the
+time-derivative of `t ↦ bumpedSegment z₀ z t` in ℂ. -/
+def chartCoordVelocity (z₀ z : ℂ) (t : ℝ) : ℂ :=
+  ((deriv Real.smoothTransition t : ℝ) : ℂ) * (z - z₀)
+
+/-- The chart-coordinate path velocity is jointly continuous in `(z, t)`. -/
+lemma continuous_chartCoordVelocity_param (z₀ : ℂ) :
+    Continuous (fun p : ℂ × ℝ => chartCoordVelocity z₀ p.1 p.2) := by
+  unfold chartCoordVelocity
+  -- `deriv Real.smoothTransition` is continuous (since smoothTransition is C^∞).
+  have h_deriv_cts : Continuous (deriv Real.smoothTransition) := by
+    -- smoothTransition is C^∞ on ℝ, so its derivative is continuous.
+    have h_contDiff : ContDiff ℝ ∞ Real.smoothTransition :=
+      Real.smoothTransition.contDiff
+    exact h_contDiff.continuous_deriv (by
+      -- 1 ≤ ∞ at level WithTop ℕ∞.
+      show (1 : WithTop ℕ∞) ≤ ∞
+      decide)
+  have h_cast_cts : Continuous (fun p : ℂ × ℝ =>
+      ((deriv Real.smoothTransition p.2 : ℝ) : ℂ)) :=
+    Complex.continuous_ofReal.comp (h_deriv_cts.comp continuous_snd)
+  have h_sub_cts : Continuous (fun p : ℂ × ℝ => p.1 - z₀) :=
+    continuous_fst.sub continuous_const
+  exact h_cast_cts.mul h_sub_cts
+
 end JacobianChallenge
 
 end
