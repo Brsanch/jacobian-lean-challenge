@@ -71,7 +71,9 @@ theorem exists_smoothPath_of_lift_on_unitInterval
     (hx₀ : f.toRiemannSphere x₀ = β 0) :
     ∃ γ : SmoothPath 𝓘(ℝ, ℂ) X,
       γ.src = x₀ ∧
-      f.toRiemannSphere γ.tgt = β 1 := by
+      f.toRiemannSphere γ.tgt = β 1 ∧
+      ∀ t : unitInterval,
+        f.toRiemannSphere (γ.toPath t) = β (Real.smoothTransition t.val) := by
   classical
   -- Step 3 supplies a continuous γ_raw : ℝ → X that's ContMDiffOn ∞ on Icc 0 1.
   obtain ⟨γ_raw, hγ_cont, hγ_smooth_on, hγ_zero, hγ_lift⟩ :=
@@ -121,13 +123,21 @@ theorem exists_smoothPath_of_lift_on_unitInterval
       continuous_toFun := hpathFun_cont
       source' := hpathFun_zero
       target' := hpathFun_one }
+  -- The underlying Path lifts β ∘ Real.smoothTransition on unitInterval.
+  have h_toPath_lifts : ∀ t : unitInterval,
+      f.toRiemannSphere (toPath t) = β (Real.smoothTransition t.val) := by
+    intro t
+    -- toPath t = pathFun t = γ_smooth t.val = γ_raw (sigma t.val).
+    show f.toRiemannSphere (γ_raw (sigma t.val)) = β (Real.smoothTransition t.val)
+    -- γ_raw lifts β on Icc 0 1, sigma t.val ∈ Icc 0 1.
+    exact hγ_lift (sigma t.val) (hσ_range t.val)
   -- Assemble SmoothPath.
   refine ⟨{
     src := x₀
     tgt := γ_raw 1
     toPath := toPath
     smooth := ⟨γ_smooth, hγ_smooth_contMDiff, ?_⟩
-  }, rfl, h_fγ1⟩
+  }, rfl, h_fγ1, h_toPath_lifts⟩
   -- f t.val = toPath t for t : unitInterval, where the field f here is γ_smooth.
   intro t
   -- toPath t = pathFun t = γ_smooth t.val.
