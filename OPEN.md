@@ -162,6 +162,35 @@ to global `[0,1]`), σ-reparametrisation, and residue theorem
 adaptation from `principalDivisorMap` to `f_*ω`'s residue divisor on
 ℙ¹.
 
+**2026-05-17 evening — Integrand-trace identity in full eventually
+form (5 additional chips, ~720 LOC).** Lifts the algebraic per-`t`
+trace identity to integrand-level + fully eventually form near `t = 0`:
+
+```
+∀ᶠ t in 𝓝[Ioc 0 1] 0, ∃ hβσt_reg : β(σ t) ∈ regularValueSet,
+  ∑ p ∈ sourceFiber, (sourceFiberPath p).integrand om t
+    = applyCotangent (traceAt f hnc hβσt_reg om) (β'(σ t) σ'(t))
+```
+
+Five chips:
+
+* `PerFiberSheetEventually.lean` — sub-interval V-membership +
+  lift-equality eventually.
+* `SourceSheetSumEqTraceAtEventually.lean` — per-`t` trace identity
+  in eventually form.
+* `LevelSetIntegrandEqTraceAtApply.lean` — integrand-level per-`t`
+  identity (chain rule + trace).
+* `SheetGRealSmoothEventually.lean` — realified sheet.g smoothness
+  eventually.
+* `PerFiberChainRuleEventually.lean` — per-fibre chain rule promoted
+  to filter form.
+* `LevelSetIntegrandEqTraceAtApplyEventually.lean` — full eventually
+  composition headline.
+
+This is the integrand of `(levelSetChain f β).integrate ω` equating
+to the integrand of the line integral of `f_*ω` along β (modulo
+σ-reparam). Build at **8836 jobs**.
+
 **2026-05-16 evening — C3 structural reduction + chain-rule pathway 1-3.**
 The arc delivers a two-tier reduction of `AbelHypothesis B`:
 
