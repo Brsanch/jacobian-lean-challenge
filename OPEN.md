@@ -374,6 +374,93 @@ Items 4, 5, 10, 11, 12, 13 still STUB/OPEN — the unconditional iso
 on `RiemannSphere` does not flip them because they require the iso on
 **arbitrary** compact connected complex 1-manifolds `X`.
 
+## C3 sub-arc progress (2026-05-15 evening, 25 additional chips merged to main)
+
+Extending the same-day morning chips with 25 further chips delivering
+algebra-side closure + the full path-lift infrastructure for the
+level-set chain.  All on `main`, build green at 8746 jobs, zero
+`sorry`, zero `axiom`.
+
+**Algebra-side closure** (chips 1–3, `Manifold/AbelGeneratorDischargedSet.lean`).
+* `dischargedGenerators B` set: closed under `1`, constants, `*`,
+  `invMer`, quotients.
+* Case-split reduction: `AbelGeneratorPeriodCondition B` reduces to
+  the non-constant `toFun` case.
+
+**Regular-value framework** (chip 4,
+`Manifold/MeromorphicNonzeroRegularValueSet.lean`).
+* `regularValueSet f := (criticalValues f)ᶜ` + openness under
+  non-constancy.
+
+**Planar local biholomorphism** (chips 5–6).
+* `chartPullback f x`, analyticity, non-zero derivative at regular
+  points via `DerivBridgeData.hCompat`, planar `OpenPartialHomeomorph`
+  form via `HasStrictFDerivAt.toOpenPartialHomeomorph`.
+
+**Manifold-level local sheet** (chip 7,
+`Manifold/MeromorphicNonzeroLocalSheet.lean`).
+* `manifoldLocalOph` via double `restrOpen` of the chart-trans-chart
+  composition; `localSheetData_at_regular` packaging `LocalSheetData
+  f.toRiemannSphere (f.toRiemannSphere x₀) x₀`.
+
+**Topological packaging** (chips 8–10).
+* `IsLocalHomeomorphOn f.toRiemannSphere f.regularSet`.
+* Fiber finiteness at every regular value
+  (`fiber_finite_of_mem_regularValueSet`).
+* `HurwitzPatchingData` at every regular value via
+  `HurwitzPatchingData.ofLocalSheets`.
+
+**Continuous path lift primitives** (chips 11, 16, 19, 20–22).
+* `exists_continuous_local_lift_of_continuous` — local lift on `β ⁻¹'
+  sheet.V`.
+* `path_lift_unique` / `path_lift_eqOn_Icc` — uniqueness clopen
+  argument (global / partial-domain).
+* `extend_lift_across_sheet` — single-sheet piecewise extension.
+* `exists_sheet_data_extending_to_right` + `extend_continuous_lift_to_right`
+  — per-point extension primitive.
+* `lifts_agree_globally` / `lifts_agree_at` — choice-independence.
+
+**Smooth path lift primitives** (chips 12–15).
+* Pointwise `ContMDiffAt ω` of `sheet.g` at base point
+  (`contMDiffAt_localSheet_g_at_basePoint`).
+* Open-nbhd `ContMDiffOn ω` extension via
+  `contMDiffAt_iff_contMDiffOn_nhds` (valid for ω ≠ ∞).
+* Smooth local lift `ContMDiffAt 𝓘(ℝ,ℝ) 𝓘(ℝ,ℂ) ∞` at base point
+  via `ContMDiffAt.complex_to_real` + `ContMDiffAt.comp`.
+* Smooth local lift `ContMDiffOn` on open neighbourhood
+  (`exists_contMDiffOn_local_lift`).
+
+**Global lift scaffolding** (chips 17, 18, 23–25).
+* `exists_subdivision_hurwitzPatching` — Lebesgue subdivision of
+  `unitInterval` adapted to a regular path.
+* `exists_continuous_lift_single_sheet` — global lift when β maps into
+  one sheet (no gluing).
+* `liftReachable f β x₀ T` def + downward closure + zero membership.
+* `liftReachable_extends_right` — **openness** via clip+if_le
+  construction (globally continuous lift built by clipping `t` to
+  `[b, b + ε]` before applying β).
+* Boundedness + sSup bounds for the sSup/clopen argument.
+
+**Net open content after today's 25 evening chips** (revised):
+
+| Step | Status | LOC estimate (uncalibrated) |
+|---|---|---|
+| 1. Closedness `sSup ∈ liftReachable` (sequential limit + local sheet) | OPEN | 250–350 |
+| 2. Global continuous lift `sSup = T` (clopen finish) | OPEN | 80–120 |
+| 3. Smooth upgrade of global lift to `ContMDiffOn ∞` | OPEN | 150–250 |
+| 4. `SmoothPath` bundle from global smooth lift | OPEN | 100–150 |
+| 5. `levelSetChain f β` definition | OPEN | 150–250 |
+| 6. Boundary computation `∂ = δ_tgt − δ_src` | OPEN | 200–400 |
+| 7. β: 0 → ∞ choice + boundary = `div(f)` identification | OPEN | 200–400 |
+| 8. Pushforward 1-form `f_*ω` + integral identity | OPEN | 300–500 |
+| 9. Lattice argument (Stokes/period mod lattice) | OPEN | 400–800 |
+
+**Caveat on estimates.** Today's 25 chips delivered ~2,900 LOC, much
+more than the ~300–500 LOC pre-session estimate for "global path
+lift".  My historical LOC estimates are 2–6× off; the table above
+should be read as a lower bound, with the actual cost likely
+considerably higher.
+
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 
 These are *not* part of the challenge directly, but the constructions for
