@@ -1,5 +1,56 @@
 # Changelog
 
+## 2026-05-17 — Integrand-trace identity in full eventually form (5 chips, ~720 LOC, direct to `main`)
+
+Building on the per-`t` trace identity arc, lifts the integrand-level
+chain-rule + trace identity to a fully eventually-quantified form
+near `t = 0`. Composing all hypotheses (per-fibre chain-rule realified
+smoothness, sub-interval V-membership, lift-equality, regularity)
+gives:
+
+```
+∀ᶠ t in 𝓝[Ioc 0 1] 0, ∃ hβσt_reg : β(σ t) ∈ regularValueSet,
+  ∑ p ∈ sourceFiber, (sourceFiberPath p).integrand om t
+    = applyCotangent (traceAt f hnc hβσt_reg om) (β'(σ t) σ'(t))
+```
+
+This is the integrand of `(levelSetChain f β).integrate ω` equating to
+the integrand of the line integral of `f_*ω` along β (modulo σ-reparam).
+Lebesgue subdivision over Hurwitz patches of `[0, 1]` lifts to global
+integral identity.
+
+**5 new files** (`JacobianChallenge/Manifold/`):
+
+* `PerFiberSheetEventually.lean` (~125 LOC) — per-fibre + uniform
+  filter forms of the lift-equality and sub-interval V-membership
+  conditions near `t = 0`.
+
+* `SourceSheetSumEqTraceAtEventually.lean` (~120 LOC) — eventually
+  form of the per-`t` trace identity:
+  `∀ᶠ t in 𝓝[Icc 0 1] 0, ∃ hβσt_reg, source-sum = traceAt(...)`.
+
+* `LevelSetIntegrandEqTraceAtApply.lean` (~145 LOC) — integrand-level
+  per-`t` identity composing chain-rule structural identity with the
+  trace identity:
+  `∑ p, integrand(sourceFiberPath p) om t
+     = applyCotangent (traceAt f hnc hβσt_reg om) (β'(σt) σ'(t))`.
+
+* `SheetGRealSmoothEventually.lean` (~125 LOC) — realified sheet.g
+  smoothness eventually near `t = 0`, via
+  `exists_contMDiffOn_localSheet_g_near_basePoint` +
+  `ContMDiffAt.complex_to_real`. Uniform-over-sourceFiber form.
+
+* `PerFiberChainRuleEventually.lean` (~125 LOC) — promotes the
+  per-fibre chain-rule chip from `∃ δ > 0, ...` to filter form
+  `∀ᶠ t in 𝓝[>] 0, ...` via intersection with realified-smoothness
+  filter.
+
+* `LevelSetIntegrandEqTraceAtApplyEventually.lean` (~125 LOC) — the
+  full eventually composition headline.
+
+Build green at **8836 jobs** (up from 8829). Zero `sorry`, zero
+`axiom`. No item flips.
+
 ## 2026-05-17 — `RegularLevelSetLatticeClause` per-`t` trace identity (6 chips, ~975 LOC, direct to `main`)
 
 Closes the substantive analytic primitives needed to bridge the
