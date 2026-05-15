@@ -95,12 +95,13 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **94,621 LOC** total in `*.lean` files
-(94,166 inside `JacobianChallenge/` across 465 files + 455-line
-top-level import manifest). Re-measured 2026-05-15 evening at
-main `10050be` after the three same-day arcs (c1_closed,
-c3_path_lift, SimplyConnectedS2 unconditional): +50 files /
-+7,727 LOC vs. the prior 2026-05-14 snapshot. See `CHANGELOG.md`
+**Current repo size:** **97,203 LOC** total in `*.lean` files
+(96,733 inside `JacobianChallenge/` across 480 files + 470-line
+top-level import manifest). Re-measured 2026-05-15 late evening at
+main `3746c0b` after the four same-day arcs (c1_closed,
+c3_path_lift, SimplyConnectedS2 unconditional, **C3 staircase
+steps 1–9** as 15 chip files, +2,582 LOC). Cumulative delta vs.
+2026-05-14 snapshot: +65 files / +10,309 LOC. See `CHANGELOG.md`
 for the per-branch history.
 
 **Remaining LOC to 24/24** (full breakdown in `CLOSURE_MAP.md` §F):
