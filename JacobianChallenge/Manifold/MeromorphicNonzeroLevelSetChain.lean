@@ -110,7 +110,24 @@ lemma sourceFiberPath_tgt_lift
     {x : X} (hx : f.toRiemannSphere x = β 0) :
     f.toRiemannSphere (f.sourceFiberPath hnc hβ_smooth hβ_reg hx).tgt = β 1 :=
   (f.exists_smoothPath_of_lift_on_unitInterval
-    hnc hβ_smooth x hβ_reg hx).choose_spec.2
+    hnc hβ_smooth x hβ_reg hx).choose_spec.2.1
+
+/-- The chosen path's underlying `toPath` lifts `β` after reparametrisation
+by `Real.smoothTransition`: at every `t : unitInterval`,
+`f.toRiemannSphere (toPath t) = β (Real.smoothTransition t.val)`. -/
+lemma sourceFiberPath_toPath_lifts
+    (f : MeromorphicNonzero X)
+    (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere)
+    {β : ℝ → RiemannSphere}
+    (hβ_smooth : ContMDiff 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) ∞ β)
+    (hβ_reg : ∀ t ∈ Icc (0:ℝ) 1, β t ∈ f.regularValueSet)
+    {x : X} (hx : f.toRiemannSphere x = β 0)
+    (t : unitInterval) :
+    f.toRiemannSphere
+        ((f.sourceFiberPath hnc hβ_smooth hβ_reg hx).toPath t)
+      = β (Real.smoothTransition t.val) :=
+  (f.exists_smoothPath_of_lift_on_unitInterval
+    hnc hβ_smooth x hβ_reg hx).choose_spec.2.2 t
 
 /-- **Level-set chain on `β`.** The formal sum
 `Σ_{x ∈ sourceFiber} single (sourceFiberPath x)` as a
