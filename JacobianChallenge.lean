@@ -66,6 +66,7 @@ import JacobianChallenge.Manifold.ContMDiffOmegaAnalytic
 import JacobianChallenge.Manifold.Cotangent
 import JacobianChallenge.Manifold.CotangentBundleSmoothness
 import JacobianChallenge.Manifold.CotangentInCoordinates
+import JacobianChallenge.Manifold.CotangentPullbackAt
 import JacobianChallenge.Manifold.CotangentPullbackBridge
 import JacobianChallenge.Manifold.CotangentTangentBridge
 import JacobianChallenge.Manifold.CriticalSetClosed
