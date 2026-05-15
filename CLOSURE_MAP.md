@@ -544,6 +544,59 @@ only repo-existing infrastructure
 the natural next target for closing the reverse leg of item 14
 honestly without uniformization.
 
+#### D.2.7 — Input (b) reduced to primitive-existence (2026-05-16, 13-chip analytic-side closure arc)
+
+Following on §D.2.6, input (b)
+(`HolomorphicOneFormSubsingletonOfSimplyConnected X`) is now further
+reduced to a **single named classical input**: smooth primitive
+existence under simple-connectedness. The 13 chips landed in
+`Topology/SubsingletonFromPrimitiveExistence.lean` +
+`Topology/LiouvilleForContMDiffOmega.lean` + supporting
+`complexChainPeriod` algebra +
+`ChartLocalPrimitive` data discharge the entire **analytic-side
+closing composition**, leaving only the construction of `F` via
+path-integration as owed content.
+
+**Headline reduction** (in
+`Topology/SubsingletonFromPrimitiveExistence.lean`):
+
+```
+HolomorphicOneFormSubsingletonOfSimplyConnected X
+  ⇐ holomorphicOneFormSubsingletonOfSimplyConnected_of_primitiveExistence
+    needs: ∀ om : HolomorphicOneForm X, ∃ F : X → ℂ,
+             ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω F ∧
+               ∀ x, om.eval x = mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) F x
+```
+
+**Unconditional Liouville** discharged in
+`Topology/LiouvilleForContMDiffOmega.lean`'s `contMDiff_omega_isConstant`:
+a `ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω F : X → ℂ` on a compact connected
+complex 1-manifold is constant, **with no `nonvanishingGerm`
+hypothesis**. Proof: `exp ∘ F` is `ContMDiff ω` and never zero (so
+constant by the `nonvanishingGerm`-conditional Liouville layer); then
+`F x − F x₀ ∈ 2π i · ℤ` (`Complex.exp_eq_exp_iff_exists_int`); local-
+constancy of `F` follows from the discrete-target / open-ball-of-
+radius-`2π` argument; `IsLocallyConstant.eq_const` on
+`PreconnectedSpace X` closes it.
+
+**Full-arc composition** (`s2ImpliesGenus0_of_primitiveExistence`):
+the reverse leg of Item 14 reduces to one named input (smooth
+primitive existence under simple-connectedness) plus the already-
+unconditional `simplyConnectedS2_holds` (§D.2.6).
+
+The remaining content is the smooth-Stokes / path-integral primitive
+construction — structurally the
+`StokesCompactSurfacePartitionOfUnity_hypothesis` content in
+`Manifold/StokesCompactSurface.lean`, plus the regularity bootstrap
+to `ContMDiff ω F`. **`chartLocalPrimitive` infrastructure** for that
+construction is built in `Manifold/ChartLocalPrimitive.lean` (data +
+`F(x₀) = 0` basepoint identity) and
+`Manifold/ChartLocalPrimitiveSmoothness.lean` (joint continuity of
+chart-coord ambient + chart-coord velocity, the foundation for the
+eventual continuity / smoothness of `F` in the endpoint via
+`intervalIntegral.continuous_parametric_intervalIntegral_of_continuous'` +
+`hasFDerivAt_integral_of_dominated_loc_of_lip`).
+
 **Reusable machinery introduced this arc** (useful for downstream
 analytic and topological chips):
 
@@ -758,7 +811,7 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 | **C2** | `PeriodLatticeDiscretenessBundle` (H₁ rank-2g + Riemann bilinear; mathlib gap) | **1,800–3,800** |
 | **C3** | `AbelHypothesis` (Stokes on principal-divisor 2-chains) | **1,200–2,800** |
 | **C4** | `JacobiInversion` (Abel–Jacobi surjective; classical degree or theta) | **1,200–2,800** |
-| **D** | Item 14 `S2ImpliesGenus0` (simply-connectedness route via π₁(S²)=0 + Liouville on universal cover; bypasses uniformization) | **1,200–3,000** |
+| **D** | Item 14 `S2ImpliesGenus0` (simply-connectedness route via π₁(S²)=0 + Liouville on universal cover; bypasses uniformization). **Analytic-side closure landed 2026-05-16** (§D.2.7, 1,510 LOC, 13 chips): unconditional Liouville + closing composition `subsingleton_of_primitiveExistence` + bridge to named predicate. Remaining: smooth primitive existence under simple-connectedness (smooth-Stokes / path-integral construction). | **600–1,800** *remaining* |
 | **E** | Items 17/18/21 smoothness (`ofCurve_contMDiff`, `pushforward_contMDiff`, `pullback_contMDiff`) — flips with ChartedSpace on `Jacobian X` | **500–1,200** |
 | **F** | `Basic.lean` instance wiring (Topology / Compact / Manifold / LieAddGroup); `ofCurve_inj` via Abel injectivity | **400–900** |
 | **G** | Polish, integration, contingency | **1,000–2,200** |
