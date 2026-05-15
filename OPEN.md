@@ -456,7 +456,7 @@ level-set chain.  All on `main`, build green at 8746 jobs, zero
 | Step | Status | LOC estimate (uncalibrated) |
 |---|---|---|
 | 1. Closedness `sSup ∈ liftReachable` (sequential limit + local sheet) | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroPathLiftClosed.lean`, 331 LOC) | 250–350 |
-| 2. Global continuous lift `sSup = T` (clopen finish) | OPEN | 80–120 |
+| 2. Global continuous lift `sSup = T` (clopen finish) | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroPathLiftExistsOnIcc.lean`, 117 LOC; `sSup_liftReachable_eq_T` + `exists_continuous_lift_on_Icc`) | 80–120 |
 | 3. Smooth upgrade of global lift to `ContMDiffOn ∞` | OPEN | 150–250 |
 | 4. `SmoothPath` bundle from global smooth lift | OPEN | 100–150 |
 | 5. `levelSetChain f β` definition | OPEN | 150–250 |
