@@ -6,6 +6,8 @@ Authors: Bryan Sanchez
 import JacobianChallenge.Manifold.AbelJacobiPath
 import JacobianChallenge.Manifold.SmoothPathIntegrability
 import JacobianChallenge.Manifold.HolomorphicOneFormRealComponentLinear
+import JacobianChallenge.Manifold.SmoothPathIntegrateReverse
+import JacobianChallenge.Manifold.SmoothPathIntegrateConcat
 
 /-! # Form-side linearity for `complexChainPeriod`
 
@@ -133,6 +135,36 @@ def complexChainPeriodHomRight
 @[simp] lemma complexChainPeriodHomRight_apply
     (c : SmoothChain 𝓘(ℝ, ℂ) X) (om : HolomorphicOneForm X) :
     complexChainPeriodHomRight c om = complexChainPeriod c om := rfl
+
+/-! ## Single-path operations on `complexChainPeriod` -/
+
+/-- **Reverse-path negates `complexChainPeriod` of a single-path chain.**
+The complex period of a holomorphic 1-form along a reversed smooth path
+is the negative of the period along the original path. -/
+lemma complexChainPeriod_single_reverse
+    (γ : SmoothPath 𝓘(ℝ, ℂ) X) (om : HolomorphicOneForm X) :
+    complexChainPeriod (SmoothChain.single γ.reverse) om
+      = -complexChainPeriod (SmoothChain.single γ) om := by
+  unfold complexChainPeriod
+  simp only [SmoothChain.integrate_single,
+    SmoothPath.integrate_reverse]
+  push_cast
+  ring
+
+/-- **Concatenation-path is additive in `complexChainPeriod` of single chains.**
+The complex period along the concatenation `γ.concat δ h` decomposes as
+the sum of the periods along `γ` and `δ`. -/
+lemma complexChainPeriod_single_concat
+    (γ δ : SmoothPath 𝓘(ℝ, ℂ) X) (h : γ.tgt = δ.src)
+    (om : HolomorphicOneForm X) :
+    complexChainPeriod (SmoothChain.single (γ.concat δ h)) om
+      = complexChainPeriod (SmoothChain.single γ) om
+        + complexChainPeriod (SmoothChain.single δ) om := by
+  unfold complexChainPeriod
+  simp only [SmoothChain.integrate_single,
+    SmoothPath.integrate_concat]
+  push_cast
+  ring
 
 end JacobianChallenge
 
