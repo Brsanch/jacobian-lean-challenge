@@ -432,6 +432,7 @@ import JacobianChallenge.Topology.SimplyConnectedS2Reduction
 import JacobianChallenge.Topology.S2PuncturedSimplyConnected
 import JacobianChallenge.Topology.S2LoopsNullHomotopicReduction
 import JacobianChallenge.Topology.S2TwoChartCover
+import JacobianChallenge.Topology.S2LoopLebesgueSubdivision
 import JacobianChallenge.Topology.SurfaceClassificationGenus
 import JacobianChallenge.Topology.SurfaceGenus
 import JacobianChallenge.Topology.MeroSinglePoleBridgeConditional
