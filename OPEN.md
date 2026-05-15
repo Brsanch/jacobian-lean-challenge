@@ -460,7 +460,7 @@ level-set chain.  All on `main`, build green at 8746 jobs, zero
 | 3. Smooth upgrade of global lift to `ContMDiffOn ∞` | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroPathLiftSmoothOnIcc.lean`, 225 LOC; `contMDiffOn_lift_of_continuous_lift` + `exists_contMDiffOn_lift_on_Icc`) | 150–250 |
 | 4. `SmoothPath` bundle from global smooth lift | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroPathLiftSmoothPath.lean`, 141 LOC; `exists_smoothPath_of_lift_on_unitInterval` — uses `Real.smoothTransition` reparametrisation + `ContMDiffOn.comp_contMDiff` to package the lift into `SmoothPath 𝓘(ℝ, ℂ) X`) | 100–150 |
 | 5. `levelSetChain f β` definition | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroLevelSetChain.lean`, 152 LOC; `sourceFiber` + `sourceFiberPath` + `levelSetChain` + characterising lemmas. Each fiber-point path is Classical-chosen via step 4) | 150–250 |
-| 6. Boundary computation `∂ = δ_tgt − δ_src` | OPEN | 200–400 |
+| 6. Boundary computation `∂ = δ_tgt − δ_src` | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroLevelSetChainBoundary.lean`, 111 LOC; `sourceFiberDivisor` + `targetFiberDivisor` + `boundary_levelSetChain`) | 200–400 |
 | 7. β: 0 → ∞ choice + boundary = `div(f)` identification | OPEN | 200–400 |
 | 8. Pushforward 1-form `f_*ω` + integral identity | OPEN | 300–500 |
 | 9. Lattice argument (Stokes/period mod lattice) | OPEN | 400–800 |
