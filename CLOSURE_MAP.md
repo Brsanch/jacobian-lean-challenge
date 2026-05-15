@@ -672,14 +672,16 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
    │       └── flips item 1
 ```
 
-## F. Net realistic ceiling at this pin (revised 2026-05-14 after A1+A2+C1+C3+C4 work + Pic⁰(ℙ¹) = 0 unconditional)
+## F. Net realistic ceiling at this pin (revised 2026-05-15 after C1-closed + C3 path-lift infrastructure + SimplyConnectedS2 unconditional)
 
-### F.0 Measured ground truth
+### F.0 Measured ground truth (re-measured 2026-05-15 evening, main `10050be`)
 
-- **Total `.lean`:** **86,894 LOC** (86,489 in `JacobianChallenge/` + 405-line manifest), **416 files**.
+- **Total `.lean`:** **94,621 LOC** (94,166 in `JacobianChallenge/` + 455-line manifest), **466 files** (465 inside `JacobianChallenge/` + 1 top-level manifest).
 - **Recent waves (2026-05-14):** A1 discharge (+870 LOC); C1 primitives (`feat/c1-smooth-path-connected`, +371 LOC); A2 from `feat/antipode-smoothness` (+660 LOC) + unconditional headline (+109 LOC); seven C3+C4 named-hypothesis reductions (~800 LOC); five RS-side principal-divisor chips closing `Pic⁰(ℙ¹) = 0` unconditionally (~830 LOC).
+- **Recent waves (2026-05-15):** c1_closed morning arc (14 files, ~2,400 LOC — SmoothPath ω→C^∞ refactor + full SmoothPath functorial pushforward + complete path-integration calculus); c3_path_lift evening arc (19 files, ~2,900 LOC — algebra closure + regular-value framework + planar/manifold local sheets + IsLocalHomeomorphOn + fiber finiteness + Hurwitz patching + continuous & smooth path-lift primitives + Lebesgue partition + `liftReachable` openness); SimplyConnectedS2 unconditional arc on `feat/phase3-s2-simply-connected`, FF-merged to main (15 files, ~3,000 LOC — 2-chart cover + Lebesgue subdivision + stereographic straight-line approximation + segment empty interior + polygonal closure).
+- **Net delta 2026-05-14 → 2026-05-15:** +50 files / +7,727 LOC across the three same-day arcs.
 - **Scoreboard:** 12 STRICT-CLOSED · 3 STUB · 9 OPEN (item flips await Phase 2 wiring of the Abel-Jacobi iso on arbitrary `X`, not the genus-0 corner).
-- **Per-chip-file LOC density** (measured across all 2026-05-14 chips): **90–322 LOC**, mean ≈ 195.
+- **Per-chip-file LOC density** (measured across all 2026-05-14 + 2026-05-15 chips): **90–322 LOC**, mean ≈ 195.
 
 ### F.1 Past-wave LOC (grounds the remaining estimates)
 
@@ -768,9 +770,9 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 | **Defer uniformization** (recommended) | **11,800–27,200 LOC** | **23/24 STRICT-CLOSED** (item 14 stays OPEN with uniformization as the one owed classical input) |
 | **Attempt uniformization in-tree** | ~20k–47k LOC | 24/24 |
 
-**Recommended working range: 11,000–22,000 LOC** for the realistic 23/24 target (after 2026-05-14's substantial work).
+**Recommended working range: 11,000–22,000 LOC** for the realistic 23/24 target (after 2026-05-14's + 2026-05-15's substantial work).
 
-**Final-state projection** (23/24 path): repo grows from current **86,894 LOC** → **~97,000–109,000 LOC**.
+**Final-state projection** (23/24 path): repo grows from current **94,621 LOC** → **~105,000–117,000 LOC**.
 
 ### F.5 Recommended priority order (revised 2026-05-14 post A1 + A2 + C1 primitives + Pic⁰(ℙ¹) = 0 unconditional)
 

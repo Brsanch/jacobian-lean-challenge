@@ -95,10 +95,13 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **86,894 LOC** total in `*.lean` files
-(86,489 inside `JacobianChallenge/` across 415 files + 405-line
-top-level import manifest). See `CHANGELOG.md` for the per-branch
-history.
+**Current repo size:** **94,621 LOC** total in `*.lean` files
+(94,166 inside `JacobianChallenge/` across 465 files + 455-line
+top-level import manifest). Re-measured 2026-05-15 evening at
+main `10050be` after the three same-day arcs (c1_closed,
+c3_path_lift, SimplyConnectedS2 unconditional): +50 files /
++7,727 LOC vs. the prior 2026-05-14 snapshot. See `CHANGELOG.md`
+for the per-branch history.
 
 **Remaining LOC to 24/24** (full breakdown in `CLOSURE_MAP.md` §F):
 **~11,000–21,000 LOC** for the realistic **23/24** target (deferring
@@ -452,7 +455,7 @@ level-set chain.  All on `main`, build green at 8746 jobs, zero
 
 | Step | Status | LOC estimate (uncalibrated) |
 |---|---|---|
-| 1. Closedness `sSup ∈ liftReachable` (sequential limit + local sheet) | OPEN | 250–350 |
+| 1. Closedness `sSup ∈ liftReachable` (sequential limit + local sheet) | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroPathLiftClosed.lean`, 331 LOC) | 250–350 |
 | 2. Global continuous lift `sSup = T` (clopen finish) | OPEN | 80–120 |
 | 3. Smooth upgrade of global lift to `ContMDiffOn ∞` | OPEN | 150–250 |
 | 4. `SmoothPath` bundle from global smooth lift | OPEN | 100–150 |
