@@ -95,18 +95,19 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **~98,554 LOC** total in `*.lean` files
-(98,084 inside `JacobianChallenge/` across 489 files + 479-line
+**Current repo size:** **~98,776 LOC** total in `*.lean` files
+(98,306 inside `JacobianChallenge/` across 490 files + 480-line
 top-level import manifest). Re-measured 2026-05-16 at main HEAD after
-nine chips today: `h_AJ_boundary` (+125), regular β: 0→∞ existence
+ten chips today: `h_AJ_boundary` (+125), regular β: 0→∞ existence
 (+431), concrete regular level-set chain (+146), real-model RS
 manifold + open-set realification (+96), pointwise cotangent pullback
 primitive (+94), pointwise trace `f_*ω` at a regular value (+117),
 `SmoothOneFormOn` partial-section type (+74 + 14 LOC restrictOnSet),
-scalar evaluation of cotangent pullback and trace (+123), and
-`ContinuousOn` variant of `path_lift_eqOn_Icc` (+131 LOC).
-Cumulative delta vs. 2026-05-14 snapshot: +74 files / +11,660 LOC.
-See `CHANGELOG.md` for the per-branch history.
+scalar evaluation of cotangent pullback and trace (+123),
+`ContinuousOn` variant of `path_lift_eqOn_Icc` (+131), and local
+identification of `sourceFiberPath` with `sheet.g ∘ β ∘ σ`
+(+222 LOC). Cumulative delta vs. 2026-05-14 snapshot: +75 files /
++11,882 LOC. See `CHANGELOG.md` for the per-branch history.
 
 **Remaining LOC to 24/24** (full breakdown in `CLOSURE_MAP.md` §F):
 **~11,000–21,000 LOC** for the realistic **23/24** target (deferring
