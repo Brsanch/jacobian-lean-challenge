@@ -1,5 +1,72 @@
 # Changelog
 
+## 2026-05-15 — C3 sub-arc: algebra closure + path-lift infrastructure (19 chips)
+
+Extending the same-day work past the 11-chip set, eight further chips
+landed on the path-lift portion:
+
+* `Manifold/MeromorphicNonzeroLocalSheetSmooth.lean` (chip 12, ~190 LOC)
+  — `contMDiffAt_localSheet_g_at_basePoint`: pointwise `ContMDiffAt ω`
+  of the manifold local-sheet inverse at the base point.  Via
+  `contMDiffAt_omega_of_analyticAt_chart_pullback` applied to
+  `manifoldLocalOph.symm`, with the chart pullback shown to locally
+  equal `φ.symm` (planar inverse from chip 6) on an open subset of `ℂ`
+  containing `d v₀`.
+
+* `Manifold/MeromorphicNonzeroSmoothLocalLift.lean` (chip 13, ~90 LOC)
+  — `contMDiffAt_local_lift_at_basepoint`: the lift `sheet.g ∘ β` is
+  `ContMDiffAt 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) ∞` at `t₀`.  Composition: chip 12 +
+  `ContMDiffAt.complex_to_real` (realification) + `ContMDiffAt.comp`.
+
+* `Manifold/MeromorphicNonzeroLocalSheetSmoothOn.lean` (chip 14, ~65
+  LOC) — `exists_contMDiffOn_localSheet_g_near_basePoint`: extracts
+  open nbhd of `v₀` with `ContMDiffOn 𝓘(ℂ, ℂ) ω sheet.g` via
+  `contMDiffAt_iff_contMDiffOn_nhds` (valid at `ω ≠ ∞`).
+
+* `Manifold/MeromorphicNonzeroSmoothLocalLiftOn.lean` (chip 15, ~125
+  LOC) — `exists_contMDiffOn_local_lift`: globally `ContMDiff` β yields
+  a smooth (`ContMDiffOn ∞` in SmoothPath regularity) local lift on
+  an open neighbourhood `W ⊆ ℝ` of `t₀`, via `ContMDiffOn.contMDiffAt`
+  + complex-to-real realification + `ContMDiffAt.comp` at every `t ∈ W`.
+
+* `Manifold/MeromorphicNonzeroPathLiftUnique.lean` (chip 16, ~120
+  LOC) — `path_lift_unique`: two continuous lifts of a regular-valued
+  `β` agreeing at one point agree everywhere.  Clopen argument on
+  the agreement set: closed (equalizer into T2), open (local
+  injectivity at regular preimages), non-empty, in connected `ℝ`.
+
+* `Manifold/MeromorphicNonzeroPathLiftPartition.lean` (chip 17, ~105
+  LOC) — `exists_subdivision_hurwitzPatching`: Lebesgue-number-lemma
+  subdivision of `unitInterval` such that on each subinterval, `β`
+  maps into one `HurwitzPatchingData.W`.
+
+* `Manifold/MeromorphicNonzeroPathLiftSingleSheet.lean` (chip 18, ~85
+  LOC) — `exists_continuous_lift_single_sheet`: if `β` maps the entire
+  `ℝ` into one local sheet's `V`-set with `x₀` in its `U`-set, then
+  `sheet.g ∘ β` is a continuous global lift.
+
+* `Manifold/MeromorphicNonzeroPathLiftExtend.lean` (chip 19, ~145
+  LOC) — `extend_lift_across_sheet`: the inductive step.  Given a
+  continuous lift on `Icc a b` and `β` mapping `Icc b c` into one
+  local sheet's `V`, the piecewise function `if t ≤ b then γ t else
+  sheet.g (β t)` is `ContinuousOn (Icc a c)` and lifts `β` there.
+  Continuity via `ContinuousOn.if` + agreement at `b` from
+  `leftInvOn`.
+
+**Net open content after the 19 chips.** Closing C3 (general genus)
+reduces to: (i) iterate `extend_lift_across_sheet` across the
+partition from chip 17 to produce a global continuous lift on
+`unitInterval`; (ii) upgrade to `SmoothPath`-class smoothness using
+chip 15 at every junction; (iii) define `levelSetChain f β` as the
+sum-over-fiber of single-preimage smooth lifts; (iv) compute the
+chain boundary; (v) the Stokes / lattice argument for the period
+vector.  The path-lift infrastructure for (i)–(ii) is now in-tree
+axiom-free; the level-set chain Stokes work (iii)–(v) is the
+remaining classical content.
+
+Build at HEAD: `taskpolicy lake build` green, 8740 jobs. Zero `sorry`,
+zero `axiom`. +~2,200 LOC across 14 new files.
+
 ## 2026-05-15 — C3 sub-arc: algebra closure + path-lift infrastructure (11 chips)
 
 Six chips landed reducing the open content of `AbelHypothesis B`
