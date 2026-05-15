@@ -189,6 +189,55 @@ theorem contMDiff_omega_isConstant_of_nonvanishGerm
   -- f.toFun = F, so IsConstantMap F.
   exact h_const
 
+/-! ## Discharge of `nonvanishGerm` in the `never-zero` case -/
+
+/-- **From `F` never zero to `nonvanishingGerm`.** If `F : X → ℂ` is
+`ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω` and never zero, then `mmeromorphicOrderAt _ F x ≠ ⊤`
+at every point. The chart pullback is analytic with value `F x ≠ 0`, so
+its analytic order at `(chartAt ℂ x) x` is `0`, hence its meromorphic
+order is `0` (in `WithTop ℤ`), in particular `≠ ⊤`. -/
+theorem mmeromorphicOrderAt_ne_top_of_contMDiff_omega_neverZero
+    {F : X → ℂ}
+    (hF : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ, ℂ)) ω F)
+    (h_ne_zero : ∀ x : X, F x ≠ 0) (x : X) :
+    mmeromorphicOrderAt (𝓘(ℂ, ℂ)) F x ≠ ⊤ := by
+  -- Chart pullback is AnalyticAt; the trivial chart on ℂ collapses the
+  -- left composition away.
+  have h_analytic :
+      AnalyticAt ℂ ((chartAt ℂ (F x)) ∘ F ∘ (chartAt ℂ x).symm)
+        ((chartAt ℂ x) x) :=
+    JacobianChallenge.ContMDiff.Owed.degree.contMDiff_omega_analyticAt_chart_pullback hF x
+  have h_chart_eq :
+      (chartAt ℂ (F x)) ∘ F ∘ (chartAt ℂ x).symm = F ∘ (chartAt ℂ x).symm := by
+    funext z; rfl
+  rw [h_chart_eq] at h_analytic
+  -- Value at chart x: F (chart.symm (chart x)) = F x ≠ 0 by chart.left_inv.
+  have h_value : (F ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) ≠ 0 := by
+    show F ((chartAt ℂ x).symm ((chartAt ℂ x) x)) ≠ 0
+    rw [(chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
+    exact h_ne_zero x
+  -- AnalyticAt + value ≠ 0 ⇒ analyticOrderAt = 0.
+  have h_ord_zero :
+      analyticOrderAt (F ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) = 0 :=
+    h_analytic.analyticOrderAt_eq_zero.mpr h_value
+  -- meromorphicOrderAt = (analyticOrderAt).map (↑) — definition unfolds to
+  -- the same chart-pullback computation as mmeromorphicOrderAt.
+  show meromorphicOrderAt (F ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x) ≠ ⊤
+  rw [h_analytic.meromorphicOrderAt_eq, h_ord_zero]
+  simp
+
+/-- **Liouville for `ContMDiff … ω` AND never-zero functions.** Fully
+unconditional in the never-zero sub-case: the `nonvanishingGerm`
+hypothesis of `contMDiff_omega_isConstant_of_nonvanishGerm` is discharged
+by `mmeromorphicOrderAt_ne_top_of_contMDiff_omega_neverZero`. -/
+theorem contMDiff_omega_isConstant_of_neverZero
+    (F : X → ℂ)
+    (h_smooth : ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ, ℂ)) ω F)
+    (h_ne_zero : ∀ x : X, F x ≠ 0) :
+    IsConstantMap F :=
+  contMDiff_omega_isConstant_of_nonvanishGerm F h_smooth
+    (mmeromorphicOrderAt_ne_top_of_contMDiff_omega_neverZero h_smooth h_ne_zero)
+
 end JacobianChallenge
 
 end
