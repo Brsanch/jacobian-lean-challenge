@@ -437,6 +437,7 @@ import JacobianChallenge.Topology.S2LoopChartPartition
 import JacobianChallenge.Topology.S2EquatorialBeltPathConnected
 import JacobianChallenge.Topology.S2LoopAvoidingFromNonSurjective
 import JacobianChallenge.Topology.S2StereographicStraightLine
+import JacobianChallenge.Topology.S2SegmentEmptyInterior
 import JacobianChallenge.Topology.SurfaceClassificationGenus
 import JacobianChallenge.Topology.SurfaceGenus
 import JacobianChallenge.Topology.MeroSinglePoleBridgeConditional
