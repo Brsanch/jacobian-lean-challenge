@@ -125,13 +125,14 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **~100,300 LOC** total in `*.lean` files
-(~99,830 inside `JacobianChallenge/` across 497 files + ~487-line
+**Current repo size:** **100,317 LOC** total in `*.lean` files
+(99,830 inside `JacobianChallenge/` across 497 files + 487-line
 top-level import manifest). Re-measured 2026-05-16 after the
-`HolomorphicOneFormSubsingletonOfSimplyConnected` arc merged. **Ten
-chips landed 2026-05-16 (earlier) + 13 chips landed 2026-05-16
-(later)**, the 13-chip later arc adding **+1,510 LOC** across 7 new
-files plus manifest updates:
+`HolomorphicOneFormSubsingletonOfSimplyConnected` arc merged at main
+HEAD `1f49552`, via `find JacobianChallenge -name '*.lean' -exec wc -l +`
+for ground truth. **Ten chips landed 2026-05-16 (earlier) + 13 chips
+landed 2026-05-16 (later)**, the 13-chip later arc adding **+1,510 LOC**
+across 7 new files plus manifest updates:
 
 * `h_AJ_boundary` discharge (+125) — `PrincipalDivisorAJChainBoundary.lean`.
 * Regular β: 0→∞ existence on ℙ¹ (+431) — `MeromorphicNonzeroRegularPath.lean`.
