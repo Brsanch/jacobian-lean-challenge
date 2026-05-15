@@ -316,6 +316,7 @@ import JacobianChallenge.Manifold.SmoothPathCompSmoothIntegrate
 import JacobianChallenge.Manifold.SmoothPathConcat
 import JacobianChallenge.Manifold.SmoothPathConnectedRiemannSphere
 import JacobianChallenge.Manifold.SmoothPathConst
+import JacobianChallenge.Manifold.SmoothPathHomotopyFromSimplyConnected
 import JacobianChallenge.Manifold.SmoothPathIntegrability
 import JacobianChallenge.Manifold.SmoothPathIntegrateConcat
 import JacobianChallenge.Manifold.SmoothPathIntegrateConst
