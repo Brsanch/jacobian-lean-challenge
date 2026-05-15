@@ -1,5 +1,39 @@
 # Changelog
 
+## 2026-05-16 — `ContinuousOn` variant of `path_lift_eqOn_Icc` (1 chip, ~131 LOC, direct to `main`)
+
+Sister lemma to `path_lift_eqOn_Icc` that accepts `ContinuousOn γᵢ
+(Icc a b)` instead of global `Continuous γᵢ`. The variant needed to
+identify `(sourceFiberPath p).toPath` with the locally-defined
+`sheet_p.g ∘ β ∘ σ` on sub-intervals where `sheet_p.g` is only
+continuous on a neighborhood of `β(σ ·)`'s image.
+
+**New file** (`Manifold/MeromorphicNonzeroPathLiftUniqueOnContinuousOn.lean`,
+~131 LOC):
+
+* `path_lift_eqOn_Icc_of_continuousOn` — two lifts of `β` on `Icc a b`
+  that are merely `ContinuousOn (Icc a b)` (not globally continuous on
+  ℝ) and agree at some `t₀ ∈ Icc a b` agree on all of `Icc a b`.
+
+The proof mirrors the existing `path_lift_eqOn_Icc`'s clopen argument
+in the subspace topology, with `continuousOn_iff_continuous_restrict`
+replacing `Continuous.comp continuous_subtype_val` to extract
+subspace-level continuity from the `ContinuousOn` hypothesis. The
+`preimage_mem_nhds` step stays inside the subspace via the
+subspace-restricted function's `ContinuousAt`.
+
+This unblocks the next chip in the f_*ω stack: identification of
+`(sourceFiberPath p).toPath` with `sheet_p.g ∘ β ∘ σ` on sub-intervals
+where `β(σ ·)` lands in `sheet_p.V`. Combined with the scalar bridging
+of `cotangentPullbackAt` + `traceAt` (in
+`CotangentPullbackAtApply.lean`), the chain-rule statement
+`(sourceFiberPath p).integrand om t = applyCotangent
+(cotangentPullbackAt sheet_p.g (β t) om) (β.velocity t)` becomes
+provable on each sub-interval, and via subdivision over the cover of
+`[0, 1]` by sheet pre-images, globally on `Ioo 0 1`.
+
+Build: 8785 jobs (was 8784), zero `sorry`, zero `axiom`.
+
 ## 2026-05-16 — Scalar evaluation of cotangent pullback and trace (1 chip, ~123 LOC, direct to `main`)
 
 Scalar-level bridging lemmas between `cotangentPullbackAt`/`traceAt`
