@@ -95,14 +95,12 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **97,203 LOC** total in `*.lean` files
-(96,733 inside `JacobianChallenge/` across 480 files + 470-line
-top-level import manifest). Re-measured 2026-05-15 late evening at
-main `3746c0b` after the four same-day arcs (c1_closed,
-c3_path_lift, SimplyConnectedS2 unconditional, **C3 staircase
-steps 1–9** as 15 chip files, +2,582 LOC). Cumulative delta vs.
-2026-05-14 snapshot: +65 files / +10,309 LOC. See `CHANGELOG.md`
-for the per-branch history.
+**Current repo size:** **~97,328 LOC** total in `*.lean` files
+(96,858 inside `JacobianChallenge/` across 481 files + 471-line
+top-level import manifest). Re-measured 2026-05-16 at main HEAD after
+the `h_AJ_boundary` discharge chip (+125 LOC, 1 file). Cumulative
+delta vs. 2026-05-14 snapshot: +66 files / +10,434 LOC. See
+`CHANGELOG.md` for the per-branch history.
 
 **Remaining LOC to 24/24** (full breakdown in `CLOSURE_MAP.md` §F):
 **~11,000–21,000 LOC** for the realistic **23/24** target (deferring
@@ -470,7 +468,7 @@ level-set chain.  All on `main`, build green at 8746 jobs, zero
 | 7d-c. Order = -1 at simple pole (regular value ∞) | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroPrincipalDivisorAtPole.lean`, 188 LOC; uses `MMeromorphicAt.iff_of_isManifold` for chart-independence → `MeromorphicOn.eventually_analyticAt` for pole isolation → `meromorphicOrderAt_inv` to flip sign) | 150–250 |
 | 7d-d. Final identification ∂(levelSetChain) = −principalDivisorMap f pointwise | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroLevelSetPrincipalDivisorIdentification.lean`, 147 LOC; `boundary_levelSetChain_eq_neg_principalDivisorMap_pointwise` via case-split on sourceFiber/targetFiber/off-fiber, composing 7d-a/b/c) | 100–200 |
 | 8. Pushforward 1-form `f_*ω` + integral identity | **LANDED 2026-05-15 (bookkeeping)** (`Manifold/MeromorphicNonzeroLevelSetIntegrate.lean`, 98 LOC; `integrate_levelSetChain` Finset-sum expansion via `SmoothChain.integrateLinearMap` + `integrateLinearMap_single`. Substantive `f_*ω` construction layered on top via existing `SmoothPath.integrate_compSmoothPath`.) | 300–500 |
-| 9. Structural reduction `AbelGenerator ← (Z period in lattice) + (Z boundary = -principalDivisor)` | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroAbelGeneratorFromLevelSet.lean`, 138 LOC; `abelGeneratorPeriodCondition_of_levelSet_lattice` — cycle Z+AJ has boundary 0, period vector in lattice tautologically; linearity gives AJ's period as lattice element. Named inputs: `h_struct` (the Z with right boundary AND lattice period), `h_AJ_boundary` (AJ chain's boundary). Discharging `h_struct` is the residual `f_*ω + Stokes` content of full step 9.) | 400–800 |
+| 9. Structural reduction `AbelGenerator ← (Z period in lattice) + (Z boundary = -principalDivisor)` | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroAbelGeneratorFromLevelSet.lean`, 138 LOC; `abelGeneratorPeriodCondition_of_levelSet_lattice` — cycle Z+AJ has boundary 0, period vector in lattice tautologically; linearity gives AJ's period as lattice element. Named input: `h_struct` (the Z with right boundary AND lattice period). `h_AJ_boundary` (AJ chain's boundary identity) **DISCHARGED 2026-05-16** in `Manifold/PrincipalDivisorAJChainBoundary.lean` (~125 LOC; pure ℤ-linearity + `JacobianChallenge.residue_theorem`) and inlined into the step-9 proof. Discharging `h_struct` is the residual `f_*ω + Stokes` content of full step 9.) | 400–800 |
 
 **Caveat on estimates.** Today's 25 chips delivered ~2,900 LOC, much
 more than the ~300–500 LOC pre-session estimate for "global path

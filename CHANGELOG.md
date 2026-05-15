@@ -1,5 +1,43 @@
 # Changelog
 
+## 2026-05-16 — `h_AJ_boundary` discharged (1 chip, ~125 LOC, direct to `main`)
+
+Discharges the second named-hypothesis input of step 9
+(`abelGeneratorPeriodCondition_of_levelSet_lattice`) unconditionally.
+
+After yesterday's C3 staircase steps 1–9 landed, step 9's structural
+reduction still took two named inputs: `h_struct` (existence of a chain
+`Z` with the boundary identity AND lattice period) and `h_AJ_boundary`
+(boundary of `principalDivisorAJChain` = principal divisor pointwise).
+This chip dispatches `h_AJ_boundary` to a discharged lemma, leaving only
+the analytical-content `h_struct` (`f_*ω` pushforward + Stokes/residue)
+as the residual.
+
+**New file** (`Manifold/PrincipalDivisorAJChainBoundary.lean`, 125 LOC):
+
+* `AbelJacobiInput.boundary_principalDivisorAJChain_apply_of_degree_zero`
+  — for any `D : Div X` with `D.degree = 0`,
+  `(boundary (principalDivisorAJChain D)).toFun y = D y` pointwise. Pure
+  ℤ-linearity: unfold the sum, push `boundary` through with
+  `LinearMap.map_smul`, evaluate at `y`, split as `D y − D.degree •
+  δ_basePoint(y)`, and absorb the second term via `hD : D.degree = 0`.
+* `AbelJacobiInput.boundary_principalDivisorAJChain_principalDivisorMap`
+  — the `D := principalDivisorMap f` specialisation, discharging the
+  degree hypothesis via `JacobianChallenge.residue_theorem`.
+
+**Refactor**
+(`Manifold/MeromorphicNonzeroAbelGeneratorFromLevelSet.lean`): the
+`h_AJ_boundary` parameter is dropped from
+`abelGeneratorPeriodCondition_of_levelSet_lattice`; the proof now uses
+the discharged lemma internally. No callers had bound the old
+signature.
+
+**Net.** Step 9's structural reduction now takes one named-hypothesis
+input (`h_struct`) instead of two. The residual analytical content for
+full step 9 — the `f_*ω` pushforward 1-form construction + Stokes on
+β: 0 → ∞ in ℙ¹ — is unchanged in scope (~800–1,500 LOC by the
+CLOSURE_MAP §F.3 estimate).
+
 ## 2026-05-15 — C3 staircase steps 1–9 fully landed (15 chips, ~2,582 LOC, `feat/c3-staircase` direct to `main`)
 
 Discharges the entire 9-step C3 general-genus staircase (HANDOFF
