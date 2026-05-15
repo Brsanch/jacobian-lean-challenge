@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-05-16 — Pointwise cotangent pullback primitive (1 chip, ~94 LOC, direct to `main`)
+
+The foundational pointwise primitive for the trace construction
+`f_*ω` on regular values.
+
+**New file** (`Manifold/CotangentPullbackAt.lean`, 94 LOC):
+
+* `cotangentPullbackAt (g : Y → X) (y : Y) (om : SmoothOneForm I X) :
+  CotangentSpace I' y` — defined as `(om (g y)).comp (mfderiv g y)`.
+  Takes a smooth map between real C^∞ manifolds and a 1-form on the
+  codomain; produces the pulled-back cotangent vector at the domain
+  point.
+* `cotangentPullbackAt_zero` — zero 1-form pulls back to zero.
+* `cotangentPullbackAt_add` — additivity in the 1-form.
+* `cotangentPullbackAt_smul` — ℝ-linearity in the 1-form.
+
+This is the per-point/per-sheet primitive for the trace `f_*ω` at a
+regular value `y`: summing `cotangentPullbackAt sheet.g y om` over the
+finite fiber (`f.sourceFiber y`) of `f` produces the trace cotangent.
+Smoothness of the trace as a function of `y` is a separate layer
+(needs the smooth local-sheet structure + sum continuity).
+
+Build: 8781 jobs (was 8780), zero `sorry`, zero `axiom`.
+
 ## 2026-05-16 — Real-model RS manifold + open-set realification (1 chip, ~96 LOC, direct to `main`)
 
 Foundation chip for downstream `SmoothOneForm 𝓘(ℝ, ℂ) RiemannSphere`
