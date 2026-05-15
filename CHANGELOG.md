@@ -1,5 +1,54 @@
 # Changelog
 
+## 2026-05-17 — Lifted-point local identification at general t₀ (2 chips, ~345 LOC, direct to `main`)
+
+Generalises the existing local-identification chip
+`sourceFiberPath_toPath_extend_eq_sheet_g_locally` (at `t₀ = 0`) to
+**arbitrary** `t₀ ∈ Icc 0 1`, using the **lifted-point sheet**
+`sheet_q` centered at `q := (sourceFiberPath p).toPath.extend t₀`
+instead of the source-fibre sheet `sheet_x` centered at `x ∈
+sourceFiber(β 0)`.
+
+The key observation: `sheet_q.V` is automatically a nbhd of
+`f.toRiemannSphere q = β(σ t₀)` (via `sheet_q.mem_V`), so the
+sub-interval condition is dischargeable at every `t₀` — bypassing
+the β 0-centered sub-interval restriction of the original chain
+rule. This opens the path to a **global** integrand-trace identity
+without Hurwitz subdivision.
+
+**2 new files**:
+
+* `SourceFiberPathExtendEqSheetGAtT.lean` (~218 LOC) — local
+  identification at general `t₀`. Same proof template as the existing
+  `t₀ = 0` chip, generalised via `Metric.ball t₀ ε` constructions
+  using `ε := min ε₁ ε₂` from the two preimage nbhds. Headline:
+  ```
+  ∃ a b ∈ [0,1], a ≤ t₀ ≤ b, ∀ t ∈ Icc a b,
+    (sourceFiberPath p).toPath.extend t = sheet_q.g (β(σ t))
+  ```
+
+* `SourceFiberPathIntegrandLocalSheetGAtT.lean` (~127 LOC) — composes
+  with `SmoothPath.integrand_eq_of_ambient_eqOn_Icc_fun` to give the
+  per-fibre integrand identity at general `t₀`:
+  ```
+  ∃ a b ∈ [0,1], a ≤ t₀ ≤ b, ∀ u ∈ Ioo a b,
+    (sourceFiberPath p).integrand om u
+      = applyCotangent (om (sheet_q.g(β(σ u))))
+          (mfderiv (sheet_q.g ∘ β ∘ σ) u 1)
+  ```
+  Bridges `extend` equality to `ambient` equality via
+  `ambient_eq_on_unitInterval` + `Path.extend_extends'`.
+
+The chain-rule unfolding into
+`applyCotangent (cotangentPullbackAt sheet_q.g (β(σ u)) om) (...)` form
+is the natural next chip; combined with the bijection re-indexing,
+gives the **global integrand-trace identity** at any regular `t`,
+which integrates to the global integral identity without Lebesgue
+subdivision.
+
+Build green at **8838 jobs** (up from 8836). Zero `sorry`, zero
+`axiom`. No item flips.
+
 ## 2026-05-17 — Integrand-trace identity in full eventually form (5 chips, ~720 LOC, direct to `main`)
 
 Building on the per-`t` trace identity arc, lifts the integrand-level
