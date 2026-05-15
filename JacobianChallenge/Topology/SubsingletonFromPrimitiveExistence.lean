@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Topology.LiouvilleForContMDiffOmega
+import JacobianChallenge.Topology.S2ImpliesGenus0FromSimplyConnected
 import JacobianChallenge.Manifold.HolomorphicOneFormRealificationLinearity
 import Mathlib.Geometry.Manifold.MFDeriv.SpecificFunctions
 
@@ -135,6 +136,41 @@ theorem holomorphicOneForm_eq_zero_of_smooth_primitive
   rw [hF_const] at this
   exact this
 
+/-- **Pointwise `eval x 1` criterion.** A continuous ℂ-linear functional
+`ℂ →L[ℂ] ℂ` vanishes iff it sends `1` to `0` (it is determined by its
+value at `1`). General-X analog of
+`RiemannSphere.cotangent_eq_zero_of_apply_one_zero`. -/
+private theorem cotangent_eq_zero_of_apply_one_zero
+    (L : ℂ →L[ℂ] ℂ) (h : L 1 = 0) : L = 0 := by
+  refine ContinuousLinearMap.ext (fun z => ?_)
+  have hz : L z = z • L 1 := by
+    have : L z = L (z • (1 : ℂ)) := by rw [smul_eq_mul, mul_one]
+    rw [this, map_smul]
+  rw [hz, h, smul_zero]
+  rfl
+
+/-- A holomorphic 1-form is zero iff its `eval` applied to `1 : ℂ`
+vanishes at every point. General-X analog of
+`RiemannSphere.eq_zero_iff_eval_at_one_eq_zero`. -/
+theorem HolomorphicOneForm.eq_zero_iff_eval_at_one
+    (om : HolomorphicOneForm X) :
+    om = 0 ↔ ∀ x : X, om.eval x 1 = 0 := by
+  rw [eq_zero_iff_eval]
+  refine forall_congr' (fun x => ?_)
+  refine ⟨fun h => by rw [h]; rfl, fun h => ?_⟩
+  exact cotangent_eq_zero_of_apply_one_zero (om.eval x) h
+
+/-- **Subsingleton from pointwise `eval x 1` vanishing.** If every
+holomorphic 1-form satisfies `om.eval x 1 = 0` at every point, then
+`HolomorphicOneForm X` is a subsingleton. General-X analog of
+`RiemannSphere.subsingleton_of_eval_at_one_eq_zero`. -/
+theorem subsingleton_of_eval_at_one_eq_zero
+    (h : ∀ (om : HolomorphicOneForm X) (x : X), om.eval x 1 = 0) :
+    Subsingleton (HolomorphicOneForm X) := by
+  refine subsingleton_of_forall_eq 0 (fun om => ?_)
+  rw [HolomorphicOneForm.eq_zero_iff_eval_at_one]
+  exact h om
+
 /-- **Headline architectural reduction.** If every `om : HolomorphicOneForm X`
 admits a smooth primitive on the compact connected complex 1-manifold,
 then `HolomorphicOneForm X` is a `Subsingleton`.
@@ -158,6 +194,74 @@ theorem subsingleton_of_primitiveExistence
     exact holomorphicOneForm_eq_zero_of_smooth_primitive om F hF_smooth hF_primitive
   refine ⟨fun om₁ om₂ => ?_⟩
   rw [h_eq_zero om₁, h_eq_zero om₂]
+
+/-! ## Bridge to the named `HolomorphicOneFormSubsingletonOfSimplyConnected`
+predicate -/
+
+/-- **Bridge.** Discharges
+`HolomorphicOneFormSubsingletonOfSimplyConnected X` (the named
+hypothesis on the simple-connectedness route to Item 14's reverse leg,
+in `Topology/S2ImpliesGenus0FromSimplyConnected.lean`) from a
+primitive-existence hypothesis parameterized on simple-connectedness.
+
+After this commit, the simple-connectedness route to Item 14's reverse
+leg factors as:
+
+```
+S2ImpliesGenus0 X
+  ⟸ s2ImpliesGenus0_from_simplyConnected         (existing in repo)
+    needs: SimplyConnectedS2 (DISCHARGED unconditionally in
+                              `SimplyConnectedS2Unconditional.lean`)
+       and: HolomorphicOneFormSubsingletonOfSimplyConnected X
+                  ⟸ THIS BRIDGE
+                  needs: primitive existence under simple-connectedness
+                         (the smooth-Stokes / path-integral content
+                          owed in `Manifold/StokesCompactSurface.lean`).
+```
+
+So the single owed input to the reverse leg of Item 14 is now the
+**primitive-existence** statement parameterized on simple-connectedness.
+This is, classically, the construction `F x := ∫_γ ω` along a smooth
+path from a chosen basepoint, well-defined on a simply-connected
+manifold by the homotopy-Stokes argument (closed 1-form + boundary of
+homotopy disk integral = 0). -/
+theorem holomorphicOneFormSubsingletonOfSimplyConnected_of_primitiveExistence
+    (h_primitive_exists : SimplyConnectedSpace X →
+        ∀ om : HolomorphicOneForm X,
+          ∃ F : X → ℂ,
+            ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ, ℂ)) ω F ∧
+              ∀ x : X, om.eval x = mfderiv (𝓘(ℂ, ℂ)) (𝓘(ℂ, ℂ)) F x) :
+    HolomorphicOneFormSubsingletonOfSimplyConnected X := fun h_sc =>
+  subsingleton_of_primitiveExistence (h_primitive_exists h_sc)
+
+/-- **Full-arc composition: `S2ImpliesGenus0 X` from primitive
+existence.** Composes the bridge above with the existing
+`s2ImpliesGenus0_from_simplyConnected` reduction (already in
+`Topology/S2ImpliesGenus0FromSimplyConnected.lean`) and the
+unconditional `simplyConnectedS2_holds` (in
+`Topology/SimplyConnectedS2Unconditional.lean`, the 15-chip Phase-3
+arc landed 2026-05-15).
+
+Net effect: the reverse leg of Item 14 (`S2ImpliesGenus0 X`) reduces
+to **one named classical input**:
+
+* `h_primitive_exists` — for every holomorphic 1-form on a
+  simply-connected compact connected complex 1-manifold, a smooth
+  primitive exists.
+
+This is the smooth-Stokes / path-integral content, structurally owed
+in `Manifold/StokesCompactSurface.lean`. -/
+theorem s2ImpliesGenus0_of_primitiveExistence
+    (h_S2_sc : SimplyConnectedS2)
+    (h_primitive_exists : SimplyConnectedSpace X →
+        ∀ om : HolomorphicOneForm X,
+          ∃ F : X → ℂ,
+            ContMDiff (𝓘(ℂ, ℂ)) (𝓘(ℂ, ℂ)) ω F ∧
+              ∀ x : X, om.eval x = mfderiv (𝓘(ℂ, ℂ)) (𝓘(ℂ, ℂ)) F x) :
+    S2ImpliesGenus0 X :=
+  s2ImpliesGenus0_from_simplyConnected X h_S2_sc
+    (holomorphicOneFormSubsingletonOfSimplyConnected_of_primitiveExistence
+      h_primitive_exists)
 
 end JacobianChallenge
 
