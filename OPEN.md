@@ -71,6 +71,36 @@ spec. Three statuses, with one tag for partial progress:
      `Topology/SimplyConnectedS2Unconditional.lean`). The simple-
      connectedness route now reduces to input (b) ALONE.
 
+     **Input (b) further reduces to primitive-existence** (2026-05-16,
+     13-chip analytic-side closure arc in
+     `Topology/SubsingletonFromPrimitiveExistence.lean` +
+     `Topology/LiouvilleForContMDiffOmega.lean` + supporting
+     `complexChainPeriod` algebra and `chartLocalPrimitive` data):
+
+     ```
+     HolomorphicOneFormSubsingletonOfSimplyConnected X
+       ⇐ holomorphicOneFormSubsingletonOfSimplyConnected_of_primitiveExistence
+         needs: ∀ om : HolomorphicOneForm X, ∃ F : X → ℂ,
+                  ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω F ∧
+                    ∀ x, om.eval x = mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) F x
+                (every holomorphic 1-form admits a smooth primitive
+                 under simple-connectedness)
+     ```
+
+     The unconditional Liouville for `ContMDiff ω F : X → ℂ` on
+     compact connected `X`
+     (`Topology/LiouvilleForContMDiffOmega.lean`'s
+     `contMDiff_omega_isConstant`, via the `exp ∘ F` trick) discharges
+     the analytic constancy side completely; only the smooth-Stokes /
+     path-integral primitive construction on simply-connected
+     manifolds remains as a named classical input — structurally the
+     `StokesCompactSurfacePartitionOfUnity_hypothesis` content in
+     `Manifold/StokesCompactSurface.lean`, plus the regularity
+     bootstrap to `ContMDiff ω F`.
+
+     `s2ImpliesGenus0_of_primitiveExistence` provides the full-arc
+     composition.
+
 4. Universal at-pole-germ-compatible continuity strengthening of L(δp)
    — operational germ-field refactor
    (`Topology/LiftNonConstancyFromContinuity.lean`'s
@@ -95,13 +125,13 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **98,800 LOC** total in `*.lean` files
-(98,320 inside `JacobianChallenge/` across 490 files + 480-line
-top-level import manifest). Re-measured 2026-05-16 at main HEAD
-`a07eb4f` (pushed) via `find ... -name '*.lean' | wc -l` and
-`-exec wc -l +` for ground truth. **Ten chips landed 2026-05-16**,
-totalling **+1,573 LOC** in new files plus small refactor deltas
-(net +1,597 LOC vs. 2026-05-15 evening's 97,203 LOC baseline):
+**Current repo size:** **~100,300 LOC** total in `*.lean` files
+(~99,830 inside `JacobianChallenge/` across 497 files + ~487-line
+top-level import manifest). Re-measured 2026-05-16 after the
+`HolomorphicOneFormSubsingletonOfSimplyConnected` arc merged. **Ten
+chips landed 2026-05-16 (earlier) + 13 chips landed 2026-05-16
+(later)**, the 13-chip later arc adding **+1,510 LOC** across 7 new
+files plus manifest updates:
 
 * `h_AJ_boundary` discharge (+125) — `PrincipalDivisorAJChainBoundary.lean`.
 * Regular β: 0→∞ existence on ℙ¹ (+431) — `MeromorphicNonzeroRegularPath.lean`.
@@ -121,8 +151,28 @@ totalling **+1,573 LOC** in new files plus small refactor deltas
 * Local identification of `sourceFiberPath` with `sheet.g ∘ β ∘ σ`
   (+222) — `MeromorphicNonzeroSourceFiberPathSheetEq.lean`.
 
+**13 additional chips (2026-05-16 later) — `HolomorphicOneFormSubsingletonOfSimplyConnected` arc** (+1,510 LOC, 7 new files):
+
+* Continuous homotopy of smooth paths from `SimplyConnectedSpace` (+111)
+  — `SmoothPathHomotopyFromSimplyConnected.lean`.
+* `chartCoeffAt` for `HolomorphicOneForm X` + pointwise linearity (+100)
+  — `HolomorphicOneFormChartCoeff.lean`.
+* **Unconditional Liouville for `ContMDiff ω F : X → ℂ`** via exp trick (+373)
+  — `Topology/LiouvilleForContMDiffOmega.lean`.
+* **Subsingleton from primitive existence + bridge to named predicate**
+  + full-arc `S2ImpliesGenus0_of_primitiveExistence` (+268)
+  — `Topology/SubsingletonFromPrimitiveExistence.lean`.
+* `complexChainPeriod` form-side algebra: linearity / smul_real /
+  smul_complex / reverse / concat / `→ₗ[ℂ]` / bilinear bundle (+244)
+  — `ComplexChainPeriodFormLinear.lean`.
+* `chartLocalPrimitive` data + basepoint identity `F(x₀) = 0` (+236)
+  — `ChartLocalPrimitive.lean`.
+* E foundation: joint continuity of `bumpedSegment` /
+  `chart.symm ∘ bumpedSegment` / `chartCoordVelocity σ'(t)·(z-z₀)` (+178)
+  — `ChartLocalPrimitiveSmoothness.lean`.
+
 Cumulative delta vs. 2026-05-14 snapshot (86,894 LOC / 416 files):
-**+11,906 LOC / +75 files**. Build green at 8786 jobs, zero `sorry`,
+**+13,400 LOC / +82 files**. Build green at 8793 jobs, zero `sorry`,
 zero `axiom`. See `CHANGELOG.md` for the per-branch history.
 
 **Remaining LOC to 24/24** (full breakdown in `CLOSURE_MAP.md` §F):

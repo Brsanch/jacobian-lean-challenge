@@ -1,5 +1,199 @@
 # Changelog
 
+## 2026-05-16 — `HolomorphicOneFormSubsingletonOfSimplyConnected` arc (13 chips, ~1,510 LOC, direct to `main`)
+
+End-to-end **analytic-side closure** of Item 14's reverse leg via the
+simple-connectedness route. Reduces
+`HolomorphicOneFormSubsingletonOfSimplyConnected X` (input (b) on the
+simple-connectedness route in
+`Topology/S2ImpliesGenus0FromSimplyConnected.lean`) to **one named
+classical input**: smooth primitive existence under
+simple-connectedness (`∀ om, ∃ F smooth with om.eval = mfderiv F`).
+
+### Headline architectural reduction
+
+```lean
+theorem holomorphicOneFormSubsingletonOfSimplyConnected_of_primitiveExistence
+    (h_primitive_exists : SimplyConnectedSpace X →
+        ∀ om : HolomorphicOneForm X,
+          ∃ F : X → ℂ,
+            ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω F ∧
+              ∀ x : X, om.eval x = mfderiv 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) F x) :
+    HolomorphicOneFormSubsingletonOfSimplyConnected X
+```
+
+Composed with the existing unconditional `simplyConnectedS2_holds`
+(`SimplyConnectedS2Unconditional.lean`) and
+`s2ImpliesGenus0_from_simplyConnected`, the reverse leg of Item 14
+(`S2ImpliesGenus0 X`) now reduces to a **single named classical
+input** — the smooth-Stokes / path-integral primitive on simply-
+connected manifolds — captured in
+`s2ImpliesGenus0_of_primitiveExistence`.
+
+### Foundation: continuous-homotopy from simple-connectedness
+
+* `Manifold/SmoothPathHomotopyFromSimplyConnected.lean` (~111 LOC) —
+  for `[SimplyConnectedSpace X]`, any two `SmoothPath I X` with
+  matching endpoints have *continuously* homotopic underlying `Path`s.
+  Wraps mathlib's `SimplyConnectedSpace.paths_homotopic` and exposes a
+  concrete `Path.Homotopy` witness plus the underlying
+  `C(unitInterval × unitInterval, X)` map for downstream smooth-
+  approximation chips. `apply_zero` / `apply_one` simp lemmas at the
+  homotopy boundaries.
+
+### Liouville chain — unconditional for `ContMDiff ω` on compact connected
+
+* `Manifold/HolomorphicOneFormChartCoeff.lean` (~100 LOC) — general-X
+  `HolomorphicOneForm.chartCoeffAt om x : ℂ → ℂ` with pointwise
+  linearity (zero / add / neg / sub / smul). General-X analog of
+  `RiemannSphere.chartNCoeff`.
+
+* `Topology/LiouvilleForContMDiffOmega.lean` (~373 LOC) — the
+  unconditional Liouville for `ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω F : X → ℂ`.
+  Three layers:
+
+  1. `mmeromorphicOn_univ_of_contMDiff_omega` +
+     `mmeromorphicOrderAt_nonneg_of_contMDiff_omega` — chart-pullback
+     analyticity gives `MMeromorphicOn _ univ` and order ≥ 0
+     everywhere, via `contMDiff_omega_analyticAt_chart_pullback` +
+     `AnalyticAt.meromorphicAt` + `AnalyticAt.meromorphicOrderAt_nonneg`.
+
+  2. `MeromorphicNonzero.ofContMDiffOmega` +
+     `contMDiff_omega_isConstant_of_nonvanishGerm` — Liouville
+     conditional on a `nonvanishingGerm` hypothesis, via
+     `MeromorphicNonzero.ofContinuousMeromorphic` and the existing
+     `liouvilleOnCompactConnected_holds`.
+
+  3. `mmeromorphicOrderAt_ne_top_of_contMDiff_omega_neverZero` +
+     `contMDiff_omega_isConstant_of_neverZero` — discharges the
+     `nonvanishingGerm` hypothesis for never-zero functions via
+     `AnalyticAt.analyticOrderAt_eq_zero` (analyticOrderAt = 0 at a
+     point where the value is non-zero).
+
+  4. **`contMDiff_omega_complex_exp`** +
+     **`contMDiff_omega_complex_exp_comp`** +
+     **`contMDiff_omega_isConstant`** — **the unconditional Liouville**.
+     Strategy: `exp ∘ F` is `ContMDiff ω` and never zero, so constant
+     by layer 3; then `F x − F x₀ ∈ 2π i · ℤ` (kernel of `exp`); a
+     continuous `F` into this discrete set is locally constant on
+     each `Metric.ball (F x) (2π)`, hence constant by
+     `IsLocallyConstant.eq_const` on `PreconnectedSpace X`.
+
+### Closing composition: Subsingleton ⇐ primitive existence
+
+* `Topology/SubsingletonFromPrimitiveExistence.lean` (~268 LOC) —
+
+  - `HolomorphicOneForm.eq_zero_iff_eval` — general-X analog of
+    `RiemannSphere.eq_zero_iff_eval_eq_zero`. `om = 0` iff
+    `om.eval x = 0` pointwise; via `ContMDiffSection.ext`.
+
+  - `HolomorphicOneForm.eq_zero_of_primitive_const` — pure algebra:
+    `om.eval = mfderiv F` pointwise with `F` constant ⇒ `om = 0`, via
+    `mfderiv_const`.
+
+  - **`holomorphicOneForm_eq_zero_of_smooth_primitive`** — combines the
+    unconditional Liouville (`F` constant) with `mfderiv_const`
+    (constant derivative = 0) to land `om = 0`.
+
+  - **`subsingleton_of_primitiveExistence`** — the headline. From
+    `∀ om, ∃ F smooth primitive`, derive `Subsingleton`.
+
+  - `HolomorphicOneForm.eq_zero_iff_eval_at_one` +
+    `subsingleton_of_eval_at_one_eq_zero` — general-X analogs of the
+    RS-specific scalarised variants.
+
+  - **`holomorphicOneFormSubsingletonOfSimplyConnected_of_primitiveExistence`**
+    — bridge to the named predicate from
+    `S2ImpliesGenus0FromSimplyConnected.lean`.
+
+  - **`s2ImpliesGenus0_of_primitiveExistence`** — full-arc composition.
+
+### `complexChainPeriod` algebraic toolkit
+
+* `Manifold/ComplexChainPeriodFormLinear.lean` (~244 LOC) — completes
+  the form-side algebra of `complexChainPeriod c om` (cycle-level
+  `complexPeriod` was already in
+  `Manifold/ComplexPeriodPairing.lean` /
+  `Manifold/ComplexPeriodSmulRight.lean`; this fills the chain level):
+
+  - `complexChainPeriod_zero_right`, `_add_right`, `_neg_right`,
+    `_sub_right`, `_smul_real_right` — pointwise linearity in `om`.
+  - `complexChainPeriod_smul_complex_right` — full ℂ-scaling via the
+    `realComponent_smul` / `imagComponent_smul` real-vs-complex
+    mixing.
+  - `complexChainPeriod_single_reverse` — `complexChainPeriod (single γ.reverse) om
+    = -complexChainPeriod (single γ) om`. Via `SmoothPath.integrate_reverse`.
+  - `complexChainPeriod_single_concat` — additivity over path
+    concatenation. Via `SmoothPath.integrate_concat`.
+  - `complexChainPeriodHomRight` (additive in form), `complexChainPeriodLinearMap`
+    (ℂ-linear in form for fixed chain), `complexChainPeriodBilinear`
+    (ℤ-additive in chain ⊗ ℂ-linear in form).
+
+### `chartLocalPrimitive` infrastructure (E sub-chips)
+
+* `Manifold/ChartLocalPrimitive.lean` (~236 LOC) —
+
+  - **`chartLocalPrimitive`** — the candidate primitive
+    `F(x) := complexChainPeriod (single γ_{x₀,x}) om` where
+    `γ_{x₀,x} := SmoothPath.linearInChartSegment φ x₀ x` is the
+    C^∞-bumped affine segment in chart coordinates (convex chart target
+    discharges the segment-in-target precondition).
+
+  - `bumpedSegment_self` — `bumpedSegment a a t = a` (algebraic).
+
+  - `linearInChartSegment_self_{ambient_eq_on_unitInterval,
+    ambient_eventuallyEq_const, velocity_of_mem_Ioo,
+    integrand_of_mem_Ioo, integrate}` — the constant-ambient chain at
+    coinciding endpoints, mirroring `SmoothPath.integrate_const`'s
+    structure.
+
+  - **`chartLocalPrimitive_self`** — `F(x₀) = 0` basepoint identity.
+
+* `Manifold/ChartLocalPrimitiveSmoothness.lean` (~178 LOC) — joint
+  continuity foundation for the eventual smoothness-of-F-in-endpoint
+  argument:
+
+  - `continuous_bumpedSegment_param z₀` — joint continuity of
+    `(z, t) ↦ bumpedSegment z₀ z t` on `ℂ × ℝ`. Routes through
+    `Complex.real_smul` to avoid the `ContinuousSMul ℝ ℂ` synth issue.
+
+  - `continuous_chartSymm_bumpedSegment` — joint continuity of
+    `(z, t) ↦ φ.symm (bumpedSegment z₀ z t)` on
+    `φ.target ×ˢ Set.univ` (uses convex-target hypothesis).
+
+  - `chartCoordVelocity z₀ z t := σ'(t) · (z − z₀)` +
+    `continuous_chartCoordVelocity_param z₀` — the chart-coordinate
+    path velocity (explicit formula, sidesteps the opaque
+    `Classical.choose` of `SmoothPath.ambient`) and its joint
+    continuity in `(z, t)`.
+
+These joint-continuity foundations are the first sub-step of the
+*continuity-of-`chartLocalPrimitive`-in-endpoint* sub-chip. Completing
+the full `Continuous (fun x ↦ chartLocalPrimitive ... x)` requires
+expressing `γ_z.integrand om` as a chart-coord formula equal a.e. on
+`Ioo 0 1` to a jointly-continuous expression, then applying
+`intervalIntegral.continuous_parametric_intervalIntegral_of_continuous'`.
+The remaining gap is the chart-coord identification of `γ_z.velocity`
+with `chartCoordVelocity` post-`dφ.symm`, which needs the
+`mfderiv`-of-chart-inverse joint continuity in the bundle setting.
+
+### Net effect on the strict-closed scoreboard
+
+No item flips in this commit. Item 14 remains OPEN, but **input (b)
+of the simple-connectedness route**
+(`HolomorphicOneFormSubsingletonOfSimplyConnected X`) now reduces
+cleanly to a single named classical input (primitive existence under
+simple-connectedness). The full chain:
+
+```
+Item 14 (genus_eq_zero_iff_homeo)
+  reverse leg ⇐ s2ImpliesGenus0_of_primitiveExistence (this commit)
+    ⇐ SimplyConnectedS2 (discharged unconditionally 2026-05-15)
+    ⇐ primitive existence under simple-connectedness ← THE remaining input
+```
+
+Build: 8793 jobs, zero `sorry`, zero `axiom`.
+
 ## 2026-05-16 — Local identification of `sourceFiberPath` with `sheet.g ∘ β ∘ σ` (1 chip, ~222 LOC, direct to `main`)
 
 Concrete identification of the `Classical.choose`-opaque
