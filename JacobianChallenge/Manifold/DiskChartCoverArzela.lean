@@ -81,7 +81,7 @@ private lemma norm_localCoeff_le_seminormVal_innerDisk
 
 /-- Bundle `localCoeff om x` restricted to the inner closed disk as a
 `BoundedContinuousFunction`. -/
-private noncomputable def localCoeffBcf
+noncomputable def localCoeffBcf
     (cover : DiskChartCover X) [Nonempty X] (om : HolomorphicOneForm X)
     {x : X} (hx : x ∈ cover.basePoints) :
     BoundedContinuousFunction
@@ -101,7 +101,7 @@ private noncomputable def localCoeffBcf
 
 /-- Evaluation: `localCoeffBcf cover om hx ⟨w, hw⟩ = localCoeff om x w`. -/
 @[simp]
-private lemma localCoeffBcf_apply (cover : DiskChartCover X) [Nonempty X]
+lemma localCoeffBcf_apply (cover : DiskChartCover X) [Nonempty X]
     (om : HolomorphicOneForm X) {x : X} (hx : x ∈ cover.basePoints)
     (w : ↥(closedBall ((chartAt ℂ x) x) (cover.innerRadius x))) :
     localCoeffBcf cover om hx w = localCoeff om x w.1 := rfl
