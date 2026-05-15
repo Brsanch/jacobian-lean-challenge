@@ -1,5 +1,84 @@
 # Changelog
 
+## 2026-05-17 — `RegularLevelSetLatticeClause` per-`t` trace identity (6 chips, ~975 LOC, direct to `main`)
+
+Closes the substantive analytic primitives needed to bridge the
+chain-rule structural identity (`sum_sourceFiber_integrand_chain_at`)
+with the trace `traceAt(f)(β(σ t))(ω)` at any `t ∈ Icc 0 1` on a
+sub-interval where `β(σ t) ∈ sheet_p.V` for every fibre point `p`. This
+is the second-to-last step in discharging `RegularLevelSetLatticeClause`
+(the substantive named input for `AbelHypothesis B` in general genus
+that, combined with `AbelLatticeWitnessCriticalCase`, flips items
+4, 5, 10, 11, 12, 13).
+
+**6 new files** (`JacobianChallenge/Manifold/`):
+
+* `MeromorphicNonzeroFiberFinsetCard.lean` (~140 LOC) — bridges
+  `(f.fiberFinset hv).card` to `JacobianChallenge.ContMDiff.degreeFiber
+  f.toRiemannSphere` via a `RegularValueWitnessReg`-builder
+  (`regularValueWitnessReg_of_mem_regularValueSet`). Headlines:
+  `fiberFinset_card_eq_degreeFiber` and the constancy corollary
+  `fiberFinset_card_const : (fiberFinset hv₁).card = (fiberFinset hv₂).card`.
+
+* `SourceFiberPathAmbientSurjOnAt.lean` (~210 LOC) — surjectivity-by-
+  cardinality. Headlines:
+  - `sourceFiberPath_toPath_extend_image_eq_fiberFinset_at` — Finset
+    equality `image of sourceFiber.attach under (extend t) = fiberFinset
+    (β(σ t))` via the existing image ⊆ inclusion + injection +
+    cardinality match (from `fiberFinset_card_const`).
+  - `sourceFiberPath_toPath_extend_surjOn_at` — surjectivity statement.
+  - `sourceFiberPath_toPath_extend_bijOn_at` — `Set.BijOn` packaging.
+
+* `CotangentPullbackAtCongr.lean` (~85 LOC) — `cotangentPullbackAt` is
+  germ-determined: `cotangentPullbackAt_congr_of_eventuallyEq` (via
+  `Filter.EventuallyEq.mfderiv_eq`) and `_of_eqOn_open` corollary.
+
+* `LocalSheetDataUnique.lean` (~140 LOC) — uniqueness of local right-
+  inverses. Two versions:
+  - `g_eventuallyEq_of_g_eq` — between two `LocalSheetData`s sharing a
+    base point: agreeing at `y₀` implies eqOn a nbhd.
+  - `g_eventuallyEq_of_isLocalRightInverse` — general version against
+    arbitrary local right-inverse `g : Y → X` near `y` with `g y ∈ s.U`,
+    `f ∘ g = id` near `y`. Used by the cross-sheet identification.
+
+* `CotangentPullbackSheetIdentification.lean` (~190 LOC) — cross-sheet
+  cotangent pullback identification at a regular value:
+  `cotangentPullbackAt_localSheet_eq_at_target_sheet` — for source-side
+  sheet `sheet_p` (centered at `p` over a *different* base value) and
+  the target-side sheet `sheet_q` (where `q := sheet_p.g v`) at
+  `v ∈ sheet_p.V`, the cotangent pullbacks at `v` agree.
+
+* `SourceSheetSumEqTraceAt.lean` (~210 LOC) — the headline per-`t`
+  trace identity. `sheetCotPullback` wrapper fixes both model arguments
+  at `𝓘(ℝ, ℂ)` (dodging an `open scoped unitInterval` parser
+  interference with the `(I := …)` named-arg syntax in the conclusion
+  position). `source_sheet_sum_eq_traceAt`:
+  ```
+  ∑_{p ∈ sourceFiber} sheetCotPullback sheet_p.g (β(σ t)) ω
+    = traceAt f hnc hβσt_reg ω
+  ```
+  parametrized over the sub-interval condition `h_sub_interval`
+  (`β(σ t) ∈ sheet_p.V` for every `p`) and the lift-equality condition
+  `h_lift_eq` (`(sourceFiberPath p).toPath.extend t = sheet_p.g (β(σ t))`).
+  Both will be discharged downstream on a uniform-δ sub-interval.
+
+**Net effect on `RegularLevelSetLatticeClause`.** The cycle path from
+sourceFiber → fiberFinset bijection (chip 2) and the trace identity
+(chip 6) together complete the **algebraic** content of the per-`t`
+lattice clause discharge — what remains for the full clause is:
+
+1. Lebesgue gluing across the Hurwitz subdivision (composing per-sheet
+   sub-interval identities to a global `[0, 1]` identity), via the
+   already-built `exists_subdivision_hurwitzPatching`.
+2. σ-reparametrisation reducing the integrand to the natural β-form.
+3. Residue theorem for `f_*ω` on `ℙ¹` → period in `periodLatticeImage`,
+   layered on top of `JacobianChallenge.residue_theorem`
+   (`Manifold/ResidueTheoremUnconditional.lean`) adapted from the
+   principal-divisor case to `f_*ω`'s residue divisor on RS.
+
+Build green at **8829 jobs** (up from 8808). Zero `sorry`, zero
+`axiom`. No item flips.
+
 ## 2026-05-17 — Hodge finite-dim Forster scaffolding through HolomorphicOneForm packaging (16 chips, 2948 LOC, direct to `main`)
 
 End-to-end scaffolding of the elementary Forster/Montel/Riesz proof of

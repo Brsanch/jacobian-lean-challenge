@@ -125,11 +125,42 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **~104,000 LOC** total in `*.lean` files,
+**Current repo size:** **~105,000 LOC** total in `*.lean` files,
 combining the 2026-05-17 Hodge finite-dim Forster scaffolding
 (+2,948 LOC, 16 chips) with the 2026-05-16 evening C3 structural-
 reduction + chain-rule pathway arc (+2,280 LOC, 13 chips,
-fast-forward-merged from `feat/abel-generator-input-independence`).
+fast-forward-merged from `feat/abel-generator-input-independence`)
+plus the 2026-05-17 evening RegularLevelSetLatticeClause per-`t`
+trace identity (+~975 LOC, 6 chips).
+
+**2026-05-17 evening — `RegularLevelSetLatticeClause` per-`t` trace identity.**
+The arc closes the **algebraic** content of the per-`t` lattice clause
+discharge by composing surjectivity-by-cardinality with cross-sheet
+cotangent pullback identification. Six chips:
+
+* `MeromorphicNonzeroFiberFinsetCard.lean` (~140 LOC) — bridges
+  `(fiberFinset hv).card` to `degreeFiber f.toRiemannSphere`; constancy
+  across regular values.
+* `SourceFiberPathAmbientSurjOnAt.lean` (~210 LOC) — surjectivity of
+  `(extend t)` at general `t`, image-eq-fiberFinset, `Set.BijOn`
+  packaging.
+* `CotangentPullbackAtCongr.lean` (~85 LOC) — cotangent pullback is
+  germ-determined.
+* `LocalSheetDataUnique.lean` (~140 LOC) — local right-inverse
+  uniqueness; both two-sheet and general (sheet vs. arbitrary local
+  right-inverse) versions.
+* `CotangentPullbackSheetIdentification.lean` (~190 LOC) — cross-sheet
+  cotangent pullback identification at a regular value.
+* `SourceSheetSumEqTraceAt.lean` (~210 LOC) — headline per-`t`
+  identity: `∑_{p ∈ sourceFiber} sheetCotPullback sheet_p.g (β(σ t)) ω
+  = traceAt f hnc hβσt_reg ω`, parametrized over the sub-interval +
+  lift-equality conditions (discharged downstream on uniform-δ).
+
+**Remaining for `RegularLevelSetLatticeClause`:** Lebesgue gluing
+across Hurwitz subdivision (composes per-sheet sub-interval identities
+to global `[0,1]`), σ-reparametrisation, and residue theorem
+adaptation from `principalDivisorMap` to `f_*ω`'s residue divisor on
+ℙ¹.
 
 **2026-05-16 evening — C3 structural reduction + chain-rule pathway 1-3.**
 The arc delivers a two-tier reduction of `AbelHypothesis B`:
