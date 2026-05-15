@@ -1,5 +1,42 @@
 # Changelog
 
+## 2026-05-16 — Scalar evaluation of cotangent pullback and trace (1 chip, ~123 LOC, direct to `main`)
+
+Scalar-level bridging lemmas between `cotangentPullbackAt`/`traceAt`
+and the path-integral machinery (`applyCotangent` + `SmoothPath.integrand`).
+
+**New file** (`Manifold/CotangentPullbackAtApply.lean`, 123 LOC):
+
+* `applyCotangent_cotangentPullbackAt` — for any smooth `g : Y → X`,
+  `y : Y`, `om : SmoothOneForm I X`, `v : E'`:
+  `applyCotangent (cotangentPullbackAt g y om) v = applyCotangent (om (g y))
+  (mfderiv g y v)`. Pure definitional unfold.
+
+* `applyCotangent_finset_sum` — pairing is linear in the cotangent
+  argument: `applyCotangent (Σ_i φ_i) v = Σ_i applyCotangent (φ_i) v`.
+  Via `ContinuousLinearMap.sum_apply` + `cotangentEquiv`'s identity-as-CLM.
+
+* `MeromorphicNonzero.applyCotangent_traceAt` — scalar pairing of the
+  trace: `applyCotangent (traceAt f hnc hv om) w = Σ_{p ∈ fiberFinset}
+  applyCotangent (cotangentPullbackAt sheet_p.g v om) w`. Follows from
+  the linear-sum lemma applied to the definition of `traceAt`.
+
+These are the scaffolding for the eventual Stokes-type integral
+identity
+
+  `(levelSetChain f β).integrate om = ∫ t in 0..1, applyCotangent
+    (traceAt f hnc (hβ_reg t) om) (β.velocity t)`
+
+which expresses the X-chain integral as a ℙ¹-line integral against the
+trace 1-form `f_*ω`. The chain-rule piece tying
+`(sourceFiberPath p).integrand om t` to `applyCotangent
+(cotangentPullbackAt sheet_p.g (β t) om) (β.velocity t)` requires the
+identification `(sourceFiberPath p).toPath ≡ sheet_p.g ∘ β ∘
+Real.smoothTransition`, which is opaque (Classical.choose) in the
+current infrastructure and will be the next chip's content.
+
+Build: 8784 jobs (was 8783), zero `sorry`, zero `axiom`.
+
 ## 2026-05-16 — `SmoothOneFormOn` partial-section type (1 chip, ~74 LOC, direct to `main`)
 
 Foundational chip for the trace `f_*ω` as a smooth 1-form on the open
