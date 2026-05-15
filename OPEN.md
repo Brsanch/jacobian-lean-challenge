@@ -464,7 +464,10 @@ level-set chain.  All on `main`, build green at 8746 jobs, zero
 | 7a. Target-map injectivity (foundation for bijection) | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroLevelSetTargetInjective.lean`, 151 LOC; `sourceFiberPath_tgt_injOn` via `Path.extend` + `path_lift_eqOn_Icc` on `β ∘ Real.smoothTransition`) | (split from step 7) |
 | 7b. Target-map surjectivity onto target fiber | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroLevelSetTargetSurjective.lean`, 240 LOC; `sourceFiberPath_tgt_surjOn` via time-reverse β + step 4 at y + step 2 raw lift + double `path_lift_eqOn_Icc`) | (split from step 7) |
 | 7c. Boundary = `Σ targetFiber − Σ sourceFiber` (Finsupp form) | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroLevelSetTargetFiber.lean`, 193 LOC; `targetFiber` def + `sourceFiberPath_tgt_image_eq_targetFiber` (Finset bijection from 7a+7b) + `boundary_levelSetChain_eq_fiberDiff`) | (split from step 7) |
-| 7d. Identification with `−principalDivisorMap f` via order-1 matching | OPEN | 200–400 |
+| 7d-a. Off-fiber vanishing of principalDivisorMap | **LANDED 2026-05-15** (`Manifold/MeromorphicNonzeroPrincipalDivisorOffFiber.lean`, 110 LOC; `principalDivisorMap_toFun_eq_zero_off_fiber` via chart-pullback `tendsto_ne_zero_iff_meromorphicOrderAt_eq_zero`) | (split from step 7d) |
+| 7d-b. Order = 1 at simple zero (regular value some 0) | OPEN | 150–250 |
+| 7d-c. Order = -1 at simple pole (regular value ∞) | OPEN | 150–250 |
+| 7d-d. Final identification ∂(levelSetChain) = −principalDivisorMap f as Finsupp | OPEN | 100–200 |
 | 8. Pushforward 1-form `f_*ω` + integral identity | **LANDED 2026-05-15 (bookkeeping)** (`Manifold/MeromorphicNonzeroLevelSetIntegrate.lean`, 98 LOC; `integrate_levelSetChain` Finset-sum expansion via `SmoothChain.integrateLinearMap` + `integrateLinearMap_single`. Substantive `f_*ω` construction layered on top via existing `SmoothPath.integrate_compSmoothPath`.) | 300–500 |
 | 9. Lattice argument (Stokes/period mod lattice) | OPEN | 400–800 |
 
