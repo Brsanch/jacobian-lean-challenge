@@ -84,6 +84,7 @@ theorem sourceFiberPath_integrand_eq_local_at_lifted_sheet
     let sheet_q := f.localSheetData_at_regular hnc hq_reg
     let f_pull : ℝ → X := fun u => sheet_q.g (β (Real.smoothTransition u))
     ∃ a b : ℝ, a ∈ Icc (0 : ℝ) 1 ∧ b ∈ Icc (0 : ℝ) 1 ∧ a ≤ t₀ ∧ t₀ ≤ b ∧
+      (0 < t₀ → a < t₀) ∧ (t₀ < 1 → t₀ < b) ∧
       ∀ u ∈ Ioo a b,
         (f.sourceFiberPath hnc hβ_smooth hβ_reg hx).integrand om u
           = SmoothPath.applyCotangent (om (f_pull u))
@@ -92,9 +93,9 @@ theorem sourceFiberPath_integrand_eq_local_at_lifted_sheet
   classical
   intro γ q hβσt₀_reg hq_lift hq_reg sheet_q f_pull
   -- Apply the local identification chip.
-  obtain ⟨a, b, ha_mem, hb_mem, ha_le_t₀, ht₀_le_b, h_eq_on⟩ :=
+  obtain ⟨a, b, ha_mem, hb_mem, ha_le_t₀, ht₀_le_b, ha_lt_t₀, ht₀_lt_b, h_eq_on⟩ :=
     f.sourceFiberPath_toPath_extend_eq_sheet_g_locally_at hnc hβ_smooth hβ_reg hx ht₀
-  refine ⟨a, b, ha_mem, hb_mem, ha_le_t₀, ht₀_le_b, ?_⟩
+  refine ⟨a, b, ha_mem, hb_mem, ha_le_t₀, ht₀_le_b, ha_lt_t₀, ht₀_lt_b, ?_⟩
   intro u hu
   -- The local identification gives γ u = sheet_q.g (β(σ u)) for u ∈ [a, b].
   -- This is exactly `f_pull u`.

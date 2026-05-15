@@ -89,6 +89,7 @@ theorem sourceFiberPath_integrand_chain_at_lifted_sheet
       f.mem_regularSet_of_preimage_regularValue hβσt₀_reg hq_lift
     let sheet_q := f.localSheetData_at_regular hnc hq_reg
     ∃ a b : ℝ, a ∈ Icc (0 : ℝ) 1 ∧ b ∈ Icc (0 : ℝ) 1 ∧ a ≤ t₀ ∧ t₀ ≤ b ∧
+      (0 < t₀ → a < t₀) ∧ (t₀ < 1 → t₀ < b) ∧
       ∀ u ∈ Ioo a b,
         (f.sourceFiberPath hnc hβ_smooth hβ_reg hx).integrand om u
           = SmoothPath.applyCotangent
@@ -119,7 +120,7 @@ theorem sourceFiberPath_integrand_chain_at_lifted_sheet
   have ht₀_in_pre : t₀ ∈ (fun u : ℝ => β (Real.smoothTransition u)) ⁻¹' u_o :=
     hβσt₀_in_u_o
   -- Get the local identification interval (a, b).
-  obtain ⟨a, b, ha_mem, hb_mem, ha_le_t₀, ht₀_le_b, h_local⟩ :=
+  obtain ⟨a, b, ha_mem, hb_mem, ha_le_t₀, ht₀_le_b, ha_lt_t₀, ht₀_lt_b, h_local⟩ :=
     f.sourceFiberPath_integrand_eq_local_at_lifted_sheet hnc hβ_smooth hβ_reg hx
       om ht₀
   -- We may need to shrink (a, b) to ensure (β ∘ σ)(u) ∈ u_o on it.
@@ -138,7 +139,15 @@ theorem sourceFiberPath_integrand_chain_at_lifted_sheet
     refine ⟨?_, ?_⟩
     · exact le_trans ht₀.1 ht₀_le_b'
     · exact min_le_of_left_le hb_mem.2
-  refine ⟨a', b', ha'_mem, hb'_mem, ha'_le_t₀, ht₀_le_b', ?_⟩
+  have ha'_lt_t₀ : 0 < t₀ → a' < t₀ := by
+    intro ht₀_pos
+    refine max_lt (ha_lt_t₀ ht₀_pos) ?_
+    linarith
+  have ht₀_lt_b' : t₀ < 1 → t₀ < b' := by
+    intro ht₀_lt_one
+    refine lt_min (ht₀_lt_b ht₀_lt_one) ?_
+    linarith
+  refine ⟨a', b', ha'_mem, hb'_mem, ha'_le_t₀, ht₀_le_b', ha'_lt_t₀, ht₀_lt_b', ?_⟩
   intro u ⟨hau, hub⟩
   -- u ∈ Ioo a b (from a' ≥ a, b' ≤ b).
   have hu_in_ab : u ∈ Ioo a b := by
