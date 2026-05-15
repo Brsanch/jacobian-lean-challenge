@@ -354,6 +354,7 @@ import JacobianChallenge.Topology.Item14FromSingleUniformization
 import JacobianChallenge.Topology.Item14FromSubsingletonAndHomeo
 import JacobianChallenge.Topology.HolomorphicLocallyConstantDischarge
 import JacobianChallenge.Topology.LiouvilleForContMDiffOmega
+import JacobianChallenge.Topology.SubsingletonFromPrimitiveExistence
 import JacobianChallenge.Topology.ConstantsFinrank
 import JacobianChallenge.Topology.LimitAtNonPole
 import JacobianChallenge.Topology.LinearSystemAPI
