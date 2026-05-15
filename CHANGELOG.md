@@ -1,5 +1,49 @@
 # Changelog
 
+## 2026-05-16 — Local identification of `sourceFiberPath` with `sheet.g ∘ β ∘ σ` (1 chip, ~222 LOC, direct to `main`)
+
+Concrete identification of the `Classical.choose`-opaque
+`sourceFiberPath p` with the explicit local-sheet pullback
+`sheet_p.g ∘ β ∘ Real.smoothTransition` on a sub-interval `[0, δ]`.
+
+**New file** (`Manifold/MeromorphicNonzeroSourceFiberPathSheetEq.lean`,
+~222 LOC):
+
+* `sourceFiberPath_toPath_extend_eq_sheet_g_locally` — for `x` over
+  `β 0` and the local sheet centered at `x`, there exists `δ ∈ (0, 1]`
+  such that `(sourceFiberPath p).toPath.extend t = sheet.g (β (σ t))`
+  pointwise for `t ∈ [0, δ]`.
+
+The proof composes:
+
+* Continuity of `β ∘ σ` at `0`, with `β 0 ∈ sheet.V` (sheet target
+  neighborhood of `f x`), gives `δ₁ > 0` such that `β(σ [0, δ₁]) ⊆
+  sheet.V`.
+* Continuity of `toPath.extend` at `0`, with `x ∈ sheet.U` (sheet
+  source neighborhood), gives `δ₂ > 0` such that `toPath.extend [0,
+  δ₂] ⊆ sheet.U`.
+* `δ := min (min δ₁ δ₂) 1`. On `[0, δ]`:
+  - Both paths lift `β ∘ σ` (one via `sourceFiberPath_toPath_lifts`,
+    the other via `sheet.rightInvOn` at the codomain side).
+  - Both agree at `t = 0` (`(sourceFiberPath p).src = x` and
+    `sheet.g (f x) = x` via `sheet.leftInvOn`).
+* Apply `path_lift_eqOn_Icc_of_continuousOn` (just landed in
+  `MeromorphicNonzeroPathLiftUniqueOnContinuousOn.lean`).
+
+This is the **local** identification. The global identification on
+`[0, 1]` requires a subdivision argument over a finite open cover of
+the β-image by sheet domains (a future chip).
+
+Net for the trace integral: combined with the scalar bridging in
+`CotangentPullbackAtApply.lean`, the chain-rule identity
+`(sourceFiberPath p).integrand om t = applyCotangent
+(cotangentPullbackAt sheet_p.g (β(σ t)) om)
+(mfderiv (β ∘ σ) ...)` becomes derivable on `Ioo 0 δ`, since on this
+sub-interval the source-fiber-path coincides explicitly with the
+sheet pullback.
+
+Build: 8786 jobs (was 8785), zero `sorry`, zero `axiom`.
+
 ## 2026-05-16 — `ContinuousOn` variant of `path_lift_eqOn_Icc` (1 chip, ~131 LOC, direct to `main`)
 
 Sister lemma to `path_lift_eqOn_Icc` that accepts `ContinuousOn γᵢ
