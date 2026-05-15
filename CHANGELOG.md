@@ -1,5 +1,102 @@
 # Changelog
 
+## 2026-05-15 — C3 staircase steps 1–9 fully landed (15 chips, ~2,582 LOC, `feat/c3-staircase` direct to `main`)
+
+Discharges the entire 9-step C3 general-genus staircase (HANDOFF
+`HANDOFF_2026_05_15_C3_PATH_LIFT.md`) as 15 chip files. Step 7 was
+split into 7a/b/c/d-a/d-b/d-c/d-d to keep each chip standalone-useful;
+step 9 landed as a structural reduction with a named-hypothesis
+`h_struct` input for the residual `f_*ω + Stokes` content.
+
+**Path-lift trunk** (steps 1–4, ~823 LOC):
+
+* `MeromorphicNonzeroPathLiftClosed.lean` (331 LOC) — closedness
+  `sSup ∈ liftReachable` via `CompactSpace.tendsto_subseq` (with
+  `ChartedSpace.secondCountable_of_sigmaCompact` deriving
+  SecondCountable ⇒ FirstCountable ⇒ SeqCompact on `X`) + clip+if_le
+  patching from chip 24 of c3_path_lift.
+* `MeromorphicNonzeroPathLiftExistsOnIcc.lean` (117 LOC) — clopen
+  finish `sSup = T` (openness contradicts strict <T) + headline
+  `exists_continuous_lift_on_Icc`.
+* `MeromorphicNonzeroPathLiftSmoothOnIcc.lean` (225 LOC) — smooth
+  upgrade `ContMDiffOn ∞ γ (Icc 0 T)` via per-point
+  `ContMDiffWithinAt.congr_of_eventuallyEq_of_mem` against
+  chip 15's local smooth lift.
+* `MeromorphicNonzeroPathLiftSmoothPath.lean` (~150 LOC, also exposes
+  the toPath lift identity via a follow-up amend) —
+  `exists_smoothPath_of_lift_on_unitInterval` packages the smooth lift
+  into `SmoothPath 𝓘(ℝ, ℂ) X` via the `Real.smoothTransition` σ
+  reparametrisation trick (γ ∘ σ is globally `ContMDiff ∞` because
+  σ([0,1]) ⊆ [0,1] and γ is `ContMDiffOn ∞` on `[0,1]`).
+
+**Level-set chain** (steps 5–6, ~281 LOC):
+
+* `MeromorphicNonzeroLevelSetChain.lean` (~170 LOC) — `sourceFiber`
+  as Finset, `sourceFiberPath` classical-chosen per fiber point,
+  `levelSetChain` as the Finset sum, plus `sourceFiberPath_toPath_lifts`
+  bridging to the underlying β ∘ σ reparametrisation.
+* `MeromorphicNonzeroLevelSetChainBoundary.lean` (111 LOC) —
+  `sourceFiberDivisor` + `targetFiberDivisor` + `boundary_levelSetChain
+  = target - source` via `boundary_single` linearity.
+
+**Target-map bijection** (steps 7a/b/c, 584 LOC):
+
+* `MeromorphicNonzeroLevelSetTargetInjective.lean` (151 LOC) —
+  `sourceFiberPath_tgt_injOn` via `Path.extend` + `path_lift_eqOn_Icc`
+  on `β ∘ Real.smoothTransition`.
+* `MeromorphicNonzeroLevelSetTargetSurjective.lean` (240 LOC) —
+  `sourceFiberPath_tgt_surjOn` via time-reverse β + step 4 at y +
+  step 2 raw lift + double `path_lift_eqOn_Icc` (one for β ∘ τ from
+  back-path, one for β ∘ σ from forward-path, common γ_raw).
+* `MeromorphicNonzeroLevelSetTargetFiber.lean` (193 LOC) — `targetFiber`
+  Finset, `sourceFiberPath_tgt_image_eq_targetFiber` Finset bijection,
+  `boundary_levelSetChain_eq_fiberDiff` headline.
+
+**Principal-divisor identification** (step 7d, 643 LOC):
+
+* `MeromorphicNonzeroPrincipalDivisorOffFiber.lean` (110 LOC) — order
+  = 0 off-fiber via `tendsto_ne_zero_iff_meromorphicOrderAt_eq_zero`
+  using `f.regular_continuousAt` for chart-pullback continuity.
+* `MeromorphicNonzeroPrincipalDivisorAtZero.lean` (198 LOC) — order
+  = 1 at simple zero via chart-pullback eventual equality
+  (`chartPullback_eventuallyEq_toFun_at_finite`) +
+  `AnalyticAt.analyticOrderAt_eq_one_of_zero_deriv_ne_zero` +
+  `deriv_chartPullback_ne_zero_of_regular`.
+* `MeromorphicNonzeroPrincipalDivisorAtPole.lean` (188 LOC) — order
+  = -1 at simple pole via `MMeromorphicAt.iff_of_isManifold`
+  (chart-independence lifting `f.toFun ∘ chart.symm` to
+  `MeromorphicOn chart.target`) +
+  `MeromorphicOn.eventually_analyticAt` (pole isolation) +
+  `meromorphicOrderAt_inv` (sign flip).
+* `MeromorphicNonzeroLevelSetPrincipalDivisorIdentification.lean`
+  (147 LOC) — pointwise `(∂ levelSetChain) x = -(principalDivisorMap
+  f) x` via `boundary_levelSetChain_eq_fiberDiff` + case split on
+  fiber membership + Finset.sum_ite_eq' evaluation of the indicator
+  Finsupp sums.
+
+**Integral linearity + structural reduction** (steps 8, 9, 236 LOC):
+
+* `MeromorphicNonzeroLevelSetIntegrate.lean` (98 LOC) —
+  `integrate(levelSetChain)` Finset-sum expansion via
+  `SmoothChain.integrateLinearMap` ℤ-linearity.
+* `MeromorphicNonzeroAbelGeneratorFromLevelSet.lean` (138 LOC) —
+  `abelGeneratorPeriodCondition_of_levelSet_lattice`: if any chain
+  Z exists with boundary = -principalDivisorMap f (Finsupp pointwise)
+  AND `complexChainPeriodVector α Z ∈ periodLatticeImage`, then
+  `AbelGeneratorPeriodCondition B` holds. Cycle Z + AJ has boundary
+  0, period in lattice tautologically, linearity gives AJ's period
+  ∈ lattice − period(Z) ⊆ lattice (AddSubgroup.sub_mem).
+
+**LOC calibration:** every chip landed within or below HANDOFF
+estimate. Aggregate session LOC (~2,582) vs aggregate HANDOFF
+estimate (1,830–3,220 LOC for steps 5–9) is in the middle of the
+estimate range — first session this has held cleanly.
+
+**Build:** `taskpolicy lake build` green at 8776 jobs across 17 chip
++ doc commits. Zero `sorry`, zero `axiom`. Items 4/5/10/11/12/13
+remain STUB/OPEN — these flip when the residual `f_*ω + Stokes`
+content for `h_struct`'s lattice clause discharges.
+
 ## 2026-05-15 — `SimplyConnectedS2` UNCONDITIONAL via polygonal approximation (15 chips, branch `feat/phase3-s2-simply-connected`)
 
 Closes the Phase-3 item-14 reverse-leg's named hypothesis

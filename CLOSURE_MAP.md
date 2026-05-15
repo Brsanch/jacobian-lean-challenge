@@ -672,16 +672,17 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
    │       └── flips item 1
 ```
 
-## F. Net realistic ceiling at this pin (revised 2026-05-15 after C1-closed + C3 path-lift infrastructure + SimplyConnectedS2 unconditional)
+## F. Net realistic ceiling at this pin (revised 2026-05-15 after C3 staircase steps 1–9 landed)
 
-### F.0 Measured ground truth (re-measured 2026-05-15 evening, main `10050be`)
+### F.0 Measured ground truth (re-measured 2026-05-15 late evening, main `3746c0b`)
 
-- **Total `.lean`:** **94,621 LOC** (94,166 in `JacobianChallenge/` + 455-line manifest), **466 files** (465 inside `JacobianChallenge/` + 1 top-level manifest).
+- **Total `.lean`:** **97,203 LOC** (96,733 in `JacobianChallenge/` + 470-line manifest), **481 files** (480 inside `JacobianChallenge/` + 1 top-level manifest).
 - **Recent waves (2026-05-14):** A1 discharge (+870 LOC); C1 primitives (`feat/c1-smooth-path-connected`, +371 LOC); A2 from `feat/antipode-smoothness` (+660 LOC) + unconditional headline (+109 LOC); seven C3+C4 named-hypothesis reductions (~800 LOC); five RS-side principal-divisor chips closing `Pic⁰(ℙ¹) = 0` unconditionally (~830 LOC).
-- **Recent waves (2026-05-15):** c1_closed morning arc (14 files, ~2,400 LOC — SmoothPath ω→C^∞ refactor + full SmoothPath functorial pushforward + complete path-integration calculus); c3_path_lift evening arc (19 files, ~2,900 LOC — algebra closure + regular-value framework + planar/manifold local sheets + IsLocalHomeomorphOn + fiber finiteness + Hurwitz patching + continuous & smooth path-lift primitives + Lebesgue partition + `liftReachable` openness); SimplyConnectedS2 unconditional arc on `feat/phase3-s2-simply-connected`, FF-merged to main (15 files, ~3,000 LOC — 2-chart cover + Lebesgue subdivision + stereographic straight-line approximation + segment empty interior + polygonal closure).
-- **Net delta 2026-05-14 → 2026-05-15:** +50 files / +7,727 LOC across the three same-day arcs.
+- **Recent waves (2026-05-15 morning/afternoon):** c1_closed (14 files, ~2,400 LOC); c3_path_lift evening (19 files, ~2,900 LOC); SimplyConnectedS2 unconditional (15 files, ~3,000 LOC).
+- **Recent wave (2026-05-15 late evening, this commit set 5567ba8…3746c0b):** **C3 staircase steps 1–9** — 15 chip files, +2,582 LOC. All nine HANDOFF staircase steps have chips landed (some as structural reductions with named-hypothesis inputs for the residual analytical content). Build delta 8746 → 8776 jobs.
+- **Cumulative net delta 2026-05-14 → 2026-05-15:** +65 files / +10,309 LOC across all four arcs (c1_closed + c3_path_lift + SimplyConnectedS2 + C3 staircase steps 1–9).
 - **Scoreboard:** 12 STRICT-CLOSED · 3 STUB · 9 OPEN (item flips await Phase 2 wiring of the Abel-Jacobi iso on arbitrary `X`, not the genus-0 corner).
-- **Per-chip-file LOC density** (measured across all 2026-05-14 + 2026-05-15 chips): **90–322 LOC**, mean ≈ 195.
+- **Per-chip-file LOC density** (measured across all 2026-05-14 + 2026-05-15 chips): **90–331 LOC**, mean ≈ 175.
 
 ### F.1 Past-wave LOC (grounds the remaining estimates)
 
@@ -749,7 +750,7 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 | **B** | `HolomorphicOneFormFiniteDim X` (L² Hodge / elliptic regularity; mathlib gap) | **3,000–7,000** |
 | **C1** | `AbelJacobiInput` (smooth-path-connectedness; `linearInChart` + chart-cover) — 2 primitives landed 2026-05-14 (`SmoothPathConnected` predicate + `linearInChart` at ω with line-in-target hypothesis, 371 LOC). Remaining: chart-cover lift. ω-level structural caveat documented (line vs segment). | **400–1,100** *remaining* |
 | **C3 (genus-0 corner)** | `AbelHypothesis_of_genus_zero` (via `Subsingleton (AnalyticJacobian)` at `genus X = 0`) — landed 2026-05-14 (`Manifold/AbelHypothesisGenusZero.lean`, 99 LOC). | **done** |
-| **C3 (chain-level + algebra + per-generator)** | `AbelHypothesis B ← AbelChainPeriodCondition B ← AbelGeneratorPeriodCondition B` (`Manifold/AbelHypothesisFromPeriodCondition.lean`, ~525 LOC across 4 commits 2026-05-14). Reduces C3 to a single sharp atomic statement: for each `f : MeromorphicNonzero X`, the period vector of the AJ chain of `div(f)` lies in `periodLatticeImage`. The remaining mathlib content is the classical Abel-forward chain construction (level-set chain of `f`) and its Stokes-invariance. | **1,000–2,500** *remaining* (general-genus discharge of `AbelGeneratorPeriodCondition`) |
+| **C3 (chain-level + algebra + per-generator)** | `AbelHypothesis B ← AbelChainPeriodCondition B ← AbelGeneratorPeriodCondition B` (`Manifold/AbelHypothesisFromPeriodCondition.lean`, ~525 LOC across 4 commits 2026-05-14). Reduces C3 to a single sharp atomic statement: for each `f : MeromorphicNonzero X`, the period vector of the AJ chain of `div(f)` lies in `periodLatticeImage`. **9-step staircase landed 2026-05-15** (~2,582 LOC across 15 files; steps 1–9 all have chips, see `OPEN.md` for per-step file list). Cycle-period argument fully proven in-tree; ∂(levelSetChain) = -principalDivisorMap f established pointwise via order-1 zero / order-(-1) pole analysis using chart-independence of MMeromorphicAt. | **~800–1,500** *remaining* (residual analytical content: explicit `f_*ω` SmoothOneForm construction + Stokes/residue argument on β: 0→∞ in ℙ¹ to discharge `h_struct`'s lattice clause in `MeromorphicNonzeroAbelGeneratorFromLevelSet.lean`) |
 | **C4 (genus-0)** | `jacobiInversion_of_genus_zero_and_subsingleton_pic0` (`Manifold/JacobiInversionGenusZero.lean`, 90 LOC). At genus 0, `JacobiInversion B hAbel` reduces to `Subsingleton (Pic0 X)`. | **done** at genus 0 modulo `Subsingleton (Pic0 X)` |
 | **C4 RS (Pic⁰(ℙ¹) = 0)** | `subsingleton_pic0_RiemannSphere` (`Manifold/Pic0RiemannSphereSubsingleton.lean`, 190 LOC, built on `mnRSSimplePole` 110 LOC + `mnRSInversion` 200 LOC + `mnRSAffineFactor` 190 LOC + elementary-divisor identity in `Pic0RiemannSphereTrivial.lean` 140 LOC) — **unconditional** in-tree. `AbelJacobiInput.abelJacobiEquiv_of_RiemannSphere_unconditional` ships the full Abel-Jacobi iso `Pic0 RS ≃+ AnalyticJacobian RS` axiom-free. | **done** (Pic⁰(ℙ¹) = 0 unconditional) |
 | **C4 general genus** | Abel converse (injectivity) + Jacobi inversion theorem (surjectivity) — classical content not at the pin. | **~1,200–2,800** *remaining* |
@@ -770,9 +771,9 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 | **Defer uniformization** (recommended) | **11,800–27,200 LOC** | **23/24 STRICT-CLOSED** (item 14 stays OPEN with uniformization as the one owed classical input) |
 | **Attempt uniformization in-tree** | ~20k–47k LOC | 24/24 |
 
-**Recommended working range: 11,000–22,000 LOC** for the realistic 23/24 target (after 2026-05-14's + 2026-05-15's substantial work).
+**Recommended working range: 8,500–20,500 LOC** for the realistic 23/24 target (after 2026-05-15's full C3 staircase landing). Remaining work centers on: (i) C3's residual analytical content — the `f_*ω` pushforward 1-form construction + Stokes/residue argument needed to discharge `h_struct`'s lattice clause in the structural step-9 reduction (`MeromorphicNonzeroAbelGeneratorFromLevelSet.lean`); (ii) `PeriodLatticeDiscretenessBundle` (Riemann bilinear); (iii) general-genus uniformization and the remaining named hypotheses listed in §F.2.
 
-**Final-state projection** (23/24 path): repo grows from current **94,621 LOC** → **~105,000–117,000 LOC**.
+**Final-state projection** (23/24 path): repo grows from current **97,203 LOC** → **~105,000–117,000 LOC**.
 
 ### F.5 Recommended priority order (revised 2026-05-14 post A1 + A2 + C1 primitives + Pic⁰(ℙ¹) = 0 unconditional)
 
