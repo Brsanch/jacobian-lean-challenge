@@ -125,14 +125,40 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **100,317 LOC** total in `*.lean` files
-(99,830 inside `JacobianChallenge/` across 497 files + 487-line
-top-level import manifest). Re-measured 2026-05-16 after the
-`HolomorphicOneFormSubsingletonOfSimplyConnected` arc merged at main
-HEAD `1f49552`, via `find JacobianChallenge -name '*.lean' -exec wc -l +`
-for ground truth. **Ten chips landed 2026-05-16 (earlier) + 13 chips
-landed 2026-05-16 (later)**, the 13-chip later arc adding **+1,510 LOC**
-across 7 new files plus manifest updates:
+**Current repo size:** **~102,600 LOC** total in `*.lean` files
+(re-measured after the 13-chip C3 structural-reduction + chain-rule
+pathway arc merged at main HEAD `9a9d45c`, **+2,280 LOC across 13 new
+files**). `feat/abel-generator-input-independence` branch
+fast-forward-merged into `main`. The arc delivers a two-tier
+reduction:
+
+**Tier 1 — Structural reductions** of `AbelHypothesis B` to **two
+named classical inputs**:
+
+* `RegularLevelSetLatticeClause X α h` — period vector of
+  `regularLevelSetChain f hnc h0 h∞` ∈ `periodLatticeImage`. The
+  substantive analytic core (residue theorem for `f_*ω` on `ℙ¹`).
+* `AbelLatticeWitnessCriticalCase X α h` — witness chain for `f` with
+  `0` or `∞` critical (Möbius substitution residual).
+
+Headlines:
+`AbelJacobiInput.forall_abelHypothesis_of_split hRL hCR : ∀ B, AbelHypothesis B`,
+`dischargedGenerators_eq B B' : B.dischargedGenerators = B'.dischargedGenerators`.
+
+**Tier 2 — Chain-rule pathway segments 1-3** (structural per-`t`
+identity for the level-set chain integral on `Ioo 0 δ`):
+`∑_p integrand(sourceFiberPath p) ω t = applyCotangent (∑_p cotangentPullbackAt sheet_p.g (β(σ t)) ω) (β'(σ t) σ'(t))`.
+
+The **injection half** of the sourceFiber ↔ `f⁻¹(β(σ t))` bijection is
+fully proved (`sourceFiberPath_toPath_extend_injOn_at` at arbitrary
+`t ∈ Icc 0 1`, plus `Set.InjOn`-form and image ⊆ fiberFinset). The
+surjectivity half (cardinality argument via
+`degreeFiber_eq_card_of_regular_witness` or time-reversal at general
+`t`) remains.
+
+**Prior 2026-05-16 stack still applies** (10 chips earlier + 13 chips
+later, +1,510 LOC) for the `HolomorphicOneFormSubsingletonOfSimplyConnected`
+arc and the f_*ω pointwise scaffolding:
 
 * `h_AJ_boundary` discharge (+125) — `PrincipalDivisorAJChainBoundary.lean`.
 * Regular β: 0→∞ existence on ℙ¹ (+431) — `MeromorphicNonzeroRegularPath.lean`.
