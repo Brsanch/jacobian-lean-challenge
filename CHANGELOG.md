@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-05-16 — Real-model RS manifold + open-set realification (1 chip, ~96 LOC, direct to `main`)
+
+Foundation chip for downstream `SmoothOneForm 𝓘(ℝ, ℂ) RiemannSphere`
+work (in particular the `f_*ω` trace construction on `regularValueSet`).
+
+**New file** (`Manifold/RiemannSphereRealManifold.lean`, 96 LOC):
+
+* Documents the auto-derived real-model RS instances via `inferInstance`
+  examples for `n : WithTop ℕ∞`, `∞`, `⊤`. The instance chain is
+  `RiemannSphere.instIsManifold` (complex-analytic ω) →
+  `complexManifoldRealification` (generic conversion) →
+  `IsManifold 𝓘(ℝ, ℂ) n RiemannSphere`. No new content — just a
+  discoverable reference point for downstream files.
+
+* `ContMDiffOn.complex_to_real_of_isOpen` — sister lemma to the
+  existing pointwise `ContMDiffAt.complex_to_real` (in
+  `Manifold/ContMDiffRealification.lean`), generalised to smoothness
+  on an *open* subset. Converts `ContMDiffOn 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω g u`
+  to `ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ g u` via pointwise application of
+  `ContMDiffAt.complex_to_real` on each `x ∈ u` (using `IsOpen.mem_nhds`
+  to extract `ContMDiffAt` from `ContMDiffOn`).
+
+This is the workhorse for converting the complex-analytic local-sheet
+smoothness (`exists_contMDiffOn_localSheet_g_near_basePoint` produces
+`ContMDiffOn 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω`) into the real-smooth regularity
+required by `SmoothOneForm` pullbacks.
+
+Build: 8780 jobs (was 8779), zero `sorry`, zero `axiom`.
+
 ## 2026-05-16 — Concrete regular level-set chain (1 chip, ~146 LOC, direct to `main`)
 
 Wires the β-existence chip into the level-set chain construction.
