@@ -47,7 +47,7 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 open Classical in
 /-- Extend a BCF on `↥(closedBall)` to a function `ℂ → ℂ` (with junk
 value `0` outside the closed disk). -/
-private noncomputable def bcfExtend
+noncomputable def bcfExtend
     (cover : DiskChartCover X) {x : X}
     (g : BoundedContinuousFunction
       ↥(closedBall ((chartAt ℂ x) x) (cover.innerRadius x)) ℂ) : ℂ → ℂ :=
@@ -58,7 +58,7 @@ private noncomputable def bcfExtend
 
 omit [IsManifold 𝓘(ℂ) ω X] in
 /-- At points of the closed disk, the extension agrees with the BCF. -/
-private lemma bcfExtend_apply (cover : DiskChartCover X) {x : X}
+lemma bcfExtend_apply (cover : DiskChartCover X) {x : X}
     (g : BoundedContinuousFunction
       ↥(closedBall ((chartAt ℂ x) x) (cover.innerRadius x)) ℂ)
     {w : ℂ} (hw : w ∈ closedBall ((chartAt ℂ x) x) (cover.innerRadius x)) :
