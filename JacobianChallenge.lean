@@ -308,6 +308,7 @@ import JacobianChallenge.Manifold.SmoothChainIntegralLinearity
 import JacobianChallenge.Manifold.SmoothCycle
 import JacobianChallenge.Manifold.SmoothOneForm
 import JacobianChallenge.Manifold.SmoothOneFormAlgebra
+import JacobianChallenge.Manifold.SmoothOneFormOn
 import JacobianChallenge.Manifold.SmoothPathChartCompat
 import JacobianChallenge.Manifold.SmoothPathCompSmooth
 import JacobianChallenge.Manifold.SmoothPathCompSmoothIntegrate
