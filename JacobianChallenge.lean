@@ -329,6 +329,7 @@ import JacobianChallenge.Manifold.SmoothCycle
 import JacobianChallenge.Manifold.SmoothOneForm
 import JacobianChallenge.Manifold.SmoothOneFormAlgebra
 import JacobianChallenge.Manifold.SmoothOneFormOn
+import JacobianChallenge.Manifold.SmoothOneFormPullback
 import JacobianChallenge.Manifold.SmoothPathChartCompat
 import JacobianChallenge.Manifold.SmoothPathCompSmooth
 import JacobianChallenge.Manifold.SmoothPathCompSmoothIntegrate
@@ -436,6 +437,7 @@ import JacobianChallenge.Manifold.LocalSheetDataUnique
 import JacobianChallenge.Manifold.CotangentPullbackSheetIdentification
 import JacobianChallenge.Manifold.SourceSheetSumEqTraceAt
 import JacobianChallenge.Manifold.PerFiberSheetEventually
+import JacobianChallenge.Manifold.SourceSheetSumEqTraceAtEventually
 import JacobianChallenge.Manifold.MeromorphicNonzeroFiberFinite
 import JacobianChallenge.Manifold.MeromorphicNonzeroHurwitzPatching
 import JacobianChallenge.Manifold.MeromorphicNonzeroLocalBiholomorphism
