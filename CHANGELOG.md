@@ -1,5 +1,32 @@
 # Changelog
 
+## 2026-05-16 — Pointwise trace `f_*ω` at a regular value (1 chip, ~117 LOC, direct to `main`)
+
+Combines `cotangentPullbackAt` with the fibre-finiteness infrastructure
+to give the **pointwise trace** `f_*om` at a regular value.
+
+**New file** (`Manifold/MeromorphicNonzeroTraceAt.lean`, 117 LOC):
+
+* `fiberFinset f hv : Finset X` — the fiber `f⁻¹({v})` at a regular
+  value `v`, packaged as a `Finset`. Uses
+  `fiber_finite_of_mem_regularValueSet`.
+* `mem_fiberFinset_iff` — membership characterised by
+  `f.toRiemannSphere x = v`.
+* `traceAt f hnc hv om : CotangentSpace 𝓘(ℝ, ℂ) v` — the trace, a
+  finite sum of per-sheet `cotangentPullbackAt` contributions over the
+  fiber. Each sheet's local inverse comes from
+  `f.localSheetData_at_regular hnc hp_reg` where `hp_reg` is derived
+  from `mem_regularSet_of_preimage_regularValue`.
+* `traceAt_zero`, `traceAt_add`, `traceAt_smul` — ℝ-linearity of the
+  trace in the 1-form argument, via the underlying
+  `cotangentPullbackAt_{zero, add, smul}` + `Finset.sum_{zero,
+  add_distrib, smul_sum}`.
+
+This is the **pointwise** `f_*ω`. Smoothness of `v ↦ traceAt f hnc hv
+om` as a function of `v` is a separate downstream layer.
+
+Build: 8782 jobs (was 8781), zero `sorry`, zero `axiom`.
+
 ## 2026-05-16 — Pointwise cotangent pullback primitive (1 chip, ~94 LOC, direct to `main`)
 
 The foundational pointwise primitive for the trace construction
