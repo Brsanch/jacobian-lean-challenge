@@ -1,5 +1,119 @@
 # Changelog
 
+## 2026-05-16 — C3 structural reduction + chain-rule pathway segments 1-3 (13 chips, ~2,280 LOC, FF to `main`)
+
+Two-tier delivery on top of the May-15 path-lift infrastructure, off
+`origin/main` at `4081de3` via branch `feat/abel-generator-input-independence`,
+fast-forward-merged into `main` at `9a9d45c`.
+
+### Tier 1 — Structural reductions (3 chips, ~822 LOC)
+
+* `Manifold/AbelGeneratorInputIndependence.lean` (+314 LOC) —
+  `dischargedGenerators` and `AbelGeneratorPeriodCondition` are
+  **invariant under the choice of `AbelJacobiInput`** (basePoint and
+  pathFromBase). Proof: the difference of two AJ-chains for a divisor
+  `D` has boundary `D.degree • (δ_{B'.base} − δ_{B.base})`; for
+  principal divisors `(principalDivisorMap f).degree = 0` via
+  `residue_theorem`, so the difference is a smooth cycle and its
+  period vector lies in `periodLatticeImage`.
+
+* `Manifold/AbelHypothesisFromLatticeWitness.lean` (+193 LOC) — C3
+  reduces to **one named classical input** `AbelLatticeWitness X α h`
+  (the Abel-forward existence statement, restricted to non-constant
+  `f.toFun`). Constant-`toFun` discharge is internal via
+  `principalDivisorMap_of_toFun_const`.
+
+* `Manifold/AbelLatticeWitnessFromRegular.lean` (+192 LOC) +
+  `Manifold/MeromorphicNonzeroConstantBridge.lean` (+181 LOC) —
+  splits `AbelLatticeWitness` into:
+  - `RegularLevelSetLatticeClause` (substantive analytic core: period
+    of `regularLevelSetChain f hnc h0 h∞` ∈ `periodLatticeImage`).
+  - `AbelLatticeWitnessCriticalCase` (small residual for `0`/`∞`
+    critical, classically a Möbius substitution).
+  Public bridge `not_isConstantMap_toRiemannSphere_of_toFun_nonconst`
+  replicates `R4FibreSumBalance.lean`'s private `isConst_toFun_of_toRS_const`
+  / `not_isConstantMap_toRS_infty` (chart-ball + `poles_finite`).
+
+### Tier 2 — Chain-rule pathway segments 1-3 (10 chips, ~1,458 LOC)
+
+Targets the substantive analytic content inside
+`RegularLevelSetLatticeClause`. Builds the per-`t` chain-rule identity
+on a sub-interval `Ioo 0 δ` end-to-end at the structural level.
+
+* `Manifold/SmoothPathVelocityEqLocal.lean` (+132 LOC) +
+  `Manifold/SmoothPathVelocityFromFun.lean` (+132 LOC) — generic
+  primitives: `velocity`, `integrand`, and `∫_s^t integrand` are
+  invariant under `ambient` pointwise-equality on `Icc s t` (template
+  from `velocity_compSmoothPath_of_mem_Ioo`). The `_FromFun` variant
+  compares against an external function `f : ℝ → X` (used for
+  `f := sheet.g ∘ β ∘ σ`).
+
+* `Manifold/SourceFiberPathAmbientSheetEq.lean` (+121 LOC) — lifts
+  `sourceFiberPath_toPath_extend_eq_sheet_g_locally` from
+  `toPath.extend` to `ambient`, then composes with
+  `integrand_eq_of_ambient_eqOn_Icc_fun` to give the per-fiber-point
+  integrand on `Ioo 0 δ` as a chart-level expression.
+
+* `Manifold/SheetGBetaSigmaChainRule.lean` (+140 LOC) — chain rule
+  `mfderiv (sheet.g ∘ β ∘ σ) t (1) = mfderiv sheet.g (β(σ t)) (mfderiv β (σ t) (mfderiv σ t (1)))`
+  via two `mfderiv_comp_apply` applications, plus a specialised version
+  at the base value with realified smoothness from
+  `contMDiffAt_localSheet_g_at_basePoint` + `ContMDiffAt.complex_to_real`.
+
+* `Manifold/SourceFiberPathIntegrandChainExpand.lean` (+135 LOC) —
+  combines the integrand identification with the chain rule to fully
+  expand the per-fiber-point integrand on `Ioo 0 δ`.
+
+* `Manifold/SourceFiberPathIntegrandPullback.lean` (+103 LOC) —
+  repackages via `applyCotangent_cotangentPullbackAt`:
+  `integrand = applyCotangent (cotangentPullbackAt sheet_p.g (β(σ t)) ω) (β'(σ t) σ'(t))`.
+
+* `Manifold/SumSourceFiberIntegrandPullback.lean` (+93 LOC) — pulls
+  `applyCotangent` outside the sourceFiber sum via
+  `applyCotangent_finset_sum`.
+
+* `Manifold/LevelSetIntegralChainRuleStructural.lean` (+140 LOC) —
+  **structural headline** `sum_sourceFiber_integrand_chain_at`:
+  `∑_p integrand(sourceFiberPath p) ω t = applyCotangent (∑_p cotangentPullbackAt sheet_p.g (β(σ t)) ω) (β'(σ t) σ'(t))`.
+
+* `Manifold/SourceFiberUniformDelta.lean` (+195 LOC) — uniform `δ`
+  across sourceFiber via `Finset.min'`. Headlines: `perFiberDelta`,
+  `uniformFiberDelta` (with `1`-fallback when empty), and the bounds
+  `0 < uniformFiberDelta`, `uniformFiberDelta ≤ 1`,
+  `uniformFiberDelta ≤ perFiberDelta p`.
+
+* `Manifold/SourceFiberPathAmbientInjOn.lean` (+124 LOC) —
+  `sourceFiberPath_toPath_extend_injOn_at`: generalises
+  `sourceFiberPath_tgt_injOn` to **any** `t₀ ∈ Icc 0 1`.
+
+* `Manifold/SourceFiberPathAmbientImageAt.lean` (+148 LOC) —
+  lift-at-t, fiberFinset membership, `Set.InjOn`-form, and Finset
+  image ⊆ `fiberFinset (β(σ t))`. The **injection half** of the
+  sourceFiber ↔ `f⁻¹(β(σ t))` bijection is now structurally closed.
+
+### Net status
+
+* `AbelHypothesis B` (any `B`) ← `RegularLevelSetLatticeClause` +
+  `AbelLatticeWitnessCriticalCase`. Two named classical inputs.
+* Build green at 8808 jobs (+15 over baseline 8793). Zero `sorry`,
+  zero `axiom`. No item flips (12/24 unchanged).
+* Item-flip blockers for `RegularLevelSetLatticeClause`: the
+  surjectivity half of the bijection (cardinality argument via
+  `degreeFiber_eq_card_of_regular_witness`, or time-reversal
+  generalisation), Lebesgue gluing across the
+  `exists_subdivision_hurwitzPatching` cover, σ-reparametrisation,
+  and the residue theorem for meromorphic 1-forms on `ℙ¹`.
+
+### Hazards captured
+
+* `Basis` is in `namespace Module` post-mathlib-refactor —
+  `open Module` (or `open Submodule Module`) needed in chips that use
+  `Basis` directly; transitive import is not enough.
+* `Path.extend_extends` deprecated to `Path.extend_apply`.
+* `LinearMap.map_smul_of_tower` (for `→ₗ[ℤ]` maps) requires
+  `CompatibleSMul` typically unavailable for `SmoothChain` boundary;
+  use the unbundled `map_smul` instead.
+
 ## 2026-05-16 — `HolomorphicOneFormSubsingletonOfSimplyConnected` arc (13 chips, ~1,510 LOC, direct to `main`)
 
 End-to-end **analytic-side closure** of Item 14's reverse leg via the
