@@ -1,5 +1,45 @@
 # Changelog
 
+## 2026-05-16 — Regular β: 0→∞ existence on ℙ¹ (1 chip, ~431 LOC, direct to `main`)
+
+Lands the **β-existence input** for step 9's structural reduction. Given
+`f : MeromorphicNonzero X` non-constant with both `0` and `∞` regular
+values, produces a smooth `β : ℝ → RiemannSphere` with `β 0 = 0`,
+`β 1 = ∞`, and `β t ∈ f.regularValueSet` for all `t ∈ [0, 1]`.
+
+This is the β that the level-set chain construction
+(`MeromorphicNonzeroLevelSetChain.lean` + downstream) consumes. Combined
+with step 7d-d's boundary identification, it concretely wires the
+boundary clause of `h_struct` in
+`abelGeneratorPeriodCondition_of_levelSet_lattice` — only the
+**lattice-period clause** for `levelSetChain f β` remains as the
+analytical residual.
+
+**New file** (`Manifold/MeromorphicNonzeroRegularPath.lean`, 431 LOC):
+
+* `exists_s_avoiding_critical` — for any finite `S ⊂ ℂ`, there exists
+  `s : ℝ` such that `s * w.im ≠ w.re` for every `w ∈ S` with `w.im > 0`.
+  (Pure cardinality: ℝ infinite, the forbidden set `{w.re / w.im}` finite.)
+* `chartN_segment_mem_regularValueSet` — for such `s`, the chartN
+  segment `{t (s + i) | t ∈ [0, 1]}` in ℂ avoids `chartN`-images of
+  critical values. Uses `0 ∈ regularValueSet` to kill the `t = 0`
+  endpoint.
+* `chartS_segment_mem_regularValueSet` — symmetric. The chartS segment
+  from `1/(s + i)` to `0` avoids `chartS`-images of critical values
+  via the reciprocal formula `arg(1/w) = -arg w` (reduced to the same
+  `s = w.re/w.im` condition by direct computation). Uses
+  `∞ ∈ regularValueSet` for the `0` endpoint.
+* `exists_regular_path_zero_to_infty` — the headline. Builds two
+  `SmoothPath.linearInChartSegment` paths through the bridge point
+  `r := some(s + i)`, concatenates via `SmoothPath.concat`, and extracts
+  the underlying `ℝ → RS` ambient smooth function from
+  `SmoothPath.ambient`. Endpoint identities via
+  `ambient_eq_on_unitInterval` + `Path.source'/target'`. Regularity on
+  `[0, 1]` by case-splitting `t ≤ 1/2` vs `t > 1/2` and applying the two
+  segment lemmas to each half's chart-pullback.
+
+Build: 8778 jobs (was 8777), zero `sorry`, zero `axiom`.
+
 ## 2026-05-16 — `h_AJ_boundary` discharged (1 chip, ~125 LOC, direct to `main`)
 
 Discharges the second named-hypothesis input of step 9
