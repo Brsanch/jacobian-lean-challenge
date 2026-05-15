@@ -44,21 +44,21 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
 /-- For any `y : X`, pick a base point `x ∈ basePoints` with `y` in
 the chart-`x` preimage of `ball (innerRadius_x)`. -/
-private noncomputable def chosenBasePoint (cover : DiskChartCover X) (y : X) : X :=
+noncomputable def chosenBasePoint (cover : DiskChartCover X) (y : X) : X :=
   (cover.covers y).choose
 
 omit [IsManifold 𝓘(ℂ) ω X] in
-private lemma chosenBasePoint_mem (cover : DiskChartCover X) (y : X) :
+lemma chosenBasePoint_mem (cover : DiskChartCover X) (y : X) :
     chosenBasePoint cover y ∈ cover.basePoints :=
   (cover.covers y).choose_spec.1
 
 omit [IsManifold 𝓘(ℂ) ω X] in
-private lemma chosenBasePoint_source (cover : DiskChartCover X) (y : X) :
+lemma chosenBasePoint_source (cover : DiskChartCover X) (y : X) :
     y ∈ (chartAt ℂ (chosenBasePoint cover y)).source :=
   (cover.covers y).choose_spec.2.1
 
 omit [IsManifold 𝓘(ℂ) ω X] in
-private lemma chosenBasePoint_chartImage_in_ball (cover : DiskChartCover X) (y : X) :
+lemma chosenBasePoint_chartImage_in_ball (cover : DiskChartCover X) (y : X) :
     (chartAt ℂ (chosenBasePoint cover y)) y ∈
       ball ((chartAt ℂ (chosenBasePoint cover y)) (chosenBasePoint cover y))
         (cover.innerRadius (chosenBasePoint cover y)) :=
