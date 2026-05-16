@@ -15,6 +15,68 @@
 > now reflect them. A `feedback_check_system_currentDate.md` memory
 > documents the root cause and prevention for future sessions.
 
+## 2026-05-16 (late night) — `HolomorphicTraceExtension X` item-(2) descent + Hurwitz form arc (7 chips, ~655 LOC, direct to `main`)
+
+Builds on the night's algebraic foundation to ship the full pure-
+analytic content of item (2): cyclic-sum descent through `ξ^k`, Hurwitz
+local normal form, analytic local inverse, and the composed source-
+side z-form identity.
+
+* **Chip 3b-4** `CyclicSumFactorKthPowerDescent.lean` (~75 LOC). The
+  descent headline: combining the night's
+  `cyclicSum_factor_pow_k_sub_one_cyclic_invariant` with the existing
+  `analyticAt_descent_of_mu_k_invariant`, produces `Q : ℂ → ℂ`
+  analytic at `0` with
+  `cyclicSum h ω k ξ = ξ^(k-1) · Q(ξ^k)` eventually.
+  Conversion from "∀ᶠ ξ, ∀ j ∈ range k" to "∀ ζ, ζ^k = 1 → ..." uses
+  `IsPrimitiveRoot.eq_pow_of_pow_eq_one`.
+
+* **Chip 3b-5** `CyclicSumFactorKthPowerDescentKthRoot.lean` (~100 LOC).
+  Re-quantification over `v = ξ^k`: openness of `ξ ↦ ξ^k` at `0` gives
+  `∀ᶠ v in 𝓝 0, ∀ ξ, ξ^k = v → cyclicSum h ω k ξ = ξ^(k-1) · Q v`.
+  Helper `eventually_forall_pow_kth_root_mem_of_mem_nhds` packages
+  "preimage of any 𝓝 0 under ξ ↦ ξ^k is a 𝓝 0".
+
+* **Chip 3c-1** `HurwitzLocalForm.lean` (~115 LOC). Composes
+  `analytic_local_factorization` (gives `g - w₀ = (z-x₀)^k · u`) and
+  `analytic_kth_root_of_nonvanishing` (gives analytic `r` with
+  `r^k = u`) to produce the Hurwitz local normal form:
+  `g z - w₀ = ψ z^k` with `ψ z := (z-x₀) · r z`, `ψ x₀ = 0`,
+  `deriv ψ x₀ = r x₀ ≠ 0`. Derivative via `HasDerivAt` product rule.
+
+* **Chip 3c-2** `HurwitzLocalFormInverse.lean` (~95 LOC). Strengthens
+  `hurwitz_local_form` with an analytic local inverse `φ` at `0`
+  (mathlib's `AnalyticAt.analyticAt_localInverse`). Outputs `φ 0 = x₀`
+  and the two eventual identities `ψ (φ s) = s`, `φ (ψ z) = z`.
+
+* **Chip 3c-3** `HurwitzCyclicSumDescent.lean` (~95 LOC). Composes
+  chip 3c-2 with chip 3b-4: for any analytic `h` at `x₀`, the
+  transported coefficient `h ∘ φ` is analytic at `0`, so the descent
+  produces `Q` analytic at `0` with
+  `cyclicSum (h ∘ φ) ω k ξ = ξ^(k-1) · Q(ξ^k)` eventually.
+
+* **Chip 3c-4** `HurwitzCyclicSumDescentKthRoot.lean` (~80 LOC).
+  Target-side k-th root form of chip 3c-3: re-quantifies over
+  `v = ξ^k` while keeping the same `Q`. Direct composition of 3c-3
+  with the openness helper.
+
+* **Chip 3c-5** `HurwitzCyclicSumDescentZForm.lean` (~95 LOC). Source-
+  side z-form: pulls the target-side eventual back to `∀ᶠ z in 𝓝 x₀`
+  via `Tendsto.eventually` applied to `z ↦ (ψ z)^k`, then specialises
+  at `ξ := ψ z` and substitutes `(ψ z)^k = g z - w₀` from the Hurwitz
+  identity. Final form:
+  `∀ᶠ z in 𝓝 x₀, cyclicSum (h ∘ φ) ω k (ψ z) = (ψ z)^(k-1) · Q(g z - w₀)`.
+
+Build green across all chips. Zero `sorry`, zero `axiom`.
+
+**Net effect.** The complete pure-analytic foundation for item (2) of
+`HolomorphicTraceExtension X` is now in tree. The remaining work is
+the manifold/cotangent-bundle wiring: identify the source-chart
+coefficient of α with `h`, the chart-pullback of `f` with `g`, the
+chart of RS at the critical value with the target side, and bundle
+the resulting `Q` as the chart coefficient of a `HolomorphicOneForm
+RiemannSphere` extending `fStarOmegaHolOn`.
+
 ## 2026-05-16 (night) — `HolomorphicTraceExtension X` item-(2) algebraic foundation (11 chips, ~1501 LOC, direct to `main`)
 
 Lays the complete algebraic foundation for item (2) of the
