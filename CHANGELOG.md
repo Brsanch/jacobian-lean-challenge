@@ -1,6 +1,21 @@
 # Changelog
 
-## 2026-05-20 (evening) — Trace-level realification compatibility (chip 3, 345 LOC, direct to `main`)
+> **Note on dates (audit 2026-05-16):** Earlier sessions wrote
+> *future-dated* labels driven by anchoring on inflated dates in prior
+> memory files instead of the system `currentDate`. The CHANGELOG
+> headers below were remapped on 2026-05-16 to match git-timestamp
+> reality:
+>
+> - originally `2026-05-15` headers → real `2026-05-14`,
+> - originally `2026-05-16` headers → real `2026-05-15`,
+> - originally `2026-05-17`/`2026-05-18`/`2026-05-19-afternoon`/-`—` → real `2026-05-15`,
+> - originally `2026-05-19-late-afternoon`/`-evening`/`2026-05-20` → real `2026-05-16`.
+>
+> Git commit timestamps are the authoritative source; the labels here
+> now reflect them. A `feedback_check_system_currentDate.md` memory
+> documents the root cause and prevention for future sessions.
+
+## 2026-05-16 (evening) — Trace-level realification compatibility (chip 3, 345 LOC, direct to `main`)
 
 Closes the third piece of item (3) of the `HolomorphicTraceExtension`
 closure plan. Sums the per-summand realification compatibility (chip 2)
@@ -50,7 +65,7 @@ real and imag) are now CLOSED. Remaining for
 
 **Build**: full lake build 8887 jobs clean; zero `sorry`, zero `axiom`.
 
-## 2026-05-20 (late afternoon) — Realification compatibility primitives (2 chips, 289 LOC, direct to `main`)
+## 2026-05-16 (late afternoon) — Realification compatibility primitives (2 chips, 289 LOC, direct to `main`)
 
 Per-summand realification compatibility for the holomorphic cotangent
 pullback, closing two of the three pieces needed for item (3) of the
@@ -117,7 +132,7 @@ is found.
 
 **Build**: full lake build 8886 jobs clean; zero `sorry`, zero `axiom`.
 
-## 2026-05-20 (afternoon) — `fStarOmegaHolOn` arc: holomorphic-side parallel (6 chips, 828 LOC, direct to `main`)
+## 2026-05-16 (afternoon) — `fStarOmegaHolOn` arc: holomorphic-side parallel (6 chips, 828 LOC, direct to `main`)
 
 Continues the morning's `fStarOmegaOn` arc with the **holomorphic-side
 parallel**: builds `f.fStarOmegaHolOn hnc α : HolomorphicOneFormOn
@@ -201,7 +216,7 @@ with the realified trace on the regular set.
 
 **Build**: full lake build 8884 jobs clean; zero `sorry`, zero `axiom`.
 
-## 2026-05-20 — `fStarOmegaOn` arc + `HolomorphicTraceExtension` reduction (6 chips, ~974 LOC, direct to `main`)
+## 2026-05-16 (morning) — `fStarOmegaOn` arc + `HolomorphicTraceExtension` reduction (6 chips, ~974 LOC, direct to `main`)
 
 **6 new files** (`JacobianChallenge/Manifold/`):
 
@@ -308,7 +323,7 @@ cancellation + Riemann removable singularity theorem on 1-forms on
 clean; zero `sorry`, zero `axiom`. Full `lake build` deferred to
 next-session merge gate.
 
-## 2026-05-19 (evening) — `RegularLevelSetLatticeClause` from holomorphic-trace vanishing (1 chip, ~180 LOC, direct to `main`)
+## 2026-05-16 (early morning) — `RegularLevelSetLatticeClause` from holomorphic-trace vanishing (1 chip, ~180 LOC, direct to `main`)
 
 **1 new file** (`JacobianChallenge/Manifold/`):
 
@@ -339,7 +354,7 @@ singularity theorem on 1-forms).
 
 **Build**: 8872 jobs, zero `sorry`, zero `axiom`.
 
-## 2026-05-19 (late afternoon) — `RegularLevelSetLatticeClause` ↔ `AbelGeneratorPeriodCondition` structural reduction (1 chip, ~130 LOC, direct to `main`)
+## 2026-05-16 (early morning) — `RegularLevelSetLatticeClause` ↔ `AbelGeneratorPeriodCondition` structural reduction (1 chip, ~130 LOC, direct to `main`)
 
 **1 new file** (`JacobianChallenge/Manifold/`):
 
@@ -372,7 +387,7 @@ classical infrastructure).
 
 **Build**: 8871 jobs, zero `sorry`, zero `axiom`.
 
-## 2026-05-19 (afternoon) — `IntegrandContinuousAlongBeta` UNCONDITIONAL (4 chips, ~600 LOC, direct to `main`)
+## 2026-05-15 (late evening) — `IntegrandContinuousAlongBeta` UNCONDITIONAL (4 chips, ~600 LOC, direct to `main`)
 
 End-to-end discharge of `MeromorphicNonzero.IntegrandContinuousAlongBeta`
 via the chart-coord-pair architecture extended through the f-5 sheet
@@ -434,7 +449,7 @@ remaining inputs to `RegularLevelSetLatticeClause` discharge.
   ```
 
 **Architectural caveat dissolved:** the prior factor-decomposed route
-(2026-05-18 evening, chips 1–8) routed through `cotangentEquiv` which
+(2026-05-15 evening, chips 1–8) routed through `cotangentEquiv` which
 is NOT globally continuous for non-trivial cotangent bundles. The
 chart-coord-pair route from today bypasses this entirely — the
 pairing is chart-invariant (chip 11) so the per-sheet pairing
@@ -452,10 +467,10 @@ residue theorem is the genuinely new classical input needed.
 
 **Build:** 8870 jobs, zero `sorry`, zero `axiom`.
 
-## 2026-05-19 — Chart-coord-pair architecture: SmoothOneForm pairing continuity (3 chips, ~351 LOC, direct to `main`)
+## 2026-05-15 (evening) — Chart-coord-pair architecture: SmoothOneForm pairing continuity (3 chips, ~351 LOC, direct to `main`)
 
 Three chips completing the SmoothOneForm side of the chart-coord-pair
-architecture for `IntegrandContinuousAlongBeta` (started 2026-05-18
+architecture for `IntegrandContinuousAlongBeta` (started 2026-05-15
 evening with chip 9, `ChartBetaVelocity`).
 
 **3 new files** (`JacobianChallenge/Manifold/`):
@@ -500,7 +515,7 @@ continuity above gives the conclusion.
 
 **Build:** 8866 jobs (was 8863), zero `sorry`, zero `axiom`.
 
-## 2026-05-18 (evening) — `IntegrandContinuousAlongBeta` groundwork (9 chips, ~893 LOC, direct to `main`)
+## 2026-05-15 (evening) — `IntegrandContinuousAlongBeta` groundwork (9 chips, ~893 LOC, direct to `main`)
 
 Nine chips toward unconditional discharge of
 `MeromorphicNonzero.IntegrandContinuousAlongBeta` — the named hypothesis
@@ -647,7 +662,7 @@ no parallel sub-agents).
 * `e22807b` — chip 8 (`IntegrandContinuousAlongBetaPerSheetVel`)
 * `b142751` — chip 9 (`ChartBetaVelocity`)
 
-## 2026-05-17 — Global integrand-trace integral identity (4 chips, ~640 LOC, direct to `main`)
+## 2026-05-15 — Global integrand-trace integral identity (4 chips, ~640 LOC, direct to `main`)
 
 Lifts the lifted-point local-identification arc to a **global**
 integrand-trace integral identity:
@@ -727,7 +742,7 @@ Build green at **8842 jobs** (up from 8838). Zero `sorry`, zero
 3. Residue theorem adaptation `principalDivisorMap → f_*ω` on ℙ¹
    → period ∈ `periodLatticeImage`.
 
-## 2026-05-17 — Lifted-point local identification at general t₀ (2 chips, ~345 LOC, direct to `main`)
+## 2026-05-15 — Lifted-point local identification at general t₀ (2 chips, ~345 LOC, direct to `main`)
 
 Generalises the existing local-identification chip
 `sourceFiberPath_toPath_extend_eq_sheet_g_locally` (at `t₀ = 0`) to
@@ -776,7 +791,7 @@ subdivision.
 Build green at **8838 jobs** (up from 8836). Zero `sorry`, zero
 `axiom`. No item flips.
 
-## 2026-05-17 — Integrand-trace identity in full eventually form (5 chips, ~720 LOC, direct to `main`)
+## 2026-05-15 — Integrand-trace identity in full eventually form (5 chips, ~720 LOC, direct to `main`)
 
 Building on the per-`t` trace identity arc, lifts the integrand-level
 chain-rule + trace identity to a fully eventually-quantified form
@@ -827,7 +842,7 @@ integral identity.
 Build green at **8836 jobs** (up from 8829). Zero `sorry`, zero
 `axiom`. No item flips.
 
-## 2026-05-17 — `RegularLevelSetLatticeClause` per-`t` trace identity (6 chips, ~975 LOC, direct to `main`)
+## 2026-05-15 — `RegularLevelSetLatticeClause` per-`t` trace identity (6 chips, ~975 LOC, direct to `main`)
 
 Closes the substantive analytic primitives needed to bridge the
 chain-rule structural identity (`sum_sourceFiber_integrand_chain_at`)
@@ -906,7 +921,7 @@ lattice clause discharge — what remains for the full clause is:
 Build green at **8829 jobs** (up from 8808). Zero `sorry`, zero
 `axiom`. No item flips.
 
-## 2026-05-17 — Hodge finite-dim Forster scaffolding through HolomorphicOneForm packaging (16 chips, 2948 LOC, direct to `main`)
+## 2026-05-15 — Hodge finite-dim Forster scaffolding through HolomorphicOneForm packaging (16 chips, 2948 LOC, direct to `main`)
 
 End-to-end scaffolding of the elementary Forster/Montel/Riesz proof of
 `HolomorphicOneFormFiniteDim X` for compact complex 1-manifolds. The
@@ -1019,7 +1034,7 @@ Build green at **8802 jobs** (+16 from 8786 at session start), zero
 bound) + NormedAddCommGroup + separating + Riesz
 `FiniteDimensional.of_isCompact_closedBall₀`.
 
-## 2026-05-16 — C3 structural reduction + chain-rule pathway segments 1-3 (13 chips, ~2,280 LOC, FF to `main`)
+## 2026-05-15 — C3 structural reduction + chain-rule pathway segments 1-3 (13 chips, ~2,280 LOC, FF to `main`)
 
 Two-tier delivery on top of the May-15 path-lift infrastructure, off
 `origin/main` at `4081de3` via branch `feat/abel-generator-input-independence`,
@@ -1133,7 +1148,7 @@ on a sub-interval `Ioo 0 δ` end-to-end at the structural level.
   `CompatibleSMul` typically unavailable for `SmoothChain` boundary;
   use the unbundled `map_smul` instead.
 
-## 2026-05-16 — `HolomorphicOneFormSubsingletonOfSimplyConnected` arc (13 chips, ~1,510 LOC, direct to `main`)
+## 2026-05-15 — `HolomorphicOneFormSubsingletonOfSimplyConnected` arc (13 chips, ~1,510 LOC, direct to `main`)
 
 End-to-end **analytic-side closure** of Item 14's reverse leg via the
 simple-connectedness route. Reduces
@@ -1327,7 +1342,7 @@ Item 14 (genus_eq_zero_iff_homeo)
 
 Build: 8793 jobs, zero `sorry`, zero `axiom`.
 
-## 2026-05-16 — Local identification of `sourceFiberPath` with `sheet.g ∘ β ∘ σ` (1 chip, ~222 LOC, direct to `main`)
+## 2026-05-15 — Local identification of `sourceFiberPath` with `sheet.g ∘ β ∘ σ` (1 chip, ~222 LOC, direct to `main`)
 
 Concrete identification of the `Classical.choose`-opaque
 `sourceFiberPath p` with the explicit local-sheet pullback
@@ -1371,7 +1386,7 @@ sheet pullback.
 
 Build: 8786 jobs (was 8785), zero `sorry`, zero `axiom`.
 
-## 2026-05-16 — `ContinuousOn` variant of `path_lift_eqOn_Icc` (1 chip, ~131 LOC, direct to `main`)
+## 2026-05-15 — `ContinuousOn` variant of `path_lift_eqOn_Icc` (1 chip, ~131 LOC, direct to `main`)
 
 Sister lemma to `path_lift_eqOn_Icc` that accepts `ContinuousOn γᵢ
 (Icc a b)` instead of global `Continuous γᵢ`. The variant needed to
@@ -1405,7 +1420,7 @@ provable on each sub-interval, and via subdivision over the cover of
 
 Build: 8785 jobs (was 8784), zero `sorry`, zero `axiom`.
 
-## 2026-05-16 — Scalar evaluation of cotangent pullback and trace (1 chip, ~123 LOC, direct to `main`)
+## 2026-05-15 — Scalar evaluation of cotangent pullback and trace (1 chip, ~123 LOC, direct to `main`)
 
 Scalar-level bridging lemmas between `cotangentPullbackAt`/`traceAt`
 and the path-integral machinery (`applyCotangent` + `SmoothPath.integrand`).
@@ -1442,7 +1457,7 @@ current infrastructure and will be the next chip's content.
 
 Build: 8784 jobs (was 8783), zero `sorry`, zero `axiom`.
 
-## 2026-05-16 — `SmoothOneFormOn` partial-section type (1 chip, ~74 LOC, direct to `main`)
+## 2026-05-15 — `SmoothOneFormOn` partial-section type (1 chip, ~74 LOC, direct to `main`)
 
 Foundational chip for the trace `f_*ω` as a smooth 1-form on the open
 subset `regularValueSet f`.
@@ -1476,7 +1491,7 @@ Algebra (`AddCommGroup`, `Module ℝ`) and a `restrictOn` map from
 
 Build: 8783 jobs (was 8782), zero `sorry`, zero `axiom`.
 
-## 2026-05-16 — Pointwise trace `f_*ω` at a regular value (1 chip, ~117 LOC, direct to `main`)
+## 2026-05-15 — Pointwise trace `f_*ω` at a regular value (1 chip, ~117 LOC, direct to `main`)
 
 Combines `cotangentPullbackAt` with the fibre-finiteness infrastructure
 to give the **pointwise trace** `f_*om` at a regular value.
@@ -1503,7 +1518,7 @@ om` as a function of `v` is a separate downstream layer.
 
 Build: 8782 jobs (was 8781), zero `sorry`, zero `axiom`.
 
-## 2026-05-16 — Pointwise cotangent pullback primitive (1 chip, ~94 LOC, direct to `main`)
+## 2026-05-15 — Pointwise cotangent pullback primitive (1 chip, ~94 LOC, direct to `main`)
 
 The foundational pointwise primitive for the trace construction
 `f_*ω` on regular values.
@@ -1527,7 +1542,7 @@ Smoothness of the trace as a function of `y` is a separate layer
 
 Build: 8781 jobs (was 8780), zero `sorry`, zero `axiom`.
 
-## 2026-05-16 — Real-model RS manifold + open-set realification (1 chip, ~96 LOC, direct to `main`)
+## 2026-05-15 — Real-model RS manifold + open-set realification (1 chip, ~96 LOC, direct to `main`)
 
 Foundation chip for downstream `SmoothOneForm 𝓘(ℝ, ℂ) RiemannSphere`
 work (in particular the `f_*ω` trace construction on `regularValueSet`).
@@ -1556,7 +1571,7 @@ required by `SmoothOneForm` pullbacks.
 
 Build: 8780 jobs (was 8779), zero `sorry`, zero `axiom`.
 
-## 2026-05-16 — Concrete regular level-set chain (1 chip, ~146 LOC, direct to `main`)
+## 2026-05-15 — Concrete regular level-set chain (1 chip, ~146 LOC, direct to `main`)
 
 Wires the β-existence chip into the level-set chain construction.
 
@@ -1586,7 +1601,7 @@ now **mechanically discharged** for the explicit witness
 
 Build: 8779 jobs (was 8778), zero `sorry`, zero `axiom`.
 
-## 2026-05-16 — Regular β: 0→∞ existence on ℙ¹ (1 chip, ~431 LOC, direct to `main`)
+## 2026-05-15 — Regular β: 0→∞ existence on ℙ¹ (1 chip, ~431 LOC, direct to `main`)
 
 Lands the **β-existence input** for step 9's structural reduction. Given
 `f : MeromorphicNonzero X` non-constant with both `0` and `∞` regular
@@ -1626,7 +1641,7 @@ analytical residual.
 
 Build: 8778 jobs (was 8777), zero `sorry`, zero `axiom`.
 
-## 2026-05-16 — `h_AJ_boundary` discharged (1 chip, ~125 LOC, direct to `main`)
+## 2026-05-15 — `h_AJ_boundary` discharged (1 chip, ~125 LOC, direct to `main`)
 
 Discharges the second named-hypothesis input of step 9
 (`abelGeneratorPeriodCondition_of_levelSet_lattice`) unconditionally.
@@ -1664,7 +1679,7 @@ full step 9 — the `f_*ω` pushforward 1-form construction + Stokes on
 β: 0 → ∞ in ℙ¹ — is unchanged in scope (~800–1,500 LOC by the
 CLOSURE_MAP §F.3 estimate).
 
-## 2026-05-15 — C3 staircase steps 1–9 fully landed (15 chips, ~2,582 LOC, `feat/c3-staircase` direct to `main`)
+## 2026-05-14 — C3 staircase steps 1–9 fully landed (15 chips, ~2,582 LOC, `feat/c3-staircase` direct to `main`)
 
 Discharges the entire 9-step C3 general-genus staircase (HANDOFF
 `HANDOFF_2026_05_15_C3_PATH_LIFT.md`) as 15 chip files. Step 7 was
@@ -1761,7 +1776,7 @@ estimate range — first session this has held cleanly.
 remain STUB/OPEN — these flip when the residual `f_*ω + Stokes`
 content for `h_struct`'s lattice clause discharges.
 
-## 2026-05-15 — `SimplyConnectedS2` UNCONDITIONAL via polygonal approximation (15 chips, branch `feat/phase3-s2-simply-connected`)
+## 2026-05-14 — `SimplyConnectedS2` UNCONDITIONAL via polygonal approximation (15 chips, branch `feat/phase3-s2-simply-connected`)
 
 Closes the Phase-3 item-14 reverse-leg's named hypothesis
 `SimplyConnectedS2 = SimplyConnectedSpace JacobianChallenge.StandardS2`
@@ -1842,7 +1857,7 @@ single remaining input — the analytic chain
 Total: **15 chips, ~3000 LOC, zero `sorry`, zero `axiom`**, all
 locally verified via `LEAN_NUM_THREADS=1 lake env lean FILE.lean`.
 
-## 2026-05-15 — C3 sub-arc: algebra closure + path-lift infrastructure (25 chips)
+## 2026-05-14 — C3 sub-arc: algebra closure + path-lift infrastructure (25 chips)
 
 Continued past the 19-chip set above with six further chips on the
 inductive global path lift:
@@ -1887,7 +1902,7 @@ computation + Stokes/lattice argument.
 Build at HEAD: `taskpolicy lake build` green, 8746 jobs. Zero `sorry`,
 zero `axiom`. +~2,900 LOC across 19 new files today.
 
-## 2026-05-15 — C3 sub-arc: algebra closure + path-lift infrastructure (19 chips)
+## 2026-05-14 — C3 sub-arc: algebra closure + path-lift infrastructure (19 chips)
 
 Extending the same-day work past the 11-chip set, eight further chips
 landed on the path-lift portion:
@@ -1953,7 +1968,7 @@ remaining classical content.
 
 Build at HEAD: `taskpolicy lake build` green, 8740 jobs. Zero `sorry`,
 zero `axiom`. +~2,200 LOC across 14 new files.
-## 2026-05-15 — C3 sub-arc: algebra closure + path-lift infrastructure (11 chips)
+## 2026-05-14 — C3 sub-arc: algebra closure + path-lift infrastructure (11 chips)
 
 Six chips landed reducing the open content of `AbelHypothesis B`
 (the C3 named hypothesis) from "discharge `AbelGeneratorPeriodCondition
@@ -2068,7 +2083,7 @@ the level-set chain definition, and the Stokes argument.
 Build at HEAD: `taskpolicy lake build` green, 8731 jobs. Zero `sorry`,
 zero `axiom`. +~1,400 LOC across 7 new files.
 
-## 2026-05-15 — C1 sub-arc CLOSED: `SmoothPathConnected` on any preconnected complex 1-manifold
+## 2026-05-14 — C1 sub-arc CLOSED: `SmoothPathConnected` on any preconnected complex 1-manifold
 
 The four chips of 2026-05-15 (SmoothPath refactor, `linearInChartSegment`,
 `concat`, local-convex + open-closed) close the C1 sub-arc of
@@ -2117,7 +2132,7 @@ Jacobi inversion).
 Build across all four chips: `taskpolicy lake build` green, 8713
 jobs at HEAD. Zero `sorry`, zero `axiom`. +742 LOC total.
 
-## 2026-05-15 — `SmoothPath` refactored ω → C^∞ + `linearInChartSegment`
+## 2026-05-14 — `SmoothPath` refactored ω → C^∞ + `linearInChartSegment`
 
 **Headline.** The `SmoothPath` structure's smoothness witness was
 declared at `ContMDiff ... ⊤` where `⊤ : WithTop ℕ∞` resolves to the

@@ -1,5 +1,16 @@
 # OPEN
 
+> **Note on dates (audit 2026-05-16):** Earlier sessions wrote
+> *future-dated* labels in this file (`2026-05-17` through `2026-05-20`)
+> driven by anchoring on inflated dates in prior memory files instead
+> of the system-provided `currentDate`. Those have been remapped to
+> their real git-timestamp dates: `2026-05-17/18/—2026-05-19-afternoon`
+> → `2026-05-15`, `2026-05-19-late-afternoon/evening` and `2026-05-20`
+> → `2026-05-16`. A residual `+1`-day drift may remain on some narrative
+> references to `2026-05-15` / `2026-05-16` (originally `+1` from real
+> work on `2026-05-14` / `2026-05-15`); when in doubt, **git commit
+> timestamps are the authoritative source**.
+
 The 24 challenge items in `JacobianChallenge/Basic.lean`, mapped to Buzzard's
 spec. Three statuses, with one tag for partial progress:
 
@@ -126,17 +137,17 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 blocked). See `CLOSURE_MAP.md` section F.
 
 **Current repo size:** **~108,000 LOC** total in `*.lean` files,
-combining the 2026-05-17 Hodge finite-dim Forster scaffolding
+combining the 2026-05-15 Hodge finite-dim Forster scaffolding
 (+2,948 LOC, 16 chips) with the 2026-05-16 evening C3 structural-
 reduction + chain-rule pathway arc (+2,280 LOC, 13 chips,
 fast-forward-merged from `feat/abel-generator-input-independence`)
-plus three 2026-05-17 evening waves: per-`t` trace identity (+~975 LOC,
+plus three 2026-05-15 evening waves: per-`t` trace identity (+~975 LOC,
 6 chips), eventually-form composition (+~720 LOC, 6 chips), and
 **global integrand-trace integral identity (+~985 LOC, 6 chips)**
 that completes steps 1–5 of the `RegularLevelSetLatticeClause`
 discharge. Build green at **8842 jobs**.
 
-**2026-05-17 evening — `RegularLevelSetLatticeClause` per-`t` trace identity.**
+**2026-05-15 evening — `RegularLevelSetLatticeClause` per-`t` trace identity.**
 The arc closes the **algebraic** content of the per-`t` lattice clause
 discharge by composing surjectivity-by-cardinality with cross-sheet
 cotangent pullback identification. Six chips:
@@ -165,7 +176,7 @@ smoothness), `f_*ω` smooth-on-`regularValueSet` packaging, and residue
 theorem adaptation from `principalDivisorMap` to `f_*ω`'s residue
 divisor on ℙ¹.
 
-**2026-05-17 (later session) — `RegularLevelSetLatticeClause` arc, six
+**2026-05-15 (later session) — `RegularLevelSetLatticeClause` arc, six
 more chips landed (+~1,156 LOC, build at 8854 jobs).**
 
 * `MeromorphicNonzeroFStarOmegaDef.lean` (137 LOC) — `fStarOmega f hnc om :
@@ -193,7 +204,7 @@ more chips landed (+~1,156 LOC, build at 8854 jobs).**
   on `Icc 0 1`).
 
 **Remaining for unconditional `RegularLevelSetLatticeClause`:**
-1. **`IntegrandContinuousAlongBeta` discharge** — **CLOSED 2026-05-19**
+1. **`IntegrandContinuousAlongBeta` discharge** — **CLOSED 2026-05-15**
    via `Manifold/IntegrandContinuousAlongBetaUnconditional.lean`'s
    `integrandContinuousAlongBeta_holds`. Build 8870 jobs, zero
    sorry/axiom. Discharge routes through the chart-coord-pair
@@ -216,7 +227,7 @@ more chips landed (+~1,156 LOC, build at 8854 jobs).**
    an open nbhd of `β s₀` (via `exists_contMDiffOn_localSheet_g_near_basePoint`
    + `ContMDiffOn.complex_to_real_of_isOpen`).
 
-   **2026-05-18 evening — 9-chip groundwork arc** (build 8863 jobs, zero
+   **2026-05-15 evening — 9-chip groundwork arc** (build 8863 jobs, zero
    sorry/axiom). Two API entry points now land in tree:
    * **Factor-decomposed** (chips 1–8, e.g.
      `Manifold/IntegrandContinuousAlongBetaPerSheetVel.lean`'s
@@ -234,7 +245,7 @@ more chips landed (+~1,156 LOC, build at 8854 jobs).**
      primitive of the architecturally correct architecture (mirrors
      `SmoothPathIntegrability.continuous_integrand_at`).
 
-     **2026-05-19 — chart-coord-pair architecture: SmoothOneForm
+     **2026-05-15 — chart-coord-pair architecture: SmoothOneForm
      pairing continuity (3 chips, ~351 LOC, build 8866):**
      * `ChartBetaVelocitySelfEval.lean` (`chartBetaVelocity_self`):
        at the anchor `s₀`, both cocycles collapse, giving
@@ -271,13 +282,13 @@ more chips landed (+~1,156 LOC, build at 8854 jobs).**
    theorem is genuine new classical input (~1,500–2,500 LOC realistically).
 
 **Lebesgue gluing is no longer required** — the lifted-point sheet
-breakthrough (2026-05-17 late evening) gave a global integrand
+breakthrough (2026-05-15 late evening) gave a global integrand
 identity at any `t ∈ Ioo 0 1` directly, bypassing Hurwitz
 subdivision.
 
-**2026-05-20 — `fStarOmegaOn` arc + `HolomorphicTraceExtension`
+**2026-05-16 — `fStarOmegaOn` arc + `HolomorphicTraceExtension`
 structural reduction (6 chips, ~974 LOC).** Pushes the regular-case
-clause discharge one structural step further than the 2026-05-19
+clause discharge one structural step further than the 2026-05-16
 trace-vanishing route:
 
 * `fStarOmegaOn` (`Manifold/FStarOmegaOn.lean`) — packages
@@ -314,7 +325,7 @@ trace-vanishing route:
   on-regular-set holomorphic trace; sets up the next-stage chip arc
   (holomorphic-side parallel to `fStarOmegaOn`).
 
-**Net state after 2026-05-20.** Regular-case lattice clause discharge
+**Net state after 2026-05-16.** Regular-case lattice clause discharge
 reduces to **one** named hypothesis (`HolomorphicTraceExtension X`).
 Its construction needs:
   1. The **holomorphic** analogue of `fStarOmegaOn` — a
@@ -333,7 +344,7 @@ Its construction needs:
 Build (all 6 chips of this session): single-file
 `LEAN_NUM_THREADS=1 lake env lean` clean, zero `sorry`, zero `axiom`.
 
-**2026-05-20 (afternoon) — `fStarOmegaHolOn` arc: item (1) closed,
+**2026-05-16 (afternoon) — `fStarOmegaHolOn` arc: item (1) closed,
 holomorphic-side parallel built (6 chips, 828 LOC).** Mirrors the
 morning's `fStarOmegaOn` arc on the holomorphic `𝓘(ℂ, ℂ) ω` bundle:
 
@@ -381,7 +392,7 @@ unconditional. Item (1)'s sub-chips also unlock any future use of
 `fStarOmegaHolOn` for non-RLSL purposes (residue theorem, Hodge
 theory, period-pairing finite-dim arguments).
 
-**2026-05-20 (late afternoon) — Realification compat: chips 1+2 of 3
+**2026-05-16 (late afternoon) — Realification compat: chips 1+2 of 3
 shipped (289 LOC).** Per-summand realification compatibility for the
 holomorphic cotangent pullback is now unconditional:
 
@@ -404,7 +415,7 @@ holomorphic cotangent pullback is now unconditional:
   = Complex.re ((α.eval (g y)) ((mfderiv 𝓘(ℝ, ℂ) g y) w))`
   (and analogously for `imagPartCLM`). Reduces to chip 1.
 
-**2026-05-20 (evening) — Realification compat chip 3 shipped (345 LOC).**
+**2026-05-16 (evening) — Realification compat chip 3 shipped (345 LOC).**
 Trace-level real / imag realification compatibility:
 
 * `realPartCLM_fStarOmegaHol_apply` /
@@ -427,7 +438,7 @@ extension across critical values (n-th-root cancellation + Riemann
 removable singularity for 1-forms on `ℙ¹`). Genuinely-new classical
 content not at the mathlib pin.
 
-**2026-05-17 evening — Integrand-trace identity in full eventually
+**2026-05-15 evening — Integrand-trace identity in full eventually
 form (5 additional chips, ~720 LOC).** Lifts the algebraic per-`t`
 trace identity to integrand-level + fully eventually form near `t = 0`:
 
@@ -456,7 +467,7 @@ This is the integrand of `(levelSetChain f β).integrate ω` equating
 to the integrand of the line integral of `f_*ω` along β (modulo
 σ-reparam). Build at **8836 jobs**.
 
-**2026-05-17 late evening — Lifted-point local identification +
+**2026-05-15 late evening — Lifted-point local identification +
 global integrand-trace integral identity (8 chips, ~1,330 LOC).**
 Architectural breakthrough: the **lifted-point sheet** `sheet_q` at
 `q := extend t₀ p` automatically satisfies the sub-interval
@@ -530,7 +541,7 @@ surjectivity half (cardinality argument via
 `degreeFiber_eq_card_of_regular_witness` or time-reversal at general
 `t`) remains.
 
-**2026-05-17 — Hodge finite-dim Forster scaffolding.** Sixteen chips,
+**2026-05-15 — Hodge finite-dim Forster scaffolding.** Sixteen chips,
 +2,948 LOC. The full Forster/Montel/Riesz proof of
 `HolomorphicOneFormFiniteDim X` is reduced to **two remaining steps**:
 (i) seminorm convergence (inner-disk uniform → outer-disk seminorm via
