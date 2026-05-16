@@ -1,5 +1,152 @@
 # Changelog
 
+## 2026-05-18 (evening) — `IntegrandContinuousAlongBeta` groundwork (9 chips, ~893 LOC, direct to `main`)
+
+Nine chips toward unconditional discharge of
+`MeromorphicNonzero.IntegrandContinuousAlongBeta` — the named hypothesis
+introduced by the σ-1 chip
+(`integrate_levelSetChain_eq_traceAt_lineIntegral`,
+`IntegrateLevelSetChainSigmaReparam.lean`) and the remaining analytic
+input to step 6 of the `RegularLevelSetLatticeClause` discharge (the
+other being the residue theorem for `f_*ω` on `ℙ¹`).
+
+The first eight chips build a **factor-decomposed entry point** (trace
+factor × velocity factor), reaching a single API
+`integrandContinuousAlongBeta_of_per_sheet_univ_and_velocity` that
+discharges `IntegrandContinuousAlongBeta` from two plain `ContinuousOn`
+hypotheses on `Icc 0 1`. The ninth chip (`ChartBetaVelocity`) is the
+first primitive of the **chart-coord-pair architecture** (mirroring
+`SmoothPathIntegrability.continuous_integrand_at`), which is the
+architecturally correct path to *unconditional* discharge for general
+regular-value paths (see caveat below).
+
+**9 new files** (`JacobianChallenge/Manifold/`):
+
+* `ApplyCotangentContinuity.lean` (107 LOC) — bilinear continuity of
+  `SmoothPath.applyCotangent` lifting mathlib's
+  `ContinuousOn.clm_apply` / `Continuous.clm_apply` /
+  `ContinuousAt.clm_apply` / `ContinuousWithinAt.clm_apply` through
+  `cotangentEquiv`. Reduces joint continuity of `applyCotangent (φ y)
+  (v y)` to continuity of the cotangent factor (as a CLM via
+  `cotangentEquiv`) and the vector factor.
+
+* `IntegrandContinuousAlongBetaFStarOmega.lean` (111 LOC) — dependent-if
+  kill. Reduces `IntegrandContinuousAlongBeta` (which uses `if hs : s ∈
+  Icc 0 1 then …`) to a plain `ContinuousOn` of the un-guarded
+  `fStarOmega`-pairing on `Icc 0 1`, via `fStarOmega_apply_of_regular`
+  + `ContinuousOn.congr`.
+
+* `IntegrandContinuousAlongBetaFactors.lean` (104 LOC) — factor-decomposed
+  entry point. Composes the previous two chips to discharge
+  `IntegrandContinuousAlongBeta` from trace-factor `ContinuousOn` +
+  velocity-factor `ContinuousOn` (both on `Icc 0 1`, both plain).
+
+* `CotangentEquivFStarOmegaSum.lean` (76 LOC) — CLM-level Finset-sum
+  rewrite. Lifts the `f-3` identity
+  `fStarOmega = ∑_p sheetCotPullback` through `cotangentEquiv` (which
+  commutes with `Finset.sum` since it is a `LinearEquiv`) on the
+  labelling nbhd.
+
+* `TraceFactorContinuousOnFromSheets.lean` (99 LOC) — trace-factor
+  `ContinuousOn` on the labelling nbhd from per-sheet `ContinuousOn`
+  inputs, via `continuousOn_finset_sum` + the prior CLM-level rewrite.
+
+* `TraceFactorContinuousOnAlongBeta.lean` (94 LOC) — pullback along
+  continuous `β : ℝ → RiemannSphere`. Trace-factor `ContinuousOn` on
+  any `S ⊆ β ⁻¹' (labelling nbhd)` via `ContinuousOn.comp` +
+  `MapsTo`-of-preimage.
+
+* `TraceFactorContinuousOnIcc01.lean` (111 LOC) — pointwise gluing to
+  global `ContinuousOn (Icc 0 1)`. At each `s₀ ∈ Icc 0 1`, the labelling
+  nbhd at `β s₀` is an open nhd of `β s₀` (by
+  `mem_localFiberLabelingNbhd_self`), so the β-preimage is an open ℝ-nhd
+  of `s₀`; `ContinuousOn` ⇒ `ContinuousAt` ⇒ `ContinuousWithinAt
+  (Icc 0 1)`. Discharge input is a single **universal**
+  `h_per_sheet_univ` hypothesis.
+
+* `IntegrandContinuousAlongBetaPerSheetVel.lean` (102 LOC) — top-level
+  API endpoint composing the trace-factor `Icc 0 1` lifting with the
+  factor-decomposed entry point. Headline:
+  `integrandContinuousAlongBeta_of_per_sheet_univ_and_velocity`.
+
+* `ChartBetaVelocity.lean` (89 LOC) — direct-smooth-map analogue of
+  `SmoothPath.chartVelocity` (which is `SmoothPath`-only). For smooth
+  `β : ℝ → M` and base parameter `s₀`, defines the chart-coord
+  representative of `β'(s) := mfderiv β s 1` trivialised via
+  `chartAt H (β s₀)`. Three lemmas: `chartBetaVelocity` def,
+  `contMDiffAt_chartBetaVelocity ∞` at `s₀` (via
+  `ContMDiffAt.mfderiv_const`), and `continuousAt_` corollary. First
+  primitive of the chart-coord-pair architecture.
+
+### Architectural caveat on chips 1–8 (cotangentEquiv factor-decomposition)
+
+The factor-decomposition API in chips 4–8 routes through `cotangentEquiv
+(φ v) : ℂ →L[ℝ] ℝ` as an *absolute-coord* function `v ↦ (CLM : ℂ
+→L[ℝ] ℝ)`. **For non-trivial cotangent bundles (RS has 2 charts,
+non-identity chart transitions), this absolute-coord view is NOT
+globally continuous in general** — sections are continuous *in the
+bundle topology*, which differs from absolute-coord at chart boundaries.
+
+The chart-cocycle cancellation only happens inside the *pairing*
+`applyCotangent (om v) (vel v)`, which is why
+`SmoothPathIntegrability.continuous_integrand` proves the whole
+integrand continuous **without** factoring through individual
+covector/vector continuities.
+
+**Consequence:** the `h_per_sheet_univ` discharge in chip 8 is
+discharge-friendly only when (i) the labelling nbhd fits within a single
+RS chart and (ii) each `sheet.g`'s image fits within a single X chart.
+For paths that don't cross `∞`, this holds. For general regular-value
+paths, the architecturally correct discharge is the **chart-coord-pair
+architecture** (mirroring `SmoothPathIntegrability.continuous_integrand_at`):
+chart-coord cotangent representative (`chartFStarOmega β s₀ s`) +
+chart-coord velocity (chip 9's `chartBetaVelocity`) +
+chart-invariant pairing.
+
+### Remaining for unconditional `IntegrandContinuousAlongBeta`
+
+* `chartFStarOmega β s₀ s` — chart-coord representative of
+  `fStarOmega(β s)` anchored at chart `chartAt H (β s₀)`. Requires
+  `fStarOmega` as a smooth section on `regularValueSet` (i.e. the
+  `f-5` chip: `SmoothOneFormOn 𝓘(ℝ, ℂ) RiemannSphere
+  (regularValueSet f)`), which in turn requires per-sheet section
+  smoothness for `cotangentPullbackAt sheet.g`. The latter is the
+  `f-4` analogue of `PullbackSectionSmoothness.HolomorphicEquiv
+  .pullbackSection_contMDiffAt`, adapted from global biholomorphisms to
+  local sheets (estimated ~300–500 LOC).
+* Same-point self-evaluation
+  `chartBetaVelocity β s₀ s₀ = mfderiv β s₀ 1` (via
+  `inTangentCoordinates_eq` at `(s₀, s₀)` + `coordChange_self`,
+  ~30–50 LOC).
+* Chart-invariance of pairing on chart preimage near `s₀` (analogue of
+  `SmoothPathIntegrability.integrand_eq_chart_pairing`).
+* Pointwise gluing to `ContinuousOn (Icc 0 1)` via chart-coord pairing
+  + `ContinuousOn.congr`.
+
+Plus the unrelated track for step 6 of `RegularLevelSetLatticeClause`:
+the **residue theorem on 1-forms on `ℙ¹`** (adaptation of the in-tree
+`JacobianChallenge.residue_theorem`, function-level, to meromorphic
+1-forms; estimated ~1,500–2,500 LOC).
+
+### Verification
+
+Build green at **8863 jobs** (was 8854 pre-session). Zero `sorry`,
+zero `axiom`. All chips locally verified via
+`taskpolicy -b nice -n 19 env LEAN_NUM_THREADS=1 lake build` (serial,
+no parallel sub-agents).
+
+### Per-commit history
+
+* `4830b71` — chip 1 (`ApplyCotangentContinuity`)
+* `f4fdbc2` — chip 2 (`IntegrandContinuousAlongBetaFStarOmega`)
+* `8d009a8` — chip 3 (`IntegrandContinuousAlongBetaFactors`)
+* `c4c393a` — chip 4 (`CotangentEquivFStarOmegaSum`)
+* `b18ddb7` — chip 5 (`TraceFactorContinuousOnFromSheets`)
+* `62507b3` — chip 6 (`TraceFactorContinuousOnAlongBeta`)
+* `b4a7acf` — chip 7 (`TraceFactorContinuousOnIcc01`)
+* `e22807b` — chip 8 (`IntegrandContinuousAlongBetaPerSheetVel`)
+* `b142751` — chip 9 (`ChartBetaVelocity`)
+
 ## 2026-05-17 — Global integrand-trace integral identity (4 chips, ~640 LOC, direct to `main`)
 
 Lifts the lifted-point local-identification arc to a **global**
