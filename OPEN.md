@@ -381,6 +381,37 @@ unconditional. Item (1)'s sub-chips also unlock any future use of
 `fStarOmegaHolOn` for non-RLSL purposes (residue theorem, Hodge
 theory, period-pairing finite-dim arguments).
 
+**2026-05-20 (late afternoon) — Realification compat: chips 1+2 of 3
+shipped (289 LOC).** Per-summand realification compatibility for the
+holomorphic cotangent pullback is now unconditional:
+
+* `mfderiv_complex_to_real_apply` (`MFDerivComplexToRealApply.lean`,
+  171 LOC) — **manifold-derivative apply-level realification**: for
+  ℂ-differentiable `g`, `(mfderiv 𝓘(ℝ, ℂ) g x) w = (mfderiv 𝓘(ℂ, ℂ) g x) w`
+  as elements of `ℂ`. The typed `.restrictScalars`-statement attempted
+  on the prior commit was blocked by `Module ℂ (TangentSpace 𝓘(ℝ, ℂ) x)`
+  synth failure. Workaround: apply-level statement +
+  explicit-`@`-form wrappers around `DifferentiableAt.restrictScalars`
+  / `HasFDerivAt.restrictScalars` to manually pass
+  `IsScalarTower ℝ ℂ ℂ` (mathlib's discrimination tree doesn't try
+  `IsScalarTower.right` in this position).
+
+* `realPartCLM_holCotangentPullbackAt_apply` /
+  `imagPartCLM_holCotangentPullbackAt_apply`
+  (`HolCotangentPullbackRealification.lean`, 118 LOC) —
+  **per-summand realification compatibility**: for ℂ-differentiable
+  `g`, `(realPartCLM (holCotangentPullbackAt g y α)) w
+  = Complex.re ((α.eval (g y)) ((mfderiv 𝓘(ℝ, ℂ) g y) w))`
+  (and analogously for `imagPartCLM`). Reduces to chip 1.
+
+**Still open for item (3):** trace-sum-level identity (summing the
+per-summand result over `f.fiberFinset hv`). Attempted in the same
+session but hit `rw [map_sum realPartCLM]` pattern-matching failures
+(the `realPartCLM (∑ p, holSheetCotPullback _ v α)` pattern doesn't
+unify with the goal due to `CotangentSpace`-vs-`ℂ →L[ℂ] ℂ`
+type-distinction in the sum's elaboration). Estimated 100-200 LOC
+once the right intermediate form is found.
+
 **2026-05-17 evening — Integrand-trace identity in full eventually
 form (5 additional chips, ~720 LOC).** Lifts the algebraic per-`t`
 trace identity to integrand-level + fully eventually form near `t = 0`:
