@@ -40,6 +40,7 @@ import JacobianChallenge.Manifold.ChartBallOffCentreWitnessDischarge
 import JacobianChallenge.Manifold.ChartBetaVelocity
 import JacobianChallenge.Manifold.ChartBetaVelocitySelfEval
 import JacobianChallenge.Manifold.ChartBetaPairingInvariance
+import JacobianChallenge.Manifold.PairingContinuityBeta
 import JacobianChallenge.Manifold.ChartCircleAnchoredAllRadii
 import JacobianChallenge.Manifold.ChartCircleHomotopyAnnulus
 import JacobianChallenge.Manifold.ChartCircleSumOrders
