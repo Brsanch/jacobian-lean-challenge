@@ -15,7 +15,7 @@
 > now reflect them. A `feedback_check_system_currentDate.md` memory
 > documents the root cause and prevention for future sessions.
 
-## 2026-05-16 (late night) — `HolomorphicTraceExtension X` item-(2) descent + Hurwitz form arc (13 chips, ~1,200 LOC, direct to `main`)
+## 2026-05-16 (late night) — `HolomorphicTraceExtension X` item-(2) descent + Hurwitz form arc (15 chips, ~1,280 LOC, direct to `main`)
 
 Builds on the night's algebraic foundation to ship the full pure-
 analytic content of item (2): cyclic-sum descent through `ξ^k`, Hurwitz
@@ -118,6 +118,15 @@ fibre point.
   for chip 3d-3. The final pure-analytic-plus-chart-pullback chart-
   coefficient identification chip before the sheet / cotangent-
   pullback identification on the source side.
+
+* **Chip 3d-5** `TraceExtensionChartCoeff.lean` (~50 LOC). Packages
+  `Q v / ↑k` as `traceExtensionChartCoeff Q k` with apply lemma and
+  analyticity at 0 (via `AnalyticAt.div` with constant).
+
+* **Chip 3d-6** `TraceExtensionChartCoeffOnDisc.lean` (~30 LOC).
+  Extracts an explicit positive radius `r > 0` with
+  `AnalyticOnNhd ℂ (traceExtensionChartCoeff Q k) (Metric.closedBall 0 r)`
+  via `AnalyticAt.exists_ball_analyticOnNhd` + closed-ball-of-half-radius.
 
 Build green across all chips. Zero `sorry`, zero `axiom`.
 
