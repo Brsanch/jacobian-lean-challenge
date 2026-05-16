@@ -1,5 +1,112 @@
 # Changelog
 
+## 2026-05-20 — `fStarOmegaOn` arc + `HolomorphicTraceExtension` reduction (6 chips, ~974 LOC, direct to `main`)
+
+**6 new files** (`JacobianChallenge/Manifold/`):
+
+* `SheetCotangentPullbackContMDiffAt.lean` (238 LOC) — per-sheet
+  cotangent-pullback section smoothness at a regular value in the
+  **holomorphic** `𝓘(ℂ, ℂ) ω` bundle. Local-sheet analogue of
+  `HolomorphicEquiv.pullbackSection_contMDiffAt`
+  (`PullbackSectionSmoothness.lean`) with the global smoothness witness
+  replaced by a pointwise `ContMDiffAt ω g y₀` hypothesis. Three lemmas
+  shipped:
+  - `localSheetPullbackPointwise` — dependently-typed pointwise pullback
+    `∀ y : Y, CotangentSpace 𝓘(ℂ, ℂ) y` (mirrors
+    `HolomorphicEquiv.pullbackPointwise` to avoid bundle-instance
+    ambiguity).
+  - `cotangent_inCoordinates_flip_eventually_eq_of_continuousAt` —
+    local eventually-form of the cotangent↔tangent inCoordinates bridge
+    from `PullbackSectionSmoothness`.
+  - `pullbackSection_contMDiffAt_of_localSheet` — headline.
+  - `MeromorphicNonzero.sheetPullbackSection_contMDiffAt` — wrapper
+    discharging the smoothness witness via
+    `f.contMDiffAt_localSheet_g_at_basePoint`.
+
+* `SheetCotPullbackContMDiffAtReal.lean` (292 LOC) — realified
+  companion in the `𝓘(ℝ, ℂ) ⊤` bundle. Same `clm_apply_of_inCoordinates`
+  scaffold with 𝕜 := ℝ; underlying mathlib lemmas
+  (`inCotangentCoordinates_eq`, `cotangentBundleCore_coordChange_apply`,
+  `inTangentCoordinates_eq`, `ContMDiffAt.mfderiv_transpose`) are
+  field-generic. Includes:
+  - `cotangent_inCoordinates_flip_eq_flip_inTangentCoordinates_real` —
+    realified bridge identity.
+  - `ContMDiffAt.complex_to_real_omega` — regularity-preserving
+    complex-to-real realification (companion to the existing
+    `complex_to_real` which drops `ω → ∞`; this variant skips the
+    final `.of_le`).
+  - `pullbackSection_contMDiffAt_of_localSheet_real` — headline.
+  - `MeromorphicNonzero.sheetCotPullback_contMDiffAt` — wrapper for
+    `sheetCotPullback`.
+
+* `FStarOmegaContMDiffAt.lean` (118 LOC) — pointwise `ContMDiffAt ⊤` of
+  `f.fStarOmega hnc om` at every regular value, by combining the
+  per-sheet smoothness across `(f.fiberFinset hv₀).attach` via
+  mathlib's `ContMDiffAt.sum_section` and bridging to `fStarOmega` via
+  `FStarOmegaLocalAt.fStarOmega_eq_sum_sheetCotPullback_at_v0` on the
+  labelling neighbourhood.
+
+* `FStarOmegaOn.lean` (81 LOC) — final packaging as a
+  `SmoothOneFormOn 𝓘(ℝ, ℂ) RiemannSphere f.regularValueSet`. Ships:
+  - `fStarOmega_contMDiffOn` — `ContMDiffOn ⊤` on `regularValueSet`
+    (open ⇒ `ContMDiffAt`-at-every-point suffices).
+  - `MeromorphicNonzero.fStarOmegaOn` — the bundled structure.
+
+* `TraceAtVanishesOnHolomorphicReduction.lean` (147 LOC) —
+  **structural reduction** of `TraceAtVanishesOnHolomorphic X` to a
+  single named hypothesis:
+  - `HolomorphicTraceExtension X` — for every non-constant `f` and
+    `α : HolomorphicOneForm X`, ∃ `α' : HolomorphicOneForm
+    RiemannSphere` whose realified components agree pointwise on
+    `f.regularValueSet` with the realified trace of `α`.
+  - `traceAtVanishesOnHolomorphic_of_extension` — discharge via
+    `Subsingleton (HolomorphicOneForm RiemannSphere)` (unconditional,
+    in tree) + `realComponent_zero` / `imagComponent_zero`.
+  - `regularLevelSetLatticeClause_of_holomorphicTraceExtension` —
+    composes with `regularLevelSetLatticeClause_of_traceVanishing` to
+    discharge the regular-case lattice clause from a single named
+    input.
+
+* `HolomorphicOneFormOn.lean` (98 LOC) — partial-domain holomorphic
+  1-form type (analogue of `SmoothOneFormOn` in `𝓘(ℂ, ℂ) ω`). Ships
+  the type, `CoeFun` instance, and `HolomorphicOneForm.restrictHolOn`
+  canonical restriction. Sets up the target type for the eventual
+  on-regular-set holomorphic trace.
+
+**Net effect on RLSL closure.** Pre-session, RLSL discharge reduced to
+`TraceAtVanishesOnHolomorphic X` (a *global pointwise vanishing*
+hypothesis, opaque to construction). Post-session, this further
+reduces to `HolomorphicTraceExtension X` — *existence* of a global
+holomorphic 1-form on `ℙ¹` agreeing with the realified trace on the
+regular set. The smoothness side of that extension (on the open
+regular set) is now **unconditional** via `fStarOmegaOn`. The
+remaining classical content for the next chip arc is the
+holomorphic-side parallel (target type now exists via
+`HolomorphicOneFormOn`) + extension across critical values (n-th-root
+cancellation + Riemann removable singularity theorem on 1-forms on
+`ℙ¹`); this is genuinely new content not at the mathlib pin.
+
+**Gotchas surfaced during writing** (next-session hazards):
+
+* Bundle topology instance ambiguity — raw
+  `(α.toFun (g v)).comp (mfderiv g v) : ℂ →L[ℂ] ℂ` doesn't bind the
+  `CotangentSpace` bundle structure; need a typed
+  `∀ y, CotangentSpace _ y` wrapper definition first.
+* `clm_apply_of_inCoordinates` requires **named arguments**
+  `(hϕ := …) (hv := …) (hb₂ := …)` to pin the `VectorBundle`
+  metavariables.
+* `congr_of_eventuallyEq` direction: `f₁ =ᶠ f + ContMDiffAt f →
+  ContMDiffAt f₁`, *not* the reverse.
+* `SmoothOneForm`'s regularity is `⊤` (= `ω`, the analytic top of
+  `WithTop ℕ∞`), strictly above `∞`. `ContMDiffAt.complex_to_real`
+  drops to `∞` via a final `.of_le`; for `⊤`-preserving realification
+  use `complex_to_real_omega` (shipped in
+  `SheetCotPullbackContMDiffAtReal.lean`).
+
+**Build**: all 6 chips single-file `LEAN_NUM_THREADS=1 lake env lean`
+clean; zero `sorry`, zero `axiom`. Full `lake build` deferred to
+next-session merge gate.
+
 ## 2026-05-19 (evening) — `RegularLevelSetLatticeClause` from holomorphic-trace vanishing (1 chip, ~180 LOC, direct to `main`)
 
 **1 new file** (`JacobianChallenge/Manifold/`):

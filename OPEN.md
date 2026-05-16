@@ -275,6 +275,64 @@ breakthrough (2026-05-17 late evening) gave a global integrand
 identity at any `t ∈ Ioo 0 1` directly, bypassing Hurwitz
 subdivision.
 
+**2026-05-20 — `fStarOmegaOn` arc + `HolomorphicTraceExtension`
+structural reduction (6 chips, ~974 LOC).** Pushes the regular-case
+clause discharge one structural step further than the 2026-05-19
+trace-vanishing route:
+
+* `fStarOmegaOn` (`Manifold/FStarOmegaOn.lean`) — packages
+  `f.fStarOmega hnc om` as a `SmoothOneFormOn 𝓘(ℝ, ℂ) RiemannSphere
+  f.regularValueSet`. Smoothness on the open regular set is now
+  **unconditional**, via four supporting chips:
+  - `SheetCotangentPullbackContMDiffAt` — holomorphic per-sheet
+    pullback section smoothness (local-sheet analogue of
+    `HolomorphicEquiv.pullbackSection_contMDiffAt`).
+  - `SheetCotPullbackContMDiffAtReal` — realified `𝓘(ℝ, ℂ) ⊤`
+    counterpart (field-generic bridge identity at 𝕜 := ℝ); also
+    ships `complex_to_real_omega`, a regularity-preserving variant
+    of `ContMDiffRealification.complex_to_real`.
+  - `FStarOmegaContMDiffAt` — pointwise `ContMDiffAt ⊤` at regular
+    values via mathlib's `ContMDiffAt.sum_section` + the
+    `FStarOmegaLocalAt` fixed-Finset rewrite.
+
+* `HolomorphicTraceExtension`
+  (`Manifold/TraceAtVanishesOnHolomorphicReduction.lean`) — the new
+  named hypothesis: for every non-constant `f` and every
+  `α : HolomorphicOneForm X`, ∃ `α' : HolomorphicOneForm RiemannSphere`
+  whose realified components agree pointwise on `f.regularValueSet`
+  with the realified trace of `α`. Discharged conditionally:
+  `traceAtVanishesOnHolomorphic_of_extension` + composition with
+  `regularLevelSetLatticeClause_of_traceVanishing` gives
+  `regularLevelSetLatticeClause_of_holomorphicTraceExtension`. The
+  unconditional `Subsingleton (HolomorphicOneForm RiemannSphere)`
+  (`Manifold/RiemannSphereChartSCoeffOverlap.lean`) closes the
+  vanishing side once the extension provides the global α'.
+
+* `HolomorphicOneFormOn` (`Manifold/HolomorphicOneFormOn.lean`) —
+  partial-domain holomorphic 1-form type (analogue of
+  `SmoothOneFormOn` in `𝓘(ℂ, ℂ) ω`). Target type for the eventual
+  on-regular-set holomorphic trace; sets up the next-stage chip arc
+  (holomorphic-side parallel to `fStarOmegaOn`).
+
+**Net state after 2026-05-20.** Regular-case lattice clause discharge
+reduces to **one** named hypothesis (`HolomorphicTraceExtension X`).
+Its construction needs:
+  1. The **holomorphic** analogue of `fStarOmegaOn` — a
+     `HolomorphicOneFormOn 𝓘(ℂ, ℂ) RiemannSphere f.regularValueSet`,
+     built by mirroring sub-chips B/C in the `𝓘(ℂ, ℂ) ω` bundle.
+     Sub-chip A already provides the per-sheet input; estimated
+     ~300-500 LOC.
+  2. **Extension across critical values** — n-th-root cancellation +
+     Riemann removable singularity theorem on 1-forms on `ℙ¹`. This
+     is the genuinely-new classical content not at the mathlib pin.
+  3. **Realification compatibility** — pointwise
+     `realComponent α' v = traceAt (realComponent α) v` on the
+     regular set, gluing (1)+(2) to the realified
+     `TraceAtVanishesOnHolomorphic` form.
+
+Build (all 6 chips of this session): single-file
+`LEAN_NUM_THREADS=1 lake env lean` clean, zero `sorry`, zero `axiom`.
+
 **2026-05-17 evening — Integrand-trace identity in full eventually
 form (5 additional chips, ~720 LOC).** Lifts the algebraic per-`t`
 trace identity to integrand-level + fully eventually form near `t = 0`:
