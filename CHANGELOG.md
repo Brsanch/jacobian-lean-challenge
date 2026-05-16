@@ -1,5 +1,36 @@
 # Changelog
 
+## 2026-05-19 (evening) — `RegularLevelSetLatticeClause` from holomorphic-trace vanishing (1 chip, ~180 LOC, direct to `main`)
+
+**1 new file** (`JacobianChallenge/Manifold/`):
+
+* `RegularLevelSetLatticeClauseFromTraceVanishing.lean` — second
+  structural reduction route for the regular-case lattice clause,
+  parallel to `RegularLevelSetLatticeClauseFromAJ.lean`. Ships:
+
+  - `TraceAtVanishesOnHolomorphic X` — named hypothesis: for every
+    non-constant `f`, every `α : HolomorphicOneForm X`, and every
+    regular value `v`,
+    `f.traceAt hnc hv (realComponent α) = 0` and
+    `f.traceAt hnc hv (imagComponent α) = 0`.
+
+  - `regularLevelSetLatticeClause_of_traceVanishing` — conditional
+    discharge. Composes today's σ-1 chip (now unconditional via
+    `integrandContinuousAlongBeta_holds`) + the real-imag split of
+    `complexChainPeriod` + `applyCotangent_zero` + integral of zero is
+    zero, to conclude the period vector is zero (hence in lattice).
+
+**Status**: this isolates the *irreducible analytic content* of Abel
+forward at the regular-case clause as a single named hypothesis. The
+hypothesis is equivalent to: the trace map
+`HolomorphicOneForm X → HolomorphicOneForm RiemannSphere` lands in a
+subsingleton group (`HolomorphicOneForm ℙ¹ = 0`, in tree). The
+construction of the trace map is the remaining classical work
+(n-th-root cancellation at critical values + Riemann removable
+singularity theorem on 1-forms).
+
+**Build**: 8872 jobs, zero `sorry`, zero `axiom`.
+
 ## 2026-05-19 (late afternoon) — `RegularLevelSetLatticeClause` ↔ `AbelGeneratorPeriodCondition` structural reduction (1 chip, ~130 LOC, direct to `main`)
 
 **1 new file** (`JacobianChallenge/Manifold/`):
