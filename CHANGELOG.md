@@ -15,6 +15,151 @@
 > now reflect them. A `feedback_check_system_currentDate.md` memory
 > documents the root cause and prevention for future sessions.
 
+## 2026-05-16 (night) — `HolomorphicTraceExtension X` item-(2) algebraic foundation (11 chips, ~1501 LOC, direct to `main`)
+
+Lays the complete algebraic foundation for item (2) of the
+`HolomorphicTraceExtension X` closure plan: extension across critical
+values of `f : X → ℙ¹` via n-th-root cancellation + Riemann removable
+singularity. Closes prior dependencies and ships all the algebraic
+content needed for the bounded-trace step; manifold-side wiring +
+descent are split out for future sessions.
+
+**Bridge primitives (3 chips, 594 LOC):**
+
+* `JacobianChallenge/Manifold/RemovableSingularityAdapter.lean`
+  (123 LOC) — Scalar `ℂ → ℂ` wrapper for
+  `Complex.differentiableOn_update_limUnder_of_bddAbove`. Produces
+  `removable_extension g c := Function.update g c (limUnder (𝓝[≠] c) g)`,
+  `holomorphic_extend_of_bounded_on_punctured_nhd`, and
+  `removable_extension_analyticAt`.
+* `JacobianChallenge/Manifold/HolomorphicOneFormOnChartCoeff.lean`
+  (340 LOC) — On-set analogue of `HolomorphicOneForm.localCoeff` plus
+  the chart-target `ContMDiffOn ω` smoothness on
+  `(chartAt ℂ y) '' (s ∩ chart.source)`. Cocycle work done inline,
+  mirroring `HolomorphicOneFormChartCoeffOnTarget` with
+  `ContMDiffWithinAt _ _ _ s _` where the global version had
+  `ContMDiffAt`.
+* `JacobianChallenge/Manifold/CriticalValueChartShrink.lean`
+  (131 LOC) — For `v₀ ∈ f.criticalValues`, finds `ρ > 0` so that the
+  ball `ball ((chartAt ℂ v₀) v₀) ρ` chart-pulls back to regular values
+  plus `v₀` itself; single-puncture set-up for removable-singularity
+  application.
+
+**N-th-root cancellation algebraic core (8 chips, ~907 LOC):**
+
+* `JacobianChallenge/Manifold/PrimitiveRootCyclicSum.lean` (87 LOC) —
+  Roots-of-unity orthogonality
+  `∑ j ∈ range k, ω^(j*m) = if k ∣ m then k else 0`, generic over a
+  primitive `k`-th root of unity in any field plus the `ℂ`-specialisation
+  via `Complex.isPrimitiveRoot_exp k h0`. The algebraic kernel of the
+  n-th-root cancellation projection.
+* `JacobianChallenge/Manifold/KthRootSubstitutionGeneral.lean`
+  (122 LOC) — **Closes the previously named-only general-`k` gap.** For
+  `g : ℂ → ℂ` analytic at `x₀` with analytic order `k ≥ 1` at `x₀ − w₀`,
+  builds the substitution `v(z) := (z − x₀) · r(z)` where `r` is the
+  analytic `k`-th root of the local factorisation's unit factor.
+  Composes `analytic_local_factorization` + `analytic_kth_root_of_nonvanishing`
+  (both already in the repo — the stale doc comment in
+  `LocalKFoldMultiplicity.lean` had labelled them open).
+* `JacobianChallenge/Manifold/CyclicSumSymmetry.lean` (121 LOC) —
+  Definition `cyclicSum h ω k ξ := ∑ j ∈ range k, ω^j · h(ω^j · ξ)`
+  and the symmetry identity
+  `cyclicSum h ω k (ω · ξ) = ω⁻¹ · cyclicSum h ω k ξ`. Algebraic; proof
+  reindexes `j ↦ (j + 1) mod k`, using `ω^k = 1` to wrap.
+* `JacobianChallenge/Manifold/CyclicSumZeroAtZero.lean` (69 LOC) —
+  First-order vanishing `cyclicSum h ω k 0 = 0` for `k ≥ 2` and any
+  function `h`. Immediate from the symmetry at `ξ = 0`:
+  `S(0) = ω⁻¹ · S(0)` with `ω⁻¹ ≠ 1`.
+* `JacobianChallenge/Manifold/CyclicSumVanishingOrder.lean` (200 LOC)
+  — **Vanishing to order `(k−1)`.** For analytic `h` at `0` and ω a
+  primitive `k`-th root with `k ≥ 2`, builds the analytic factor `q`:
+  `∃ q analytic at 0, cyclicSum h ω k ξ = ξ^(k-1) · q(ξ)` near `0`.
+  Strategy:
+  1. `cyclicSum` is analytic at `0` (`Finset.analyticAt_fun_sum` +
+     composition with linear).
+  2. Case-split via `AnalyticAt.exists_eventuallyEq_pow_smul_nonzero_iff`:
+     if `cyclicSum` is identically `0` near `0`, take `q := 0`; else
+     get `m, g` with `cyclicSum = ξ^m · g` and `g(0) ≠ 0`.
+  3. Symmetry at `ωξ`: `ω^m · ξ^m · g(ωξ) = ω⁻¹ · ξ^m · g(ξ)`. Cancel
+     `ξ^m` on `𝓝[≠] 0`; take continuity at `0` to get
+     `(ω^m − ω⁻¹) · g(0) = 0`. Since `g(0) ≠ 0`, force
+     `ω^(m+1) = 1`, hence `k ∣ m + 1`, hence `m ≥ k − 1`.
+  4. Factor `ξ^m = ξ^(k-1) · ξ^(m-(k-1))`; take
+     `q(ξ) := ξ^(m-(k-1)) · g(ξ)`.
+* `JacobianChallenge/Manifold/CyclicSumNormBounded.lean` (84 LOC) —
+  Quantitative form of the previous: there exist `C, ρ > 0` with
+  `‖cyclicSum h ω k ξ‖ ≤ C · ‖ξ‖^(k-1)` for `‖ξ‖ ≤ ρ`. From
+  `q` continuous at `0`, get `‖q ξ‖ ≤ ‖q 0‖ + 1` on a small ball; the
+  factorisation gives the conclusion. This is the bound that, applied
+  at each preimage of a critical value `v₀` with ramification index
+  `k`, cancels the `ξ^(1-k)` factor in the per-sheet trace contribution.
+* `JacobianChallenge/Manifold/CyclicSumFactorOmegaInvariant.lean`
+  (144 LOC) — **ω-invariance of the analytic factor**:
+  `q(ω · ξ) = q(ξ)` near `0`. Pull the factorisation back along
+  `ξ ↦ ω · ξ` and combine with the symmetry to derive
+  `ω^k · q(ωξ) = q(ξ)` on the punctured neighbourhood. Lift to a full
+  neighbourhood via `eventually_nhdsWithin_iff` + `by_cases ξ = 0` +
+  `tendsto_nhds_unique` on the continuous extension. Sets up the
+  descent of `q` to a function of `ξ^k`.
+* `JacobianChallenge/Manifold/CyclicSumFactorGroupInvariant.lean`
+  (80 LOC) — **Full cyclic-group invariance**:
+  `∀ᶠ ξ in 𝓝 0, ∀ j ∈ Finset.range k, q(ω^j · ξ) = q ξ`. Induction on
+  `j`: the inductive step pulls `q(ω^n · (ω · ξ)) = q(ω · ξ)` back
+  along `ξ ↦ ω · ξ` and composes with the base ω-invariance via
+  `ω^(n+1) · ξ = ω^n · (ω · ξ)`. The `k` eventual statements are
+  collected into one via `Filter.eventually_all_finset`. Sets up the
+  averaging operator `(P_k q)(ξ) := (1/k) ∑_{j ∈ range k} q(ω^j ξ)`
+  needed in the descent step.
+
+**Status (item (2) closure plan).** The algebraic foundation is now
+COMPLETE. The remaining work is split as two heavier, multi-session
+chips:
+
+* **Descent (~300-500 LOC, `FormalMultilinearSeries` Taylor subseries)**
+  — Given `q` ω-invariant and analytic at `0`, build the analytic `Q`
+  with `q(ξ) = Q(ξ^k)`. Strategy: extract the Taylor series `p` of `q`
+  via `HasFPowerSeriesOnBall`; ω-invariance forces `p_n = 0` for `k ∤ n`;
+  define `c n := p.coeff (n*k)`; build `Q := ofScalarsSum (ofScalars ℂ c)`.
+  Convergence radius of `Q` is `r^k` where `r` is the radius of `p`.
+* **Manifold/cotangent-bundle wiring (~400-600 LOC)** — Per-preimage
+  trace contribution via `KthRootSubstitution` at each critical
+  preimage; express the per-sheet `α`-pullback sum in `v_p` chart
+  coords as `(1/k_p) · ξ_p^{1-k_p} · cyclicSum h_p ω_p k_p ξ_p`. Apply
+  `cyclicSum_norm_bounded` + `holomorphic_extend_of_bounded_on_punctured_nhd`
+  to extend the trace 1-form across `v₀`.
+
+**Gotchas surfaced in this session:**
+
+* **`open scoped ContDiff` required** in MeromorphicNonzero contexts:
+  without it, `IsManifold (𝓘(ℂ, ℂ)) ω X` parses but `criticalValues_finite`
+  etc. fail with `IsManifold 𝓘(ℂ, ℂ) ⊤ X` synth.
+* **`unfold_let` unavailable** on `set`-introduced locals; use `show`
+  with the expanded form or `let` (which reduces by default).
+* **`eventually_nhdsWithin_iff` + `by_cases` upgrade**: cleanest way to
+  go from `∀ᶠ ξ in 𝓝[≠] 0, P ξ = 0` + `P 0 = 0` to
+  `∀ᶠ ξ in 𝓝 0, P ξ = 0`. Avoids decomposing
+  `𝓝 0 = pure 0 ⊔ 𝓝[≠] 0`.
+* **`AnalyticAt.comp_of_eq'` for `fun z => g (f z)`**: argument is
+  `(hg.comp_of_eq' hf (f x = y))` — hypothesis is `f x = y`, not
+  `y = f x`. The `'`-version is for the `fun`-form; bare `comp_of_eq`
+  is for `g ∘ f`.
+* **`NeBot (𝓝[≠] (0 : ℂ))` is an auto-instance** via
+  `nhdsNE_neBot` in `Mathlib.Analysis.Normed.Field.Basic`; just
+  `inferInstance` rather than `Module.punctured_nhds_neBot ℂ ℂ 0`.
+* **`Filter.eventually_all_finset` for ∀-over-Finset eventual
+  statements**: collects `∀ j ∈ I, ∀ᶠ x in l, p j x` to
+  `∀ᶠ x in l, ∀ j ∈ I, p j x` when `I` is finite.
+* **Single-file `lake env lean` needs deps pre-built**: when a new
+  chip imports a just-added chip from the same session, run
+  `taskpolicy -b nice -n 19 lake build <ModuleName>` first.
+
+**Build**: full lake build 8887 jobs clean after every commit; zero
+`sorry`, zero `axiom` across the 11 new files.
+
+**Commits (in order)**: `c9dd5d9`, `544f7d7`, `a35b544`, `27837c3`,
+`558cdc5`, `e89bbf5`, `c535e63`, `36e06ff`, `400a86b`, `40e010c`,
+`8313d78`.
+
 ## 2026-05-16 (evening) — Trace-level realification compatibility (chip 3, 345 LOC, direct to `main`)
 
 Closes the third piece of item (3) of the `HolomorphicTraceExtension`

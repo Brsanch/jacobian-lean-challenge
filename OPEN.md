@@ -378,6 +378,23 @@ arcs):
   cancellation + Riemann removable singularity for 1-forms on `ℙ¹`.
   Not at mathlib pin; estimated 1500-2500 LOC.
 
+  **2026-05-16 (night) update — algebraic foundation COMPLETE.** 11
+  chips (~1501 LOC) landed in `JacobianChallenge/Manifold/`: bridge
+  primitives (removable-singularity adapter, on-set `localCoeff` +
+  chart-target `ContMDiffOn` with full cocycle, critical-value chart
+  shrink) + n-th-root cancellation algebraic core (roots-of-unity
+  orthogonality; **general-`k` `KthRootSubstitution` closing a named
+  gap**; cyclic-sum symmetry + first-order vanishing +
+  vanishing-to-order-`(k-1)`; bounded-trace bound
+  `‖cyclicSum‖ ≤ C·‖ξ‖^(k-1)`; ω-invariance + full cyclic-group
+  invariance of the analytic factor `q`). Remaining for item (2):
+  (a) **descent** of `q` to an analytic function of `ξ^k` via
+  `FormalMultilinearSeries` Taylor-subseries (~300-500 LOC); (b)
+  **manifold/cotangent-bundle wiring** of the per-preimage trace
+  cluster at critical values, applying the bound +
+  removable-singularity adapter (~400-600 LOC). See CHANGELOG
+  `2026-05-16 (night)` entry for the chip-by-chip breakdown.
+
 * **Item (3) — Realification compatibility.** Reduces to the manifold
   derivative identity `(mfderiv 𝓘(ℂ, ℂ) g x).restrictScalars ℝ =
   mfderiv 𝓘(ℝ, ℂ) g x` for ℂ-smooth `g`. Path: lift through
