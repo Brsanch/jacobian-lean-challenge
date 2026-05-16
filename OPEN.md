@@ -193,12 +193,28 @@ more chips landed (+~1,156 LOC, build at 8854 jobs).**
   on `Icc 0 1`).
 
 **Remaining for unconditional `RegularLevelSetLatticeClause`:**
-1. **`IntegrandContinuousAlongBeta` discharge** — substantive smoothness
-   packaging requiring (a) smoothness of `mfderiv g` as a function of base
-   point on regular nbhds (mathlib pin lacks `ContMDiffOn.mfderiv`-style
-   high-level lemma; available is `ContMDiffAt.mfderiv` requiring
-   `inTangentCoordinates` machinery), (b) cotangent-pullback continuity
-   packaging via `SmoothOneFormOn`, (c) bilinear composition.
+1. **`IntegrandContinuousAlongBeta` discharge** — **CLOSED 2026-05-19**
+   via `Manifold/IntegrandContinuousAlongBetaUnconditional.lean`'s
+   `integrandContinuousAlongBeta_holds`. Build 8870 jobs, zero
+   sorry/axiom. Discharge routes through the chart-coord-pair
+   architecture (chips 9–12) + chain-rule per-sheet reduction
+   (`SheetCotPullbackPairingContinuity.lean`) + fixed-Finset sum
+   continuity at each `s₀ ∈ Icc 0 1` with `β s₀ ∈ regularValueSet`
+   (`FStarOmegaPairingContinuity.lean`). Headline:
+   ```
+   theorem integrandContinuousAlongBeta_holds
+       (f : MeromorphicNonzero X)
+       (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere)
+       (hβ_smooth : ContMDiff 𝓘(ℝ,ℝ) 𝓘(ℝ,ℂ) ∞ β)
+       (hβ_reg : ∀ s ∈ Icc 0 1, β s ∈ f.regularValueSet)
+       (om : SmoothOneForm 𝓘(ℝ,ℂ) X) :
+       f.IntegrandContinuousAlongBeta hnc hβ_smooth hβ_reg om
+   ```
+   The sheet-side smoothness (`f-5`) is implicit in the chain-rule
+   reduction: each per-sheet pairing factors through the smoothness
+   of the local sheet inverse `sheet_p.g` realified to `𝓘(ℝ,ℂ) ∞` on
+   an open nbhd of `β s₀` (via `exists_contMDiffOn_localSheet_g_near_basePoint`
+   + `ContMDiffOn.complex_to_real_of_isOpen`).
 
    **2026-05-18 evening — 9-chip groundwork arc** (build 8863 jobs, zero
    sorry/axiom). Two API entry points now land in tree:

@@ -1,5 +1,85 @@
 # Changelog
 
+## 2026-05-19 (afternoon) — `IntegrandContinuousAlongBeta` UNCONDITIONAL (4 chips, ~600 LOC, direct to `main`)
+
+End-to-end discharge of `MeromorphicNonzero.IntegrandContinuousAlongBeta`
+via the chart-coord-pair architecture extended through the f-5 sheet
+smoothness layer. Closes the named hypothesis blocking
+`IntegrateLevelSetChainSigmaReparam.lean`'s σ-1 chip and one of the two
+remaining inputs to `RegularLevelSetLatticeClause` discharge.
+
+**4 new files** (`JacobianChallenge/Manifold/`):
+
+* `PairingContinuityBetaLocal.lean` — chip 12 relaxed from
+  `ContMDiff β` (global) to `ContMDiffAt β s₀` (pointwise). Ships:
+  - `chartBetaVelocity_contMDiffAt_local` (local chip 9).
+  - `chartBetaVelocity_continuousAt_local`.
+  - `continuousAt_pairing_smoothOneForm_beta_local` (local chip 12).
+  Chart-preimage nbhd obtained via `ContinuousAt.preimage_mem_nhds`
+  rather than `IsOpen.preimage Continuous`. Identical chart-coord-pair
+  structure otherwise.
+
+* `SheetCotPullbackPairingContinuity.lean` — per-sheet pairing
+  continuity at `s₀`. Headline: for `β s₀ ∈ u` (open) with
+  `sheet.g := (localSheetData_at_regular hnc hp_reg).g` real-smooth
+  on `u`, the pairing
+  ```
+  s ↦ applyCotangent (sheetCotPullback hnc hp_reg (β s) om) (mfderiv β s 1)
+  ```
+  is `ContinuousAt s₀`. **Proof**: on the open nbhd `β ⁻¹' u` of `s₀`,
+  the chain rule (`mfderiv_comp_apply`) + `applyCotangent_cotangentPullbackAt`
+  rewrites the LHS to the pairing of `om` along the composed smooth
+  path `γ := sheet.g ∘ β : ℝ → X`. Then the local chip 12 applied to
+  `ContMDiffAt γ s₀` (= compose `β` smooth at `s₀` with `sheet.g` smooth
+  at `β s₀`) gives `ContinuousAt s₀` of the RHS. `ContinuousAt.congr`
+  transfers via the open-nbhd EqOn.
+
+* `FStarOmegaPairingContinuity.lean` — `fStarOmega`-pairing
+  `ContinuousAt s₀` for `β s₀ ∈ regularValueSet`. **Proof**: on the
+  open nbhd `β ⁻¹' localFiberLabelingNbhd hnc hβs₀_reg`, the `f-3`
+  rewrite `fStarOmega_eq_sum_sheetCotPullback_at_v0` expresses
+  `fStarOmega om (β s)` as a fixed Finset sum over `fiberFinset hβs₀_reg`.
+  `applyCotangent_finset_sum` distributes the pairing. Each summand
+  is `ContinuousAt s₀` via the per-sheet chip (instantiated with the
+  realified ω-smooth nbhd from
+  `exists_contMDiffOn_localSheet_g_near_basePoint`). Finset induction
+  with `ContinuousAt.add` collapses the sum. `ContinuousAt.congr`
+  finishes via the open-nbhd EqOn.
+
+* `IntegrandContinuousAlongBetaUnconditional.lean` — assembles
+  `continuousOn_fStarOmega_pairing_Icc01` (point-by-point on
+  `Icc 0 1` via `hβ_reg`) and plugs it into the in-tree
+  `integrandContinuousAlongBeta_of_fStarOmega_pairing_continuousOn`
+  reduction. **Headline**:
+  ```
+  theorem integrandContinuousAlongBeta_holds
+      (f : MeromorphicNonzero X)
+      (hnc : ¬ JacobianChallenge.IsConstantMap f.toRiemannSphere)
+      (hβ_smooth : ContMDiff 𝓘(ℝ,ℝ) 𝓘(ℝ,ℂ) ∞ β)
+      (hβ_reg : ∀ s ∈ Icc 0 1, β s ∈ f.regularValueSet)
+      (om : SmoothOneForm 𝓘(ℝ,ℂ) X) :
+      f.IntegrandContinuousAlongBeta hnc hβ_smooth hβ_reg om
+  ```
+
+**Architectural caveat dissolved:** the prior factor-decomposed route
+(2026-05-18 evening, chips 1–8) routed through `cotangentEquiv` which
+is NOT globally continuous for non-trivial cotangent bundles. The
+chart-coord-pair route from today bypasses this entirely — the
+pairing is chart-invariant (chip 11) so the per-sheet pairing
+continuity uses only ω-smooth-on-open data, which IS chart-cocycle-
+clean by composing with the bundle's natural trivialisation
+internal to `cotangentPullbackAt`.
+
+**Status post-f-5 close**: `RegularLevelSetLatticeClause` discharge
+now requires only the **residue theorem on 1-forms on `ℙ¹`**
+(`paper/jacobian.md`, ~1,500–2,500 LOC). Chain-difference reduction
+in `RegularLevelSetChainBoundaryAJ.lean` reduces `period(Z) ∈ lattice`
+to `period(AJ-chain) ∈ lattice`, which IS
+`AbelGeneratorPeriodCondition` — circular w.r.t. our goal. The
+residue theorem is the genuinely new classical input needed.
+
+**Build:** 8870 jobs, zero `sorry`, zero `axiom`.
+
 ## 2026-05-19 — Chart-coord-pair architecture: SmoothOneForm pairing continuity (3 chips, ~351 LOC, direct to `main`)
 
 Three chips completing the SmoothOneForm side of the chart-coord-pair
