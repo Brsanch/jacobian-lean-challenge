@@ -15,7 +15,7 @@
 > now reflect them. A `feedback_check_system_currentDate.md` memory
 > documents the root cause and prevention for future sessions.
 
-## 2026-05-16 (late night) — `HolomorphicTraceExtension X` item-(2) descent + Hurwitz form arc (10 chips, ~930 LOC, direct to `main`)
+## 2026-05-16 (late night) — `HolomorphicTraceExtension X` item-(2) descent + Hurwitz form arc (13 chips, ~1,200 LOC, direct to `main`)
 
 Builds on the night's algebraic foundation to ship the full pure-
 analytic content of item (2): cyclic-sum descent through `ξ^k`, Hurwitz
@@ -92,6 +92,32 @@ fibre point.
   `localCoeff_analyticAt_chart_image`. Primitive-root binder renamed
   to `ζ` to avoid clashing with the `ω` `ContDiff` smoothness-level
   notation needed for `IsManifold (𝓘(ℂ, ℂ)) ω X`.
+
+* **Chip 3d-2** `HurwitzCyclicSumDescentOneForm.lean` (~100 LOC).
+  **1-form-corrected** descent: chips 3c-3..3d-1 use `h ∘ φ` as cyclic-
+  sum input (correct for function pullback but omits the Jacobian
+  factor for 1-form pullback). This chip uses
+  `H := (h / deriv ψ) ∘ φ`, which equals `λ s, h(φ s) · φ'(s)` —
+  the correct 1-form chart-coefficient transform. Uses
+  `AnalyticAt.deriv` and `AnalyticAt.div`.
+
+* **Chip 3d-3** `HurwitzCyclicSumDescentOneFormDivided.lean` (~140 LOC).
+  **1-form-corrected divided form**, the chart-coefficient
+  identification:
+
+    ∀ᶠ z in 𝓝 x₀, z ≠ x₀ →
+      cyclicSum ((h / deriv ψ) ∘ φ) ω k (ψ z) / ((↑k) · (ψ z)^(k-1))
+        = Q (g z - w₀) / ↑k.
+
+  Because chip 3d-2's φ is existentially packed, this chip rebuilds
+  the construction from scratch using `hurwitz_local_form_with_inverse`
+  directly to expose `h_left` for chip 3c-6.
+
+* **Chip 3d-4** `CriticalFibreOneFormDescent.lean` (~100 LOC).
+  Manifold-level 1-form-corrected divided form: parallel to 3d-1 but
+  for chip 3d-3. The final pure-analytic-plus-chart-pullback chart-
+  coefficient identification chip before the sheet / cotangent-
+  pullback identification on the source side.
 
 Build green across all chips. Zero `sorry`, zero `axiom`.
 
