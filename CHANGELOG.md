@@ -1,5 +1,53 @@
 # Changelog
 
+## 2026-05-19 — Chart-coord-pair architecture: SmoothOneForm pairing continuity (3 chips, ~351 LOC, direct to `main`)
+
+Three chips completing the SmoothOneForm side of the chart-coord-pair
+architecture for `IntegrandContinuousAlongBeta` (started 2026-05-18
+evening with chip 9, `ChartBetaVelocity`).
+
+**3 new files** (`JacobianChallenge/Manifold/`):
+
+* `ChartBetaVelocitySelfEval.lean` (90 LOC) —
+  `chartBetaVelocity_self`: at the anchor `s₀`, both source-side
+  (`tangentBundleCore_coordChange_model_space` on `ℝ`) and target-side
+  (`coordChange_self` at base `β s₀`) cocycles collapse, giving
+  `chartBetaVelocity I β s₀ s₀ = mfderiv 𝓘(ℝ, ℝ) I β s₀ (1 : ℝ)`.
+
+* `ChartBetaPairingInvariance.lean` (145 LOC) —
+  `applyCotangent_eq_chart_pairing_beta`: for any cotangent
+  `φ : CotangentSpace I (β s)` with `β s ∈ (chartAt H (β s₀)).source`,
+  the pairing
+  `applyCotangent φ (mfderiv β s 1)`
+  equals the chart-coord pairing of `φ` (transported to chart at
+  `β s₀`) with `chartBetaVelocity I β s₀ s`. Mirrors
+  `SmoothPath.integrand_eq_chart_pairing` but stated for a *free*
+  cotangent, decoupling it from any `SmoothOneForm` wrapping — ready
+  to compose with `traceAt` directly. The cancellation is the
+  tangent-bundle cocycle `coordChange j i x ∘ coordChange i j x = id`
+  at `x = β s`, paired with `cotangentBundleCore_coordChange_apply`.
+
+* `PairingContinuityBeta.lean` (116 LOC) —
+  `continuousAt_pairing_smoothOneForm_beta` and
+  `continuous_pairing_smoothOneForm_beta`: for smooth `β : ℝ → M` and
+  `om : SmoothOneForm I M`, the function
+  `s ↦ applyCotangent (om (β s)) (mfderiv β s 1)` is `ContinuousAt s₀`
+  for every `s₀`, hence `Continuous`. β-analogue of
+  `SmoothPath.continuous_integrand_at`. Assembled from the three
+  primitives above plus `cotangentSection_contMDiffAt_iff` (factored
+  through `Continuous β`) and `ContinuousAt.clm_apply`. When
+  `fStarOmega` is upgraded to a `SmoothOneForm` (post-`f-5`), this
+  lemma directly discharges `IntegrandContinuousAlongBeta` for the
+  trace-pairing along `β`.
+
+**Remaining blocker for unconditional `IntegrandContinuousAlongBeta`:**
+`f-5` — section smoothness of `fStarOmega` on `regularValueSet` (or
+the `SmoothOneFormOn` upgrade). Once `f_*ω` is a `SmoothOneForm` (or
+`SmoothOneFormOn regularValueSet`), the SmoothOneForm pairing
+continuity above gives the conclusion.
+
+**Build:** 8866 jobs (was 8863), zero `sorry`, zero `axiom`.
+
 ## 2026-05-18 (evening) — `IntegrandContinuousAlongBeta` groundwork (9 chips, ~893 LOC, direct to `main`)
 
 Nine chips toward unconditional discharge of
