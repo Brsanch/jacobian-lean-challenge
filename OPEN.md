@@ -136,16 +136,20 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **~108,000 LOC** total in `*.lean` files,
-combining the 2026-05-15 Hodge finite-dim Forster scaffolding
-(+2,948 LOC, 16 chips) with the 2026-05-16 evening C3 structural-
-reduction + chain-rule pathway arc (+2,280 LOC, 13 chips,
+**Current repo size:** **117,113 LOC across 603 files** (measured
+2026-05-16: 116,532 in `JacobianChallenge/` + 581 in the
+`JacobianChallenge.lean` manifest). Net growth from the prior
+~108,000 figure reflects the three 2026-05-16 arcs (RLSL-from-AGPC
++310, HolomorphicTraceExtension day +2,436, HolomorphicTraceExtension
+item-(2) algebraic core +1,501) layered on the 2026-05-15 Hodge
+Forster scaffolding (+2,948, 16 chips) and 2026-05-15-evening C3
+structural-reduction + chain-rule pathway arc (+2,280, 13 chips,
 fast-forward-merged from `feat/abel-generator-input-independence`)
-plus three 2026-05-15 evening waves: per-`t` trace identity (+~975 LOC,
-6 chips), eventually-form composition (+~720 LOC, 6 chips), and
-**global integrand-trace integral identity (+~985 LOC, 6 chips)**
-that completes steps 1–5 of the `RegularLevelSetLatticeClause`
-discharge. Build green at **8842 jobs**.
+plus three 2026-05-15 evening waves: per-`t` trace identity (+~975,
+6 chips), eventually-form composition (+~720, 6 chips), and
+**global integrand-trace integral identity (+~985, 6 chips)** that
+completes steps 1–5 of the `RegularLevelSetLatticeClause` discharge.
+Build green at **8887 jobs** as of 2026-05-16 HEAD `359ce8e`.
 
 **2026-05-15 evening — `RegularLevelSetLatticeClause` per-`t` trace identity.**
 The arc closes the **algebraic** content of the per-`t` lattice clause
