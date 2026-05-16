@@ -404,13 +404,28 @@ holomorphic cotangent pullback is now unconditional:
   = Complex.re ((α.eval (g y)) ((mfderiv 𝓘(ℝ, ℂ) g y) w))`
   (and analogously for `imagPartCLM`). Reduces to chip 1.
 
-**Still open for item (3):** trace-sum-level identity (summing the
-per-summand result over `f.fiberFinset hv`). Attempted in the same
-session but hit `rw [map_sum realPartCLM]` pattern-matching failures
-(the `realPartCLM (∑ p, holSheetCotPullback _ v α)` pattern doesn't
-unify with the goal due to `CotangentSpace`-vs-`ℂ →L[ℂ] ℂ`
-type-distinction in the sum's elaboration). Estimated 100-200 LOC
-once the right intermediate form is found.
+**2026-05-20 (evening) — Realification compat chip 3 shipped (345 LOC).**
+Trace-level real / imag realification compatibility:
+
+* `realPartCLM_fStarOmegaHol_apply` /
+  `imagPartCLM_fStarOmegaHol_apply` (`FStarOmegaHolRealification.lean`,
+  345 LOC) — at every regular value `v` and tangent vector `w : ℂ`:
+
+      (realPartCLM (f.fStarOmegaHol hnc α v)) w
+        = SmoothPath.applyCotangent (f.fStarOmega hnc (realComponent α) v) w
+
+  (and analogously for `imagPartCLM` / `imagComponent`). Sums chip 2
+  over the fiber via a generalised inner lemma + `Finset.induction_on`
+  (working around the `map_sum realPartCLM` pattern-match failure that
+  blocked the direct approach).
+
+**Item (3) is now CLOSED.** Both real and imaginary realification
+compatibilities hold unconditionally on `f.regularValueSet`.
+
+**Remaining for `HolomorphicTraceExtension X`:** only item (2) —
+extension across critical values (n-th-root cancellation + Riemann
+removable singularity for 1-forms on `ℙ¹`). Genuinely-new classical
+content not at the mathlib pin.
 
 **2026-05-17 evening — Integrand-trace identity in full eventually
 form (5 additional chips, ~720 LOC).** Lifts the algebraic per-`t`
