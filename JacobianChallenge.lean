@@ -534,6 +534,7 @@ import JacobianChallenge.Manifold.FStarOmegaHolContMDiffAt
 import JacobianChallenge.Manifold.FStarOmegaHolOn
 import JacobianChallenge.Manifold.MFDerivComplexToRealApply
 import JacobianChallenge.Manifold.HolCotangentPullbackRealification
+import JacobianChallenge.Manifold.FStarOmegaHolRealification
 import JacobianChallenge.Manifold.JacobiInversionGenusZero
 import JacobianChallenge.Manifold.AbelJacobiEquivRiemannSphere
 import JacobianChallenge.Manifold.Pic0SubsingletonBridge

@@ -1,5 +1,55 @@
 # Changelog
 
+## 2026-05-20 (evening) — Trace-level realification compatibility (chip 3, 345 LOC, direct to `main`)
+
+Closes the third piece of item (3) of the `HolomorphicTraceExtension`
+closure plan. Sums the per-summand realification compatibility (chip 2)
+over the fiber to get the trace-level identity:
+
+  `(realPartCLM (f.fStarOmegaHol hnc α v)) w
+     = SmoothPath.applyCotangent (f.fStarOmega hnc (realComponent α) v) w`
+
+(and analogously for `imagPartCLM` / `imagComponent`), at every regular
+value `v` and tangent vector `w : ℂ`.
+
+**1 new file** (`JacobianChallenge/Manifold/`):
+
+* `FStarOmegaHolRealification.lean` (345 LOC) — trace-level real-part /
+  imag-part realification compatibility. Strategy:
+  1. Reduce both traces to fiber-finset sums via
+     `holTraceAt_eq_sum_holSheetCotPullback` /
+     `traceAt_eq_sum_sheetCotPullback`.
+  2. Per-summand: chip 2's `realPartCLM_holCotangentPullbackAt_apply`
+     (resp. `imag`), feeding `MDifferentiableAt` via a fresh helper
+     `mdifferentiableAt_localSheet_g_at_value` (using `subst hp_to_v`
+     to avoid the `LocalSheetData`-dependent-type `rw [hp_to_v]` failure).
+  3. Sum-pushing: a generalised inner lemma `general` parametrised by
+     an arbitrary `S : Finset { x // x ∈ f.fiberFinset hv }` and a
+     per-summand hypothesis. Induction over `S` via
+     `Finset.induction_on`:
+     - **empty**: `realPartCLM 0 w = applyCotangent 0 w = 0` via `map_zero`.
+     - **insert**: `Finset.sum_insert` + `map_add realPartCLM` +
+       `map_add cotangentEquiv` distributes; per-summand `h_each q` and
+       the inductive hypothesis close.
+
+  This generalised-inner-lemma pattern works around the `map_sum
+  realPartCLM` rewrite that failed on the `CotangentSpace`-typed sum
+  expression (noted in the prior commit): the explicit
+  `map_add realPartCLM _ _` rewrite with the underscore-typed `_ + _`
+  pattern matches successfully because Lean unifies the args from the
+  `show` context.
+
+**Net state.** Items (1) ✓ (on-regular-set holomorphic 1-form built
+via `fStarOmegaHolOn`) and (3) ✓ (realification compatibility, both
+real and imag) are now CLOSED. Remaining for
+`HolomorphicTraceExtension X`:
+
+* **Item (2)** — Extension across critical values (n-th-root
+  cancellation + Riemann removable singularity for 1-forms on `ℙ¹`).
+  Genuinely-new classical content not at the mathlib pin.
+
+**Build**: full lake build 8887 jobs clean; zero `sorry`, zero `axiom`.
+
 ## 2026-05-20 (late afternoon) — Realification compatibility primitives (2 chips, 289 LOC, direct to `main`)
 
 Per-summand realification compatibility for the holomorphic cotangent
