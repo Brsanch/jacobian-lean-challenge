@@ -216,12 +216,34 @@ more chips landed (+~1,156 LOC, build at 8854 jobs).**
    * **Chart-coord-pair** (chip 9, `Manifold/ChartBetaVelocity.lean`'s
      `chartBetaVelocity` + `contMDiffAt_chartBetaVelocity`) — first
      primitive of the architecturally correct architecture (mirrors
-     `SmoothPathIntegrability.continuous_integrand_at`). Remaining
-     primitives: `chartFStarOmega` (chart-coord trace, requires `f-5`
-     section smoothness of `fStarOmega` on `regularValueSet`),
-     `chartBetaVelocity` same-point self-evaluation, chart-invariance
-     of pairing on chart preimage, and pointwise `ContinuousOn (Icc 0 1)`
-     gluing.
+     `SmoothPathIntegrability.continuous_integrand_at`).
+
+     **2026-05-19 — chart-coord-pair architecture: SmoothOneForm
+     pairing continuity (3 chips, ~351 LOC, build 8866):**
+     * `ChartBetaVelocitySelfEval.lean` (`chartBetaVelocity_self`):
+       at the anchor `s₀`, both cocycles collapse, giving
+       `chartBetaVelocity I β s₀ s₀ = mfderiv β s₀ (1 : ℝ)`.
+     * `ChartBetaPairingInvariance.lean`
+       (`applyCotangent_eq_chart_pairing_beta`): for any cotangent
+       `φ` at `β s` with `β s` in the chart source at `β s₀`, the
+       pairing `applyCotangent φ (mfderiv β s 1)` equals the
+       chart-coord pairing with `chartBetaVelocity I β s₀ s`.
+       Stated for a *free* cotangent (not a SmoothOneForm), ready to
+       compose with `traceAt` directly.
+     * `PairingContinuityBeta.lean`
+       (`continuousAt_pairing_smoothOneForm_beta`,
+       `continuous_pairing_smoothOneForm_beta`): for any
+       `om : SmoothOneForm I M`, the pairing
+       `s ↦ applyCotangent (om (β s)) (mfderiv β s 1)` is
+       `ContinuousAt s₀` (and hence `Continuous`).
+
+     **Remaining blocker:** `chartFStarOmega` / `f-5` — section
+     smoothness of `fStarOmega` on `regularValueSet` (or its
+     `SmoothOneFormOn` upgrade). Once `f_*ω` is a `SmoothOneForm`
+     (or `SmoothOneFormOn regularValueSet`), the
+     `continuousAt_pairing_smoothOneForm_beta` lemma above directly
+     discharges `IntegrandContinuousAlongBeta` for the trace-pairing
+     along `β`.
 
 2. **Residue theorem on 1-forms on `ℙ¹`** — adapts the in-tree
    `JacobianChallenge.residue_theorem` (function level) to
