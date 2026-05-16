@@ -1,5 +1,38 @@
 # Changelog
 
+## 2026-05-19 (late afternoon) — `RegularLevelSetLatticeClause` ↔ `AbelGeneratorPeriodCondition` structural reduction (1 chip, ~130 LOC, direct to `main`)
+
+**1 new file** (`JacobianChallenge/Manifold/`):
+
+* `RegularLevelSetLatticeClauseFromAJ.lean` — completes the structural
+  loop in the regular-case lattice clause. Two theorems:
+
+  - `regularLevelSetLatticeClause_of_abelGeneratorPeriodCondition`:
+    given any `B : AbelJacobiInput α h` and the per-`f` AJ-chain period
+    condition `AbelGeneratorPeriodCondition B`, the regular-case
+    lattice clause `RegularLevelSetLatticeClause X α h` follows.
+
+    **Proof**: cycle witness `Z + AJ ∈ SmoothCycle`
+    (`regularLevelSetCycleWitness`, in tree) gives
+    `period(Z + AJ) ∈ lattice` automatically. `period(AJ) ∈ lattice`
+    by hypothesis. `period(Z) = period(Z + AJ) - period(AJ) ∈ lattice`
+    via `AddSubgroup.sub_mem`.
+
+  - `regularLevelSetLatticeClause_of_genus_zero`: at genus zero, the
+    period vector is a subsingleton (`Fin 0 → ℂ`), so the lattice
+    clause holds unconditionally.
+
+**Status**: the structural gap between
+`RegularLevelSetLatticeClause` (a clause on the analytic chain) and
+`AbelGeneratorPeriodCondition` (a clause on the formal AJ chain) is
+now closed. The substantive analytic content of Abel forward —
+discharging `AbelGeneratorPeriodCondition` for arbitrary non-constant
+`f` at genus ≥ 1 — remains open and is the residue theorem on 1-forms
+on `ℙ¹` / Stokes on 2-chains content (~1,500–2,500 LOC of genuine
+classical infrastructure).
+
+**Build**: 8871 jobs, zero `sorry`, zero `axiom`.
+
 ## 2026-05-19 (afternoon) — `IntegrandContinuousAlongBeta` UNCONDITIONAL (4 chips, ~600 LOC, direct to `main`)
 
 End-to-end discharge of `MeromorphicNonzero.IntegrandContinuousAlongBeta`
