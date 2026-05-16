@@ -15,12 +15,13 @@
 > now reflect them. A `feedback_check_system_currentDate.md` memory
 > documents the root cause and prevention for future sessions.
 
-## 2026-05-16 (late night) — `HolomorphicTraceExtension X` item-(2) descent + Hurwitz form arc (7 chips, ~655 LOC, direct to `main`)
+## 2026-05-16 (late night) — `HolomorphicTraceExtension X` item-(2) descent + Hurwitz form arc (10 chips, ~930 LOC, direct to `main`)
 
 Builds on the night's algebraic foundation to ship the full pure-
 analytic content of item (2): cyclic-sum descent through `ξ^k`, Hurwitz
-local normal form, analytic local inverse, and the composed source-
-side z-form identity.
+local normal form, analytic local inverse, composed source-side z-form
+identity, divided chart-coefficient form, and bundle-level bridge at a
+fibre point.
 
 * **Chip 3b-4** `CyclicSumFactorKthPowerDescent.lean` (~75 LOC). The
   descent headline: combining the night's
@@ -66,6 +67,31 @@ side z-form identity.
   at `ξ := ψ z` and substitutes `(ψ z)^k = g z - w₀` from the Hurwitz
   identity. Final form:
   `∀ᶠ z in 𝓝 x₀, cyclicSum (h ∘ φ) ω k (ψ z) = (ψ z)^(k-1) · Q(g z - w₀)`.
+
+* **Chip 3c-6** `HurwitzZetaLocalNonzero.lean` (~50 LOC). Local non-
+  vanishing `ψ z ≠ 0` for `z ≠ x₀` near `x₀`. From the eventual left
+  inverse `φ (ψ z) = z` and `ψ x₀ = 0`: if `ψ z = 0 = ψ x₀`, then
+  `z = φ (ψ z) = φ (ψ x₀) = x₀`. Specialising at `x₀` uses
+  `Filter.Eventually.self_of_nhds`.
+
+* **Chip 3c-7** `HurwitzCyclicSumDescentZFormDivided.lean` (~115 LOC).
+  Divided form of the source-side z-form descent: combines the kth-root
+  form (which exposes `h_left`) with the non-vanishing chip to yield
+
+    `∀ᶠ z in 𝓝 x₀, z ≠ x₀ →`
+    `   cyclicSum (h ∘ φ) ω k (ψ z) / ((↑k) · (ψ z)^(k-1)) = Q (g z - w₀) / ↑k`.
+
+  Closes the chart-coefficient form of the trace 1-form `f_*α` near a
+  critical value: LHS = source-fibre cyclic-sum normalised by
+  `k · (ψ z)^(k-1)`, RHS = `Q (g z - w₀) / k` analytic across `w₀`.
+
+* **Chip 3d-1** `CriticalFibreCyclicSumDescent.lean` (~105 LOC).
+  Manifold-level bridge: specialises the pure-analytic z-form descent
+  to `g := f.chartPullback z₀` and `h := α.localCoeff z₀`, with both
+  analyticities supplied by `analyticAt_chartPullback` and
+  `localCoeff_analyticAt_chart_image`. Primitive-root binder renamed
+  to `ζ` to avoid clashing with the `ω` `ContDiff` smoothness-level
+  notation needed for `IsManifold (𝓘(ℂ, ℂ)) ω X`.
 
 Build green across all chips. Zero `sorry`, zero `axiom`.
 
