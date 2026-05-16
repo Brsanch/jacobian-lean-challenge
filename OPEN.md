@@ -199,6 +199,30 @@ more chips landed (+~1,156 LOC, build at 8854 jobs).**
    high-level lemma; available is `ContMDiffAt.mfderiv` requiring
    `inTangentCoordinates` machinery), (b) cotangent-pullback continuity
    packaging via `SmoothOneFormOn`, (c) bilinear composition.
+
+   **2026-05-18 evening — 9-chip groundwork arc** (build 8863 jobs, zero
+   sorry/axiom). Two API entry points now land in tree:
+   * **Factor-decomposed** (chips 1–8, e.g.
+     `Manifold/IntegrandContinuousAlongBetaPerSheetVel.lean`'s
+     `integrandContinuousAlongBeta_of_per_sheet_univ_and_velocity`) —
+     discharges `IntegrandContinuousAlongBeta` from a universal per-sheet
+     `ContinuousOn` hypothesis on `(cotangentEquiv (sheetCotPullback p v om)
+     : ℂ →L[ℝ] ℝ)` plus velocity `ContinuousOn`. **Architectural caveat**:
+     this routes through *absolute-coord* `cotangentEquiv` which is NOT
+     globally continuous for non-trivial cotangent bundles (chart-cocycle
+     cancels only inside the pairing); discharge-friendly only for paths
+     whose labelling nbhds and sheet images each fit within single charts
+     of RS / X respectively (i.e. paths not crossing `∞`).
+   * **Chart-coord-pair** (chip 9, `Manifold/ChartBetaVelocity.lean`'s
+     `chartBetaVelocity` + `contMDiffAt_chartBetaVelocity`) — first
+     primitive of the architecturally correct architecture (mirrors
+     `SmoothPathIntegrability.continuous_integrand_at`). Remaining
+     primitives: `chartFStarOmega` (chart-coord trace, requires `f-5`
+     section smoothness of `fStarOmega` on `regularValueSet`),
+     `chartBetaVelocity` same-point self-evaluation, chart-invariance
+     of pairing on chart preimage, and pointwise `ContinuousOn (Icc 0 1)`
+     gluing.
+
 2. **Residue theorem on 1-forms on `ℙ¹`** — adapts the in-tree
    `JacobianChallenge.residue_theorem` (function level) to
    meromorphic 1-forms. The chain-difference reduction in
