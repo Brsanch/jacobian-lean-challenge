@@ -333,6 +333,54 @@ Its construction needs:
 Build (all 6 chips of this session): single-file
 `LEAN_NUM_THREADS=1 lake env lean` clean, zero `sorry`, zero `axiom`.
 
+**2026-05-20 (afternoon) — `fStarOmegaHolOn` arc: item (1) closed,
+holomorphic-side parallel built (6 chips, 828 LOC).** Mirrors the
+morning's `fStarOmegaOn` arc on the holomorphic `𝓘(ℂ, ℂ) ω` bundle:
+
+* `HolomorphicCotangentPullbackAt` — pointwise holomorphic pullback
+  primitive with ℂ-linearity in α + germ congruence in g.
+* `MeromorphicNonzeroHolTraceAt` — `holTraceAt`, `holSheetCotPullback`,
+  cross-sheet identification (parallel to
+  `cotangentPullbackAt_localSheet_eq_at_target_sheet`).
+* `MeromorphicNonzeroFStarOmegaHolDef` — total `fStarOmegaHol α v`
+  with `if hv then holTraceAt else 0`, ℂ-linearity, apply lemmas.
+* `FStarOmegaHolLocalAt` — fixed-Finset rewrite on labelling nbhd
+  (mirror of the realified `fStarOmega_eq_sum_sheetCotPullback_at_v0`,
+  reusing the bundle-independent `fiberSheetAt` machinery).
+* `FStarOmegaHolContMDiffAt` — pointwise `ContMDiffAt ω` at every
+  regular value (per-sheet from sub-chip A + `ContMDiffAt.sum_section`
+  + `congr_of_eventuallyEq`).
+* `FStarOmegaHolOn` — final `HolomorphicOneFormOn RiemannSphere
+  f.regularValueSet` packaging.
+
+**Item (1) is now CLOSED.** The on-regular-set holomorphic 1-form
+`f.fStarOmegaHolOn hnc α` is built unconditionally.
+
+**Remaining for `HolomorphicTraceExtension X`** (next-session chip
+arcs):
+
+* **Item (2) — Extension across critical values.** The genuinely-new
+  classical content. Build `globalize : HolomorphicOneFormOn RS s →
+  HolomorphicOneForm RS` under the conditions that `s = f.regularValueSet`
+  is open-cofinite and the on-set form has the n-th-root cancellation
+  behavior at each critical value. Mathematical content: n-th-root
+  cancellation + Riemann removable singularity for 1-forms on `ℙ¹`.
+  Not at mathlib pin; estimated 1500-2500 LOC.
+
+* **Item (3) — Realification compatibility.** Reduces to the manifold
+  derivative identity `(mfderiv 𝓘(ℂ, ℂ) g x).restrictScalars ℝ =
+  mfderiv 𝓘(ℝ, ℂ) g x` for ℂ-smooth `g`. Path: lift through
+  `HasMFDerivAt ↔ HasFDerivWithinAt` + the chart-pullback identity
+  `HasFDerivAt.restrictScalars`. Mathlib provides
+  `DifferentiableAt.fderiv_restrictScalars`; manifold bridging is
+  in-tree work, estimated 200-400 LOC.
+
+Net: once items (2) + (3) ship, `HolomorphicTraceExtension X` is
+unconditional and `RegularLevelSetLatticeClause X α_basis h_bundle` is
+unconditional. Item (1)'s sub-chips also unlock any future use of
+`fStarOmegaHolOn` for non-RLSL purposes (residue theorem, Hodge
+theory, period-pairing finite-dim arguments).
+
 **2026-05-17 evening — Integrand-trace identity in full eventually
 form (5 additional chips, ~720 LOC).** Lifts the algebraic per-`t`
 trace identity to integrand-level + fully eventually form near `t = 0`:

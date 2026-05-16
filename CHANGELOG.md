@@ -1,5 +1,89 @@
 # Changelog
 
+## 2026-05-20 (afternoon) — `fStarOmegaHolOn` arc: holomorphic-side parallel (6 chips, 828 LOC, direct to `main`)
+
+Continues the morning's `fStarOmegaOn` arc with the **holomorphic-side
+parallel**: builds `f.fStarOmegaHolOn hnc α : HolomorphicOneFormOn
+RiemannSphere f.regularValueSet` unconditionally for any
+`α : HolomorphicOneForm X`. After this arc, the discharge of
+`HolomorphicTraceExtension X` reduces to (i) **extension of the
+on-regular-set holomorphic 1-form to a global one** on `ℙ¹`
+(n-th-root cancellation + Riemann removable singularity — genuinely
+new classical content not at the mathlib pin) and (ii) **realification
+compatibility** (a finite analytic identity reducing to `mfderiv
+𝓘(ℂ, ℂ) g x).restrictScalars ℝ = mfderiv 𝓘(ℝ, ℂ) g x` for ℂ-smooth
+`g`; doable in tree as a separate chip arc).
+
+**6 new files** (`JacobianChallenge/Manifold/`):
+
+* `HolomorphicCotangentPullbackAt.lean` (133 LOC) — pointwise
+  holomorphic cotangent pullback `holCotangentPullbackAt g y α =
+  (α (g y)).comp (mfderiv 𝓘(ℂ, ℂ) g y) : CotangentSpace 𝓘(ℂ, ℂ) y`.
+  ℂ-linearity in α; germ congruence in g via
+  `Filter.EventuallyEq.mfderiv_eq` (model-generic).
+
+* `MeromorphicNonzeroHolTraceAt.lean` (192 LOC) — `holTraceAt =
+  ∑_{p ∈ fiberFinset hv} holCotangentPullbackAt sheet_p.g v α`;
+  `holSheetCotPullback` wrapper (mirrors `sheetCotPullback`);
+  ℂ-linearity; **cross-sheet identification**
+  `holCotangentPullbackAt_localSheet_eq_at_target_sheet` —
+  parallel to the realified version, reusing the model-generic
+  `LocalSheetData.g_eventuallyEq_of_isLocalRightInverse` +
+  `holCotangentPullbackAt_congr_of_eventuallyEq`.
+
+* `MeromorphicNonzeroFStarOmegaHolDef.lean` (137 LOC) — total
+  dependent function `fStarOmegaHol α v` defined as
+  `if v ∈ regularValueSet then holTraceAt v α else 0`. Apply lemmas
+  at regular vs. critical values; pointwise ℂ-linearity.
+
+* `FStarOmegaHolLocalAt.lean` (131 LOC) — fixed-Finset rewrite on the
+  labelling nbhd. Exact mirror of
+  `fStarOmega_eq_sum_sheetCotPullback_at_v0`: re-indexing via the
+  bijection `p ↦ (fiberSheetAt p).g v` (bundle-independent —
+  `fiberSheetAt` machinery doesn't care about scalar field) +
+  cross-sheet identification (holomorphic version).
+
+* `FStarOmegaHolContMDiffAt.lean` (139 LOC) — pointwise
+  `ContMDiffAt ω` at every regular value `v₀`. Ships
+  `holSheetCotPullback_contMDiffAt` wrapper to hide
+  `LocalSheetData`'s dependent-type index (the `rw [hp_to_v₀] at h`
+  motive in the realified case works through the wrapper but not on
+  the raw `localSheetPullbackPointwise` expression). Then composes
+  per-sheet smoothness (sub-chip A) + `ContMDiffAt.sum_section` +
+  `congr_of_eventuallyEq` on the labelling nbhd.
+
+* `FStarOmegaHolOn.lean` (96 LOC) — final packaging as
+  `HolomorphicOneFormOn RiemannSphere f.regularValueSet`. `ContMDiffOn`
+  from pointwise `ContMDiffAt` + open `regularValueSet`.
+
+**Net effect on RLSL closure.** Pre-arc, the smoothness/holomorphicity
+side of `HolomorphicTraceExtension X` was a future chip arc with the
+parallel-to-`fStarOmegaOn` infrastructure to be built. Post-arc, the
+**smoothness/holomorphicity on the open regular set is unconditional**
+(in the same way `fStarOmegaOn` already discharges it for the
+realified case). What remains for `HolomorphicTraceExtension X` is
+(i) extension across critical values, (ii) realification compatibility
+with the realified trace on the regular set.
+
+**Gotchas surfaced**:
+
+* `LocalSheetData`'s dependent-type index (`y₀ : Y` in
+  `LocalSheetData f y₀ x₁`) bleeds through into `localSheetData_at_regular
+  hnc hp_reg`'s type (`LocalSheetData f.toRiemannSphere
+  (f.toRiemannSphere p) p`). Naïve `rw [hp_to_v₀] at h` on a statement
+  with `localSheetPullbackPointwise (sheet.g) α v` exposed fails with
+  "motive not type correct". Fix: package as
+  `f.holSheetCotPullback hnc hp_reg v α` (hiding the sheet in a
+  non-dependent wrapper).
+* `RealificationCompatibility` (next chip arc) reduces to
+  `(mfderiv 𝓘(ℂ, ℂ) g x).restrictScalars ℝ = mfderiv 𝓘(ℝ, ℂ) g x` for
+  ℂ-smooth `g`. The chart-pullback `fderivWithin` identity is
+  `DifferentiableAt.fderiv_restrictScalars` (mathlib); manifold
+  bridging requires `HasMFDerivAt ↔ HasFDerivWithinAt` + uniqueness.
+  Not yet built.
+
+**Build**: full lake build 8884 jobs clean; zero `sorry`, zero `axiom`.
+
 ## 2026-05-20 — `fStarOmegaOn` arc + `HolomorphicTraceExtension` reduction (6 chips, ~974 LOC, direct to `main`)
 
 **6 new files** (`JacobianChallenge/Manifold/`):
