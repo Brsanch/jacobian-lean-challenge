@@ -31,6 +31,7 @@ import JacobianChallenge.Manifold.AnalyticKthRoot
 import JacobianChallenge.Manifold.AnalyticLocalFactorization
 import JacobianChallenge.Manifold.AnalyticLocalNormalForm
 import JacobianChallenge.Manifold.AnalyticPartExtraction
+import JacobianChallenge.Manifold.ApplyCotangentContinuity
 import JacobianChallenge.Manifold.BijectiveAnalyticDischarge
 import JacobianChallenge.Manifold.BijectiveAnalyticToBiholomorphism
 import JacobianChallenge.Manifold.ArgumentPrincipleOnDisc
