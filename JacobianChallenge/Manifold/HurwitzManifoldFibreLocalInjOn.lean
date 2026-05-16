@@ -41,10 +41,7 @@ theorem manifold_fibre_local_injOn
     (f : MeromorphicNonzero X) (z₀ : X)
     {U : Set ℂ}
     (_hU_target : U ⊆ (chartAt ℂ z₀).target)
-    (h_planar_inj : Set.InjOn (f.chartPullback z₀) U)
-    (_h_f_in_src : ∀ w ∈ U,
-      f.toRiemannSphere ((chartAt ℂ z₀).symm w)
-        ∈ (chartAt ℂ (f.toRiemannSphere z₀)).source) :
+    (h_planar_inj : Set.InjOn (f.chartPullback z₀) U) :
     Set.InjOn f.toRiemannSphere
       ((chartAt ℂ z₀).symm '' U) := by
   intro a ha b hb h_fa_eq_fb
