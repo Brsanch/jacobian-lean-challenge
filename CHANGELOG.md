@@ -1,5 +1,72 @@
 # Changelog
 
+## 2026-05-20 (late afternoon) — Realification compatibility primitives (2 chips, 289 LOC, direct to `main`)
+
+Per-summand realification compatibility for the holomorphic cotangent
+pullback, closing two of the three pieces needed for item (3) of the
+`HolomorphicTraceExtension` closure plan. The trace-sum-level identity
+(third piece) is left for a follow-up due to typeclass-pattern-matching
+issues described below.
+
+**2 new files** (`JacobianChallenge/Manifold/`):
+
+* `MFDerivComplexToRealApply.lean` (171 LOC) — **manifold-derivative
+  application-level realification.** For ℂ-differentiable
+  `g : X → Y` at `x`, `((mfderiv 𝓘(ℝ, ℂ) g x) w : ℂ)
+  = ((mfderiv 𝓘(ℂ, ℂ) g x) w : ℂ)` for every `w : ℂ`. Bypasses the
+  `TangentSpace` non-reducibility issue by working at the function
+  application level. Ships:
+  - `MDifferentiableAt.complex_to_real` — `MDifferentiableAt 𝓘(ℂ, ℂ)`
+    implies `MDifferentiableAt 𝓘(ℝ, ℂ)`.
+  - `mfderiv_complex_to_real_apply` — the application-level identity.
+  - Private helpers `writtenInExtChartAt_complex_eq_real`,
+    `extChartAt_apply_complex_eq_real` — chart-pullback agrees across
+    `𝓘(ℂ, ℂ)` and `𝓘(ℝ, ℂ)`.
+  - Private helpers `isScalarTower_R_C_C` +
+    `differentiableAt_restrictScalars_R_C_C` +
+    `hasFDerivAt_restrictScalars_R_C_C` — work around the mathlib synth
+    failure for `IsScalarTower ℝ ℂ ℂ` in `restrictScalars` contexts
+    (synth never tries `IsScalarTower.right`, only fails on
+    `Complex.instIsScalarTowerOfReal`; explicit `@`-applied wrappers
+    are needed to make the instance pass through).
+
+* `HolCotangentPullbackRealification.lean` (118 LOC) — **per-summand
+  realification compatibility for the holomorphic cotangent
+  pullback.** For ℂ-differentiable `g : Y → X` at `y` and every
+  `w : ℂ`:
+
+      (realPartCLM (holCotangentPullbackAt g y α)) w
+        = Complex.re ((α.eval (g y)) ((mfderiv 𝓘(ℝ, ℂ) g y) w))
+
+  and similarly for `imagPartCLM`. Both sides are `ℝ`-values. The
+  substantive content reduces to `mfderiv_complex_to_real_apply`
+  (chip 1). Apply-level statement avoids the typed
+  `restrictScalars`-on-`CotangentSpace` synth failures.
+
+**Net effect on item (3) closure plan.** The
+`(mfderiv 𝓘(ℂ, ℂ) g x).restrictScalars ℝ = mfderiv 𝓘(ℝ, ℂ) g x`
+identity attempted on the prior commit (typed-level) hit
+`Module ℂ (TangentSpace 𝓘(ℝ, ℂ) x)` synth failures because `TangentSpace`
+is non-reducible by design (mathlib comment in
+`Mathlib/Geometry/Manifold/IsManifold/Basic.lean:1037`). This chip
+arc demonstrates the workaround pattern (apply-level statements +
+explicit `@`-applied instance passing) that gets us past the
+`TangentSpace` abstraction barrier.
+
+**What's left for item (3).** A **trace-sum-level** identity
+`(realPartCLM (f.fStarOmegaHol hnc α v)) w
+  = applyCotangent (f.fStarOmega hnc (realComponent α) v) w`
+at every regular `v` and `w : ℂ`. This sums the per-summand identity
+(chip 2) over `f.fiberFinset hv` and was attempted but hit further
+`map_sum`-pattern-matching issues (Lean's `rw [map_sum realPartCLM]`
+fails to match the goal's `realPartCLM (∑ p, X p)` pattern despite
+type-equivalence — likely a deeper consequence of `CotangentSpace`
+abstraction interacting with `ContinuousLinearMap` map-out
+synthesis). Estimated 100-200 LOC once the right intermediate form
+is found.
+
+**Build**: full lake build 8886 jobs clean; zero `sorry`, zero `axiom`.
+
 ## 2026-05-20 (afternoon) — `fStarOmegaHolOn` arc: holomorphic-side parallel (6 chips, 828 LOC, direct to `main`)
 
 Continues the morning's `fStarOmegaOn` arc with the **holomorphic-side
