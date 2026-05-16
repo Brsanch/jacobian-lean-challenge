@@ -165,6 +165,49 @@ smoothness), `f_*ω` smooth-on-`regularValueSet` packaging, and residue
 theorem adaptation from `principalDivisorMap` to `f_*ω`'s residue
 divisor on ℙ¹.
 
+**2026-05-17 (later session) — `RegularLevelSetLatticeClause` arc, six
+more chips landed (+~1,156 LOC, build at 8854 jobs).**
+
+* `MeromorphicNonzeroFStarOmegaDef.lean` (137 LOC) — `fStarOmega f hnc om :
+  (v : RiemannSphere) → CotangentSpace _ v` returning `traceAt` at regular
+  values and `0` (junk) elsewhere; ℝ-linear in `om`.
+* `ChainDifferenceCycle.lean` (76 LOC) — generalises `singleDiff_isCycle`:
+  `boundary c₁ = boundary c₂ ⇒ c₁ - c₂ ∈ SmoothCycle`.
+* `RegularLevelSetChainBoundaryAJ.lean` (154 LOC) — `regularLevelSetCycleWitness`
+  packages `regularLevelSetChain f + principalDivisorAJChain (principalDivisorMap f)`
+  as a `SmoothCycle` via boundary cancellation. **Note**: this gives
+  `period(Z) ≡ -period(AJ) (mod lattice)`, NOT `period(Z) ∈ lattice` —
+  the lattice clause still needs the residue input independently.
+* `MeromorphicNonzeroFiberLocallyConst.lean` (411 LOC) — `localFiberLabelingNbhd`
+  is an open nbhd of `v₀ ∈ regularValueSet` on which `p ↦ (fiberSheetAt p).g v`
+  is a Finset bijection `fiberFinset hv₀ ≃ fiberFinset hv` (via cardinality
+  + InjOn-from-disjoint-shrunk-sheets).
+* `FStarOmegaLocalAt.lean` (151 LOC) — fixed-Finset rewrite of `fStarOmega`
+  on the labelling nbhd: `fStarOmega om v = ∑_{p ∈ fiberFinset hv₀}
+  cotangentPullbackAt sheet_p.g v om`. Composes `fiberSheetAt_g_image_eq_fiberFinset`
+  (above) + `cotangentPullbackAt_localSheet_eq_at_target_sheet` (in tree).
+* `IntegrateLevelSetChainSigmaReparam.lean` (227 LOC, **conditional**) —
+  σ-reparametrisation `s = σ(t)` via `intervalIntegral.integral_deriv_smul_comp'`,
+  conditional on a named hypothesis `IntegrandContinuousAlongBeta`
+  (continuity of `s ↦ applyCotangent (traceAt … (β s) om) (mfderiv β s 1)`
+  on `Icc 0 1`).
+
+**Remaining for unconditional `RegularLevelSetLatticeClause`:**
+1. **`IntegrandContinuousAlongBeta` discharge** — substantive smoothness
+   packaging requiring (a) smoothness of `mfderiv g` as a function of base
+   point on regular nbhds (mathlib pin lacks `ContMDiffOn.mfderiv`-style
+   high-level lemma; available is `ContMDiffAt.mfderiv` requiring
+   `inTangentCoordinates` machinery), (b) cotangent-pullback continuity
+   packaging via `SmoothOneFormOn`, (c) bilinear composition.
+2. **Residue theorem on 1-forms on `ℙ¹`** — adapts the in-tree
+   `JacobianChallenge.residue_theorem` (function level) to
+   meromorphic 1-forms. The chain-difference reduction in
+   `RegularLevelSetChainBoundaryAJ.lean` does NOT bypass this: it
+   gives `period(regularLevelSetChain) ≡ -period(AJ-chain) (mod lattice)`,
+   and `period(AJ-chain) ∈ lattice` is the very `AbelGeneratorPeriodCondition`
+   we're trying to discharge — circular reduction. The 1-form residue
+   theorem is genuine new classical input (~1,500–2,500 LOC realistically).
+
 **Lebesgue gluing is no longer required** — the lifted-point sheet
 breakthrough (2026-05-17 late evening) gave a global integrand
 identity at any `t ∈ Ioo 0 1` directly, bypassing Hurwitz
