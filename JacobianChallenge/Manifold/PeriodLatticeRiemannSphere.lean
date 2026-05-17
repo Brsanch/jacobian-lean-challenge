@@ -8,6 +8,7 @@ import JacobianChallenge.Manifold.PeriodLatticeOfRankTwoG_Wiring
 import JacobianChallenge.Manifold.PeriodLatticeOfRankTwoG_ComplexWiring
 import JacobianChallenge.Manifold.PeriodLatticeOfRankTwoG_LieGroupWiring
 import JacobianChallenge.Manifold.RiemannSphereChartSCoeffOverlap
+import JacobianChallenge.Manifold.Pic0RiemannSphereSubsingleton
 
 set_option linter.unusedSectionVars false
 
@@ -196,7 +197,42 @@ instance : @LieAddGroup ℂ _
     AnalyticJacobianRiemannSphere _ _ inferInstance :=
   lieAddGroupHypothesis_holds_RiemannSphere
 
+/-- `AnalyticJacobianRiemannSphere` is a `Subsingleton` — the
+quotient of the trivial group `(Fin 0 → ℂ)` by anything is trivial. -/
+instance : Subsingleton AnalyticJacobianRiemannSphere := by
+  haveI : Subsingleton
+      (Fin (JacobianChallenge.genus RiemannSphere) → ℂ) :=
+    fin_genus_RS_to_complex_subsingleton
+  -- The quotient of a subsingleton is a subsingleton.
+  show Subsingleton
+    ((Fin (JacobianChallenge.genus RiemannSphere) → ℂ) ⧸
+      periodLatticeOfRankTwoG_RiemannSphere.lattice)
+  refine ⟨fun x y => ?_⟩
+  induction x using QuotientAddGroup.induction_on with
+  | H xRep =>
+    induction y using QuotientAddGroup.induction_on with
+    | H yRep =>
+      have heq : xRep = yRep := Subsingleton.elim xRep yRep
+      rw [heq]
+
 end AnalyticJacobianRiemannSphere
+
+/-! ## `Pic⁰ RiemannSphere ≃+ AnalyticJacobianRiemannSphere` (trivial) -/
+
+/-- **The canonical AddEquiv `Pic⁰ RS ≃+ AnalyticJacobianRiemannSphere`**,
+unconditional. Both sides are `Subsingleton` (`Pic⁰ RS` via
+`subsingleton_pic0_RiemannSphere`; `AnalyticJacobianRiemannSphere`
+via the quotient of `Fin 0 → ℂ`), so the underlying `Equiv` is the
+unique one between any two singletons, and additivity is automatic
+on a subsingleton domain/codomain. -/
+noncomputable def picZeroEquiv_RiemannSphere :
+    Pic0 RiemannSphere ≃+ AnalyticJacobianRiemannSphere :=
+  haveI := subsingleton_pic0_RiemannSphere
+  { toFun := fun _ => 0
+    invFun := fun _ => 0
+    left_inv := fun _ => Subsingleton.elim _ _
+    right_inv := fun _ => Subsingleton.elim _ _
+    map_add' := fun _ _ => Subsingleton.elim _ _ }
 
 end JacobianChallenge
 
