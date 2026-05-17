@@ -15,6 +15,111 @@
 > now reflect them. A `feedback_check_system_currentDate.md` memory
 > documents the root cause and prevention for future sessions.
 
+## 2026-05-17 (late morning) — Pushforward/Pullback functoriality + PeriodPairingMorphism (id, comp) (7 chips, ~697 LOC, direct to `main`)
+
+A bundled functoriality arc completing the (id, comp) pair on three
+levels: `SmoothPath`/`Chain`/`Cycle.push`, `PeriodPairingMorphism`,
+and the dual `pullbackLinearLift` / `JacobianAnalyticPullbackLift`
+canonical constructors. With this arc, both sides of the
+pushforward/pullback per-curve pair have canonical-`T` constructors
+and matching functoriality witnesses.
+
+### Chip-by-chip
+
+* **Chip 1** `SmoothCyclePushComp.lean` (102 LOC, `aa88f58`). The
+  composition pair at three levels:
+  - `SmoothPath.push_comp` — `push (g ∘ f) γ = push g (push f γ)` via
+    `Path.map_map` + structure congruence (smooth field is `Prop` so
+    proof-irrelevant).
+  - `SmoothChain.push_comp` — `ℤ`-linear-map equality via
+    `Finsupp.lhom_ext` + `lmapDomain_apply` + `mapDomain_single`.
+  - `SmoothCycle.pushHom_comp` — `AddMonoidHom` equality on cycles.
+
+* **Chip 2** `PeriodPairingMorphismComp.lean` (98 LOC, `254d1c2`).
+  General composition `PeriodPairingMorphism.comp` over arbitrary
+  `PeriodPairingData`. `f := g ∘ f`, `cyclePush := cyclePush_g.comp
+  cyclePush_f`, adjunction via `adj_g`, `adj_f`,
+  `← HolomorphicOneForm.pullback_comp`. Companion `@[simp]` lemmas
+  `comp_f` and `comp_cyclePush`.
+
+* **Chip 3** `PeriodPairingMorphismIdGeneral.lean` (58 LOC, `cb40d8d`).
+  General identity `PeriodPairingMorphism.id` over arbitrary
+  `PeriodPairingData`. `f := id`, `cyclePush := AddMonoidHom.id`,
+  adjunction via `HolomorphicOneForm.pullback_id`. Companion `@[simp]`
+  lemmas `id_f` and `id_cyclePush`. Sister to the previously-existing
+  `id'_ofSmoothCycle` (the `ofSmoothCycle`-specialised variant).
+
+* **Chip 4** `SmoothCyclePushId.lean` (77 LOC, `83c8a16`). The
+  identity pair at three levels:
+  - `SmoothPath.push_id` — `push id γ = γ` (via `Path.map_id` under
+    `congr 1`, which closes automatically since `Path.map_id` is
+    `@[simp]`).
+  - `SmoothChain.push_id` — equals `LinearMap.id`.
+  - `SmoothCycle.pushHom_id` — equals `AddMonoidHom.id`.
+
+* **Chip 5** `PeriodPairingMorphismCompOfSmoothCycle.lean` (109 LOC,
+  `bc71ae0`). Specialisation of `comp` for `ofSmoothCycle`-style
+  inputs: takes two holomorphic curve maps + period adjunctions for
+  the canonical `SmoothCycle.pushHom` cyclePush, builds the composite
+  with `cyclePush := SmoothCycle.pushHom (g ∘ f) _` (the canonical
+  `ofSmoothCycle` form, NOT the bare `pushHom g . pushHom f` that the
+  generic `comp` would deliver). Uses `SmoothCycle.pushHom_comp` +
+  proof-irrelevance for `ContMDiff.complex_to_real` witness threading.
+
+* **Chip 6** `HolomorphicOneFormPullbackLinearLift.lean` (139 LOC,
+  `c14f5fd`). Defines `pullbackLinearLift αX αY f hf` as the CLM
+  `(Fin gY → ℂ) →L[ℂ] (Fin gX → ℂ)` via
+  `Matrix.mulVecLin (pullbackMatrix αX αY f hf)` (no transpose, unlike
+  pushforward). Functoriality witnesses parallel `pushforwardLinearLift`:
+  `pullbackLinearLift_id` (equals `ContinuousLinearMap.id`),
+  `pullbackLinearLift_const` (equals `0`), `pullbackLinearLift_comp`
+  (contravariant `T_{g ∘ f} = T_f ∘ T_g`). Plus
+  `pullbackLinearLift_apply` definitional.
+
+* **Chip 7** `JacobianAnalyticPullbackLiftOfCurveCanonical.lean`
+  (98 LOC, `45b695c`). Canonical-`T` variant of
+  `JacobianAnalyticPullbackLift.ofCurveMap` fixing `T` to
+  `pullbackLinearLift` (no caller choice). Sister to
+  `JacobianAnalyticPushforwardLift.ofCurveMap`. Companion `@[simp]`
+  lemmas `ofCurveMapCanonical_T` and `_f`.
+
+### Build state
+
+All 7 chips verified via single-file `LEAN_NUM_THREADS=1 lake env lean`
+then full `taskpolicy -b nice -n 19 env LEAN_NUM_THREADS=1 lake build`
+(8958–8959 jobs across the arc). Zero `sorry`, zero `axiom`, zero
+linter warnings (one transient `show`→`change` style nag fixed
+mid-iteration on chip 1).
+
+Manifest `JacobianChallenge.lean` updated with all 7 imports.
+
+### Items flipped
+
+None — items 4, 5, 10, 11, 12, 13, 16, 17, 18, 21 in `Basic.lean` still
+STUB/OPEN. The functoriality arc is infrastructure that lands underneath
+the (still-pending) C3 rewire of `Jacobian X` to `AnalyticJacobian X _ _`.
+With these chips, the eventual `JacobianAnalyticPushforwardLift.ofMorphism_id`
+and `_comp` bridge lemmas (mapping `PeriodPairingMorphism.id`/`.comp`
+through `ofMorphism` into `JacobianAnalyticPushforwardLift.id'`/`.comp`)
+become straightforward structural matches.
+
+### Gotchas surfaced
+
+* `Path.map_map` and `Path.map_id` are `@[simp]` in mathlib, so
+  `congr 1` on `SmoothPath.mk` constructor equality closes the toPath
+  goal automatically — explicit `exact Path.map_map _` lines produce
+  "No goals to be solved" errors.
+* `SmoothCycle.pushHom` consumes a `ContMDiff I I ∞ f` argument, but
+  `ContMDiff` is `Prop`; two distinct smoothness proofs give
+  definitionally-equal `pushHom` applications by proof-irrelevance, so
+  bridging `ContMDiff.complex_to_real (hg.comp hf)` and
+  `(complex_to_real hg).comp (complex_to_real hf)` is `rfl`.
+* `ext c` on an `AddMonoidHom` equality between `pushHom`-style maps
+  produces the underlying-value goal directly; no need for an
+  intervening `apply Subtype.ext` (it errors with "could not unify").
+* `show ...` is now linter-flagged when it changes the goal; use
+  `change ...` instead.
+
 ## 2026-05-17 — E+F cluster: LieAddGroup discharge + ContMDiff building blocks + items 16/17/18/21 predicates (8 chips, ~1,020 LOC, direct to `main`)
 
 Implements the **E + F cluster** from `CLOSURE_MAP.md` §F.5 step 4
