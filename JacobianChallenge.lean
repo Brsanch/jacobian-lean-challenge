@@ -383,6 +383,7 @@ import JacobianChallenge.Manifold.SinglePoleInftyFibre
 import JacobianChallenge.Manifold.SinglePoleLaurentExtractionDischarge
 import JacobianChallenge.Manifold.SmoothChain
 import JacobianChallenge.Manifold.SmoothChainBoundary
+import JacobianChallenge.Manifold.SmoothChainPush
 import JacobianChallenge.Manifold.SmoothChainPushforward
 import JacobianChallenge.Manifold.SmoothChainIntegralLinearity
 import JacobianChallenge.Manifold.SmoothCycle
@@ -403,6 +404,7 @@ import JacobianChallenge.Manifold.SmoothPathIntegrateConcat
 import JacobianChallenge.Manifold.SmoothPathIntegrateConst
 import JacobianChallenge.Manifold.SmoothPathIntegrateReverse
 import JacobianChallenge.Manifold.SmoothPathIntegral
+import JacobianChallenge.Manifold.SmoothPathPush
 import JacobianChallenge.Manifold.StokesCompactSurface
 import JacobianChallenge.Manifold.StokesDisk
 import JacobianChallenge.Manifold.StokesDiskClosedForm
