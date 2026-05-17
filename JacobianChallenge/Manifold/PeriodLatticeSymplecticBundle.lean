@@ -344,6 +344,51 @@ noncomputable def PeriodLatticeOfRankTwoG.ofGenusZeroSymplectic
       (PeriodLatticeSymplecticBundle.trivial_at_genus_zero (data := data)
         (α := α) hgenus))
 
+/-! ## Equivalence with the bypass construction at genus 0
+
+The bypass in `Manifold/PeriodLatticeRiemannSphere.lean`
+(`PeriodLatticeOfRankTwoG.trivialAtGenusZero`) gives `lattice = ⊥`.
+The bundle route here gives `lattice = periodLatticeImage data α`.
+At genus 0, the ambient `Fin (genus X) → ℂ` is subsingleton, so
+`periodLatticeImage data α = ⊥` (the only subgroup of a singleton
+group). The two constructions therefore produce identical
+`PeriodLatticeOfRankTwoG` data. -/
+
+/-- **At genus 0, `periodLatticeImage` is `⊥`.** Direct consequence of
+the subsingleton ambient `Fin 0 → ℂ`. -/
+theorem periodLatticeImage_eq_bot_of_genus_zero
+    (data : PeriodPairingData X)
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (hgenus : JacobianChallenge.genus X = 0) :
+    periodLatticeImage data α = ⊥ := by
+  haveI : Subsingleton (Fin (JacobianChallenge.genus X) → ℂ) := by
+    rw [hgenus]
+    haveI : Unique (Fin 0 → ℂ) := Pi.uniqueOfIsEmpty (fun _ : Fin 0 => ℂ)
+    infer_instance
+  -- Both `periodLatticeImage` and `⊥` are AddSubgroups of a subsingleton
+  -- ambient; their underlying sets agree (both = {0}).
+  ext v
+  refine ⟨fun _ => ?_, fun _ => ?_⟩
+  · -- `v` is in the singleton ambient, hence `= 0`, hence in `⊥`.
+    have : v = 0 := Subsingleton.elim _ _
+    rw [this]
+    exact zero_mem _
+  · -- `v ∈ ⊥` means `v = 0`; show `0 ∈ periodLatticeImage`.
+    rw [AddSubgroup.mem_bot] at *
+    rename_i hv
+    rw [hv]
+    exact zero_mem _
+
+/-- **The genus-0 bundle-route and bypass constructions agree on the
+lattice field.** -/
+theorem PeriodLatticeOfRankTwoG.ofGenusZeroSymplectic_lattice
+    (data : PeriodPairingData X)
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (hgenus : JacobianChallenge.genus X = 0) :
+    (PeriodLatticeOfRankTwoG.ofGenusZeroSymplectic data α hgenus).lattice
+      = ⊥ :=
+  periodLatticeImage_eq_bot_of_genus_zero data α hgenus
+
 end JacobianChallenge
 
 end
