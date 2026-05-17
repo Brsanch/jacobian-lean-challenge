@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-05-17 (late evening) — Item 14 FTC basis-reduction (1 chip, ~60 LOC, direct to `main`)
+
+`pathPrimitiveFTC_of_basis` lands the previously-deferred FTC counterpart
+to `pathPrimitiveSmoothness_of_basis` in
+`Manifold/PathPrimitiveBasisFTC.lean`. With this, `PathPrimitiveFTC`
+reduces to a per-basis-element check, paralleling the smoothness
+reduction. Both `PathPrimitiveSmoothness` and `PathPrimitiveFTC` of item
+14's reverse leg are now factored through a ℂ-basis of
+`HolomorphicOneForm X`.
+
+Mechanics: `Submodule.span_induction` with predicate `fun v _ => v.eval
+x = mfderiv (pathPrimitive v) x`. Zero case via `eval_zero` +
+`pathPrimitive_zero` + `mfderiv_const`. Add case via `eval_add` +
+`pathPrimitive_add` + `mfderiv_add` (using `MDifferentiableAt`
+obtained from `PathPrimitiveSmoothness` derived upfront via
+`pathPrimitiveSmoothness_of_basis`). Smul case via `eval_smul` +
+`pathPrimitive_smul` + `const_smul_mfderiv`.
+
+Gotcha: `Submodule.span_induction` leaves the predicate un-beta-reduced
+at the `zero` branch, so an explicit `show (0 : HolomorphicOneForm X).eval
+x = …` before the rewrite chain is required. `fun y => f y + g y` is NOT
+definitionally `f + g` for the purpose of `mfderiv_add` pattern-matching
+(even though `Pi.add_apply` is `rfl`); an explicit `funext` rewrite
+bridges them. After `mfderiv_add` / `const_smul_mfderiv`, the final
+goal is `LHS = LHS` and needs a terminal `rfl`.
+
+Build: 8987 jobs, zero `sorry`, zero `axiom`.
+
 ## 2026-05-17 (afternoon → evening) — Item 1 STRICT-CLOSED + C3 cascade + Item 14 reverse-leg arc (36 chips, ~3700 LOC, direct to `main`)
 
 Major session. Three arcs landed on top of the late-morning
