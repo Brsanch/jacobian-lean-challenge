@@ -32,14 +32,25 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
-- **STRICT-CLOSED:** **12 / 24** — items **2, 3, 6, 7, 8, 9, 15, 19, 20, 22,
-  23, 24**. Honest `PrincDiv := PrincDivHonestCandidate` and `Pic0`
+- **STRICT-CLOSED:** **13 / 24** — items **1, 2, 3, 6, 7, 8, 9, 15, 19, 20,
+  22, 23, 24**. Honest `PrincDiv := PrincDivHonestCandidate` and `Pic0`
   (honest, with manifold instances) live in
   `Divisor/PrincipalDivisorRange.lean`. `Pic0.pushforward (hf)` uses
   `JacobianPushforward.lean`; `Pic0.pullbackWeighted (h_desc)` uses
   `Pic0.divPullbackWeighted_descent_of_smooth` in `JacobianPullback.lean`.
+  **Item 1** (`genus X : ℕ`) became STRICT-CLOSED via the 10-chip Forster
+  density-bound arc (2026-05-17, `DiskChartCoverDensity*.lean` +
+  `DiskChartCoverRiesz.lean` + `DiskChartCoverFiniteDim.lean`):
+  `HolomorphicOneFormFiniteDim X` is **unconditional** on a compact
+  connected complex 1-manifold via the cover-refinement → cotangent
+  transition continuity → per-point density identity → per-`x` aggregate
+  → density inequality `seminormVal ≤ M · seminormValInner` → outer
+  closed ball seq-compact → Riesz → `FiniteDimensional` chain.
+  `Module.finrank ℂ (HolomorphicOneForm X)` thus equals the actual
+  ℂ-dimension (no junk-zero), so the genus definition is the honest
+  geometric genus.
 - **STUB (placeholder topology / target / pending discharge):** items
-  **1, 4, 10** = 3 items.
+  **4, 10** = 2 items.
 - **OPEN (sorry in `Basic.lean` or transitively via downstream sorry):**
   items **5, 11, 12, 13, 14, 16, 17, 18, 21** = 9 items. Item 16
   (`ofCurve_inj`) reverted from STUB to OPEN as CLOSURE_MAP predicted —
