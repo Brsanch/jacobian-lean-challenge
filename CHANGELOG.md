@@ -15,7 +15,7 @@
 > now reflect them. A `feedback_check_system_currentDate.md` memory
 > documents the root cause and prevention for future sessions.
 
-## 2026-05-16 (late night) — `HolomorphicTraceExtension X` item-(2) descent + Hurwitz form arc (15 chips, ~1,280 LOC, direct to `main`)
+## 2026-05-16 (late night) — `HolomorphicTraceExtension X` item-(2) descent + Hurwitz form arc (32 chips, ~2,660 LOC, direct to `main`)
 
 Builds on the night's algebraic foundation to ship the full pure-
 analytic content of item (2): cyclic-sum descent through `ξ^k`, Hurwitz
@@ -127,6 +127,84 @@ fibre point.
   Extracts an explicit positive radius `r > 0` with
   `AnalyticOnNhd ℂ (traceExtensionChartCoeff Q k) (Metric.closedBall 0 r)`
   via `AnalyticAt.exists_ball_analyticOnNhd` + closed-ball-of-half-radius.
+
+* **Chip 3d-7** `HurwitzFibreImageIdentity.lean` (~65 LOC). Planar fibre-
+  image identity `g(φ(ζ^j · ξ)) - w₀ = ξ^k` from `ψ ∘ φ = id eventually`
+  and `(ζ^j · ξ)^k = (ζ^k)^j · ξ^k = ξ^k`.
+
+* **Chip 3d-8** `HurwitzFibreInjective.lean` (~80 LOC). Planar fibre-point
+  distinctness: `φ(ζ^j₁ · ξ) ≠ φ(ζ^j₂ · ξ)` for distinct j₁, j₂ ∈ range k
+  and ξ ≠ 0, via `Filter.eventually_all_finset` + ψ left-inverse +
+  `IsPrimitiveRoot.pow_inj`.
+
+* **Chip 3d-9** `HurwitzManifoldFibreImage.lean` (~70 LOC). Manifold-level
+  fibre-image identity: lifts chip 3d-7 through `(chartAt ℂ z₀).symm`,
+  conclusion `f.toRiemannSphere (lift) = (chartAt ℂ (f z₀)).symm (ξ^k + w₀)`.
+
+* **Chip 3d-10** `HurwitzManifoldFibreInjective.lean` (~50 LOC). Manifold-
+  level fibre-point distinctness via chart-symm right-inverse on target.
+
+* **Chip 3d-11** `HurwitzManifoldFibreEnumeration.lean` (~80 LOC). Packaged
+  manifold-level fibre enumeration: image + distinctness for `j ∈ range k`.
+
+* **Chip 3d-12** `HurwitzDerivFormula.lean` (~85 LOC). Hurwitz derivative
+  formula `deriv g w = ↑k · ψ(w)^(k-1) · deriv ψ w` for `w ∈ ball x₀ R`,
+  via `HasDerivAt.pow` on ψ + `HasDerivAt.const_add` for `w₀ + ψ^k` +
+  `congr_of_eventuallyEq` transport. Companion `hurwitz_deriv_ne_zero`.
+
+* **Chip 3d-13** `HurwitzDerivPsiNonzero.lean` (~40 LOC). Eventual
+  `deriv ψ z ≠ 0` near x₀ via `AnalyticAt.deriv` continuity +
+  `ContinuousAt.eventually_ne`.
+
+* **Chip 3d-14** `HurwitzPlanarFRegularity.lean` (~50 LOC). Combines
+  chips 3c-6, 3d-12, 3d-13 to give `deriv g z ≠ 0` for `z` near `x₀`,
+  `z ≠ x₀`, `z ∈ ball x₀ R`.
+
+* **Chip 3d-15** `HurwitzFibreRegularPlanar.lean` (~90 LOC). Eventual planar
+  f-regularity at Hurwitz fibre points: for ξ ≠ 0 small,
+  `deriv g (φ(ζ^j · ξ)) ≠ 0`. Tendsto pulled from chip 3d-14 via
+  `ξ ↦ φ(ζ^j · ξ)`.
+
+* **Chip 3d-16** `HurwitzFibreLocalInjOn.lean` (~55 LOC). Planar local
+  injectivity at Hurwitz fibre points: composes chip 3d-15 +
+  `AnalyticAt.exists_local_biholomorphism` + `LeftInvOn.injOn`. Takes
+  caller-supplied `AnalyticAt ℂ g (φ(ζ^j · ξ))` hypothesis.
+
+* **Chip 3d-17** `HurwitzManifoldFibreLocalInjOn.lean` (~60 LOC). Manifold-
+  level InjOn lift from planar chart-pullback InjOn, via chart-equality
+  manipulation.
+
+* **Chip 3d-18** `HurwitzRegularSetFromInjOn.lean` (~30 LOC). Direct
+  membership: `∃ U ∈ 𝓝 a, Set.InjOn f.toRiemannSphere U → a ∈ f.regularSet`
+  (by definition of `regularSet`).
+
+* **Chip 3d-19** `HurwitzManifoldFibreRegular.lean` (~80 LOC). Manifold
+  f-regularity at chart-target points: composes chips 3d-16, 3d-17,
+  3d-18; uses `OpenPartialHomeomorph.isOpen_image_symm_of_subset_target`
+  for the manifold-side neighbourhood construction.
+
+* **Chip 3d-20** `HurwitzManifoldFibreRegularEnumeration.lean` (~80 LOC).
+  Packaging chip: manifold fibre enumeration (image, distinctness,
+  regularity) for `j ∈ range k`.
+
+* **Chip 3d-21** `ChartPullbackAnalyticAtTarget.lean` (~80 LOC) — **ZZ24**,
+  the long-flagged owed chart-pullback-AnalyticAt-on-target lemma from
+  `AnalyticContinuationGlobalization.lean`. For `w ∈ (chartAt ℂ z₀).target`
+  with `f.toRiemannSphere ((chartAt ℂ z₀).symm w) ∈ (chartAt ℂ (f z₀)).source`:
+  `AnalyticAt ℂ (f.chartPullback z₀) w`. Composition of `contMDiffOn_chart_symm`
+  + `toRiemannSphere_contMDiff` + `contMDiffOn_chart` + `ContMDiffAt.comp`
+  + `contMDiffAt_iff_contDiffAt` + `ContDiffAt.analyticAt`.
+
+* **Chip 3d-22** `HurwitzManifoldFibreRegularUnconditional.lean` (~50 LOC).
+  Composes chip 3d-19 with chip 3d-21 to discharge the AnalyticAt
+  hypothesis. **Manifold f-regularity at chart-target points is now
+  unconditional in tree** modulo the standard small-disc continuity
+  argument for chart-source containment.
+
+* **Chip 3d-23** `HolCotangentPullbackOne.lean` (~25 LOC). Building
+  block for the per-sheet identification chip arc: definitional
+  `holCotangentPullbackAt g y α = (α.toFun (g y)).comp (mfderiv g y)`
+  exposed as a `@[simp]` lemma with explicit ℂ →L[ℂ] ℂ coercion.
 
 Build green across all chips. Zero `sorry`, zero `axiom`.
 
