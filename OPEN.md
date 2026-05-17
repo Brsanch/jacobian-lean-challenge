@@ -136,11 +136,36 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **119,776 LOC across 635 files** (measured
-2026-05-16 late night: 119,166 in `JacobianChallenge/` + 610 in the
-`JacobianChallenge.lean` manifest). Net growth this session: +2,663 LOC
-across 32 new chips for the **HolomorphicTraceExtension X item-(2)
-descent + Hurwitz form arc** (see CHANGELOG). Notable landings:
+**Current repo size:** **~120,800 LOC across 643 files** (2026-05-17
+session, +1,020 LOC across 8 chips on top of the 2026-05-16 baseline
+of 119,776 LOC / 635 files). Net growth this session: +1,020 LOC for
+the **E+F cluster** (see CHANGELOG). Notable landings:
+
+* **`lieAddGroup_quotient_of_zlattice`** (chip 2) — unconditional
+  `LieAddGroup 𝓘(ℂ, Fin g → ℂ) ω ((Fin g → ℂ) ⧸ L)` instance for any
+  discrete full-rank ℤ-lattice `L`. Discharges OPEN.md item 13's
+  content on the lattice-quotient construction.
+* **`PeriodLatticeOfRankTwoG.lieAddGroupHypothesis_holds`** (chip 3) —
+  the **third and final** named-hypothesis discharge on the
+  `PeriodLatticeOfRankTwoG` bundle, sister to
+  `compactSpaceHypothesis_holds` (item 11) and
+  `chartedSpaceHypothesis_holds` (items 5 + 12). Items 4, 5, 10, 11,
+  12, 13 on `JacobianOfLattice X data` are now **all unconditional**
+  once `[DiscreteTopology] [IsZLattice ℝ]` instance arguments are
+  supplied.
+* **`quotientLinearMap_contMDiff`** (chip 4) — building block for
+  items 18, 21: ℂ-linear maps descended to lattice quotients are
+  ContMDiff. Discharges the smoothness side of analytic-Jacobian-level
+  pushforward and pullback unconditionally.
+* **Named predicates `AbelJacobiSmoothness` (item 17) and
+  `AbelJacobiInjective` (item 16)** + composite
+  `JacobianAnalyticClosureBundle` packaging both — give Basic.lean a
+  clean per-item handle, with discharge routes documented (C1 +
+  FTC for 17, Abel's theorem for 16).
+
+**Prior session** (2026-05-16 late night, +2,663 LOC across 32 new
+chips for the **HolomorphicTraceExtension X item-(2) descent +
+Hurwitz form arc** — see CHANGELOG):
 
 * **ZZ24** chart-pullback-AnalyticAt-on-target lemma (chip 3d-21) —
   long-flagged owed in `AnalyticContinuationGlobalization.lean`, now

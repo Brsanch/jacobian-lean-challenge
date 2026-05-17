@@ -797,6 +797,23 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 | Chart-cover lift `linearInChart → SmoothPathConnected` | — | open |
 | ω-level structural caveat (line vs segment) | docstring of `SmoothPathLinearInChart.lean` | documented |
 
+**E+F cluster (2026-05-17 session, 8 chips, ~1,020 LOC):**
+
+| Building block | File | Status |
+|---|---|---|
+| `mkQ_contMDiff_complex` | `Manifold/PeriodLatticeMkQContMDiff.lean` | **landed** — `mkQ : E → E ⧸ L` is `ContMDiff` for the complex model |
+| `lieAddGroup_quotient_of_zlattice` | `Manifold/PeriodLatticeLieGroupAdd.lean` | **landed** — `LieAddGroup` instance on `(Fin g → ℂ) ⧸ L` (item 13 unconditional at quotient level) |
+| `PeriodLatticeOfRankTwoG.lieAddGroupHypothesis_holds` | `Manifold/PeriodLatticeOfRankTwoG_LieGroupWiring.lean` | **landed** — bundle discharge for item 13 (sister to compactSpace and chartedSpace wirings) |
+| `quotientLinearMap_contMDiff` | `Manifold/PeriodLatticeLinearQuotient.lean` | **landed** — ContMDiff of ℂ-linear maps descended to lattice quotients (items 18, 21 building block) |
+| `AbelJacobiSmoothness B` (named predicate) | `Manifold/JacobianAnalyticOfCurveContMDiff.lean` | **landed** — item 17's analytic-Jacobian content as named hypothesis |
+| `AbelJacobiInjective B` (named predicate) | `Manifold/JacobianAnalyticOfCurveInjective.lean` | **landed** — item 16's analytic-Jacobian content as named hypothesis |
+| `analyticJacobian_linearLift_contMDiff` | `Manifold/JacobianAnalyticPushforwardPullbackContMDiff.lean` | **landed** — items 18/21 ContMDiff packaged at AnalyticJacobian shape |
+| `JacobianAnalyticClosureBundle` (composite) | `Manifold/JacobianAnalyticClosureBundle.lean` | **landed** — bundle aggregating items 16 + 17 predicates |
+| **Discharge of `AbelJacobiSmoothness`** (FTC + C1 chart-cover) | — | open (C1 dependency) |
+| **Discharge of `AbelJacobiInjective`** (Abel's theorem) | — | open (C4 content) |
+| **Per-curve linear lifts `T_f`, `T_f^*`** (matching period lattices) | — | open (C3-adjacent) |
+| **C3 rewire of `JacobianChallenge.Jacobian X`** to `AnalyticJacobian X _ _` | `Basic.lean` | open (depends on `Pic⁰ ≃+ AnalyticJacobian` AddEquiv = `AbelHypothesis B`) |
+
 ### F.3 Remaining LOC per cluster (real-number estimates)
 
 | Cluster | Content | Estimate |
@@ -814,8 +831,8 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 | **C3** | `AbelHypothesis` (Stokes on principal-divisor 2-chains) | **1,200–2,800** |
 | **C4** | `JacobiInversion` (Abel–Jacobi surjective; classical degree or theta) | **1,200–2,800** |
 | **D** | Item 14 `S2ImpliesGenus0` (simply-connectedness route via π₁(S²)=0 + Liouville on universal cover; bypasses uniformization). **Analytic-side closure landed 2026-05-16** (§D.2.7, 1,510 LOC, 13 chips): unconditional Liouville + closing composition `subsingleton_of_primitiveExistence` + bridge to named predicate. Remaining: smooth primitive existence under simple-connectedness (smooth-Stokes / path-integral construction). | **600–1,800** *remaining* |
-| **E** | Items 17/18/21 smoothness (`ofCurve_contMDiff`, `pushforward_contMDiff`, `pullback_contMDiff`) — flips with ChartedSpace on `Jacobian X` | **500–1,200** |
-| **F** | `Basic.lean` instance wiring (Topology / Compact / Manifold / LieAddGroup); `ofCurve_inj` via Abel injectivity | **400–900** |
+| **E** | Items 17/18/21 smoothness (`ofCurve_contMDiff`, `pushforward_contMDiff`, `pullback_contMDiff`) — flips with ChartedSpace on `Jacobian X`. **2026-05-17 E+F-cluster session** landed ~1,020 LOC across 8 chips: `quotientLinearMap_contMDiff` (items 18/21 building block, unconditional); `lieAddGroup_quotient_of_zlattice` (item 13 instance, unconditional); `lieAddGroupHypothesis_holds` (bundle wiring); `AbelJacobiSmoothness` predicate (item 17 named hypothesis); `AbelJacobiInjective` predicate (item 16 named hypothesis); `analyticJacobian_linearLift_contMDiff`; composite `JacobianAnalyticClosureBundle`. Remaining: per-curve construction of ℂ-linear cover lifts `T_f` (items 18/21), discharge of `AbelJacobiSmoothness` via C1 + FTC (item 17), discharge of `AbelJacobiInjective` via Abel's theorem (item 16, C4 content). | **~250–700** *remaining* |
+| **F** | `Basic.lean` instance wiring (Topology / Compact / Manifold / LieAddGroup); `ofCurve_inj` via Abel injectivity. **Lattice-quotient-side discharge unconditional** via the 2026-05-17 cluster: items 4, 5, 10, 11, 12, 13 on `JacobianOfLattice X data` flip via `compactSpaceHypothesis_holds`, `chartedSpaceHypothesis_holds`, `lieAddGroupHypothesis_holds`. Remaining: C3 rewire of `JacobianChallenge.Jacobian X` from `Pic⁰ X` (currently) to `AnalyticJacobian X _ _` (via the `Pic⁰ ≃+ AnalyticJacobian` AddEquiv), then each Basic.lean `sorry` becomes a one-line `inferInstance` / `exact`. | **~150–500** *remaining* |
 | **G** | Polish, integration, contingency | **1,000–2,200** |
 
 **Uniformization at genus 0** is left **out of scope** of this map. Mathlib-style formalization is **8,000–20,000+ LOC** and multi-month; the realistic plan keeps it as a named classical hypothesis.

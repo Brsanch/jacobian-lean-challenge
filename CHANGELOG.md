@@ -15,6 +15,130 @@
 > now reflect them. A `feedback_check_system_currentDate.md` memory
 > documents the root cause and prevention for future sessions.
 
+## 2026-05-17 — E+F cluster: LieAddGroup discharge + ContMDiff building blocks + items 16/17/18/21 predicates (8 chips, ~1,020 LOC, direct to `main`)
+
+Implements the **E + F cluster** from `CLOSURE_MAP.md` §F.5 step 4
+("`Basic.lean` instance bodies + smoothness lemmas") at the
+**analytic-Jacobian level**. The cluster discharges OPEN.md item 13's
+named hypothesis, ships the ContMDiff-on-quotient building block for
+items 18, 21, and surfaces items 16 and 17 as named-hypothesis
+predicates `AbelJacobiInjective` and `AbelJacobiSmoothness`. Items 4,
+5, 10, 11, 12, 13 on `Jacobian X` and items 16, 17, 18, 21 in
+`Basic.lean` flip via this cluster the moment C3 supplies the
+`Pic⁰ X ≃+ AnalyticJacobian X` rewire.
+
+Net effect: **item 13's content is now unconditional** on
+`(Fin g → ℂ) ⧸ L` for any ℤ-lattice `L`, and **items 18, 21 reduce**
+to "the holomorphic curve map `f : X → Y` induces a ℂ-linear lift on
+covers matching period lattices" — the C3-adjacent content that
+remains. **Items 16, 17 are surfaced as named predicates** with
+documented discharge routes (Abel's theorem for 16, C1 chart-cover
+lift + FTC for 17), giving Basic.lean a clean per-item handle.
+
+### Chip-by-chip
+
+* **Chip 1** `Manifold/PeriodLatticeMkQContMDiff.lean` (~140 LOC). The
+  quotient projection `L.mkQ : (Fin g → ℂ) → (Fin g → ℂ) ⧸ L` is
+  `ContMDiff 𝓘(ℂ, Fin g → ℂ) 𝓘(ℂ, Fin g → ℂ) n` for every
+  `n : WithTop ℕ∞`. Atlas membership of `(localChart L _ x).symm` plus
+  `contMDiffOn_symm_of_mem_maximalAtlas` plus `localChart` agreeing
+  with `L.mkQ` on its source. The cornerstone for all downstream
+  smoothness arguments.
+
+* **Chip 2** `Manifold/PeriodLatticeLieGroupAdd.lean` (~230 LOC). Two
+  headline theorems:
+  - `add_contMDiff_complex` — `+ : G × G → G` is `ContMDiff` for the
+    complex model, where `G := (Fin g → ℂ) ⧸ L`.
+  - `neg_contMDiff_complex` — `Neg.neg : G → G` is `ContMDiff`.
+
+  Plus two registered instances:
+  - `contMDiffAdd_quotient_of_zlattice` — `ContMDiffAdd 𝓘(ℂ, Fin g → ℂ) n G`.
+  - `lieAddGroup_quotient_of_zlattice` — `LieAddGroup 𝓘(ℂ, Fin g → ℂ) n G`.
+
+  Proof structure: locally near any `(q₁, q₂)`, addition reads as
+  `(a, b) ↦ mkQ (chartAt q₁ a + chartAt q₂ b)` — composition of
+  `chartAt q_i` (ContMDiffOn on source), `+_E : E × E → E` (ContMDiff,
+  standard), `mkQ` (ContMDiff, Chip 1). Negation mirrors. Discharges
+  OPEN.md item 13's content on the lattice-quotient construction
+  unconditionally.
+
+* **Chip 3** `Manifold/PeriodLatticeOfRankTwoG_LieGroupWiring.lean`
+  (~76 LOC). Wires Chip 2's `lieAddGroup_quotient_of_zlattice` through
+  to the `PeriodLatticeOfRankTwoG` bundle's `LieAddGroupHypothesis`
+  field. Sister to `_Wiring` (item 11) and `_ComplexWiring` (items
+  5 + 12). With all three wired, the **complete named-hypothesis trio**
+  on `PeriodLatticeOfRankTwoG` is unconditional once
+  `[DiscreteTopology] [IsZLattice ℝ]` instance arguments are supplied.
+
+* **Chip 4** `Manifold/PeriodLatticeLinearQuotient.lean` (~180 LOC).
+  Headline theorem `quotientLinearMap_contMDiff`: for ℤ-lattices
+  `L ⊆ (Fin g₁ → ℂ)` and `L' ⊆ (Fin g₂ → ℂ)` and a ℂ-linear
+  `T : (Fin g₁ → ℂ) →L[ℂ] (Fin g₂ → ℂ)` with `T '' L ⊆ L'`, the
+  induced quotient map `quotientLinearMap L L' T hT` is
+  `ContMDiff 𝓘(ℂ, Fin g₁ → ℂ) 𝓘(ℂ, Fin g₂ → ℂ) n`. The **building block
+  for OPEN.md items 18 and 21**: every analytic-Jacobian-level
+  pushforward and pullback factors through such a quotient map.
+  Construction via `Submodule.mapQ` + lifted-form
+  `L'.mkQ ∘ T ∘ chartAt q` smoothness.
+
+* **Chip 5** `Manifold/JacobianAnalyticOfCurveContMDiff.lean` (~98 LOC).
+  Named-hypothesis predicate
+  `AbelJacobiSmoothness B := ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ, Fin g → ℂ) ω
+    (B.abelJacobiPoint : X → AnalyticJacobian _ α h)`,
+  with `[DiscreteTopology] [IsZLattice]` instance arguments. **OPEN.md
+  item 17's analytic-Jacobian-level content.** Discharge route: C1
+  chart-cover lift + FTC for complex line integrals.
+
+* **Chip 6** `Manifold/JacobianAnalyticOfCurveInjective.lean` (~86 LOC).
+  Named-hypothesis predicate
+  `AbelJacobiInjective B := 0 < genus X →
+    Function.Injective (B.abelJacobiPoint : X → AnalyticJacobian _ α h)`.
+  **OPEN.md item 16's analytic-Jacobian-level content.** Discharge
+  route: Abel's theorem on compact Riemann surfaces (C4 content).
+  Corollary `relAbelJacobi_injective` for the relative map.
+
+* **Chip 7** `Manifold/JacobianAnalyticPushforwardPullbackContMDiff.lean`
+  (~80 LOC). Repackaging `quotientLinearMap_contMDiff` (Chip 4) at the
+  AnalyticJacobian shape: `analyticJacobian_linearLift_contMDiff`
+  takes a ℂ-linear cover lift `T : (Fin g_X → ℂ) →L[ℂ] (Fin g_Y → ℂ)`
+  carrying `data_X.lattice` into `data_Y.lattice` and produces the
+  ContMDiff statement for the induced map between AnalyticJacobians.
+  **Items 18 and 21's analytic-Jacobian-level content** modulo the
+  per-curve construction of `T_f`.
+
+* **Chip 8** `Manifold/JacobianAnalyticClosureBundle.lean` (~97 LOC).
+  Composite named-hypothesis bundle
+  `JacobianAnalyticClosureBundle α h` aggregating
+  `AbelJacobiSmoothness` (item 17) and `AbelJacobiInjective` (item 16)
+  for a single downstream consumer point. Item 18/21 lifts live as
+  per-curve hypotheses (sister structure noted but not yet packaged,
+  since their shape depends on `Y` as well).
+
+### Build state
+
+All 8 chips checked via single-file `LEAN_NUM_THREADS=1 lake env lean`.
+Zero `sorry`, zero `axiom`. Two warnings in
+`PeriodLatticeLinearQuotient.lean` are about unused-but-required
+section variables (linter false positive on private helpers).
+
+Manifest `JacobianChallenge.lean` updated with all 8 imports.
+
+### Items flipped / surfaced
+
+| Item | Status before | Status after |
+|---|---|---|
+| 13 (`LieAddGroup`) — named-hypothesis bundle field | Conditional on unwritten classical fact | **Unconditional** on `(Fin g → ℂ) ⧸ L`; `lieAddGroupHypothesis_holds` discharge |
+| 18 (`pushforward_contMDiff`) — building block | Not in tree | **Unconditional** `quotientLinearMap_contMDiff` |
+| 21 (`pullback_contMDiff`) — building block | Not in tree | **Unconditional** `quotientLinearMap_contMDiff` |
+| 17 (`ofCurve_contMDiff`) — analytic-Jacobian content | Not in tree | **Named-hypothesis predicate** `AbelJacobiSmoothness` |
+| 16 (`ofCurve_inj`) — analytic-Jacobian content | Not in tree | **Named-hypothesis predicate** `AbelJacobiInjective` |
+
+Items 4, 5, 10, 11, 12, 13 in `Basic.lean` itself remain at their prior
+status (STUB / OPEN), because flipping them requires the C3 rewire of
+`Jacobian X` to `AnalyticJacobian X _ _`. **The E+F cluster's role**
+is to make all of these flips one-line `inferInstance` / one-`exact`
+discharges once C3 lands.
+
 ## 2026-05-16 (late night) — `HolomorphicTraceExtension X` item-(2) descent + Hurwitz form arc (32 chips, ~2,660 LOC, direct to `main`)
 
 Builds on the night's algebraic foundation to ship the full pure-
