@@ -5,6 +5,8 @@ Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.PeriodLatticeRankTwoG
 import JacobianChallenge.Manifold.PeriodLatticeOfRankTwoG_Wiring
+import JacobianChallenge.Manifold.PeriodLatticeOfRankTwoG_ComplexWiring
+import JacobianChallenge.Manifold.PeriodLatticeOfRankTwoG_LieGroupWiring
 import JacobianChallenge.Manifold.RiemannSphereChartSCoeffOverlap
 
 set_option linter.unusedSectionVars false
@@ -125,6 +127,25 @@ theorem compactSpaceHypothesis_holds_RiemannSphere :
     JacobianOfLattice.CompactSpaceHypothesis
       periodLatticeOfRankTwoG_RiemannSphere :=
   PeriodLatticeOfRankTwoG.compactSpaceHypothesis_holds
+    periodLatticeOfRankTwoG_RiemannSphere
+
+/-- **`ChartedSpace` + `IsManifold` on the analytic Jacobian for
+`RiemannSphere`** — unconditional. Specialises
+`PeriodLatticeOfRankTwoG.chartedSpaceHypothesis_holds`. -/
+noncomputable def chartedSpaceHypothesis_holds_RiemannSphere :
+    JacobianOfLattice.ChartedSpaceHypothesis
+      periodLatticeOfRankTwoG_RiemannSphere :=
+  PeriodLatticeOfRankTwoG.chartedSpaceHypothesis_holds
+    periodLatticeOfRankTwoG_RiemannSphere
+
+/-- **`LieAddGroup` on the analytic Jacobian for `RiemannSphere`** —
+unconditional. Specialises `PeriodLatticeOfRankTwoG.lieAddGroupHypothesis_holds`. -/
+theorem lieAddGroupHypothesis_holds_RiemannSphere :
+    JacobianOfLattice.LieAddGroupHypothesis
+      periodLatticeOfRankTwoG_RiemannSphere
+      (PeriodLatticeOfRankTwoG.chartedSpaceHypothesis_holds
+        periodLatticeOfRankTwoG_RiemannSphere) :=
+  PeriodLatticeOfRankTwoG.lieAddGroupHypothesis_holds
     periodLatticeOfRankTwoG_RiemannSphere
 
 end JacobianChallenge
