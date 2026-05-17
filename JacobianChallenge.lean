@@ -631,6 +631,7 @@ import JacobianChallenge.Manifold.MeromorphicNonzeroRSAffineFactor
 import JacobianChallenge.Manifold.Pic0RiemannSphereTrivial
 import JacobianChallenge.Manifold.Pic0RiemannSphereSubsingleton
 import JacobianChallenge.Manifold.AbelJacobiPoint
+import JacobianChallenge.Manifold.AbelJacobiPointSymp
 import JacobianChallenge.Manifold.SmoothPathConnected
 import JacobianChallenge.Manifold.SmoothPathLinearInChart
 import JacobianChallenge.Manifold.SmoothPathLocalConvex
