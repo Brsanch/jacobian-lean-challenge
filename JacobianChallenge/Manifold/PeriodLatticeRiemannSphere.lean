@@ -148,6 +148,56 @@ theorem lieAddGroupHypothesis_holds_RiemannSphere :
   PeriodLatticeOfRankTwoG.lieAddGroupHypothesis_holds
     periodLatticeOfRankTwoG_RiemannSphere
 
+/-! ## The unconditional analytic Jacobian for `RiemannSphere` -/
+
+/-- **The unconditional analytic Jacobian for the Riemann sphere.**
+A concrete `Type` (the trivial quotient `(Fin 0 → ℂ) ⧸ ⊥ ≃ {0}`)
+with all the structural instances (`AddCommGroup`, `TopologicalSpace`,
+`T2Space`, `CompactSpace`, `ChartedSpace`, `IsManifold`, `LieAddGroup`)
+landing unconditionally via the per-bundle wiring. -/
+def AnalyticJacobianRiemannSphere : Type :=
+  JacobianOfLattice RiemannSphere periodLatticeOfRankTwoG_RiemannSphere
+
+namespace AnalyticJacobianRiemannSphere
+
+instance : AddCommGroup AnalyticJacobianRiemannSphere :=
+  inferInstanceAs (AddCommGroup
+    (JacobianOfLattice RiemannSphere periodLatticeOfRankTwoG_RiemannSphere))
+
+instance : TopologicalSpace AnalyticJacobianRiemannSphere :=
+  inferInstanceAs (TopologicalSpace
+    (JacobianOfLattice RiemannSphere periodLatticeOfRankTwoG_RiemannSphere))
+
+instance : T2Space AnalyticJacobianRiemannSphere :=
+  inferInstanceAs (T2Space
+    (JacobianOfLattice RiemannSphere periodLatticeOfRankTwoG_RiemannSphere))
+
+instance : CompactSpace AnalyticJacobianRiemannSphere :=
+  compactSpaceHypothesis_holds_RiemannSphere
+
+instance : ChartedSpace
+    (Fin (JacobianChallenge.genus RiemannSphere) → ℂ)
+    AnalyticJacobianRiemannSphere :=
+  chartedSpaceHypothesis_holds_RiemannSphere.toChartedSpace
+
+instance : @IsManifold ℂ _
+    (Fin (JacobianChallenge.genus RiemannSphere) → ℂ) _ _
+    (Fin (JacobianChallenge.genus RiemannSphere) → ℂ) _
+    (modelWithCornersSelf ℂ
+      (Fin (JacobianChallenge.genus RiemannSphere) → ℂ)) ω
+    AnalyticJacobianRiemannSphere _ inferInstance :=
+  chartedSpaceHypothesis_holds_RiemannSphere.toIsManifold
+
+instance : @LieAddGroup ℂ _
+    (Fin (JacobianChallenge.genus RiemannSphere) → ℂ) _
+    (Fin (JacobianChallenge.genus RiemannSphere) → ℂ) _ _
+    (modelWithCornersSelf ℂ
+      (Fin (JacobianChallenge.genus RiemannSphere) → ℂ)) ω
+    AnalyticJacobianRiemannSphere _ _ inferInstance :=
+  lieAddGroupHypothesis_holds_RiemannSphere
+
+end AnalyticJacobianRiemannSphere
+
 end JacobianChallenge
 
 end
