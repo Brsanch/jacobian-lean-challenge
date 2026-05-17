@@ -5,6 +5,7 @@ Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.C3FullInput
 import JacobianChallenge.Manifold.JacobianOfLatticeFromBundle
+import JacobianChallenge.Manifold.PeriodLatticeOfRankTwoG_LieGroupWiring
 
 set_option linter.unusedSectionVars false
 
@@ -63,6 +64,37 @@ noncomputable def chartedSpaceHypothesis (B : C3FullInput X) :
         B.basis B.discreteness) :=
   PeriodLatticeOfRankTwoG.ofBundle_chartedSpace
     (PeriodPairingData.ofSmoothCycle X) B.basis B.discreteness
+
+/-- **Item 13 content on the analytic Jacobian.** LieAddGroup hypothesis
+on `JacobianOfLattice X (ofBundle ...)` with the canonical chart bundle. -/
+theorem lieAddGroupHypothesis (B : C3FullInput X) :
+    haveI := periodLatticeImage_discreteTopology_of_bundle B.discreteness
+    haveI := periodLatticeImage_isZLattice_of_bundle B.discreteness
+    haveI : DiscreteTopology
+        (PeriodLatticeOfRankTwoG.ofBundle (PeriodPairingData.ofSmoothCycle X)
+          B.basis B.discreteness).lattice.toIntSubmodule :=
+      periodLatticeImage_discreteTopology_of_bundle B.discreteness
+    haveI : IsZLattice ℝ
+        (PeriodLatticeOfRankTwoG.ofBundle (PeriodPairingData.ofSmoothCycle X)
+          B.basis B.discreteness).lattice.toIntSubmodule :=
+      periodLatticeImage_isZLattice_of_bundle B.discreteness
+    JacobianOfLattice.LieAddGroupHypothesis
+      (PeriodLatticeOfRankTwoG.ofBundle (PeriodPairingData.ofSmoothCycle X)
+        B.basis B.discreteness)
+      (PeriodLatticeOfRankTwoG.chartedSpaceHypothesis_holds
+        (PeriodLatticeOfRankTwoG.ofBundle
+          (PeriodPairingData.ofSmoothCycle X) B.basis B.discreteness)) := by
+  haveI := periodLatticeImage_discreteTopology_of_bundle B.discreteness
+  haveI := periodLatticeImage_isZLattice_of_bundle B.discreteness
+  haveI : DiscreteTopology
+      (PeriodLatticeOfRankTwoG.ofBundle (PeriodPairingData.ofSmoothCycle X)
+        B.basis B.discreteness).lattice.toIntSubmodule :=
+    periodLatticeImage_discreteTopology_of_bundle B.discreteness
+  haveI : IsZLattice ℝ
+      (PeriodLatticeOfRankTwoG.ofBundle (PeriodPairingData.ofSmoothCycle X)
+        B.basis B.discreteness).lattice.toIntSubmodule :=
+    periodLatticeImage_isZLattice_of_bundle B.discreteness
+  exact PeriodLatticeOfRankTwoG.lieAddGroupHypothesis_holds _
 
 end C3FullInput
 
