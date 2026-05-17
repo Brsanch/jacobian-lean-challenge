@@ -1,6 +1,11 @@
 # Changelog
 
-## 2026-05-17 (late evening) — Item 14 FTC basis-reduction (1 chip, ~60 LOC, direct to `main`)
+## 2026-05-17 (late evening) — Item 14 hypothesis cleanup arc (4 chips, ~325 LOC, direct to `main`)
+
+Four follow-on chips on top of the day's 36-chip arc, all reducing the
+hypothesis count on item 14's two legs.
+
+### Chip 1 — `pathPrimitiveFTC_of_basis` (~60 LOC, `ac38c8b`)
 
 `pathPrimitiveFTC_of_basis` lands the previously-deferred FTC counterpart
 to `pathPrimitiveSmoothness_of_basis` in
@@ -27,6 +32,61 @@ bridges them. After `mfderiv_add` / `const_smul_mfderiv`, the final
 goal is `LHS = LHS` and needs a terminal `rfl`.
 
 Build: 8987 jobs, zero `sorry`, zero `axiom`.
+
+### Chip 2 — `genus0ImpliesS2_from_existsSimplePoleGerm` (~75 LOC, `f773489`)
+
+New file `Topology/Item14ForwardFromCompactConnected.lean` lifts the
+three theorems of `Item14ForwardFromFiniteDim.lean` to variants that
+drop the `[FiniteDimensional ℂ (HolomorphicOneForm X)]` typeclass
+argument. Since item 1 became STRICT-CLOSED today
+(`holomorphicOneFormFiniteDim_holds` unconditional on compact connected
+complex 1-manifolds), the FiniteDimensional typeclass is derivable
+internally via `finiteDimensional_of_HolomorphicOneFormFiniteDim ∘
+DiskChartCover.holomorphicOneFormFiniteDim_holds`.
+
+Net effect for item 14's forward leg: only
+`ExistsSimplePoleGermAtSomePoint X` (+ `S2ImpliesGenus0 X` for the
+bundled biconditional) remains as a hypothesis.
+
+Build: 8988 jobs.
+
+### Chip 3 — `s2ImpliesGenus0_from_subsingletonOfSimplyConnected` (~75 LOC, `a949ddb`)
+
+New file
+`Topology/S2ImpliesGenus0FromSubsingletonHypothesis.lean` drops the
+`SimplyConnectedS2` premise from `s2ImpliesGenus0_from_simplyConnected`
+(unconditional via `simplyConnectedS2_holds`, the 15-chip Phase-3
+smoothing arc), and assembles the bundled biconditional through to
+`genus_eq_zero_iff_homeo_from_subsingletonOfSimplyConnected`.
+
+Net for the simple-connectedness route: only **two** classical inputs
+remain — `ExistsSimplePoleGermAtSomePoint X` (forward) and
+`HolomorphicOneFormSubsingletonOfSimplyConnected X` (reverse).
+
+Build: 8989 jobs.
+
+### Chip 4 — `s2ImpliesGenus0_of_basisPathPrimitive` (~115 LOC, `2d934b6`)
+
+New file
+`Topology/S2ImpliesGenus0FromPrimitiveExistenceUnconditional.lean`
+drops `SimplyConnectedS2` from `s2ImpliesGenus0_of_primitiveExistence`,
+and provides the **finest-grained reverse leg**: given any ℂ-basis of
+`HolomorphicOneForm X` plus the three per-basis-element analytic
+hypotheses (`LoopPeriodVanishes`, `ContMDiff ω` of `pathPrimitive`,
+FTC at `eval`), assembles the named
+`HolomorphicOneFormSubsingletonOfSimplyConnected X` predicate via the
+chip-1 basis-reductions, then composes through to `S2ImpliesGenus0 X`.
+
+Three theorems:
+* `s2ImpliesGenus0_of_primitiveExistence_uncond`
+* `holomorphicOneFormSubsingletonOfSimplyConnected_of_basisPathPrimitive`
+* `s2ImpliesGenus0_of_basisPathPrimitive`
+
+`[FiniteDimensional ℂ (HolomorphicOneForm X)]` is derived internally,
+so callers see only the three per-basis-element analytic statements +
+the chosen basis (or implicitly via `Module.finBasis`).
+
+Build: 8990 jobs, zero `sorry`, zero `axiom`.
 
 ## 2026-05-17 (afternoon → evening) — Item 1 STRICT-CLOSED + C3 cascade + Item 14 reverse-leg arc (36 chips, ~3700 LOC, direct to `main`)
 
