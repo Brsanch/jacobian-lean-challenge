@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-05-17 (late evening) — Item 14 hypothesis cleanup arc (4 chips, ~325 LOC, direct to `main`)
+## 2026-05-17 (late evening) — Item 14 hypothesis cleanup arc (6 chips, ~410 LOC, direct to `main`)
 
 Four follow-on chips on top of the day's 36-chip arc, all reducing the
 hypothesis count on item 14's two legs.
@@ -87,6 +87,45 @@ so callers see only the three per-basis-element analytic statements +
 the chosen basis (or implicitly via `Module.finBasis`).
 
 Build: 8990 jobs, zero `sorry`, zero `axiom`.
+
+### Chip 5 — `S2ImpliesGenus0 RiemannSphere` unconditional (~30 LOC, `b97941b`)
+
+New file
+`Topology/HolomorphicOneFormSubsingletonOfSimplyConnectedRS.lean`
+discharges two named hypotheses unconditionally on `RiemannSphere`:
+
+* `holomorphicOneFormSubsingletonOfSimplyConnected_riemannSphere` —
+  trivial since `Subsingleton (HolomorphicOneForm RiemannSphere)` is
+  unconditional via `Manifold/RiemannSphereChartSCoeffOverlap.lean`,
+  so the simply-connectedness premise is vacuous.
+* `s2ImpliesGenus0_riemannSphere` — composes with chip 3's
+  `s2ImpliesGenus0_from_subsingletonOfSimplyConnected` (which uses
+  `simplyConnectedS2_holds` internally). Both classical inputs to the
+  simple-connectedness route to the reverse leg of item 14 are now
+  discharged unconditionally on RS.
+
+Build: 8991 jobs.
+
+### Chip 6 — Item 14 unconditional on RiemannSphere (~26 LOC, `fc44f2f`)
+
+Extends the same file with the full RS-specialised biconditional via
+the substantive proof chain:
+
+* `genus0ImpliesS2_riemannSphere` — composes chip 2's
+  `genus0ImpliesS2_from_existsSimplePoleGerm` (with
+  `[FiniteDimensional]` derived internally) with the unconditional
+  `existsSimplePoleGermAtSomePoint_RiemannSphere`.
+* `surfaceClassificationGenus_riemannSphere` — bundles both directions.
+* `genus_eq_zero_iff_homeo_riemannSphere` — the headline biconditional
+  with zero external hypotheses, via the substantive
+  simple-connectedness + simple-pole-germ chain.
+
+(Note: the trivial direct discharge already exists in
+`Topology/Item14ForRiemannSphere.lean`. This chip provides the
+substantive-chain validation that the full forward/reverse leg
+infrastructure composes correctly end-to-end on RS.)
+
+Build: 8991 jobs, zero `sorry`, zero `axiom`.
 
 ## 2026-05-17 (afternoon → evening) — Item 1 STRICT-CLOSED + C3 cascade + Item 14 reverse-leg arc (36 chips, ~3700 LOC, direct to `main`)
 
