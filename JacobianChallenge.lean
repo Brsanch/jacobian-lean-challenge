@@ -504,6 +504,7 @@ import JacobianChallenge.Manifold.AbelGeneratorGenusZero
 import JacobianChallenge.Manifold.AbelGeneratorInputIndependence
 import JacobianChallenge.Manifold.AbelHypothesisFromLatticeWitness
 import JacobianChallenge.Manifold.C3FullInput
+import JacobianChallenge.Manifold.C3FullInputExt
 import JacobianChallenge.Manifold.C3FullInputInstances
 import JacobianChallenge.Manifold.C3RewireBundle
 import JacobianChallenge.Manifold.MeromorphicNonzeroConstantBridge
