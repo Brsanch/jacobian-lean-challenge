@@ -505,6 +505,7 @@ import JacobianChallenge.Manifold.AbelGeneratorInputIndependence
 import JacobianChallenge.Manifold.AbelHypothesisFromLatticeWitness
 import JacobianChallenge.Manifold.C3FullInput
 import JacobianChallenge.Manifold.C3FullInputCurve
+import JacobianChallenge.Manifold.C3FullInputCurveClosures
 import JacobianChallenge.Manifold.C3FullInputExt
 import JacobianChallenge.Manifold.C3FullInputExtClosures
 import JacobianChallenge.Manifold.C3FullInputInstances
