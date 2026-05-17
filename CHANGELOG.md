@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-05-17 (late evening) — Item 14 hypothesis cleanup arc (6 chips, ~410 LOC, direct to `main`)
+## 2026-05-17 (late evening) — Item 14 + analytic-Jacobian-for-RS arc (10 chips, ~645 LOC, direct to `main`)
 
 Four follow-on chips on top of the day's 36-chip arc, all reducing the
 hypothesis count on item 14's two legs.
@@ -126,6 +126,57 @@ substantive-chain validation that the full forward/reverse leg
 infrastructure composes correctly end-to-end on RS.)
 
 Build: 8991 jobs, zero `sorry`, zero `axiom`.
+
+### Chips 7-10 — Analytic Jacobian for RiemannSphere unconditional (~235 LOC)
+
+Architectural breakthrough: the `PeriodLatticeDiscretenessBundle.ofBundle`
+route to `PeriodLatticeOfRankTwoG` is **structurally blocked at genus 0**
+— it requires `h1Basis : Basis (Fin 0) ℤ (SmoothCycle 𝓘(ℝ, ℂ) RS)`,
+which forces `SmoothCycle 𝓘(ℝ, ℂ) RS = 0` (false; SmoothCycle is
+non-trivial even when its homology classes collapse to 0). The bundle
+encodes a stricter classical condition than the geometric statement.
+
+Pivot: build `PeriodLatticeOfRankTwoG RiemannSphere` **directly**,
+bypassing the bundle. New file
+`Manifold/PeriodLatticeRiemannSphere.lean`.
+
+**Chip 7** (`cee9147`, ~115 LOC): `PeriodLatticeOfRankTwoG.trivialAtGenusZero`
++ `periodLatticeOfRankTwoG_RiemannSphere` + `DiscreteTopology` /
+`IsZLattice ℝ` instances on the trivial lattice (via
+`Subsingleton.discreteTopology` + subsingleton-ambient argument) +
+`compactSpaceHypothesis_holds_RiemannSphere` (specialises
+`PeriodLatticeOfRankTwoG.compactSpaceHypothesis_holds`).
+
+**Chip 8** (`f8c1138`, ~30 LOC):
+`chartedSpaceHypothesis_holds_RiemannSphere` +
+`lieAddGroupHypothesis_holds_RiemannSphere` — completes the trio of
+hypothesis-bundle discharges needed for the analytic-Jacobian
+instances.
+
+**Chip 9** (`8b81d5c`, ~50 LOC): `AnalyticJacobianRiemannSphere` —
+concrete `Type` (= `JacobianOfLattice RS periodLatticeOfRankTwoG_RS`)
++ 7 structural instances: `AddCommGroup`, `TopologicalSpace`,
+`T2Space`, `CompactSpace`, `ChartedSpace`, `IsManifold`, `LieAddGroup`
+— all landing unconditionally via the per-bundle wiring. This is the
+RS-specialised parallel to `JacobianAnalyticChoice X` (which requires
+`[Nonempty (C3FullInputExt X)]`).
+
+**Chip 10** (`dfa96fc`, ~40 LOC): `Subsingleton AnalyticJacobianRiemannSphere`
++ `picZeroEquiv_RiemannSphere : Pic⁰ RS ≃+ AnalyticJacobianRiemannSphere`
+— both sides subsingleton (via `subsingleton_pic0_RiemannSphere` and
+the quotient-of-subsingleton argument), so the AddEquiv is trivially
+constructible.
+
+Net effect: items **3, 4, 5, 10, 11, 12, 13** of Buzzard's spec
+(`AddCommGroup`, `TopologicalSpace`, `ChartedSpace`, `T2Space`,
+`CompactSpace`, `IsManifold`, `LieAddGroup` on the Jacobian) are now
+**unconditionally discharged on `AnalyticJacobianRiemannSphere`** —
+the RS-specialised analytic-Jacobian type. Wiring this through to
+`Basic.lean`'s `Jacobian X = Pic⁰ X` for `X = RS` requires the
+`picZeroEquiv_RiemannSphere` AddEquiv (now in-tree) plus
+topology-transport along it (future chip).
+
+Build: 8992 jobs.
 
 ## 2026-05-17 (afternoon → evening) — Item 1 STRICT-CLOSED + C3 cascade + Item 14 reverse-leg arc (36 chips, ~3700 LOC, direct to `main`)
 
