@@ -389,6 +389,65 @@ theorem PeriodLatticeOfRankTwoG.ofGenusZeroSymplectic_lattice
       = ⊥ :=
   periodLatticeImage_eq_bot_of_genus_zero data α hgenus
 
+/-! ## Bundle-form constructors mirroring `JacobianOfLatticeFromBundle.lean`
+
+Parallels of `PeriodLatticeOfRankTwoG.ofBundle` /
+`ofBundle_compactSpace` / `ofBundle_chartedSpace` / `AnalyticJacobian`
+using the new symplectic bundle. -/
+
+/-- **Bundle-form constructor (symplectic).** Parallel of
+`PeriodLatticeOfRankTwoG.ofBundle`. From just a
+`PeriodLatticeSymplecticBundle`, build the full
+`PeriodLatticeOfRankTwoG X` term. -/
+noncomputable def PeriodLatticeOfRankTwoG.ofSymplectic
+    (data : PeriodPairingData X)
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (h : PeriodLatticeSymplecticBundle data α) :
+    PeriodLatticeOfRankTwoG X :=
+  PeriodLatticeOfRankTwoG.ofPeriodPairing data α
+    (PeriodLatticeAnalyticHypotheses.ofSymplecticBundle h)
+
+@[simp] lemma PeriodLatticeOfRankTwoG.ofSymplectic_lattice
+    (data : PeriodPairingData X)
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (h : PeriodLatticeSymplecticBundle data α) :
+    (PeriodLatticeOfRankTwoG.ofSymplectic data α h).lattice
+      = periodLatticeImage data α := rfl
+
+/-- **Bundle-form item-11 discharge (symplectic).** Parallel of
+`PeriodLatticeOfRankTwoG.ofBundle_compactSpace`. -/
+theorem PeriodLatticeOfRankTwoG.ofSymplectic_compactSpace
+    (data : PeriodPairingData X)
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (h : PeriodLatticeSymplecticBundle data α) :
+    haveI := PeriodLatticeSymplecticBundle.periodLatticeImage_discreteTopology_of_bundle h
+    haveI := PeriodLatticeSymplecticBundle.periodLatticeImage_isZLattice_of_bundle h
+    JacobianOfLattice.CompactSpaceHypothesis
+      (PeriodLatticeOfRankTwoG.ofSymplectic data α h) :=
+  PeriodLatticeOfRankTwoG.ofPeriodPairing_compactSpace data α
+    (PeriodLatticeAnalyticHypotheses.ofSymplecticBundle h)
+
+/-- **Bundle-form items 5 + 12 discharge (symplectic).** Parallel of
+`PeriodLatticeOfRankTwoG.ofBundle_chartedSpace`. -/
+noncomputable def PeriodLatticeOfRankTwoG.ofSymplectic_chartedSpace
+    (data : PeriodPairingData X)
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (h : PeriodLatticeSymplecticBundle data α) :
+    haveI := PeriodLatticeSymplecticBundle.periodLatticeImage_discreteTopology_of_bundle h
+    haveI := PeriodLatticeSymplecticBundle.periodLatticeImage_isZLattice_of_bundle h
+    JacobianOfLattice.ChartedSpaceHypothesis
+      (PeriodLatticeOfRankTwoG.ofSymplectic data α h) :=
+  PeriodLatticeOfRankTwoG.ofPeriodPairing_chartedSpace data α
+    (PeriodLatticeAnalyticHypotheses.ofSymplecticBundle h)
+
+/-- **The honest analytic Jacobian from a symplectic bundle**, as a
+`Type`. Parallel of `AnalyticJacobian`. -/
+abbrev AnalyticJacobianSymp
+    (data : PeriodPairingData X)
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (h : PeriodLatticeSymplecticBundle data α) : Type :=
+  JacobianOfLattice X (PeriodLatticeOfRankTwoG.ofSymplectic data α h)
+
 end JacobianChallenge
 
 end
