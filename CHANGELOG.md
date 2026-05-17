@@ -1,5 +1,94 @@
 # Changelog
 
+## 2026-05-17 (late night) — Period-lattice bundle refactor: PeriodLatticeSymplecticBundle (4 chips, ~400 LOC, direct to `main`)
+
+Architectural refactor addressing a latent bug in
+`PeriodLatticeDiscretenessBundle`: the legacy bundle declares
+`h1Basis : Basis (Fin (2 * genus X)) ℤ data.H1`. For the canonical
+`data = PeriodPairingData.ofSmoothCycle X`, `data.H1 = SmoothCycle X`
+is the **full submodule of smooth 1-cycles** — infinite-dimensional
+over `ℤ` for any non-trivial `X` (uncountably many smoothly inequivalent
+loops). The legacy bundle's `ofBundle` construction path is therefore
+**dead code at every genus**: no inhabitant of the legacy bundle is
+classically producible. The genus-0 chips earlier this evening had
+to bypass `ofBundle` for exactly this reason.
+
+The corrected design replaces the over-strong basis condition with a
+**tuple** of `2g` cycle generators + a **geometric** ℤ-span condition
+on their period vectors (every cycle's period vector lies in the
+ℤ-span of the chosen tuple's periods — classically, "the chosen tuple
+represents the homology classes" + Stokes, where boundaries have zero
+period).
+
+This session lands the new bundle side-by-side with the legacy bundle,
+re-derives the downstream `DiscreteTopology` / `IsZLattice ℝ`
+identifications, validates the genus-0 case flows through the bundle
+cleanly (no bypass needed), and mirrors the full
+`JacobianOfLatticeFromBundle` pipeline.
+
+### Chip 1 — `PeriodLatticeSymplecticBundle` + genus-0 trivial constructor (~250 LOC, `77220bb`)
+
+New file `Manifold/PeriodLatticeSymplecticBundle.lean`:
+
+* `PeriodLatticeSymplecticBundle` — corrected bundle:
+  - `cycleGenerators : Fin (2 * genus X) → data.H1` (a tuple, not a basis)
+  - `periodBasis : Basis (Fin (2 * genus X)) ℝ (Fin (genus X) → ℂ)`
+    (unchanged)
+  - `periodBasis_eq` compat (unchanged)
+  - `period_image_spanned : ∀ γ, periodVector γ ∈ Submodule.span ℤ (range periodBasis)`
+    — the corrected geometric content.
+* `range_periodBasis_eq_image` — counterpart of legacy lemma.
+* `periodLatticeImage_toIntSubmodule_eq_span_periodBasis` — re-proved
+  via `period_image_spanned` (replacing `h1Basis.span_eq` reliance).
+* `periodLatticeImage_discreteTopology_of_bundle` /
+  `_isZLattice_of_bundle` — derived `DiscreteTopology` + `IsZLattice ℝ`.
+* `PeriodLatticeDiscretenessBundle.toSymplectic` — legacy → new
+  conversion (legacy is strictly stronger).
+* `PeriodLatticeSymplecticBundle.trivial_at_genus_zero` — validates
+  the refactor: trivially constructible at genus 0 (empty tuple,
+  empty basis, vacuous compat, every-period-is-0 spanning).
+
+### Chip 2 — `PeriodLatticeAnalyticHypotheses.ofSymplecticBundle` + genus-0 `PeriodLatticeOfRankTwoG` (~40 LOC, `6513416`)
+
+* `PeriodLatticeAnalyticHypotheses.ofSymplecticBundle` — parallel of
+  legacy `.ofBundle`, builds the full analytic-hypotheses bundle
+  via `ofDiscrete` + chip-1 derivations.
+* `PeriodLatticeOfRankTwoG.ofGenusZeroSymplectic` — headline: at
+  genus 0, `PeriodLatticeOfRankTwoG.ofPeriodPairing` fires
+  unconditionally via the trivial bundle.
+
+### Chip 3 — Bundle-route equals bypass at genus 0 (~40 LOC, `9387996`)
+
+* `periodLatticeImage_eq_bot_of_genus_zero` — direct consequence of
+  subsingleton ambient: every `AddSubgroup` of `Fin 0 → ℂ` is `⊥`.
+* `PeriodLatticeOfRankTwoG.ofGenusZeroSymplectic_lattice` — the
+  lattice field of the bundle-route construction equals `⊥`,
+  matching the `PeriodLatticeOfRankTwoG.trivialAtGenusZero` bypass
+  in `Manifold/PeriodLatticeRiemannSphere.lean`.
+
+### Chip 4 — Full parallel pipeline: `PeriodLatticeOfRankTwoG.ofSymplectic` + `AnalyticJacobianSymp` (~70 LOC, `2bf40e1`)
+
+Mirrors `Manifold/JacobianOfLatticeFromBundle.lean`:
+
+* `PeriodLatticeOfRankTwoG.ofSymplectic` — parallel of `.ofBundle`.
+* `PeriodLatticeOfRankTwoG.ofSymplectic_compactSpace` /
+  `_chartedSpace` — parallel of the per-bundle discharges.
+* `AnalyticJacobianSymp` abbrev — parallel of `AnalyticJacobian`.
+
+The full corrected pipeline is now in tree, from the bundle up to
+the analytic-Jacobian type + structural typeclass instances.
+
+### Net state
+
+The new pipeline works at **all genera** (legacy was structurally
+dead). Genus-0 case unconditionally constructible. The refactor is
+side-by-side: no existing consumers were modified. Next steps to
+complete the refactor: `AbelJacobiInputSymp`, `C3FullInputSymp`,
+`C3FullInputExtSymp`, `JacobianAnalyticChoiceSymp` (each is a
+mechanical replication of the legacy structure with the new bundle).
+
+Build: 8993 jobs, zero `sorry`, zero `axiom`.
+
 ## 2026-05-17 (late evening) — Item 14 + analytic-Jacobian-for-RS arc (10 chips, ~645 LOC, direct to `main`)
 
 Four follow-on chips on top of the day's 36-chip arc, all reducing the
