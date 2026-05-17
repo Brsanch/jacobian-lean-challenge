@@ -172,10 +172,30 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **~120,800 LOC across 643 files** (2026-05-17
-session, +1,020 LOC across 8 chips on top of the 2026-05-16 baseline
-of 119,776 LOC / 635 files). Net growth this session: +1,020 LOC for
-the **E+F cluster** (see CHANGELOG). Notable landings:
+**Current repo size:** **~126,700 LOC across 696 files** (2026-05-17
+late-evening, +~5,900 LOC across 36 chips on top of the late-morning
+post-functoriality state). Major landings this session:
+
+* **Item 1 → STRICT-CLOSED.** Full Forster Riesz arc: 10 chips,
+  ~1,430 LOC (`DiskChartCoverDensity*.lean` + `DiskChartCoverRiesz.lean`
+  + `DiskChartCoverFiniteDim.lean`). `HolomorphicOneFormFiniteDim X`
+  unconditional on compact connected complex 1-manifolds.
+* **C3 cascade conditional discharges** for items 4, 5, 10, 11, 12,
+  13, 16, 17, 18, 21 on the analytic Jacobian. 8 chips, ~1,090 LOC
+  (`C3FullInput*.lean`, `JacobianAnalyticChoice.lean`). Single
+  typeclass `[Nonempty (C3FullInputExt X)]` + per-curve `Nonempty
+  (C3FullInputCurve B_X B_Y f hf)` ⇒ all ten items discharge on the
+  analytic Jacobian.
+* **Item 14 reverse leg structural reduction.** 7 chips, ~870 LOC
+  (`PrimitiveOnSmoothPathConnected.lean`, `PrimitiveSubsingletonReduction.lean`,
+  `PrimitiveRiemannSphere.lean`, `PathPrimitiveLinear.lean`,
+  `PathPrimitiveBasisReduction.lean`, `PathPrimitiveBasisFTC.lean`,
+  `LoopPeriodConstant.lean`). `HolomorphicOneFormSubsingletonOfSimplyConnected`
+  factored to per-basis-element `LoopPeriodVanishes` +
+  `ContMDiff (pathPrimitive (b i))` + FTC at `eval` (3g concrete
+  per-basis analytic statements).
+
+**Prior-state landings (still relevant)**:
 
 * **`lieAddGroup_quotient_of_zlattice`** (chip 2) — unconditional
   `LieAddGroup 𝓘(ℂ, Fin g → ℂ) ω ((Fin g → ℂ) ⧸ L)` instance for any

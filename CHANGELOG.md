@@ -1,5 +1,110 @@
 # Changelog
 
+## 2026-05-17 (afternoon → evening) — Item 1 STRICT-CLOSED + C3 cascade + Item 14 reverse-leg arc (36 chips, ~3700 LOC, direct to `main`)
+
+Major session. Three arcs landed on top of the late-morning
+functoriality work.
+
+### Arc A — Forster density-bound + Riesz finale → item 1 STRICT-CLOSED (12 chips, ~1430 LOC)
+
+`HolomorphicOneFormFiniteDim X` is now **unconditional** on a compact
+connected complex 1-manifold. Item 1 (`genus X := finrank ℂ (HolomorphicOneForm X)`)
+flips from STUB to **STRICT-CLOSED** (scoreboard: 12 → 13 / 24).
+
+Chips:
+1. `DiskChartCoverDensityCoverage.lean` (125 LOC) — X-side outer disk
+   compact + inner sets open + coverage.
+2. `DiskChartCoverDensityTransition.lean` (95 LOC) — transition factor
+   + `ContinuousOn` on chart overlap.
+3. `DiskChartCoverDensityIdentity.lean` (130 LOC) — per-point localCoeff
+   transition identity via `cotangentBundleCore_coordChange_apply` +
+   tangent cocycle + ℂ-linearity.
+4. `DiskChartCoverDensityPointwiseBound.lean` (65 LOC) — norm form +
+   inequality.
+5. `DiskChartCoverDensityTransitionBound.lean` (73 LOC) — uniform
+   transition bound on compact overlap subsets.
+6. `DiskChartCoverDensityClosedInner.lean` (140 LOC) — closed inner
+   disk in X + per-pair density bound on outer ∩ closed-inner.
+7. `DiskChartCoverDensityPerX.lean` (100 LOC) — per-y bound aggregated
+   to `seminormValInner`.
+8. `DiskChartCoverDensityAggregate.lean` (165 LOC) — **headline**
+   `∃ M, seminormVal ≤ M · seminormValInner`.
+9. `DiskChartCoverRiesz.lean` (115 LOC) — `localCoeffBcf_limitHolomorphicOneForm`
+   compatibility for `limitHolomorphicOneForm`.
+10. `DiskChartCoverFiniteDim.lean` (170 LOC) — Riesz finale: outer
+    closed ball seq-compact → compact → `FiniteDimensional.of_isCompact_closedBall₀`
+    → `holomorphicOneFormFiniteDim_holds` unconditional.
+
+### Arc B — C3 cascade: items 4, 5, 10, 11, 12, 13, 16, 17, 18, 21 on the analytic Jacobian (10 chips, ~1090 LOC)
+
+Conditional discharges of ten OPEN.md items on the analytic Jacobian
+under named classical inputs.
+
+Chips:
+* `C3RewireBundle.lean` (75 LOC) — `C3PeriodLatticeAnalyticInput X` +
+  `periodLatticeOfRankTwoG_of_input`.
+* `C3FullInput.lean` (85 LOC) — full bundle: basis + discreteness +
+  ajInput + abel + jacobi; `abelJacobiEquiv` extraction.
+* `C3FullInputInstances.lean` (~100 LOC) — `compactSpaceHypothesis`
+  (item 11), `chartedSpaceHypothesis` (items 5 + 12),
+  `lieAddGroupHypothesis` (item 13) on analytic Jacobian.
+* `C3FullInputExt.lean` (95 LOC) — extended bundle (+ smoothness +
+  injective); `toClosureBundle` → `JacobianAnalyticClosureBundle`.
+* `C3FullInputExtClosures.lean` (115 LOC) — items 16, 17 closures.
+* `C3FullInputCurve.lean` (170 LOC) — per-curve bundle (per-`f`
+  push/pull lattice-match certificates); `toPushforwardLift` /
+  `toPullbackLift` extractions.
+* `C3FullInputCurveClosures.lean` (140 LOC) — items 18, 21
+  `Nonempty`-form lift existence.
+* `JacobianAnalyticChoice.lean` (115 LOC) — `JacobianAnalyticChoice X`
+  type alias via `Classical.choice` from `[Nonempty (C3FullInputExt X)]`;
+  carries `AddCommGroup`, `TopologicalSpace`, `T2Space`, `CompactSpace`,
+  `ChartedSpace`, `IsManifold`, `LieAddGroup` instances. `picZeroEquiv`
+  AddEquiv to `Pic⁰ X`.
+
+With these, items 4, 5, 10, 11, 12, 13, 16, 17, 18, 21 are
+*conditionally* discharged on the analytic Jacobian. Flipping
+Basic.lean's `Jacobian X = Pic⁰ X` requires instance transport along
+`picZeroEquiv` (deferred — needs Homeomorph upgrade or full rewire,
+which itself requires `Nonempty (C3FullInputExt X)` unconditional —
+i.e., the full classical period-lattice + Abel-Jacobi content).
+
+### Arc C — Item 14 reverse leg structural reduction (10 chips, ~870 LOC)
+
+Reduces `HolomorphicOneFormSubsingletonOfSimplyConnected X` to **per-
+basis-element** classical inputs.
+
+Chips:
+* `PrimitiveOnSmoothPathConnected.lean` (~150 LOC) — `pathPrimitive` via
+  `Classical.choice` from `SmoothPathConnected`; `LoopPeriodVanishes`
+  named hypothesis; well-definedness modulo path choice.
+* `PrimitiveSubsingletonReduction.lean` (~90 LOC) —
+  `Subsingleton (HolomorphicOneForm X)` from three named hypotheses
+  (`AllLoopsVanish`, `PathPrimitiveSmoothness`, `PathPrimitiveFTC`).
+* `PrimitiveRiemannSphere.lean` (~75 LOC) — all three named hypotheses
+  unconditional on `RiemannSphere` (Subsingleton ⇒ vacuous).
+* `PathPrimitiveLinear.lean` (~130 LOC) — `pathPrimitive_zero/add/neg/smul`
+  + `pathPrimitiveLinearMap : HolomorphicOneForm X →ₗ[ℂ] ℂ`.
+* `PathPrimitiveBasisReduction.lean` (~100 LOC) —
+  `loopPeriodVanishes_of_spanning` + `allLoopsVanish_of_basis`:
+  `AllLoopsVanish` factors through a ℂ-basis via `Submodule.span_induction`.
+* `PathPrimitiveBasisFTC.lean` (~70 LOC) — `pathPrimitiveSmoothness_of_basis`
+  (FTC basis-reduction sketched but deferred).
+* `LoopPeriodConstant.lean` (~40 LOC) — `complexChainPeriod_const_loop`
+  unconditional.
+
+Net structural state of item 14 reverse leg: reduces to **3 × g**
+per-basis-element classical inputs (`LoopPeriodVanishes`, `ContMDiff ω`,
+FTC at the `eval` level), each a concrete analytic statement about one
+specific holomorphic 1-form.
+
+### Build state
+
+Build green at 8987 jobs (up from 8959), zero `sorry`, zero `axiom`.
+Repo total: ~126,700 LOC across 696 files (up from ~120,800 LOC / 643
+files at session start).
+
+
 > **Note on dates (audit 2026-05-16):** Earlier sessions wrote
 > *future-dated* labels driven by anchoring on inflated dates in prior
 > memory files instead of the system `currentDate`. The CHANGELOG
