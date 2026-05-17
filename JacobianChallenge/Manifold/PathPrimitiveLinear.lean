@@ -59,6 +59,16 @@ theorem pathPrimitive_neg
   unfold pathPrimitive
   exact complexChainPeriod_neg_right _ om
 
+/-- `pathPrimitive` is ℂ-scalable in the form argument. -/
+theorem pathPrimitive_smul
+    (h_conn : SmoothPathConnected 𝓘(ℝ, ℂ) X) (x₀ : X)
+    (z : ℂ) (om : HolomorphicOneForm X) :
+    pathPrimitive h_conn x₀ (z • om)
+      = fun x => z * pathPrimitive h_conn x₀ om x := by
+  funext x
+  unfold pathPrimitive
+  exact complexChainPeriod_smul_complex_right _ z om
+
 /-- **`pathPrimitive` as an `AddMonoidHom` in the form argument** (at a
 fixed evaluation point `x`). -/
 def pathPrimitiveHom
@@ -77,6 +87,28 @@ def pathPrimitiveHom
     (h_conn : SmoothPathConnected 𝓘(ℝ, ℂ) X) (x₀ x : X)
     (om : HolomorphicOneForm X) :
     pathPrimitiveHom h_conn x₀ x om = pathPrimitive h_conn x₀ om x := rfl
+
+/-- **`pathPrimitive` as a ℂ-linear functional** at a fixed evaluation
+point `x`. -/
+noncomputable def pathPrimitiveLinearMap
+    (h_conn : SmoothPathConnected 𝓘(ℝ, ℂ) X) (x₀ x : X) :
+    HolomorphicOneForm X →ₗ[ℂ] ℂ where
+  toFun om := pathPrimitive h_conn x₀ om x
+  map_add' om₁ om₂ := by
+    have := pathPrimitive_add h_conn x₀ om₁ om₂
+    show pathPrimitive h_conn x₀ (om₁ + om₂) x
+      = pathPrimitive h_conn x₀ om₁ x + pathPrimitive h_conn x₀ om₂ x
+    rw [this]
+  map_smul' z om := by
+    show pathPrimitive h_conn x₀ (z • om) x
+      = z • pathPrimitive h_conn x₀ om x
+    rw [pathPrimitive_smul]
+    rfl
+
+@[simp] theorem pathPrimitiveLinearMap_apply
+    (h_conn : SmoothPathConnected 𝓘(ℝ, ℂ) X) (x₀ x : X)
+    (om : HolomorphicOneForm X) :
+    pathPrimitiveLinearMap h_conn x₀ x om = pathPrimitive h_conn x₀ om x := rfl
 
 end JacobianChallenge
 
