@@ -195,6 +195,16 @@ post-functoriality state). Major landings this session:
   `ContMDiff (pathPrimitive (b i))` + FTC at `eval` (3g concrete
   per-basis analytic statements).
 
+  **FTC basis-reduction now landed (2026-05-17 late evening,
+  `pathPrimitiveFTC_of_basis` in `PathPrimitiveBasisFTC.lean`).** The
+  formerly-deferred counterpart of `pathPrimitiveSmoothness_of_basis`
+  closes: both `PathPrimitiveSmoothness` and `PathPrimitiveFTC` of
+  item 14's reverse leg are now factored through a ℂ-basis via
+  `Submodule.span_induction` + ℂ-linearity of `pathPrimitive`. The
+  remaining open work is at most `2 · genus X` individual analytic
+  checks (one smoothness + one FTC per basis element of
+  `HolomorphicOneForm X`).
+
 **Prior-state landings (still relevant)**:
 
 * **`lieAddGroup_quotient_of_zlattice`** (chip 2) — unconditional
