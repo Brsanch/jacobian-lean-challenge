@@ -42,6 +42,39 @@ theorem allLoopsVanish_unconditional (x₀ : RiemannSphere) :
   have hom : om = 0 := Subsingleton.elim om 0
   rw [hom, complexChainPeriod_zero_right]
 
+/-- `pathPrimitive` of the zero form is the zero function. -/
+private lemma pathPrimitive_zero_form
+    (h_conn : SmoothPathConnected 𝓘(ℝ, ℂ) RiemannSphere) (x₀ : RiemannSphere) :
+    pathPrimitive h_conn x₀ (0 : HolomorphicOneForm RiemannSphere) = fun _ => 0 := by
+  funext x
+  unfold pathPrimitive
+  rw [complexChainPeriod_zero_right]
+
+/-- **PathPrimitiveSmoothness unconditional on RiemannSphere**: every om
+is zero, so `pathPrimitive om` is the constant-zero function, trivially
+`ContMDiff`. -/
+theorem pathPrimitiveSmoothness_unconditional
+    (h_conn : SmoothPathConnected 𝓘(ℝ, ℂ) RiemannSphere) (x₀ : RiemannSphere) :
+    PathPrimitiveSmoothness h_conn x₀ := by
+  intro om
+  have hom : om = 0 := Subsingleton.elim om 0
+  rw [hom, pathPrimitive_zero_form h_conn x₀]
+  exact contMDiff_const
+
+/-- **PathPrimitiveFTC unconditional on RiemannSphere**: every om is zero,
+so `om.eval x = 0` and `mfderiv (pathPrimitive 0) x = mfderiv (const 0) x = 0`. -/
+theorem pathPrimitiveFTC_unconditional
+    (h_conn : SmoothPathConnected 𝓘(ℝ, ℂ) RiemannSphere) (x₀ : RiemannSphere) :
+    PathPrimitiveFTC h_conn x₀ := by
+  intro om x
+  have hom : om = 0 := Subsingleton.elim om 0
+  rw [hom, pathPrimitive_zero_form h_conn x₀]
+  -- om.eval x = 0 (since om = 0).
+  rw [HolomorphicOneForm.eval_zero]
+  -- mfderiv of constant is zero.
+  rw [mfderiv_const]
+  rfl
+
 end RiemannSphere
 
 end JacobianChallenge
