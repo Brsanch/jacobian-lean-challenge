@@ -172,9 +172,11 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **~126,700 LOC across 696 files** (2026-05-17
-late-evening, +~5,900 LOC across 36 chips on top of the late-morning
-post-functoriality state). Major landings this session:
+**Current repo size:** **~127,162 LOC across 702 files** (2026-05-17
+late-night, +~6,900 LOC across 50 chips on top of the late-morning
+post-functoriality state — comprises the 36-chip late-evening arc,
+the 10-chip Item 14 + AJ-for-RS arc, and the 4-chip period-lattice
+bundle refactor). Major landings this session:
 
 * **Item 1 → STRICT-CLOSED.** Full Forster Riesz arc: 10 chips,
   ~1,430 LOC (`DiskChartCoverDensity*.lean` + `DiskChartCoverRiesz.lean`
@@ -204,6 +206,58 @@ post-functoriality state). Major landings this session:
   remaining open work is at most `2 · genus X` individual analytic
   checks (one smoothness + one FTC per basis element of
   `HolomorphicOneForm X`).
+
+  **Item 14 hypothesis-cleanup arc (2026-05-17 late evening,
+  4 chips, ~325 LOC):** drop `[FiniteDimensional]` from item 14
+  forward leg (`Item14ForwardFromCompactConnected.lean`); drop
+  `SimplyConnectedS2` from item 14 reverse leg
+  (`S2ImpliesGenus0FromSubsingletonHypothesis.lean`); finest-grained
+  reverse leg via basis pathPrimitive
+  (`S2ImpliesGenus0FromPrimitiveExistenceUnconditional.lean`). Net
+  for the simple-connectedness route: only **two** classical inputs
+  remain — `ExistsSimplePoleGermAtSomePoint X` (forward) and
+  `HolomorphicOneFormSubsingletonOfSimplyConnected X` (reverse).
+
+  **Item 14 unconditional on `RiemannSphere` via the substantive
+  chain (2026-05-17 late evening, 2 chips, ~56 LOC,
+  `Topology/HolomorphicOneFormSubsingletonOfSimplyConnectedRS.lean`):**
+  composes the chip-arc to land `genus_eq_zero_iff_homeo_riemannSphere`
+  unconditionally via the substantive forward+reverse chain. The
+  trivial direct discharge already exists in
+  `Item14ForRiemannSphere.lean`; this chip validates the full
+  pipeline composes end-to-end on RS.
+
+  **Analytic Jacobian for `RiemannSphere` unconditional (2026-05-17
+  late evening, 4 chips, ~235 LOC,
+  `Manifold/PeriodLatticeRiemannSphere.lean`):**
+  `PeriodLatticeOfRankTwoG.trivialAtGenusZero` +
+  `periodLatticeOfRankTwoG_RiemannSphere` +
+  `compactSpaceHypothesis_holds_RiemannSphere` +
+  `chartedSpaceHypothesis_holds_RiemannSphere` +
+  `lieAddGroupHypothesis_holds_RiemannSphere` +
+  `AnalyticJacobianRiemannSphere` (`Type` with 7 structural typeclass
+  instances: AddCommGroup, TopologicalSpace, T2Space, CompactSpace,
+  ChartedSpace, IsManifold, LieAddGroup) +
+  `picZeroEquiv_RiemannSphere : Pic⁰ RS ≃+ AnalyticJacobianRiemannSphere`.
+  Items 3, 4, 5, 10, 11, 12, 13 of Buzzard's spec discharged
+  unconditionally on the analytic-Jacobian type for X = RS. The
+  `ofBundle` route was structurally blocked at genus 0 (see refactor
+  below); the construction here bypasses the bundle and uses `lattice
+  := ⊥` directly. Basic.lean's items still STUB pending topology-
+  transport along `picZeroEquiv_RiemannSphere`.
+
+  **Period-lattice bundle refactor (2026-05-17 late night, 4 chips,
+  ~400 LOC, `Manifold/PeriodLatticeSymplecticBundle.lean`):**
+  architectural fix. The legacy `PeriodLatticeDiscretenessBundle`'s
+  `h1Basis : Basis (Fin 2g) ℤ data.H1` is dead code at every genus
+  (for `data = ofSmoothCycle X`, `data.H1 = SmoothCycle X` is
+  infinite-dimensional over ℤ — never inhabited classically).
+  Introduces `PeriodLatticeSymplecticBundle` with a corrected
+  shape: `cycleGenerators : Fin (2g) → data.H1` (a tuple, not a
+  basis) + `period_image_spanned` (the geometric ℤ-span condition).
+  Full parallel pipeline through to `AnalyticJacobianSymp`. Genus-0
+  case `trivial_at_genus_zero` is unconditionally constructible
+  (no bypass). Side-by-side refactor; legacy consumers untouched.
 
 **Prior-state landings (still relevant)**:
 
