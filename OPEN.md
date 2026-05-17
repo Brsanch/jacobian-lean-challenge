@@ -51,6 +51,31 @@ spec. Three statuses, with one tag for partial progress:
   geometric genus.
 - **STUB (placeholder topology / target / pending discharge):** items
   **4, 10** = 2 items.
+
+  **C3 cascade infrastructure complete (2026-05-17)**: items 4, 5, 10,
+  11, 12, 13, 16, 17, 18, 21 all discharge on the analytic Jacobian
+  `JacobianAnalyticChoice X` under `[Nonempty (C3FullInputExt X)]`
+  (single typeclass-bundled classical existence input). The chain:
+
+  * `C3FullInput X` (basis from item 1 + discreteness + Abel-Jacobi
+    input + Abel + Jacobi inversion) → items 4, 5, 10, 11, 12, 13 on
+    the analytic Jacobian (`C3FullInputInstances.lean`).
+  * `C3FullInputExt X` (+ smoothness + point-injectivity) → items 16,
+    17 (`C3FullInputExtClosures.lean`).
+  * `C3FullInputCurve B_X B_Y f hf` (per-curve lattice-match) → items
+    18, 21 (`C3FullInputCurveClosures.lean`).
+  * `JacobianAnalyticChoice X` — full instance bundle on the
+    classical-choice analytic Jacobian (`JacobianAnalyticChoice.lean`).
+  * `picZeroEquiv : Pic⁰ X ≃+ JacobianAnalyticChoice X` AddEquiv —
+    bridge to Basic.lean's `Jacobian X = Pic⁰ X`.
+
+  **Remaining for Basic.lean items 4, 5, 10, 11, 12, 13, 16, 17, 18,
+  21 to flip:** the classical existence `Nonempty (C3FullInputExt X)`
+  + per-curve `Nonempty (C3FullInputCurve B_X B_Y f hf)`. Both require
+  Riemann bilinear + H₁(X; ℤ) ≅ ℤ²ᵍ + Abel's theorem + Jacobi
+  inversion + point-injectivity + smoothness — i.e., the full
+  classical content of period-lattice + Abel-Jacobi theory, not
+  achievable without significant additional formalization.
 - **OPEN (sorry in `Basic.lean` or transitively via downstream sorry):**
   items **5, 11, 12, 13, 14, 16, 17, 18, 21** = 9 items. Item 16
   (`ofCurve_inj`) reverted from STUB to OPEN as CLOSURE_MAP predicted —
