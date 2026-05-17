@@ -309,6 +309,41 @@ noncomputable def trivial_at_genus_zero
 
 end PeriodLatticeSymplecticBundle
 
+/-! ## Composition with `PeriodLatticeAnalyticHypotheses`
+
+Mirrors `PeriodLatticeAnalyticHypotheses.ofBundle` for the new bundle. -/
+
+/-- **From the symplectic bundle, build the full
+`PeriodLatticeAnalyticHypotheses`** via the slim constructor.
+Parallels `PeriodLatticeAnalyticHypotheses.ofBundle`. -/
+noncomputable def PeriodLatticeAnalyticHypotheses.ofSymplecticBundle
+    {data : PeriodPairingData X}
+    {α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X)}
+    (h : PeriodLatticeSymplecticBundle data α) :
+    PeriodLatticeAnalyticHypotheses data α :=
+  PeriodLatticeAnalyticHypotheses.ofDiscrete data α
+    (PeriodLatticeSymplecticBundle.periodLatticeImage_discreteTopology_of_bundle h)
+    (PeriodLatticeSymplecticBundle.periodLatticeImage_isZLattice_of_bundle h)
+
+/-! ## Genus-0 → PeriodLatticeOfRankTwoG via the symplectic bundle
+
+Validates the refactor: the genus-0 analytic Jacobian construction
+now flows through the bundle CLEANLY (no bypass). -/
+
+/-- **Genus-0 `PeriodLatticeOfRankTwoG` via the symplectic bundle.**
+At genus 0, the symplectic bundle is trivially constructible
+(`trivial_at_genus_zero`), so `PeriodLatticeOfRankTwoG.ofPeriodPairing`
+fires unconditionally on any pairing data + basis. -/
+noncomputable def PeriodLatticeOfRankTwoG.ofGenusZeroSymplectic
+    (data : PeriodPairingData X)
+    (α : Basis (Fin (JacobianChallenge.genus X)) ℂ (HolomorphicOneForm X))
+    (hgenus : JacobianChallenge.genus X = 0) :
+    PeriodLatticeOfRankTwoG X :=
+  PeriodLatticeOfRankTwoG.ofPeriodPairing data α
+    (PeriodLatticeAnalyticHypotheses.ofSymplecticBundle
+      (PeriodLatticeSymplecticBundle.trivial_at_genus_zero (data := data)
+        (α := α) hgenus))
+
 end JacobianChallenge
 
 end
