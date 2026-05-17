@@ -64,17 +64,18 @@ theorem outerDiskX_subset_iUnion_closedInnerDiskX
     ⟨y, hy_base, cover.innerSetX_subset_closedInnerDiskX hy_base hy_mem⟩
 
 /-- The per-`y` density bound on the outer-`x` ∩ closed-inner-`y` set,
-in the form using `seminormValInner` on the right. -/
-private theorem norm_localCoeff_le_seminormValInner_bound
+in the form using `seminormValInner` on the right. The constant is
+`om`-independent (universally quantified after `∃ C`). -/
+theorem norm_localCoeff_le_seminormValInner_bound
     [T2Space X] (cover : DiskChartCover X) [Nonempty X]
-    {x y : X} (hx : x ∈ cover.basePoints) (hy : y ∈ cover.basePoints)
-    (om : HolomorphicOneForm X) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ q ∈ cover.outerDiskX x ∩ cover.closedInnerDiskX y,
+    {x y : X} (hx : x ∈ cover.basePoints) (hy : y ∈ cover.basePoints) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ (om : HolomorphicOneForm X)
+        (q : X), q ∈ cover.outerDiskX x ∩ cover.closedInnerDiskX y →
       ‖HolomorphicOneForm.localCoeff om x ((chartAt ℂ x) q)‖
         ≤ C * seminormValInner cover om := by
   obtain ⟨C, hC⟩ :=
     cover.norm_localCoeff_le_outerInner_bound hx hy
-  refine ⟨max C 0, le_max_right _ _, fun q hq => ?_⟩
+  refine ⟨max C 0, le_max_right _ _, fun om q hq => ?_⟩
   have h_C := hC om q hq
   -- `q ∈ closedInnerDiskX y` ⇒ `(chartAt y) q ∈ closedBall innerRadius`.
   have hq_y_chartImage : (chartAt ℂ y) q ∈
