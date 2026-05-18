@@ -1,5 +1,50 @@
 # Changelog
 
+## 2026-05-17 (very late late night) — RemovableSingularityAdapter: analytic-continuation agreement (1 chip, ~55 LOC, direct to `main`)
+
+Three new theorems in `Manifold/RemovableSingularityAdapter.lean` bridging
+the algebraic descent's `Q v / k` (an `AnalyticAt 0` analytic continuation
+of the trace 1-form's chart-coefficient across a critical value) to the
+canonical removable-singularity extension. No boundedness or
+differentiability hypothesis needs to be supplied to the downstream
+caller when an analytic continuation `q` is already in hand:
+
+* `removable_extension_value_of_analyticAt_eventuallyEq` — under
+  `AnalyticAt ℂ q c` and `g =ᶠ[𝓝[≠] c] q`,
+  `removable_extension g c c = q c`. Proof: `q` is continuous at `c`,
+  so `q` tends to `q c` along `𝓝[≠] c`; `g` matches `q` there, so `g`
+  has the same limit; `limUnder` reads off this limit (using the
+  automatic `NeBot (𝓝[≠] c)` instance for `c : ℂ` from
+  `NontriviallyNormedField.nhdsNE_neBot`).
+
+* `removable_extension_eventuallyEq_of_analyticAt` — under the same
+  hypotheses, `removable_extension g c =ᶠ[𝓝 c] q`. Combines the
+  punctured-nbhd `removable_extension_apply_of_ne` (definitional via
+  `Function.update_of_ne`) with the value-at-`c` lemma above.
+
+* `removable_extension_analyticAt_of_analyticAt_eventuallyEq` — the
+  streamlined corollary: `AnalyticAt ℂ (removable_extension g c) c`
+  follows from `AnalyticAt ℂ q c` and `g =ᶠ[𝓝[≠] c] q` via
+  `AnalyticAt.congr`. No boundedness hypothesis is required on `g`.
+
+**Significance.** The trace-extension chart coefficient
+`traceExtensionChartCoeff Q k = fun v => Q v / k`
+(`Manifold/TraceExtensionChartCoeff.lean`) is `AnalyticAt 0`. The
+algebraic descent chip 3d-3
+(`hurwitz_cyclic_sum_descent_oneForm_divided` from
+`HurwitzCyclicSumDescentOneFormDivided.lean`) identifies it with the
+chart-pulldown of `f.fStarOmegaHol hnc α` near a critical value `w₀` on
+a *punctured* chart-disc. The new corollary
+`removable_extension_analyticAt_of_analyticAt_eventuallyEq`
+then immediately delivers the extension across `w₀`, modulo the
+bundle-wiring chips identifying the chart-pulldown with the algebraic
+expression. This is the cleanest possible interface for the next-chip
+arc consuming the algebraic descent to construct the global
+`HolomorphicOneForm RiemannSphere` extension of `fStarOmegaHolOn`.
+
+Build: zero `sorry`, zero `axiom`, single-file `LEAN_NUM_THREADS=1 lake
+env lean` clean.
+
 ## 2026-05-17 (very late night) — Jacobian RiemannSphere manifold instances + genus-0 generalisation (6 chips, ~850 LOC, direct to `main`)
 
 Follow-on to the late-late-night symplectic migration. Lifts the

@@ -120,4 +120,60 @@ theorem removable_extension_analyticAt {g : ℂ → ℂ} {c : ℂ} {U : Set ℂ}
     removable_extension_differentiableOn hU hd hb
   exact hdiff.analyticAt hU
 
+/-- **Limit value agreement with an analytic continuation.**
+If `g` agrees with an `AnalyticAt q c` function on a punctured nbhd of `c`,
+the canonical removable-singularity value at `c` is `q c`. The boundedness
+and differentiability hypotheses of `removable_extension_differentiableOn`
+are *not needed* here — the value at `c` is purely the `limUnder` of `g`
+along `𝓝[≠] c`, which is determined by the punctured-nbhd behavior. -/
+theorem removable_extension_value_of_analyticAt_eventuallyEq
+    {g q : ℂ → ℂ} {c : ℂ}
+    (hq : AnalyticAt ℂ q c)
+    (h_eq : g =ᶠ[𝓝[≠] c] q) :
+    removable_extension g c c = q c := by
+  -- `q` is continuous at `c`, so `q` tends to `q c` along `𝓝[≠] c`.
+  have hq_cont : ContinuousAt q c := hq.continuousAt
+  have hq_tendsto_punct : Tendsto q (𝓝[≠] c) (𝓝 (q c)) :=
+    hq_cont.tendsto.mono_left nhdsWithin_le_nhds
+  -- `g` matches `q` on the punctured nbhd, so `g` tends to `q c` there too.
+  have hg_tendsto : Tendsto g (𝓝[≠] c) (𝓝 (q c)) :=
+    hq_tendsto_punct.congr' h_eq.symm
+  -- `removable_extension g c c = limUnder (𝓝[≠] c) g = q c`.
+  rw [removable_extension_value]
+  exact hg_tendsto.limUnder_eq
+
+/-- **The removable extension agrees with any analytic continuation on a full nbhd.**
+If `g` matches an `AnalyticAt q c` function on a punctured nbhd of `c`, the
+removable extension `removable_extension g c` agrees with `q` on a full nbhd
+of `c` (the value at `c` matches via `limUnder`, the other points match via
+the definitional `Function.update_of_ne`). -/
+theorem removable_extension_eventuallyEq_of_analyticAt
+    {g q : ℂ → ℂ} {c : ℂ}
+    (hq : AnalyticAt ℂ q c)
+    (h_eq : g =ᶠ[𝓝[≠] c] q) :
+    removable_extension g c =ᶠ[𝓝 c] q := by
+  -- Recall `h_eq : ∀ᶠ z in 𝓝[≠] c, g z = q z`. Convert to `𝓝 c` form.
+  have h_punct : ∀ᶠ z in 𝓝 c, z ≠ c → g z = q z := eventually_nhdsWithin_iff.mp h_eq
+  have h_val : removable_extension g c c = q c :=
+    removable_extension_value_of_analyticAt_eventuallyEq hq h_eq
+  filter_upwards [h_punct] with z hz_imp
+  by_cases hz : z = c
+  · subst hz; exact h_val
+  · rw [removable_extension_apply_of_ne g c hz]; exact hz_imp hz
+
+/-- **Analyticity of the extension via an analytic continuation match.**
+A streamlined corollary: if `g` matches an analytic `q` on a punctured nbhd
+of `c`, then the canonical removable extension is itself `AnalyticAt c` —
+no boundedness/differentiability hypothesis on `g` needs to be supplied
+explicitly. Useful when the analytic continuation `q` (e.g. `Q v / k` from
+the trace-extension chart coefficient) is already available, since
+boundedness on a closed sub-disc and differentiability on the punctured
+nbhd are then derivable from `q`'s analyticity. -/
+theorem removable_extension_analyticAt_of_analyticAt_eventuallyEq
+    {g q : ℂ → ℂ} {c : ℂ}
+    (hq : AnalyticAt ℂ q c)
+    (h_eq : g =ᶠ[𝓝[≠] c] q) :
+    AnalyticAt ℂ (removable_extension g c) c :=
+  hq.congr (removable_extension_eventuallyEq_of_analyticAt hq h_eq).symm
+
 end JacobianChallenge
