@@ -1,5 +1,58 @@
 # Changelog
 
+## 2026-05-17 (very late late night) — Item 16 (`ofCurve_inj`) reduced to single classical hypothesis (~230 LOC across 2 chips, direct to `main`)
+
+Two follow-on chips composing into a conditional closure of item 16
+(`Jacobian.ofCurve_inj` under `0 < genus X`).
+
+### Chip A: `Manifold/PrincDivWitnessExtraction.lean` (~80 LOC)
+
+`exists_meromorphicNonzero_principalDivisorMap_of_mem_PrincDiv`:
+for any `D ∈ PrincDiv X`, there exists a single
+`f : MeromorphicNonzero X` such that `principalDivisorMap f = D`.
+
+Uses `PrincDivHonestCandidateGerm_eq` and the `CommGroup` structure on
+`MeromorphicNonzero.Germ X` to switch `PrincDiv X` from the
+`AddSubgroup.closure`-of-generators form to the `range`-of-`AddMonoidHom`
+form, then `Quotient.inductionOn` extracts a representative.
+
+### Chip B: `Manifold/OfCurveInjFromDegreeOne.lean` (~150 LOC)
+
+* `DegreeOneFromSimpleZeroSimplePole X` — named classical hypothesis:
+  if `principalDivisorMap f = Div.single Q₁ - Div.single Q₂` for distinct
+  `Q₁ Q₂`, then `f.toRiemannSphere` is a non-constant degree-1
+  ω-smooth map. Classical content: local pole-extension construction
+  (Forster §1.4) + degree counting on the regular fibre.
+
+* `ofCurve_inj_under_genus_pos`: under `0 < genus X` and the named
+  classical hypothesis `DegreeOneFromSimpleZeroSimplePole X`,
+  `Function.Injective (Jacobian.ofCurve P)` holds.
+
+**Proof chain (composing six prior chips):**
+
+1. Suppose `ofCurve P Q₁ = ofCurve P Q₂` with `Q₁ ≠ Q₂`.
+2. Unfold the quotient: `single Q₁ - single Q₂ ∈ PrincDiv X`.
+3. Extract witness `f` via chip A.
+4. Apply the named degree-1 hypothesis.
+5. `bijective_of_degreeFiber_eq_one` (with the now-unconditional
+   `ramificationSumEqualsDegree_holds_unconditional` +
+   `surjective_of_NonConstant_Analytic_Manifold_holds`) gives
+   `f.toRiemannSphere` bijective.
+6. `bijectiveAnalyticIsBiholomorphism_holds X` (discharged today)
+   gives `e : HolomorphicEquiv X RiemannSphere`.
+7. `genus_eq_zero_iff_homeo_of_HolomorphicEquiv_RiemannSphere` (in
+   tree from PullbackLinearEquiv route) + `RiemannSphere.toSphereHomeo`
+   give `genus X = 0`.
+8. Contradicts `0 < genus X`.
+
+**Net state on item 16.** The polymorphic-X closure reduces to a
+**single** named classical hypothesis (`DegreeOneFromSimpleZeroSimplePole X`),
+which is itself a clean self-contained statement (no further sub-hypotheses
+beyond the classical pole-extension + degree-counting content).
+
+Build: both files single-file `LEAN_NUM_THREADS=1 lake env lean` clean.
+Zero `sorry`, zero `axiom`.
+
 ## 2026-05-17 (very late late night) — `BijectiveAnalyticIsBiholomorphism` DISCHARGED (1 chip, ~240 LOC, direct to `main`)
 
 New file `Manifold/BijectiveAnalyticToBiholomorphismDischarge.lean`
