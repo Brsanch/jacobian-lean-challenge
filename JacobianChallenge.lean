@@ -710,3 +710,4 @@ import JacobianChallenge.Manifold.Smooth2SimplexFromPath
 import JacobianChallenge.Manifold.SmoothPathReverseStokesBoundary
 import JacobianChallenge.Manifold.SmoothPathReverseIntegrateZero
 import JacobianChallenge.Manifold.SmoothPathReverseH1Zero
+import JacobianChallenge.Manifold.SmoothPathConstReverseEq
