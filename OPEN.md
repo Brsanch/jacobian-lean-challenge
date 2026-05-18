@@ -493,6 +493,83 @@ Major landings this session:
   and `(γ.reverse).reverse = γ`
   (`Manifold/SmoothPathReverseReverse.lean`).
 
+  **Concat-additivity in stokesBoundaries (2026-05-18 night,
+  10 chips, ~2210 LOC, MERGED + PUSHED to origin/main HEAD
+  `a349fd8`).** Closes the foundational chain-level identity
+
+  ```
+  single (γ.concat δ h) - single γ - single δ ∈ stokesBoundaries I X
+  ```
+
+  for any compatible smooth paths γ, δ on any smooth manifold X.
+  Net effect: concatenation of smooth paths is **additive** in the
+  canonical Stokes H₁ quotient. This is the load-bearing structural
+  identity needed to reduce arbitrary smooth 1-cycles (sums of
+  smooth paths with cancelling boundary) into based loops at a fixed
+  basepoint.
+
+  *Concat 2-simplex with face1 = γ.concat δ (3 chips, ~580 LOC)*:
+  - `Manifold/Smooth2SimplexFromConcat.lean` —
+    `Smooth2Simplex.ofSmoothPathConcat γ δ h` with toFun
+    `(x₀, x₁) := γ.concatAmbient δ (x₀/2 + x₁)`. Identifies
+    `face1 σ = γ.concat δ h` via `SmoothPath.ext`.
+  - `Manifold/SmoothPathBumpedHalf.lean` — `SmoothPath.bumpedHalfLeft γ`
+    (ambient `t ↦ γ.ambient(concatRepLeft(t/2))`) and `bumpedHalfRight δ`
+    (ambient `t ↦ δ.ambient(concatRepRight((1+t)/2))`). Both have
+    same src/tgt as the original path.
+  - `Manifold/Smooth2SimplexConcatFaceIdent.lean` — identifies
+    `face2 σ = γ.bumpedHalfLeft`, `face0 σ = δ.bumpedHalfRight`. So
+    `boundary σ = single δ.bumpedHalfRight - single (γ.concat δ h)
+    + single γ.bumpedHalfLeft ∈ stokesBoundaries`.
+
+  *Left reparam-invariance (3 chips, ~770 LOC)*:
+  - `Manifold/Smooth2SimplexReparamLeftT1.lean` — first triangle T₁
+    of the square-diagonal split of the smooth homotopy
+    `(s, t) ↦ γ.ambient((1-s)*t + s*concatRepLeft(t/2))`. Faces:
+    `face0=const γ.tgt`, `face2=γ`, `face1`=diagonal.
+  - `Manifold/Smooth2SimplexReparamLeftT2.lean` — second triangle T₂.
+    Faces: `face0=γ.bumpedHalfLeft.reverse`, `face1=const γ.src`,
+    `face2`=same diagonal (cancellation lemma).
+  - `Manifold/SmoothPathBumpedHalfLeftReparamInvariance.lean` —
+    after diagonal cancellation, `∂(T₁+T₂) = const γ.tgt + γ +
+    bumpedHalfLeft.reverse - const γ.src`. Combine with const-membership
+    and reverse-cancellation to derive
+    `single γ - single γ.bumpedHalfLeft ∈ stokesBoundaries`.
+
+  *Right reparam-invariance (3 chips, ~640 LOC)*:
+  - Mirror chips `Smooth2SimplexReparamRightT1.lean`, `T2.lean`,
+    `SmoothPathBumpedHalfRightReparamInvariance.lean`. Headline
+    `single δ - single δ.bumpedHalfRight ∈ stokesBoundaries`.
+
+  *Concat-additivity capstone (1 chip, ~220 LOC)*:
+  - `Manifold/SmoothPathConcatAdditivityStokes.lean` — linear
+    combination `-(face_ident) - (left_reparam) - (right_reparam)`
+    of three stokesBoundary memberships collapses to
+    `single (γ.concat δ h) - single γ - single δ`. Headline
+    `concat_additive_in_stokesBoundaries`.
+
+  **Net classical-input boundary for the period-lattice side of C3
+  after this arc**:
+  1. `cycleGens` choice (symplectic homology basis representatives);
+  2. `riemannBilinear` (ℝ-LI of period vectors);
+  3. `HolomorphicStokesHypothesis X` (Stokes' theorem for the real /
+     imaginary components of every holomorphic 1-form against every
+     smooth 2-simplex boundary — single atomic Prop);
+  4. `stokesBoundaries 𝓘(ℝ, ℂ) X = ⊤` at genus 0.
+
+  Remaining for (4) on RiemannSphere: every smooth 1-cycle is a
+  smooth 2-chain boundary. With concat-additivity, reverse-cancellation,
+  and const-membership now in hand, this reduces to: **every smooth
+  loop at a fixed basepoint on a simply-connected smooth manifold
+  bounds a smooth 2-chain**. The genuine classical content remaining
+  is the smooth-Hurewicz / null-homotopy → smooth 2-simplex
+  construction. On RiemannSphere specifically, this is constructive
+  via chart-based linear contraction in `ℂ` after avoiding a missed
+  point.
+
+  No `sorry`, no `axiom` across all 10 chips. Each verified
+  individually via `LEAN_NUM_THREADS=1 lake env lean`.
+
 **Prior-state landings (still relevant)**:
 
 * **`lieAddGroup_quotient_of_zlattice`** (chip 2) — unconditional
