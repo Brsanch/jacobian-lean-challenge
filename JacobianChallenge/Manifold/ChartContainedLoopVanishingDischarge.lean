@@ -78,6 +78,37 @@ def chartPath (data : ChartContainedClosedLoop (X := X)) (t : ℝ) : ℂ :=
     exact data.γ.toPath.target
   rw [h_src_amb, h_tgt_amb, data.is_loop]
 
+/-! ## Local primitive G : X → ℂ defined via chart composition -/
+
+/-- **Local primitive on `X` via chart composition.**
+For a `ChartContainedClosedLoop` data and `α : HolomorphicOneForm X`, the
+local primitive `F : ℂ → ℂ` on the chart-target ball lifts to a
+ℂ-valued function `G : X → ℂ` defined as `F ∘ chartAt`. Concretely:
+`G x = F (chartAt ℂ data.basePoint x)` for `x ∈ chart.source`. -/
+noncomputable def localPrimitiveOnX
+    (data : ChartContainedClosedLoop (X := X))
+    (α : HolomorphicOneForm X) : X → ℂ :=
+  fun x =>
+    (Classical.choose
+      (HolomorphicOneForm.exists_local_primitive_on_ball α data.basePoint
+        data.ball_sub_target))
+      ((chartAt ℂ data.basePoint) x)
+
+/-- The chosen local primitive on `X` satisfies the
+`HasDerivAt`-on-chart-ball property pulled through the chart. -/
+lemma localPrimitiveOnX_spec
+    (data : ChartContainedClosedLoop (X := X))
+    (α : HolomorphicOneForm X) :
+    ∀ z ∈ Metric.ball data.ballCentre data.ballRadius,
+      HasDerivAt
+        (Classical.choose
+          (HolomorphicOneForm.exists_local_primitive_on_ball α data.basePoint
+            data.ball_sub_target))
+        (α.localCoeff data.basePoint z) z :=
+  Classical.choose_spec
+    (HolomorphicOneForm.exists_local_primitive_on_ball α data.basePoint
+      data.ball_sub_target)
+
 end ChartContainedClosedLoop
 
 end JacobianChallenge
