@@ -1,5 +1,115 @@
 # Changelog
 
+## 2026-05-17 (very late late night) — Period Lattice Construction structural decomposition + classical-content infrastructure (8 chips, ~1,250 LOC, branch `feat/period-lattice-stokes-refactored`)
+
+Structural decomposition of the Period Lattice Construction into
+atomic classical inputs, plus the concrete `Smooth2Simplex` / `d² = 0`
+algebra and the irreducible-`Prop` packaging of the single-simplex
+Stokes hypothesis. Chips 1–2 fast-forwarded into `origin/main` mid-
+session via the parallel item-14 session's merge; chips 3–8 live on
+`feat/period-lattice-stokes-refactored` (pushed to remote).
+
+### Structural decomposition (chips 1–5, ~660 LOC)
+
+* **`Manifold/C3PeriodLatticeStokesRefactored.lean`** (~217 LOC) —
+  `C3PeriodLatticeStokesInputs basis` factors
+  `C3PeriodLatticeClassicalInputs.homologySpans` into two atomic
+  textbook inputs: a `StokesBoundaryInvariance 𝓘(ℝ, ℂ) X` bundle +
+  `holomorphic_closed` hypothesis, and a `homologyGeneration`
+  predicate. Provides `.toClassical` deriving the unrefactored
+  `homologySpans` via additivity of `periodVector` and the
+  period-on-boundary vanishing lemma (`ComplexPeriodH1.lean`).
+
+* **`Manifold/C3PeriodLatticeStokesH1Generation.lean`** (~193 LOC) —
+  `C3PeriodLatticeStokesSpanTopInputs basis` replaces
+  `homologyGeneration`'s existential predicate with the cleaner
+  textbook statement `H1_spans_top`: `Submodule.span ℤ (range (S.proj
+  ∘ cycleGens)) = ⊤`. Derivation uses `Finsupp.mem_span_range_iff_
+  exists_finsupp` + `QuotientAddGroup.eq_zero_iff`.
+
+* **`Manifold/C3PeriodLatticeStokesGenusZero.lean`** (~120 LOC) —
+  `C3PeriodLatticeStokesSpanTopInputs.trivial_at_genus_zero` provides
+  an inhabitant at `genus X = 0` given `Subsingleton (HolomorphicOneForm
+  X)`. Uses `boundaries := ⊤`, `closedForms := ⊥`, and the helper
+  `subsingleton_quotientAddGroup_top` (private lemma showing
+  `G ⧸ (⊤ : AddSubgroup G)` is subsingleton).
+
+* **`Manifold/C3PeriodLatticeStokesRiemannSphere.lean`** (~75 LOC) —
+  Unconditional `nonempty_C3PeriodLatticeStokesSpanTopInputs_
+  RiemannSphere` instance, composing `genus_RiemannSphere_eq_zero`
+  + `Subsingleton (HolomorphicOneForm RS)` instance (both
+  unconditional via `Manifold/RiemannSphereChartSCoeffOverlap.lean`).
+
+* **`Manifold/C3PeriodLatticeStokesNonemptyHeadline.lean`** (~45
+  LOC) — Single-typeclass promotion `[Nonempty
+  (C3PeriodLatticeStokesSpanTopInputs basis)] → Nonempty
+  (PeriodLatticeSymplecticBundle data basis)`. The cleanest external
+  boundary for the period-lattice side of the C3 cascade.
+
+### Classical-content infrastructure (chips 6–8, ~635 LOC)
+
+* **`Manifold/Smooth2Simplex.lean`** (~370 LOC) — Concrete smooth
+  singular 2-simplex infrastructure. Ships `Smooth2Simplex I X`
+  (ambient `C^∞` map `(Fin 2 → ℝ) → X`); vertices `v0 = (0,0),
+  v1 = (1,0), v2 = (0,1)`; three face parameter maps and their
+  `ContMDiff` proofs (affine functions are `C^∞`); `face0 / face1 /
+  face2 : Smooth2Simplex → SmoothPath` derived from the ambient
+  extension; `Smooth2Chain I X := Smooth2Simplex I X →₀ ℤ` with
+  `AddCommGroup` / `Module ℤ` instances; `boundary₂ : Smooth2Chain
+  →ₗ[ℤ] SmoothChain` via `Finsupp.linearCombination`; and the
+  unconditional **`boundary_squared : SmoothChain.boundary ∘
+  boundary₂ = 0` (d² = 0)** identity, proved via vertex cancellation
+  (`face₀ - face₁ + face₂` boundaries cancel pairwise in the formal
+  combination of vertices).
+
+* **`Manifold/Smooth2ChainStokesBoundary.lean`** (~140 LOC) —
+  Promotes `boundary₂` to a `ℤ`-linear map `Smooth2Chain →ₗ[ℤ]
+  SmoothCycle` (the codomain is the subtype, available via `d²=0`).
+  Packages its image as the **canonical Stokes-boundary subgroup**
+  `stokesBoundaries I X : AddSubgroup (SmoothCycle I X)`, suitable
+  as the `boundaries` field of `StokesBoundaryInvariance`. Provides
+  `mem_stokesBoundaries_iff` (membership = exists-2-chain-preimage)
+  and the `zero/add/neg` closure lemmas.
+
+* **`Manifold/StokesBoundaryInvarianceFromSimplex.lean`** (~125
+  LOC) — Collapses the legacy three-named-hypothesis structure of
+  `StokesBoundaryInvariance` to a **single `Prop`**:
+  `IntegrationStokesHypothesis I X closedForms` =
+  `∀ σ : Smooth2Simplex, ∀ ω ∈ closedForms, integrate (∂σ) ω = 0`.
+  Constructor `StokesBoundaryInvariance.ofSingleSimplexStokes`
+  uses this hypothesis + `Finsupp.induction_linear` +
+  `SmoothChain.integrate_zsmul / _add / _zero` to lift the
+  single-simplex hypothesis to the full chain level, then plugs
+  `stokesBoundaries` in as the canonical `boundaries` field.
+
+### Net effect on the period-lattice classical-input boundary
+
+The classical content needed for the period-lattice side of C3
+reduces to (parameterised over a chosen ℂ-basis `basis` and a chosen
+real submodule `closedForms`):
+
+1. **The single-simplex Stokes `Prop`**
+   `IntegrationStokesHypothesis I X closedForms` (one Prop, single
+   2-simplex level).
+2. **`holomorphic_closed`** — every holomorphic 1-form is
+   Stokes-closed (`realComponent`, `imagComponent` both in
+   `closedForms`); on a complex 1-manifold this is the standard
+   "d-closed" content for type-(1,0) forms.
+3. **`cycleGens`** — a tuple of `2g` cycle generators.
+4. **`riemannBilinear`** — ℝ-LI of their period vectors (Hodge
+   bilinear non-degeneracy).
+5. **`H1_spans_top`** — the cycleGens project to a ℤ-generating set
+   of `H₁(X; ℤ) := SmoothCycle / boundaries` (cellular-homology
+   content).
+
+`boundaries` is now CANONICAL (`stokesBoundaries`, the image of
+`boundary₂Cycle`). The five remaining inputs are the irreducible
+classical content for general-genus inhabitation; the `Smooth2Simplex`
+/ `d²=0` algebra is fully unconditional.
+
+Build: all eight files individually verified via
+`LEAN_NUM_THREADS=1 lake env lean ...`. Zero `sorry`, zero `axiom`.
+
 ## 2026-05-17 (very late late night) — `DegreeOneFromSimpleZeroSimplePole` non-constancy fully closed (~220 LOC, direct to `main`)
 
 New file `Manifold/DegreeOneFromSimpleZeroSimplePoleDischarge.lean`
