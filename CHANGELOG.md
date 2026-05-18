@@ -1,5 +1,140 @@
 # Changelog
 
+## 2026-05-18 (late late + 4) — Full genus-0 period-lattice closure on RS + cotangent-bundle chart-pullback identity (8 chips, ~950 LOC, MERGED + PUSHED to origin/main HEAD `419b009`)
+
+Two intertwined arcs landed this session:
+
+**Arc A — Genus-0 period-lattice closure unconditional on `RiemannSphere`**
+(5 chips, ~360 LOC). The full `GenericGenusPeriodLatticeInputs` 4-tuple on
+RS is now constructible without any classical-input hypothesis.
+
+* `Manifold/SmoothCycleInStokesBoundariesOfBasedLoopsBound.lean`
+  (~225 LOC) — Finsupp aggregation headline
+  `cycle_in_stokesBoundaries_of_basedLoopsBound`. Aggregates the
+  per-path discharge `singlePlusCorrectionCycle_mem_stokesBoundaries`
+  over `c.support` via a Finsupp ℤ-linear-combination construction.
+  Each summand lies in `stokesBoundaries` by `zsmul_mem`; the cycle
+  property `∂c = 0` collapses the `S_src - S_tgt` α-shift correction
+  (via an explicit `αShift : (X →₀ ℤ) →ₗ[ℤ] SmoothChain I X` linear
+  combination). Closes the structural reduction
+  `BasedSmoothLoopsBoundHypothesis I X p₀ → ∀ c, c ∈ stokesBoundaries`.
+
+* `Manifold/StokesBoundariesRiemannSphereTop.lean` —
+  **`stokesBoundaries 𝓘(ℝ, ℂ) RiemannSphere = ⊤`** as an in-tree
+  theorem. Picks `p₀ := (0 : ℂ)`, extracts the based-path family `α`
+  via `Classical.choose` on `smoothPathConnected_RiemannSphere`, and
+  composes the cycle decomposition with the unconditional
+  `basedSmoothLoopsBoundHypothesis_RS_holds` from the prior arc.
+
+* `Manifold/C3PeriodLatticeStokesRiemannSphereUnconditional.lean` —
+  `C3PeriodLatticeStokesSpanTopInputs_RiemannSphere_unconditional`
+  via `trivial_at_genus_zero_canonical_of_stokesBoundaries_top`.
+
+* `Manifold/PeriodLatticeSymplecticBundleRiemannSphereUnconditional.lean`
+  — `periodLatticeSymplecticBundle_RiemannSphere_unconditional`
+  via `.toBundle`.
+
+* `Manifold/GenericGenusPeriodLatticeInputsRiemannSphere.lean` —
+  full 4-tuple `GenericGenusPeriodLatticeInputs` on RS unconditional.
+  All four atomic inputs discharged:
+    - `cycleGens` via `IsEmpty.elim` on `Fin (2 * 0)`.
+    - `riemannBilinear` via `linearIndependent_empty_type`.
+    - `holomorphicCanonicalClosed` via
+      `HolomorphicComponentsCanonicalClosed.of_subsingleton`.
+    - `H1_spans_top_canonical` via `Subsingleton.elim` after
+      `subsingleton_canonical_H1_of_stokesBoundaries_eq_top` consuming
+      the new `stokesBoundaries_RS_eq_top`.
+
+**Arc B — Cotangent-bundle chart-pullback identity** (3 chips, ~590 LOC).
+The substantive cotangent-bundle content for chart-contained-loop
+vanishing is now in tree under a structural hypothesis (frame stability),
+and dischargeable per-loop on `RS` for `basePoint ≠ ∞`.
+
+* `Manifold/ComplexEvalIntegrandContinuity.lean` —
+  `complexEvalIntegrand_continuousOn`: the benign continuity hypothesis
+  of `chartContainedLoopVanishingHypothesis_from_pointwise`
+  (`ContinuousOn (fun t => (α.eval (γ.ambient t)) (γ.velocity t)) (Icc 0 1)`)
+  is discharged unconditionally via decomposition into `Re + I·Im`
+  of the existing real-valued continuous integrands.
+  Headline `chartContainedLoopVanishingHypothesis_from_pointwise_only`
+  collapses the chart-contained-loop vanishing to the single
+  substantive ingredient `PointwiseChartEvalIdentity`.
+
+* `Manifold/PointwiseChartEvalFromFrameStability.lean` —
+  **`PointwiseChartEvalIdentity` proven under frame stability.**
+  Defines `CotangentChartFrameStable data` (`chartAt ℂ (γ.ambient t) =
+  chartAt ℂ basePoint` for `t ∈ [0, 1]`). Under it:
+    - Cotangent collapse: `localCoeff α basePoint (chartPath t) =
+      (α.toFun (γ.ambient t)) 1` via
+      `cotangentBundleCore_coordChange_self`.
+    - Tangent collapse: `mfderiv (chart basePoint) (γ.ambient t) =
+      ContinuousLinearMap.id ℝ ℂ` via
+      `mfderiv_chartAt_eq_tangentCoordChange` + `tangentCoordChange_self`.
+    - Chain rule + ℂ-linearity close the identity.
+  Composite headline `chartContainedLoopVanishingHypothesis_of_frameStable`
+  reduces `ChartContainedLoopVanishingHypothesis` to universal frame
+  stability.
+
+* `Manifold/CotangentChartFrameStableRS.lean` —
+  `cotangentChartFrameStable_RiemannSphere`: frame stability is
+  automatic for chart-contained loops on RS with `basePoint ≠ ∞`
+  (`chartAt ℂ x = chartN` for every `x ≠ ∞`, via `chartAt'_coe` and
+  `chartN_source = {x | x ≠ ∞}`). Per-loop headline
+  **`complexChainPeriod_vanishes_RiemannSphere`**: for any
+  `ChartContainedClosedLoop` on RS with `basePoint ≠ ∞` and any
+  holomorphic 1-form, `complexChainPeriod (single γ) α = 0`
+  (composing frame stability + `PointwiseChartEvalIdentity` + ℂ-integrand
+  continuity + the structural bridge + `chartPath_loop_integral_zero`).
+  Also adds the public re-export
+  `RiemannSphere.chartAt_eq_chartN_of_ne_infty` of the previously-
+  `private` `chartAt_of_ne_infty`.
+
+**Net effect.**
+
+* The full genus-0 corner of period-lattice closure is closed on RS
+  without any classical hypothesis (Arc A). For `RiemannSphere` —
+  `Subsingleton (HolomorphicOneForm RS)` already gave 3 of the 4
+  atomic inputs trivially; the new piece is `H1_spans_top_canonical`
+  via the SmoothCycle-level `stokesBoundaries = ⊤`.
+
+* The cotangent-bundle chart-pullback identity that powers
+  chart-contained loop vanishing is now in tree under a structural
+  reduction (frame stability, Arc B). Frame stability for a single
+  loop on RS off ∞ is automatic, giving the first **fully unconditional**
+  per-loop integral-vanishing result on a genus-0 manifold via the
+  Cauchy-disk + chart-pullback chain.
+
+**Repo state.** 8 new files, ~950 LOC. Repo total: **142,731 LOC across
+801 `.lean` files**. Build: clean, full library at **9086 jobs**
+(up from 9074). Zero `sorry`, zero `axiom`.
+
+**Gotchas surfaced.**
+
+* `SmoothChain I X` is a `def` (not `abbrev`); applying `c.val γ`
+  fails since Lean won't unfold the type synonym for function
+  application. Bind `let f : SmoothPath I X →₀ ℤ := c.val` and apply
+  `f γ`.
+* `AddSubgroup.coe_zsmul` / `AddSubmonoidClass.coe_zsmul` aren't in
+  the mathlib pin. For `((n • s : ↥G) : G)` use
+  `(AddSubgroup.subtype G).map_zsmul`.
+* `smul_sub`/`smul_add` chains fail on `f γ • (a + b - c)` when the
+  goal has already partially distributed; use the `module` tactic
+  to close ℤ-Module distributivity in one shot.
+* `zsmulAddGroupHom n : α →+ α` is **not** the right slot for
+  `Finsupp.liftAddHom (X → ℤ →+ ...)`; use `Finsupp.linearCombination ℤ`
+  to get the `(α →₀ ℤ) →ₗ[ℤ] _` shape.
+* Rewriting `genus_RiemannSphere_eq_zero` inside a structure literal
+  breaks the dependent type of `riemannBilinear`; extract
+  `haveI hempty : IsEmpty (Fin (2 * g))` separately.
+* `CotangentSpace 𝓘(ℂ, ℂ) x` is a non-reducible `def` for `ℂ →L[ℂ] ℂ`;
+  applying `α.toFun x` to `1 : ℂ` requires
+  `show ℂ →L[ℂ] ℂ from α.toFun x` ascription. Direct ascription
+  `(α.toFun x : ℂ →L[ℂ] ℂ) 1` fails.
+* `mfderiv_eq_fderiv` for `ℝ → ℂ` is the bridge converting
+  `(mfderiv 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) f t) 1` to `deriv f t`.
+* The Lean style linter rejects `show` tactic invocations that
+  change the goal; use `change` for sub-elaborations.
+
 ## 2026-05-18 (late late + 3) — Chipping at barrier (1): boundary loop reduction + RS loop-level discharge (3 chips, ~220 LOC, MERGED + PUSHED to origin/main HEAD `8271224`)
 
 Toward chipping away at the mathlib barrier for `holomorphicCanonicalClosed`

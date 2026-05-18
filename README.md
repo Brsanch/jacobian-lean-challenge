@@ -13,11 +13,41 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-18 late late):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
-Build clean at **9074 jobs** (zero `sorry`, zero `axiom`). Repo:
-**141,779 LOC across 793 `.lean` files**.
+**Current state (2026-05-18 late late + 4):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
+Build clean at **9086 jobs** (zero `sorry`, zero `axiom`). Repo:
+**142,731 LOC across 801 `.lean` files**.
 
 Major recent landings (all on `main`):
+
+* **Full genus-0 period-lattice closure on `RiemannSphere`,
+  unconditional** (2026-05-18 late late + 4, HEAD `419b009`).
+  The 4-tuple `GenericGenusPeriodLatticeInputs` on RS is now
+  constructible without any classical-input hypothesis. Headline
+  `stokesBoundaries 𝓘(ℝ, ℂ) RiemannSphere = ⊤` (in
+  `Manifold/StokesBoundariesRiemannSphereTop.lean`) composes the
+  Finsupp cycle aggregation `cycle_in_stokesBoundaries_of_basedLoopsBound`
+  with the unconditional `basedSmoothLoopsBoundHypothesis_RS_holds`.
+  All four atomic inputs of `GenericGenusPeriodLatticeInputs` then
+  discharge: `cycleGens` via `IsEmpty.elim`, `riemannBilinear` via
+  `linearIndependent_empty_type`, `holomorphicCanonicalClosed` via
+  `HolomorphicComponentsCanonicalClosed.of_subsingleton`, and
+  `H1_spans_top_canonical` via `Subsingleton.elim` after
+  `subsingleton_canonical_H1_of_stokesBoundaries_eq_top` consumes
+  `stokesBoundaries_RS_eq_top`.
+
+* **Cotangent-bundle chart-pullback identity proven under frame
+  stability** (2026-05-18 late late + 4). The substantive identity
+  `α.eval (γ.ambient t) (γ.velocity t)
+    = α.localCoeff basePoint (chartPath t) * deriv chartPath t`
+  for chart-contained smooth loops is now an in-tree theorem
+  (`pointwiseChartEvalIdentity_of_frameStable` in
+  `Manifold/PointwiseChartEvalFromFrameStability.lean`).
+  Frame stability (`chartAt ℂ (γ.ambient t) = chartAt ℂ basePoint`)
+  is automatic on `RS` for `basePoint ≠ ∞`. Composite
+  `complexChainPeriod_vanishes_RiemannSphere` (in
+  `Manifold/CotangentChartFrameStableRS.lean`) gives **fully
+  unconditional per-loop complex-period vanishing** for any
+  chart-contained closed loop on RS with basepoint off ∞.
 
 * **`BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) RiemannSphere p₀`
   UNCONDITIONAL** (2026-05-18 late late, HEAD `ce40ac7`). The full

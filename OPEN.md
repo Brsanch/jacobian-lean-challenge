@@ -32,6 +32,60 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-18 (late late + 4) Full genus-0 period-lattice closure on `RS`
+> + cotangent-bundle chart-pullback identity landed.** (8 chips,
+> ~950 LOC, origin/main HEAD `419b009`.)
+>
+> *Arc A — Period-lattice closure on RS, unconditional:*
+> * `cycle_in_stokesBoundaries_of_basedLoopsBound`
+>   (`Manifold/SmoothCycleInStokesBoundariesOfBasedLoopsBound.lean`)
+>   — Finsupp aggregation of the per-path discharge over
+>   `c.support`, with `αShift : (X →₀ ℤ) →ₗ[ℤ] SmoothChain I X`
+>   collapsing the correction via `∂c = 0`.
+> * `stokesBoundaries_RS_eq_top`
+>   (`Manifold/StokesBoundariesRiemannSphereTop.lean`) — composes
+>   with `basedSmoothLoopsBoundHypothesis_RS_holds` +
+>   `smoothPathConnected_RiemannSphere`.
+> * `C3PeriodLatticeStokesSpanTopInputs_RiemannSphere_unconditional`
+>   (`Manifold/C3PeriodLatticeStokesRiemannSphereUnconditional.lean`)
+>   via `trivial_at_genus_zero_canonical_of_stokesBoundaries_top`.
+> * `periodLatticeSymplecticBundle_RiemannSphere_unconditional`
+>   (`Manifold/PeriodLatticeSymplecticBundleRiemannSphereUnconditional.lean`)
+>   via `.toBundle`.
+> * `genericGenusPeriodLatticeInputs_RiemannSphere`
+>   (`Manifold/GenericGenusPeriodLatticeInputsRiemannSphere.lean`)
+>   — full 4-tuple unconditional via `IsEmpty.elim` /
+>   `linearIndependent_empty_type` /
+>   `HolomorphicComponentsCanonicalClosed.of_subsingleton` /
+>   `Subsingleton.elim`.
+>
+> *Arc B — Cotangent-bundle chart-pullback identity:*
+> * `complexEvalIntegrand_continuousOn`
+>   (`Manifold/ComplexEvalIntegrandContinuity.lean`) — ℂ-integrand
+>   continuity unconditional via `Re + I·Im` decomposition of the
+>   existing real-valued integrand continuity. Headline
+>   `chartContainedLoopVanishingHypothesis_from_pointwise_only`
+>   collapses to a single substantive ingredient.
+> * `pointwiseChartEvalIdentity_of_frameStable`
+>   (`Manifold/PointwiseChartEvalFromFrameStability.lean`) — the
+>   substantive cotangent-bundle identity proven under
+>   `CotangentChartFrameStable` (`chartAt ℂ (γ.ambient t) =
+>   chartAt ℂ basePoint`). Composes
+>   `cotangentBundleCore_coordChange_self`,
+>   `mfderiv_chartAt_eq_tangentCoordChange`, `tangentCoordChange_self`,
+>   `mfderiv_eq_fderiv`, and ℂ-linearity of `α.toFun x : ℂ →L[ℂ] ℂ`.
+> * `complexChainPeriod_vanishes_RiemannSphere`
+>   (`Manifold/CotangentChartFrameStableRS.lean`) — per-loop
+>   complex-period vanishing unconditional on RS for chart-contained
+>   loops with `basePoint ≠ ∞`. Frame stability is automatic via
+>   `chartAt'_coe` + `chartN_source = {x | x ≠ ∞}`.
+>
+> Repo state: **142,731 LOC across 801 `.lean` files**, build
+> **9086 jobs** clean (zero `sorry`, zero `axiom`). Scoreboard
+> unchanged at 13/24 (the new content closes structural reductions
+> downstream of items 11/5/12/13/17 — Basic.lean's signatures still
+> quantify over general X).
+
 > **2026-05-17 (late late night) Symplectic-bundle migration arc landed.**
 > 13-chip arc (~1450 LOC) migrated the entire Abel-Jacobi chain to the
 > corrected `PeriodLatticeSymplecticBundle`, lifted manifold instances
