@@ -262,6 +262,69 @@ lemma chartPath_hasDerivAt
     HasDerivAt data.chartPath (deriv data.chartPath t) t :=
   (data.chartPath_mdifferentiableAt_of_unitInterval ht).differentiableAt.hasDerivAt
 
+/-! ## Final assembly
+
+The remaining step is to bridge `complexChainPeriod (single γ) α` (defined
+via realComponent + i·imagComponent of SmoothPath integrals) with the
+chart-coord complex integral `∫_0^1 (α.localCoeff y (chartPath t)) ·
+(deriv chartPath t) dt`. This bridge plus `chartPath_loop_integral_zero`
+(in tree) gives the full discharge of `ChartContainedLoopVanishingHypothesis`.
+
+The bridge requires:
+- Identifying the realComponent / imagComponent integrands with the
+  real / imaginary parts of the chart-coord product integrand.
+- Discharging the integrability hypothesis (continuity of `deriv chartPath`
+  on `[0,1]`, modulo a real-smoothness restrictScalars step on the chart).
+
+Both steps follow from standard manifold real-vs-complex differentiability
+identifications. Surfaced here as named ingredients for subsequent chips. -/
+
+/-- **Named ingredient: deriv chartPath continuity on [0, 1].**
+Follows from `chart ∘ γ.ambient` being `C^∞` on the chart-source preimage
+(open) and hence `ContDiffOn ℝ ⊤` on that open set, restricted to [0,1].
+The substantive piece is the complex-to-real-scalars transfer of the
+chart's smoothness. -/
+def DerivChartPathContinuousOn_named (data : ChartContainedClosedLoop (X := X)) : Prop :=
+  ContinuousOn (deriv data.chartPath) (Set.Icc (0 : ℝ) 1)
+
+/-- **Named ingredient: complexChainPeriod identifies with the chart-coord integral.**
+For a `ChartContainedClosedLoop` `data` and `α : HolomorphicOneForm X`:
+`complexChainPeriod (single γ) α = ∫_0^1 (α.localCoeff y (chartPath t)) ·
+(deriv chartPath t) dt`.
+
+The substantive content is the chart-pullback identification of
+realComponent / imagComponent against the chart-coord product expansion. -/
+def ComplexChainPeriodEqChartIntegral_named
+    (data : ChartContainedClosedLoop (X := X))
+    (α : HolomorphicOneForm X) : Prop :=
+  complexChainPeriod (SmoothChain.single data.γ) α
+    = ∫ t in (0 : ℝ)..1,
+        (α.localCoeff data.basePoint (data.chartPath t)) *
+          (deriv data.chartPath t)
+
+/-- **`ChartContainedLoopVanishingHypothesis_holds` from the two named ingredients.**
+Composes `chartPath_loop_integral_zero` with the chart-coord-integral
+identification to get `complexChainPeriod (single γ) α = 0`. -/
+theorem chartContainedLoopVanishingHypothesis_of_ingredients
+    (h_deriv :
+      ∀ data : ChartContainedClosedLoop (X := X), DerivChartPathContinuousOn_named data)
+    (h_bridge :
+      ∀ (data : ChartContainedClosedLoop (X := X)) (α : HolomorphicOneForm X),
+        ComplexChainPeriodEqChartIntegral_named data α) :
+    ChartContainedLoopVanishingHypothesis (X := X) := by
+  intro data α
+  rw [h_bridge data α]
+  apply chartPath_loop_integral_zero data α
+  -- IntervalIntegrable from continuity of the product integrand.
+  have h1 := data.localCoeff_chartPath_continuousOn α
+  have h2 := h_deriv data
+  have h_cont : ContinuousOn
+      (fun t => (α.localCoeff data.basePoint (data.chartPath t)) *
+                  (deriv data.chartPath t))
+      (Set.Icc (0 : ℝ) 1) :=
+    h1.mul h2
+  exact h_cont.intervalIntegrable_of_Icc zero_le_one
+
 end ChartContainedClosedLoop
 
 end JacobianChallenge
