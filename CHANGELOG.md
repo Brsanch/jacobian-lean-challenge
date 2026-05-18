@@ -1,5 +1,73 @@
 # Changelog
 
+## 2026-05-18 (late night continuation) — Rebasing + V-loop-bounds + factorisation pipeline (11 chips, ~1840 LOC, MERGED + PUSHED to origin/main HEAD `3d765aa`)
+
+Continues the period-lattice closure pipeline. Reduces
+`stokesBoundaries 𝓘(ℝ, ℂ) RiemannSphere = ⊤` to a SINGLE atomic
+predicate `LoopFactorsThroughVectorSpaceHypothesis ℂ RiemannSphere p₀`,
+itself constructively dischargeable via stereographic projection
+from a missed point.
+
+* **Rebasing arc (3 chips, ~510 LOC):**
+  - `Manifold/SmoothPathRebasingIdentity.lean` —
+    `triple_concat_in_stokesBoundaries`. Sum of two
+    `concat_additive_in_stokesBoundaries` applications gives the
+    triple-concat identity.
+  - `Manifold/SmoothPathRebasingFull.lean` —
+    `rebasing_in_stokesBoundaries`: any smooth path γ : a → b is
+    homologous (mod stokesBoundaries) to a based loop
+    `α ⋆ γ ⋆ β.reverse` at p₀ minus the rebasing corrections
+    `single α - single β`.
+  - `Manifold/SmoothPathLoopRebasing.lean` —
+    `loop_rebasing_in_stokesBoundaries`: specialisation to a loop γ
+    with β = α (corrections collapse to 0).
+
+* **Named hypothesis (1 chip, ~150 LOC):**
+  - `Manifold/BasedSmoothLoopsBound.lean` —
+    `BasedSmoothLoopsBoundHypothesis I X p₀` predicate +
+    `single_smoothLoop_in_stokesBoundaries_of_basedLoopsBoundHypothesis`:
+    every smooth loop (not necessarily based) on a smooth-path-connected
+    manifold has single in stokesBoundaries given the hypothesis.
+
+* **V-loop-bounds (3 chips, ~620 LOC):**
+  - `Manifold/Smooth2SimplexLoopBoundsVectorSpaceT1.lean`,
+    `T2.lean` — square-diagonal split of the smooth homotopy
+    `H(s, t) := (1-s) • γ.ambient t + s • γ.src` into two triangles.
+  - `Manifold/SmoothLoopBoundsInVectorSpace.lean` —
+    `single_smoothLoop_in_stokesBoundaries_vectorSpace` (any smooth
+    loop in a normed ℝ-vector space V has single in stokesBoundaries),
+    `basedSmoothLoopsBoundHypothesis_vectorSpace` (discharge the
+    named hypothesis unconditionally on V).
+
+* **stokesBoundaries pushforward (1 chip, ~210 LOC):**
+  - `Manifold/Smooth2SimplexPush.lean` — `Smooth2Simplex.push`,
+    `Smooth2Chain.push`, `boundary₂_push`, and the structural
+    headline `stokesBoundaries_push` (pushforward via a smooth map
+    sends `stokesBoundaries I X → stokesBoundaries I Y`).
+
+* **Composition + factorisation (2 chips, ~230 LOC):**
+  - `Manifold/SmoothLoopBoundsViaChart.lean` — composes V-loop-bounds
+    with `stokesBoundaries_push`:
+    `single_pushSmoothLoop_in_stokesBoundaries_of_vectorSpaceSource`
+    for any smooth loop γ' in V and smooth map f : V → X.
+  - `Manifold/BasedSmoothLoopsBoundFromFactorisation.lean` — named
+    predicate `LoopFactorsThroughVectorSpaceHypothesis V X p₀` +
+    `basedSmoothLoopsBoundHypothesis_of_factorisation` discharging
+    `BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, V) X p₀` from it.
+
+Build: each file individually verified via
+`LEAN_NUM_THREADS=1 lake env lean`. Zero `sorry`, zero `axiom`
+across all 11 chips.
+
+**Net atomic-input boundary for the period-lattice side of C3 on
+RiemannSphere** is now:
+
+  `LoopFactorsThroughVectorSpaceHypothesis ℂ RiemannSphere p₀`
+
+— a single Prop expressing "every smooth loop on RS at p₀ factors
+through ℂ via some smooth map". Constructive on RS via stereographic
+projection from a missed point.
+
 ## 2026-05-18 (continuation) — Concat-additivity in stokesBoundaries CLOSED (10 chips, ~2210 LOC, MERGED + PUSHED to origin/main HEAD `a349fd8`)
 
 Foundational chain-level identity:
