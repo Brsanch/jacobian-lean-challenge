@@ -239,6 +239,28 @@ theorem complexChainPeriodEqChartIntegral_from_pointwise
     rwa [Set.uIcc_of_le zero_le_one] at ht
   exact h_point t ht_icc
 
+/-- **`ChartContainedLoopVanishingHypothesis` from PointwiseChartEvalIdentity
++ ℂ-integrand continuity.**
+
+With `derivChartPathContinuousOn_holds` already unconditional, this
+collapses the chart-contained-loop vanishing to **one substantive
+ingredient** (the pointwise chart-pullback identity) plus a benign
+continuity hypothesis on the ℂ-valued integrand. -/
+theorem chartContainedLoopVanishingHypothesis_from_pointwise
+    (h_point :
+      ∀ (data : ChartContainedClosedLoop (X := X)) (α : HolomorphicOneForm X),
+        PointwiseChartEvalIdentity data α)
+    (h_cont :
+      ∀ (data : ChartContainedClosedLoop (X := X)) (α : HolomorphicOneForm X),
+        ContinuousOn
+          (fun t : ℝ => (α.eval (data.γ.ambient t)) (data.γ.velocity t))
+          (Set.Icc (0 : ℝ) 1)) :
+    ChartContainedLoopVanishingHypothesis (X := X) :=
+  chartContainedLoopVanishingHypothesis_from_bridge
+    (fun data α =>
+      complexChainPeriodEqChartIntegral_from_pointwise data α
+        (h_point data α) (h_cont data α))
+
 end ChartContainedClosedLoop
 
 end JacobianChallenge
