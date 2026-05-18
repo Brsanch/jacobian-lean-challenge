@@ -363,6 +363,75 @@ bundle refactor). Major landings this session:
   Scoreboard unchanged at 13/24 — the inputs (i)–(v) remain real
   classical content not at the mathlib pin.
 
+  **Period-lattice canonical Stokes bundle (2026-05-18, 15 chips,
+  ~1500 LOC, MERGED to main, origin/main HEAD `7904b92`).** Further
+  refactor making `boundaries` AND `closedForms` of the consumed
+  `StokesBoundaryInvariance` bundle **canonical** rather than
+  consumer-supplied. Net classical-input boundary shrinks from 5
+  fields (with two being setup-of-the-bundle choices) to **4 atomic
+  classical statements** with no bundle infrastructure left for
+  the consumer.
+
+  *Canonical Stokes bundle*:
+  - `Manifold/StokesCanonicalClosedForms.lean` — `canonicalClosedForms I X`
+    (Submodule ℝ of forms with integral around every smooth 2-simplex
+    boundary vanishing) + `canonicalIntegrationStokes` (tautological
+    discharge) + `StokesBoundaryInvariance.canonical I X` (canonical
+    parameter-free bundle).
+  - `Manifold/C3PeriodLatticeStokesCanonical.lean` —
+    `C3PeriodLatticeStokesSpanTopInputs.ofCanonical` constructor.
+  - `Manifold/HolomorphicComponentsCanonicalClosed.lean` — named
+    predicates `HolomorphicComponentsCanonicalClosed X` /
+    `HolomorphicStokesHypothesis X` with `.of_hypothesis` /
+    `.of_subsingleton` derivations.
+  - Layered constructors: `.ofStokesHypothesis`,
+    `.ofCanonicalGenusZero`, `.ofCanonicalGenusZeroSubsingleton`,
+    `.trivial_at_genus_zero_canonical`,
+    `.trivial_at_genus_zero_canonical_of_stokesBoundaries_top`.
+  - `Manifold/StokesCanonicalH1SubsingletonChar.lean` —
+    `subsingleton_canonical_H1_iff_stokesBoundaries_eq_top`
+    characterization (the load-bearing genus-0 topological input
+    has a clean SmoothCycle-level handle).
+  - `Manifold/C3PeriodLatticeCanonicalItemsDischarge.lean` —
+    items 11/5/12 canonical discharge on RS conditional on H₁-subsingleton.
+
+  *Smooth-singular Stokes foundation*:
+  - `Manifold/Smooth2SimplexConst.lean` — `Smooth2Simplex.const I X P` +
+    `boundary_const_smoothCycle P ∈ stokesBoundaries`.
+  - `Manifold/SmoothPathIntegrateConstToPath.lean` — generic
+    `SmoothPath.integrate_eq_zero_of_toPath_eq_const` (any
+    constant-toPath path integrates to zero).
+  - `Manifold/Smooth2SimplexConstBoundaryIntegrate.lean` —
+    `Smooth2Simplex.integrate_boundary_const_eq_zero` (boundary of
+    constant 2-simplex integrates to zero against ANY form).
+  - `Manifold/Smooth2SimplexConstFaceEq.lean` — all three faces of
+    `Smooth2Simplex.const I X P` are equal as SmoothPath terms
+    (via `congr 1` + Prop proof-irrelevance), reducing
+    `boundary (const P) = SmoothChain.single (face0 (const P))`.
+  - `Manifold/SmoothPathConstFromFace0.lean` —
+    `face0 (const P) = SmoothPath.const I X P`. Yields:
+    `single_smoothPath_const_smoothCycle P ∈ stokesBoundaries`
+    — a concrete `P`-indexed non-trivial element of stokesBoundaries
+    (the SmoothCycle whose underlying chain is
+    `SmoothChain.single (SmoothPath.const I X P)`).
+
+  *Net classical-input boundary after this arc*:
+  1. `cycleGens` choice (symplectic homology basis representatives);
+  2. `riemannBilinear` (ℝ-LI of period vectors);
+  3. `HolomorphicStokesHypothesis X` (Stokes' theorem for the
+     real / imaginary components of every holomorphic 1-form against
+     every smooth 2-simplex boundary — single atomic Prop);
+  4. `stokesBoundaries 𝓘(ℝ, ℂ) X = ⊤` at genus 0 (the
+     canonical-Stokes-quotient analogue of `H₁(S²; ℤ) = 0`).
+
+  The constant-path direction is now fully foundationally laid:
+  every `SmoothChain.single (SmoothPath.const I X P)` is a concrete
+  member of `stokesBoundaries`. Toward `stokesBoundaries = ⊤` on RS,
+  the next-layer reductions are smooth Hurewicz / smooth-loop-bounds
+  from `simplyConnectedS2_holds`.
+
+  Build: 9031 jobs clean. Zero `sorry`, zero `axiom`.
+
 **Prior-state landings (still relevant)**:
 
 * **`lieAddGroup_quotient_of_zlattice`** (chip 2) — unconditional
