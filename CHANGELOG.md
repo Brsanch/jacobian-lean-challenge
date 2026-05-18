@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-05-18 (late) — Chart-symm smoothness + structural reduction to two atomic predicates (2 chips, ~250 LOC, MERGED + PUSHED to origin/main HEAD `9e1fe1a`)
+
+Continues toward an unconditional discharge of
+`LoopFactorsThroughVectorSpaceHypothesis ℂ RiemannSphere p₀`:
+
+* **`Manifold/RiemannSphereChartSymmSmooth.lean`** — global C^∞
+  smoothness of `chartN.symm : ℂ → RS` and `chartS.symm : ℂ → RS` as
+  manifold maps with model `𝓘(ℝ, ℂ)`, at regularity `⊤`. Proof:
+  `chartAt ℂ ((0 : ℂ) : RS) = chartN`, `chartAt ℂ ∞ = chartS`, then
+  mathlib's `contMDiffOn_chart_symm` + `chartN.target = univ` (resp.
+  `chartS.target = univ`) gives global smoothness.
+
+* **`Manifold/LoopFactorsThroughVectorSpaceFromChartN.lean`** —
+  structural reduction: two named atomic predicates
+  `SmoothLoopAvoidsInftyHypothesis p₀` (every smooth loop on RS at
+  `p₀` misses `∞`) and `SmoothLoopChartNPullbackExistsHypothesis p₀`
+  (smooth-loops-with-image-in-chartN.source have smooth chart pullbacks
+  to `ℂ`) jointly discharge
+  `LoopFactorsThroughVectorSpaceHypothesis ℂ RiemannSphere p₀` via
+  `chartN.symm`.
+
+Build: clean via `LEAN_NUM_THREADS=1 lake env lean`. Zero `sorry`,
+zero `axiom`. Project total: **~140,066 LOC across 781 files**, full
+`lake build` at **9061 jobs**.
+
 ## 2026-05-18 (late night continuation) — Rebasing + V-loop-bounds + factorisation pipeline (11 chips, ~1840 LOC, MERGED + PUSHED to origin/main HEAD `3d765aa`)
 
 Continues the period-lattice closure pipeline. Reduces

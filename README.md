@@ -13,10 +13,24 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-18):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
-Build clean at **9039 jobs** (zero `sorry`, zero `axiom`).
+**Current state (2026-05-18 late):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
+Build clean at **9061 jobs** (zero `sorry`, zero `axiom`). Repo:
+**140,066 LOC across 781 `.lean` files**.
 
 Major recent landings (all on `main`):
+
+* **`stokesBoundaries 𝓘(ℝ, ℂ) RS = ⊤` reduced to ONE atomic input**
+  (2026-05-18 late, 22-chip arc, ~4,350 LOC, HEAD `9e1fe1a`).
+  Full concat-additivity in stokesBoundaries (no integration-side
+  approximation), rebasing + loop-rebasing identities, V-loop-bounds
+  unconditional on any normed ℝ-vector space, stokesBoundaries
+  pushforward, and the structural reduction
+  `LoopFactorsThroughVectorSpaceHypothesis ℂ RiemannSphere p₀` —
+  every smooth loop on RS factors through ℂ via a smooth chart-style
+  map. Two named sub-hypotheses (`SmoothLoopAvoidsInftyHypothesis`
+  + `SmoothLoopChartNPullbackExistsHypothesis`) jointly discharge
+  it via the chart-N inverse smoothness
+  (`chartN_symm_contMDiff`, `chartS_symm_contMDiff`).
 
 * **A1 + A2 closed unconditionally** — the two RS-side classical inputs
   of the genus-0 Riemann–Roch chain (`LinearSystemAtInftyRS_BoundedBySimplePoleSpan`

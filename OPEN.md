@@ -205,11 +205,14 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **~135,668 LOC across 759 files** (2026-05-18,
-+~8,500 LOC across 23 chips on top of the late-night 2026-05-17 state
-— comprises the 12-chip canonical-Stokes-bundle migration, the 7-chip
-items 11/5/12-discharge + smooth-singular constant-2-simplex arc, and
-the 4-chip SmoothPath-foundation + path-plus-reverse identity arc).
+**Current repo size:** **~140,066 LOC across 781 files** (2026-05-18
+late, +~4,400 LOC across 22 chips on top of the late-night
+2026-05-18 state, build **9061 jobs** clean). Latest arc:
+concat-additivity in stokesBoundaries + rebasing + V-loop-bounds +
+factorisation-pipeline + chartN/chartS.symm smoothness + structural
+reduction of `LoopFactorsThroughVectorSpaceHypothesis ℂ RiemannSphere
+p₀` to two named sub-hypotheses (avoid-∞ + chart-N pullback existence).
+HEAD `9e1fe1a`.
 Major landings this session:
 
 * **Item 1 → STRICT-CLOSED.** Full Forster Riesz arc: 10 chips,
