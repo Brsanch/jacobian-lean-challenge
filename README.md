@@ -13,11 +13,27 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-18 late late + 4):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
-Build clean at **9086 jobs** (zero `sorry`, zero `axiom`). Repo:
-**142,731 LOC across 801 `.lean` files**.
+**Current state (2026-05-18 late late + 5):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
+Build clean at **9090 jobs** (zero `sorry`, zero `axiom`). Repo:
+**143,442 LOC across 805 `.lean` files**.
 
 Major recent landings (all on `main`):
+
+* **Generic genus-≥1 period-lattice: per-based-loop homology
+  reduction** (2026-05-18 late late + 5, 4 chips, ~711 LOC). The
+  fourth atomic input of `GenericGenusPeriodLatticeInputs`
+  (`H1_spans_top_canonical`) now factors through a per-based-loop
+  homology decomposition hypothesis + smooth-path-connectedness, the
+  genuine generalisation of `BasedSmoothLoopsBoundHypothesis` (the
+  genus-0 case is the trivial decomposition). Headline
+  `H1_spans_top_canonical_of_basedLoopHomology` aggregates the
+  per-path decomposition over `c.support` and uses the αShift
+  cycle-property cancellation to track an extra
+  `∑ Nᵢ • cycleGens i` term alongside the original genus-0 argument.
+  Clean-atomic constructor
+  `GenericGenusPeriodLatticeInputs.ofBasedLoopHomology` packages the
+  reduced atomic data; validated on `RiemannSphere` end-to-end via
+  `genericGenusPeriodLatticeInputs_RiemannSphere_via_basedLoopHomology`.
 
 * **Full genus-0 period-lattice closure on `RiemannSphere`,
   unconditional** (2026-05-18 late late + 4, HEAD `419b009`).
