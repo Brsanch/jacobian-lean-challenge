@@ -729,7 +729,7 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 
 ### F.0 Measured ground truth (latest 2026-05-18 late late)
 
-- **Total `.lean`:** **141,483 LOC across 790 files**, full `lake build` at **9071 jobs** (measured 2026-05-18 late late + 2, origin/main HEAD `2d8855c`). Net delta from the prior 119,776 / 635-file baseline (2026-05-16 late) reflects:
+- **Total `.lean`:** **141,779 LOC across 793 files**, full `lake build` at **9074 jobs** (measured 2026-05-18 late late + 3, origin/main HEAD `8271224`). Net delta from the prior 119,776 / 635-file baseline (2026-05-16 late) reflects:
   - **2026-05-17/18 (canonical Stokes bundle + path-plus-reverse + Hodge wave + symplectic bundle migration)** — ~7,820 LOC across 56 chips.
   - **2026-05-18 late (concat-additivity + rebasing + V-loop-bounds + structural reduction)** — ~4,400 LOC across 22 chips.
   - **2026-05-18 late late (chart-N pullback discharge + Möbius shift + missed-point Sard discharge + capstone)** — ~1,070 LOC across 7 chips (HEAD `ce40ac7`). The capstone establishes `BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) RiemannSphere p₀` UNCONDITIONAL for any `p₀`, completing the period-lattice closure pipeline on RS modulo cycle-decomposition + rebasing (both already in tree).

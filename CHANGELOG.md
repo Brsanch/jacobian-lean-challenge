@@ -1,5 +1,37 @@
 # Changelog
 
+## 2026-05-18 (late late + 3) — Chipping at barrier (1): boundary loop reduction + RS loop-level discharge (3 chips, ~220 LOC, MERGED + PUSHED to origin/main HEAD `8271224`)
+
+Toward chipping away at the mathlib barrier for `holomorphicCanonicalClosed`
+on general genus. Reformulates the analytical content via smooth loops
+(natural form for Cauchy's theorem).
+
+* `Manifold/Smooth2SimplexBoundaryLoop.lean` (~95 LOC) —
+  `Smooth2Simplex.boundaryLoop σ := face2 ⋆ face0 ⋆ face1.reverse`,
+  the closed loop traced by the simplex boundary. Headline
+  `boundaryLoop_integrate_eq`: loop integral equals boundary chain
+  integral.
+
+* `Manifold/HolomorphicStokesFromLoopHypothesis.lean` (~70 LOC) —
+  `HolomorphicLoopIntegralVanishes X : Prop` (loop-level formulation).
+  Equivalence with `HolomorphicStokesHypothesis X` via the boundary-loop
+  identity. Direct discharge of `HolomorphicComponentsCanonicalClosed`
+  from the loop hypothesis.
+
+* `Manifold/HolomorphicLoopIntegralVanishesRS.lean` (~55 LOC) —
+  unconditional discharge for `RiemannSphere` via
+  `Subsingleton (HolomorphicOneForm RiemannSphere)`. Routes the genus-0
+  discharge through the new loop-level infrastructure.
+
+**Net effect on barrier (1).** The general-genus discharge of
+`holomorphicCanonicalClosed` now reduces (structurally) to discharging
+`HolomorphicLoopIntegralVanishes X` for the specific X. For X = RS,
+unconditional (this arc). For genus ≥ 1, future work: chart-pullback
+of integration + mathlib's Cauchy theorem on disks
+(`DifferentiableOn.isExactOn_ball`, already in tree).
+
+Build: clean, full library at **9074 jobs**. Zero `sorry`, zero `axiom`.
+
 ## 2026-05-18 (late late + 2) — Per-path cycle-decomposition primitives + genus ≥ 1 barrier triage (1 chip, ~205 LOC, MERGED + PUSHED to origin/main HEAD `2d8855c`)
 
 `Manifold/SmoothCycleDecompositionToBasedLoops.lean` ships per-path

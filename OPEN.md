@@ -225,11 +225,14 @@ late late, build **9070 jobs** clean). Latest landings:
     `basedLoopOf` + rebasing primitives. `singlePlusCorrectionCycle γ`
     ∈ stokesBoundaries under `BasedSmoothLoopsBoundHypothesis I X p₀`.
 
-  **Genus ≥ 1 barrier triage (2026-05-18 late late + 2).** All four
-  atomic inputs of `GenericGenusPeriodLatticeInputs` are true-barrier
-  blocked on classical mathlib gaps:
-  1. `holomorphicCanonicalClosed` — needs Stokes' theorem on smooth
-     2-simplices (not in mathlib).
+  **Genus ≥ 1 barrier chipping (2026-05-18 late late + 3).** Status
+  per atomic input:
+  1. `holomorphicCanonicalClosed` — **structurally reduced** (HEAD
+     `8271224`) to `HolomorphicLoopIntegralVanishes X` via the
+     boundary-loop reformulation. For RS, unconditional via
+     subsingleton. For genus ≥ 1, future work: chart-pullback of
+     integration + mathlib's Cauchy theorem on disks
+     (`DifferentiableOn.isExactOn_ball`).
   2. `H1_spans_top_canonical` — needs surface classification (not in
      mathlib).
   3. `cycleGens` — depends on (2).
