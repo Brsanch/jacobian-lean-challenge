@@ -1,5 +1,65 @@
 # Changelog
 
+## 2026-05-17 (very late late night) — `BijectiveAnalyticIsBiholomorphism` DISCHARGED (1 chip, ~240 LOC, direct to `main`)
+
+New file `Manifold/BijectiveAnalyticToBiholomorphismDischarge.lean`
+ships:
+
+`bijectiveAnalyticIsBiholomorphism_holds (X : Type*) [compact connected
+complex 1-manifold instances] : BijectiveAnalyticIsBiholomorphism X` —
+**unconditional**.
+
+This discharges the third of the four named-classical-input hypotheses
+for item 14's forward direction
+(`Manifold/BijectiveAnalyticToBiholomorphism.lean`):
+
+1. `ramificationSumEqualsDegree_statement` — already discharged.
+2. `Surjective_of_NonConstant_Analytic_Manifold` — already discharged.
+3. **`BijectiveAnalyticIsBiholomorphism` — DISCHARGED HERE.**
+4. `RiemannRochGenusZero` — still open.
+
+### Proof structure (~240 LOC)
+
+For globally bijective `ω`-smooth `f : X → Y` between compact connected
+complex 1-manifolds:
+
+* Build the homeomorphism via `Continuous.homeoOfEquivCompactToT2`
+  (bijective + compact + T2 → continuous inverse).
+
+* Per-point analytic local inverse from
+  `ContMDiff.chartPullback_localInverse_of_injective` — uses
+  `ContMDiff.deriv_chart_pullback_ne_zero_of_injective` (zz384) and
+  mathlib's `HasStrictDerivAt.localInverse`.
+
+* Show the chart pullback of `e⁻¹` equals the local-inverse `h` on a
+  neighbourhood. The proof uses:
+  - `g ∘ K = id` on a nbhd of `(chartAt y) y`, where
+    `K := (chartAt x) ∘ e⁻¹ ∘ (chartAt y).symm` is the chart pullback
+    of `e⁻¹`. Follows from `f ∘ e⁻¹ = id` and the chart `right_inv`.
+  - Eventually-left-inverse of `h` at `K w` (using continuity of `K`
+    at `(chartAt y) y` to ensure `K w` is near `(chartAt x) x`).
+  - Conclusion: `h w = h (g (K w)) = K w`.
+
+* Promote to `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω e⁻¹ y` via the iff bridge
+  `contMDiffAt_omega_iff_analyticAt_chart_pullback` (continuity of
+  `e⁻¹` + analyticity of chart pullback).
+
+* Package as `Diffeomorph 𝓘(ℂ,ℂ) 𝓘(ℂ,ℂ) X Y ω = HolomorphicEquiv X Y`.
+
+**Significance.** Three of the four named-classical hypotheses for
+item-14 strict closure on the forward direction are now discharged.
+Only `RiemannRochGenusZero` (the genus-0 RR upper-bound piece) remains.
+This also unlocks a path to item 16 (`ofCurve_inj`): if
+`principalDivisorMap f = single Q₁ - single Q₂` with Q₁ ≠ Q₂, then
+`f.toRiemannSphere` has degree 1, is bijective (by
+`bijective_of_degreeFiber_eq_one`), and now upgrades to a
+biholomorphism `X ≃ RiemannSphere`, forcing `genus X = 0` (via the
+unconditional `PullbackLinearEquiv` route).
+
+Build: `LEAN_NUM_THREADS=1 lake env lean
+JacobianChallenge/Manifold/BijectiveAnalyticToBiholomorphismDischarge.lean`
+clean. Zero `sorry`, zero `axiom`.
+
 ## 2026-05-17 (very late late night) — Period-lattice classical-inputs data structure (1 chip, ~90 LOC, direct to `main`)
 
 New file `Manifold/C3PeriodLatticeClassicalInputs.lean` packages the
