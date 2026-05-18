@@ -1,5 +1,51 @@
 # Changelog
 
+## 2026-05-17 (very late late night) — `fStarOmegaHolOn` punctured-ball differentiability (1 chip, ~100 LOC, direct to `main`)
+
+New file `Manifold/FStarOmegaHolOnPuncturedDifferentiableOn.lean`
+(100 LOC) shipping the **boundedness-input precursor** for the
+`HolomorphicTraceExtension X` item-(2) globalize step:
+
+`fStarOmegaHolOn_localCoeff_differentiableOn_punctured_ball` —
+for `f : MeromorphicNonzero X` non-constant, `α : HolomorphicOneForm X`,
+and any critical value `v₀ ∈ f.criticalValues`, there exists a chart
+radius `ρ > 0` such that the chart-target ball
+`Metric.ball ((chartAt ℂ v₀) v₀) ρ` is contained in `(chartAt ℂ v₀).target`,
+and on the *punctured* ball, the chart-`v₀` local coefficient of
+`f.fStarOmegaHolOn hnc α` is `DifferentiableOn ℂ`.
+
+The proof composes two prior chips:
+
+* `chart_radius_shrink_only_v₀_critical`
+  (`Manifold/CriticalValueChartShrink.lean`): gives `ρ > 0` with the
+  chart-target ball mapping (under `(chartAt ℂ v₀).symm`) into the
+  union of `regularValueSet` and `{v₀}`.
+
+* `HolomorphicOneFormOn.localCoeff_differentiableOn_chartImage`
+  (`Manifold/HolomorphicOneFormOnChartCoeff.lean`): gives
+  `DifferentiableOn ℂ` on the chart image of
+  `regularValueSet ∩ (chartAt ℂ v₀).source`.
+
+The punctured ball lies in this chart image because `(chartAt ℂ v₀).symm`
+is injective on `(chartAt ℂ v₀).target` (via `right_inv`), so excluding
+the puncture `(chartAt ℂ v₀) v₀` forces the chart-shrink dichotomy into
+its regular branch.
+
+**Significance.** Together with the prior bundle-wiring chip
+(`removable_extension_analyticAt_of_traceExtensionChartCoeff_eventuallyEq`),
+this is the manifold-side input for the removable-singularity step: the
+local coefficient is `DifferentiableOn ℂ` on the punctured ball
+(established here), and *also* matches the algebraic descent's
+`Q (v - w₀) / k` on the punctured ball (the substantive bundle-wiring
+identification, still open). Once both are in tree, the
+`HolomorphicOneFormOn` extends to `HolomorphicOneForm RiemannSphere`
+at every critical value via the new removable-extension API — with no
+boundedness hypothesis needing to be exposed at the call site.
+
+Build: `LEAN_NUM_THREADS=1 lake env lean
+JacobianChallenge/Manifold/FStarOmegaHolOnPuncturedDifferentiableOn.lean`
+clean; zero `sorry`, zero `axiom`.
+
 ## 2026-05-17 (very late late night) — Bundle-wiring removable singularity bridge (1 chip, ~95 LOC, direct to `main`)
 
 New file `Manifold/TraceExtensionRemovableSingularity.lean` (98 LOC)
