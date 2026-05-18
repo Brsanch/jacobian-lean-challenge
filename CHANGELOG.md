@@ -1,5 +1,96 @@
 # Changelog
 
+## 2026-05-18 (canonical-bundle migration) — Period-lattice canonical Stokes bundle (7 chips, ~770 LOC, branch `feat/period-lattice-canonical-bundle`, MERGED to main)
+
+Refactors `C3PeriodLatticeStokesSpanTopInputs` so the `boundaries` and
+`closedForms` fields of the consumed `StokesBoundaryInvariance` bundle
+become **canonical** rather than consumer-supplied. The user-visible
+classical input boundary for the period-lattice side of `C3FullInput X`
+shrinks from 5 fields (with two of them being setup-of-the-bundle
+choices) to 4 atomic classical statements with no bundle infrastructure
+left for the consumer to choose.
+
+### Canonical Stokes bundle (chips 1–2, ~265 LOC)
+
+* **`Manifold/StokesCanonicalClosedForms.lean`** (~119 LOC) —
+  `canonicalClosedForms I X : Submodule ℝ (SmoothOneForm I X)` defines
+  the largest submodule of forms for which the single-simplex Stokes
+  hypothesis holds: forms whose integral around every smooth 2-simplex
+  boundary vanishes. `canonicalIntegrationStokes` discharges the
+  hypothesis tautologically. `StokesBoundaryInvariance.canonical I X`
+  composes these via `ofSingleSimplexStokes`, fixing
+  `boundaries := stokesBoundaries I X` and
+  `closedForms := canonicalClosedForms I X` with the vanishing
+  hypothesis automatic.
+
+* **`Manifold/C3PeriodLatticeStokesCanonical.lean`** (~146 LOC) —
+  `C3PeriodLatticeStokesSpanTopInputs.ofCanonical` constructor: from
+  `cycleGens`, `riemannBilinear`, `holomorphicCanonicalClosed`,
+  `H1_spans_top_canonical`, builds the bundle with
+  `stokes := StokesBoundaryInvariance.canonical 𝓘(ℝ, ℂ) X`.
+
+### Atomic holomorphic-side hypothesis (chip 3, ~120 LOC)
+
+* **`Manifold/HolomorphicComponentsCanonicalClosed.lean`** (~120 LOC) —
+  Named predicate `HolomorphicComponentsCanonicalClosed X` (each
+  holomorphic form's real / imaginary components lie in
+  `canonicalClosedForms`) and the more-atomic `HolomorphicStokesHypothesis
+  X` (Stokes' theorem for the components of every holomorphic 1-form
+  against every smooth 2-simplex boundary), with derivations
+  `.of_hypothesis` and `.of_subsingleton` (genus-0 trivial discharge).
+
+### Layered constructors (chips 4–6, ~290 LOC)
+
+* **`Manifold/C3PeriodLatticeStokesCanonicalFromHypothesis.lean`**
+  (~102 LOC) — `C3PeriodLatticeStokesSpanTopInputs.ofStokesHypothesis`
+  (takes the single atomic `HolomorphicStokesHypothesis X` instead of
+  the unfolded predicate) and `.ofCanonicalGenusZero` (drops the
+  Stokes-side input when `Subsingleton (HolomorphicOneForm X)`).
+
+* **`Manifold/C3PeriodLatticeStokesCanonicalH1Subsingleton.lean`**
+  (~110 LOC) — `h1_spans_top_canonical_of_subsingleton`: if the
+  canonical Stokes H₁ quotient is subsingleton, then for any tuple of
+  cycles the ℤ-span of their projected classes equals `⊤` (the
+  classical "H₁(X; ℤ) = 0 at genus 0" content as a single Subsingleton
+  hypothesis). `.ofCanonicalGenusZeroSubsingleton` composes through
+  this to take only `cycleGens` + `riemannBilinear`.
+
+* **`Manifold/C3PeriodLatticeStokesCanonicalTrivialAtGenusZero.lean`**
+  (~79 LOC) — `trivial_at_genus_zero_canonical`: at `genus X = 0`
+  with the two subsingleton hypotheses, the bundle is unconditionally
+  inhabited via the canonical Smooth2Chain-based Stokes bundle
+  (no unconventional `boundaries := ⊤` choice as in
+  `C3PeriodLatticeStokesGenusZero.lean`).
+
+### RS canonical-bundle headline (chip 7, ~76 LOC)
+
+* **`Manifold/C3PeriodLatticeStokesCanonicalRiemannSphere.lean`** (~76
+  LOC) — `nonempty_C3PeriodLatticeStokesSpanTopInputs_RiemannSphere_canonical`
+  and `periodLatticeSymplecticBundle_RiemannSphere_canonical`,
+  conditional on the canonical-H₁ subsingleton hypothesis (`H₁(S²; ℤ)
+  = 0`). The simply-connectedness route is `simplyConnectedS2_holds`
+  (unconditional in tree) + Hurewicz / smooth singular comparison
+  (not at the mathlib pin).
+
+### Net classical-input boundary post-refactor
+
+The period-lattice side of `C3FullInput X` now reduces to **4 atomic
+classical inputs**:
+
+1. `cycleGens : Fin (2g) → SmoothCycle 𝓘(ℝ, ℂ) X` — symplectic
+   homology basis choice;
+2. `riemannBilinear` — ℝ-LI of the `2g` period vectors;
+3. `HolomorphicStokesHypothesis X` — Stokes' theorem for the components
+   of every holomorphic 1-form;
+4. `H1_spans_top_canonical` — H₁ ℤ-generation via the canonical Stokes
+   quotient (subsingleton at genus 0).
+
+`boundaries` and `closedForms` are now **canonical** — no consumer
+choice left at the infrastructure level.
+
+Build: 9022 jobs clean via `taskpolicy lake build JacobianChallenge`.
+Zero `sorry`, zero `axiom` across all 7 chips.
+
 ## 2026-05-17 (very late late night) — Period Lattice Construction structural decomposition + classical-content infrastructure (8 chips, ~1,250 LOC, branch `feat/period-lattice-stokes-refactored`)
 
 Structural decomposition of the Period Lattice Construction into
