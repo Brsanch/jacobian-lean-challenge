@@ -1,5 +1,86 @@
 # Changelog
 
+## 2026-05-17 (very late night) — Jacobian RiemannSphere manifold instances + genus-0 generalisation (6 chips, ~850 LOC, direct to `main`)
+
+Follow-on to the late-late-night symplectic migration. Lifts the
+analytic-Jacobian content from `JacobianAnalyticChoiceSymp X` to the
+actual `JacobianChallenge.Jacobian RiemannSphere` (= `Pic⁰ RS`) via
+the closure path `Subsingleton (Pic0 RiemannSphere)` → all 7
+structural manifold instances on `Jacobian RiemannSphere`. Then
+generalises to any genus-0 X with `[Subsingleton (Pic0 X)]`.
+
+### Chip 12 — Pic0 RS subsingleton + CompactSpace on Jacobian RS (~75 LOC, `4d73cf0`)
+- `instance : Subsingleton (Pic0 RiemannSphere)`.
+- `instance : Subsingleton (Jacobian RiemannSphere)`.
+- `instance : CompactSpace (Jacobian RiemannSphere)` via
+  `Subsingleton.compactSpace`.
+
+### Chip 13 — Full manifold instances on Jacobian RS (~165 LOC, `d4e2ee4`)
+
+The key insight: mathlib has `contMDiff_of_subsingleton` (any function
+into a subsingleton manifold is `ContMDiff`) and
+`OpenPartialHomeomorph.singletonChartedSpace` +
+`singleton_hasGroupoid` (single-chart atlas auto-compatible with any
+`ClosedUnderRestriction` groupoid — including `contDiffGroupoid n I`).
+Pushed through mathlib API names previously gotten wrong:
+- `OpenPartialHomeomorph` (the open variant) — not `PartialHomeomorph`.
+- `IsManifold = HasGroupoid M (contDiffGroupoid n I)` extension —
+  construct via `IsManifold.mk'`.
+- `LieAddGroup.contMDiff_neg` / `ContMDiffAdd.contMDiff_add` — the
+  legacy `smooth_add`/`smooth_neg` are gone.
+
+Ships:
+- `trivialChart_RiemannSphere : OpenPartialHomeomorph (Jacobian RS)
+  (Fin 0 → ℂ)`.
+- `instance ChartedSpace … (Jacobian RS)` via
+  `OpenPartialHomeomorph.singletonChartedSpace`.
+- `instance IsManifold (𝓘(ℂ, Fin 0 → ℂ)) ω (Jacobian RS)` via
+  `singleton_hasGroupoid` + `IsManifold.mk'`.
+- `instance ContMDiffAdd … (Jacobian RS)` + `instance LieAddGroup …
+  (Jacobian RS)` via `contMDiff_of_subsingleton`.
+- `ofCurve_contMDiff_RiemannSphere` — same.
+
+### Chip 14 — Generalise smoothness content to any X with subsingleton Jacobian (~95 LOC, `934a371`)
+
+Lifts the smoothness instances (`ContMDiffAdd`, `LieAddGroup`,
+`ofCurve_contMDiff_of_subsingleton_jacobian`) to any X with
+`[Subsingleton (Jacobian X)]` and accompanying `ChartedSpace` /
+`IsManifold` instances. All route through `contMDiff_of_subsingleton`.
+
+### Chip 15 — Lift Charted/IsManifold to general genus-0 X (~135 LOC, `353c704`)
+
+Generalises the charted-space + manifold construction to any X with
+`genus X = 0` + `[Subsingleton (Pic0 X)]`:
+- `subsingleton_fin_genus_to_complex_holds (hgenus : genus X = 0)`.
+- `compactSpace_Jacobian_holds [Subsingleton (Pic0 X)]`.
+- `trivialChart_Jacobian hgenus` — single OpenPartialHomeomorph
+  between two subsingleton spaces.
+- `chartedSpace_Jacobian_holds hgenus [Subsingleton (Pic0 X)]`.
+- `isManifold_Jacobian_holds` via parent-class promotion `{ __ := hg
+  }` from a `HasGroupoid`.
+
+RS recovers via `genus_RiemannSphere_eq_zero` +
+`subsingleton_pic0_RiemannSphere`. Any future genus-0 X (e.g. via
+uniformization to RS) inherits the full manifold structure on
+`Jacobian X` by supplying those two hypotheses.
+
+### Chip 16 — OPEN.md state update (`6fe91b7`)
+
+Documents the migration arc + new entry points + remaining closure
+path. Scoreboard unchanged at 13/24 — explicitly states the
+remaining structural blocker (placeholder discrete topology on
+`Pic0 X` cannot honestly support unconditional `CompactSpace`
+at general genus in Basic.lean's verbatim signature).
+
+### Net state after migration
+
+Full RS closure path in tree end-to-end. The structural rewrite of
+`JacobianChallenge.Jacobian X`'s topology (discrete → analytic-quotient
+under `[Nonempty (C3FullInputExtSymp X)]`) is the remaining gap to
+flip items 11/5/12/13/17 — all the analytic content is now available.
+
+Build clean throughout (warm 2740-8593 jobs). Zero `sorry`, zero `axiom`.
+
 ## 2026-05-17 (late late night) — Symplectic-bundle migration of the AJ chain (7 chips, ~1305 LOC, direct to `main`)
 
 Follow-on to the late-night `PeriodLatticeSymplecticBundle` refactor.
