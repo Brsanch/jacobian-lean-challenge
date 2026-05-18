@@ -633,6 +633,7 @@ import JacobianChallenge.Manifold.Pic0RiemannSphereSubsingleton
 import JacobianChallenge.Manifold.AbelJacobiPoint
 import JacobianChallenge.Manifold.AbelJacobiPointSymp
 import JacobianChallenge.Manifold.C3FullInputSymp
+import JacobianChallenge.Manifold.C3FullInputExtSymp
 import JacobianChallenge.Manifold.SmoothPathConnected
 import JacobianChallenge.Manifold.SmoothPathLinearInChart
 import JacobianChallenge.Manifold.SmoothPathLocalConvex
