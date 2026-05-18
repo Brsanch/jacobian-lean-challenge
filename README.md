@@ -13,11 +13,23 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-18 late late + 5):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
-Build clean at **9092 jobs** (zero `sorry`, zero `axiom`). Repo:
-**143,695 LOC across 807 `.lean` files**.
+**Current state (2026-05-18 late late + 6):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
+Build clean at **9097 jobs** (zero `sorry`, zero `axiom`). Repo:
+**144,344 LOC across 812 `.lean` files**.
 
 Major recent landings (all on `main`):
+
+* **Smooth-Hurewicz arc: symplectic basis + commutator
+  null-homology** (2026-05-18 late late + 6, 5 chips, ~622 LOC).
+  Opens the hardest open atom (`BasedLoopHomologyDecompositionHypothesis`,
+  the smooth-Hurewicz content on a genus-`g` surface) with the
+  symplectic-basis data structure, the `SmoothHurewiczHypothesis`
+  Prop, an `ofSmoothHurewicz` constructor through to the period-lattice
+  symplectic bundle, an `RS` validation, and a **real homological
+  identity** — `single_commutatorLoop_mem_stokesBoundaries`: the
+  commutator `[α, β]` of any two based loops is null-homologous in
+  `stokesBoundaries`, the classical "`H₁` is abelian" content
+  verified for arbitrary commutator words.
 
 * **Generic genus-≥1 period-lattice: per-based-loop homology +
   complex-valued Stokes consolidation** (2026-05-18 late late + 5,

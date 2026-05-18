@@ -32,6 +32,41 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-18 (late late + 6) Smooth-Hurewicz arc: symplectic basis +
+> commutator null-homology landed.** (5 chips, ~622 LOC.)
+>
+> Opens the hardest open atom — `BasedLoopHomologyDecompositionHypothesis`
+> (smooth-Hurewicz on a genus-`g` surface) — with:
+>
+> * `SmoothSymplecticBasis I X p₀ g` (`Manifold/SmoothSymplecticBasis.lean`)
+>   — data of `2g` smooth based loops at `p₀` representing the
+>   symplectic homology basis. `cycleGens` derives the corresponding
+>   `Fin (2g) → SmoothCycle I X` tuple.
+> * `SmoothHurewiczHypothesis sb` (`Manifold/SmoothHurewiczHypothesis.lean`)
+>   — single named Prop for the classical content; biconditional with
+>   `BasedLoopHomologyDecompositionHypothesis sb.cycleGens p₀`.
+> * `GenericGenusPeriodLatticeInputs.ofSmoothHurewicz`
+>   (`Manifold/GenericGenusPeriodLatticeInputsFromSmoothHurewicz.lean`)
+>   — constructor from a symplectic basis + smooth-Hurewicz + the
+>   other 3 atomic inputs, with `Nonempty` composition through to
+>   `PeriodLatticeSymplecticBundle`.
+> * `smoothHurewiczHypothesis_RiemannSphere_holds`
+>   (`Manifold/SmoothHurewiczHypothesisRiemannSphere.lean`) —
+>   unconditional discharge at genus 0 on RS via the empty symplectic
+>   basis.
+> * **`single_commutatorLoop_mem_stokesBoundaries`**
+>   (`Manifold/CommutatorOfBasedLoopsNullHomologous.lean`) — **real
+>   homological identity**: for any two based loops `α, β` at `p₀`,
+>   the commutator `[α, β] := α ⋆ β ⋆ α⁻¹ ⋆ β⁻¹` is null-homologous
+>   in `stokesBoundaries`. Classical content "`H₁` is abelian"
+>   verified for arbitrary commutator words; proof composes 3 nested
+>   `concat_additive_in_stokesBoundaries` + 2
+>   `single_smoothPath_plus_reverse_mem_stokesBoundaries`.
+>
+> Repo state: **144,344 LOC across 812 `.lean` files**, build **9097
+> jobs** clean (zero `sorry`, zero `axiom`). Scoreboard unchanged at
+> 13/24.
+
 > **2026-05-18 (late late + 5) Generic genus-≥1 period-lattice:
 > per-based-loop homology + complex-valued Stokes consolidation
 > landed.** (6 chips, ~964 LOC.)

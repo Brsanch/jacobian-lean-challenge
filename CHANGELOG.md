@@ -1,5 +1,67 @@
 # Changelog
 
+## 2026-05-18 (late late + 6) — Smooth-Hurewicz arc: symplectic basis + commutator null-homology (5 chips, ~622 LOC)
+
+Begins the hardest open atom — `BasedLoopHomologyDecompositionHypothesis`
+(smooth-Hurewicz on a genus-`g` surface) — by introducing the
+symplectic-basis data structure, the smooth-Hurewicz hypothesis as a
+named Prop, an `ofSmoothHurewicz` constructor wiring through to the
+period-lattice symplectic bundle, a `RiemannSphere` validation, and a
+real homological identity (the commutator of two based loops is
+null-homologous in `stokesBoundaries`).
+
+* `Manifold/SmoothSymplecticBasis.lean` (~84 LOC) —
+  `SmoothSymplecticBasis I X p₀ g`: data of `2g` smooth based loops at
+  `p₀` representing the standard symplectic homology basis. Carries
+  only the loops; `SmoothSymplecticBasis.cycleGens` derives the
+  corresponding `Fin (2g) → SmoothCycle I X` tuple via
+  `single_smoothLoop_smoothCycle`.
+
+* `Manifold/SmoothHurewiczHypothesis.lean` (~103 LOC) —
+  `SmoothHurewiczHypothesis sb`: the classical smooth-Hurewicz content
+  as a single named Prop. Every smooth based loop's `single`
+  decomposes as a ℤ-combination of basis-loop singles modulo
+  `stokesBoundaries`. Biconditional with
+  `BasedLoopHomologyDecompositionHypothesis sb.cycleGens p₀`
+  (extensionally identical predicates).
+
+* `Manifold/GenericGenusPeriodLatticeInputsFromSmoothHurewicz.lean`
+  (~95 LOC) — `GenericGenusPeriodLatticeInputs.ofSmoothHurewicz`
+  constructor: builds the inputs structure from a symplectic basis +
+  smooth-Hurewicz + the other 3 atomic inputs. `Nonempty` composition
+  through to `PeriodLatticeSymplecticBundle`.
+
+* `Manifold/SmoothHurewiczHypothesisRiemannSphere.lean` (~86 LOC) —
+  validation chip. At genus 0 on `RS`, the empty symplectic basis
+  (`Fin (2*0) = Fin 0`) discharges `SmoothHurewiczHypothesis`
+  unconditionally via `basedSmoothLoopsBoundHypothesis_RS_holds`
+  applied with all coefficients 0.
+
+* `Manifold/CommutatorOfBasedLoopsNullHomologous.lean` (~254 LOC) —
+  **a real homological identity**: for any two smooth based loops
+  `α, β` at a common basepoint `p₀ : X`, the **commutator path**
+  `[α, β] := α ⋆ β ⋆ α⁻¹ ⋆ β⁻¹` is also a based loop at `p₀`, and
+  `single ([α, β]) ∈ stokesBoundaries`. Classical content: `H₁` is
+  abelian. Proof composes
+  `concat_additive_in_stokesBoundaries` (3 nested applications) +
+  `single_smoothPath_plus_reverse_mem_stokesBoundaries` (2 reverse
+  cancellations), then `abel` collapses the chain-level equality.
+  Also ships `single_inverseConcatLoop_mem_stokesBoundaries` (the
+  inverse-pair `α ⋆ α⁻¹` is null-homologous, the simpler
+  specialization).
+
+**Significance.** The commutator-null-homology lemma is the first
+concrete homological identity in the smooth-Hurewicz framework: it
+confirms that the algebraic relations of `π₁` (the commutator) vanish
+in `H₁ = π₁^{ab}` at the smooth-singular level on `X`. The next
+direction (multi-session) is to prove that **every** smooth based loop
+is null-homologous up to a ℤ-combination of basis-loop classes — the
+full smooth-Hurewicz statement.
+
+Repo state: **144,344 LOC across 812 `.lean` files**, build **9097
+jobs** clean (zero `sorry`, zero `axiom`). Scoreboard unchanged at
+13/24.
+
 ## 2026-05-18 (late late + 5) — Generic genus-≥1 period-lattice: per-based-loop homology + complex-valued Stokes consolidation (6 chips, ~964 LOC)
 
 **Follow-on chips 5–6 (after the per-based-loop homology reduction landed
