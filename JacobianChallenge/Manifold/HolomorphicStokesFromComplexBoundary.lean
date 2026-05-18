@@ -137,6 +137,33 @@ theorem HolomorphicComponentsCanonicalClosed.of_complexBoundary
   HolomorphicComponentsCanonicalClosed.of_hypothesis
     (HolomorphicStokesHypothesis_of_complexBoundary h)
 
+/-! ## Subsingleton discharge (genus-0 case) -/
+
+/-- **`HolomorphicComplexBoundaryVanishingHypothesis` from subsingleton.**
+At genus 0 (`Subsingleton (HolomorphicOneForm X)`), every `om = 0`, so
+the complex period vanishes trivially. -/
+theorem HolomorphicComplexBoundaryVanishingHypothesis.of_subsingleton
+    [Subsingleton (HolomorphicOneForm X)] :
+    HolomorphicComplexBoundaryVanishingHypothesis X := by
+  intro σ om
+  have hom_zero : om = 0 := Subsingleton.elim _ _
+  rw [hom_zero]
+  -- Need `complexChainPeriod c 0 = 0`. Unfold and use `realComponent_zero`,
+  -- `imagComponent_zero`, and the integrate-zero lemmas.
+  unfold complexChainPeriod
+  rw [realComponent_zero, imagComponent_zero]
+  -- `SmoothChain.integrate c (0 : SmoothOneForm I X) = 0` via the
+  -- existing `smoothChain_realOneForm_pairing_zero_right` (which unfolds
+  -- to `SmoothChain.integrate _ 0 = 0`).
+  have h0 :
+      SmoothChain.integrate (Smooth2Simplex.boundary σ)
+        (0 : SmoothOneForm 𝓘(ℝ, ℂ) X) = 0 :=
+    smoothChain_realOneForm_pairing_zero_right
+      (Smooth2Simplex.boundary σ)
+  rw [h0]
+  push_cast
+  ring
+
 end JacobianChallenge
 
 end
