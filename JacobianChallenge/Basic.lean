@@ -3,6 +3,7 @@ import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.LocalMultiplicity
 import JacobianChallenge.Manifold.Degree
 import JacobianChallenge.Manifold.NearbyRegularWitnessUnconditional
+import JacobianChallenge.Manifold.ChartDerivNeZeroImpliesNonCriticalDischarge
 import JacobianChallenge.Jacobian
 import JacobianChallenge.JacobianPullbackHonest
 
@@ -127,13 +128,20 @@ lemma ofCurve_self (P : X) : ofCurve P P = 0 :=
   JacobianChallenge.Jacobian.ofCurve_self P
 
 -- this is the lemma which stops the hack answer "J(X)=0 for all X"
--- At this pin the hypothesis `h : 0 < genus X` is unused: the placeholder
--- `PrincDiv X = ⊥` makes `Pic0 X` faithful over `Div0 X`, so injectivity of
--- `Q ↦ [δ Q − δ P]` reduces to `Div.single_eq_iff`. When `PrincDiv` becomes
--- honest, this delegation must be revisited and the hypothesis becomes
--- load-bearing (Abel–Jacobi theorem).
-lemma ofCurve_inj (P : X) (_h : 0 < genus X) : Function.Injective (ofCurve P) :=
-  JacobianChallenge.Jacobian.ofCurve_inj P
+-- Closed unconditionally via `JacobianChallenge.ofCurve_inj_holds` in
+-- `Manifold/ChartDerivNeZeroImpliesNonCriticalDischarge.lean`. The
+-- discharge chain:
+-- * Suppose `[δ Q₁ - δ P] = [δ Q₂ - δ P]` in `Pic⁰ X` for `Q₁ ≠ Q₂`.
+-- * Extract `f : MeromorphicNonzero X` with `principalDivisorMap f =
+--   single Q₁ - single Q₂` (via `PrincDivWitnessExtraction`).
+-- * `f.toRiemannSphere` is non-constant, degree 1 (proved unconditionally
+--   in `DegreeOneFromSimpleZeroSimplePoleDischarge`).
+-- * `bijective_of_degreeFiber_eq_one` + `bijectiveAnalyticIsBiholomorphism_holds`
+--   (both unconditional) → biholomorphism `X ≃ RiemannSphere`.
+-- * `genus_eq_zero_iff_homeo_of_HolomorphicEquiv_RiemannSphere` →
+--   `genus X = 0`, contradicting `0 < genus X`.
+lemma ofCurve_inj (P : X) (h : 0 < genus X) : Function.Injective (ofCurve P) :=
+  JacobianChallenge.ofCurve_inj_holds P h
 
 variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
   [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
