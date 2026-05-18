@@ -1,6 +1,63 @@
 # Changelog
 
-## 2026-05-18 (canonical-bundle migration) — Period-lattice canonical Stokes bundle (7 chips, ~770 LOC, branch `feat/period-lattice-canonical-bundle`, MERGED to main)
+## 2026-05-18 — Period-lattice canonical Stokes bundle + smooth-singular foundation + path-plus-reverse identity (23 chips, ~2280 LOC, MERGED to main, origin/main HEAD `bc2a239`)
+
+Three-phase arc shipping 23 chips totaling ~2280 LOC:
+
+* **Phase 1 (chips 1-7, ~770 LOC):** canonical-bundle migration —
+  see "Canonical Stokes bundle / Atomic holomorphic-side hypothesis /
+  Layered constructors / RS canonical-bundle headline" subsections
+  below.
+* **Phase 2 (chips 8-13, ~530 LOC):** smooth-singular constant-2-simplex
+  foundation. `Smooth2Simplex.const` + `boundary_const_smoothCycle
+  ∈ stokesBoundaries` (`Manifold/Smooth2SimplexConst.lean`, ~109 LOC);
+  generic `SmoothPath.integrate_eq_zero_of_toPath_eq_const`
+  (`Manifold/SmoothPathIntegrateConstToPath.lean`, ~177 LOC);
+  constant-2-simplex boundary integrates to zero against any form
+  (`Manifold/Smooth2SimplexConstBoundaryIntegrate.lean`, ~80 LOC);
+  `subsingleton_canonical_H1_iff_stokesBoundaries_eq_top`
+  (`Manifold/StokesCanonicalH1SubsingletonChar.lean`, ~95 LOC);
+  alt-formulation `trivial_at_genus_zero_canonical_of_stokesBoundaries_top`
+  (`Manifold/C3PeriodLatticeStokesCanonicalFromStokesBoundariesTop.lean`,
+  ~80 LOC); items 11/5/12 canonical-bundle discharge on RS
+  (`Manifold/C3PeriodLatticeCanonicalItemsDischarge.lean`, ~80 LOC).
+* **Phase 3 (chips 14-23, ~980 LOC):** SmoothPath-equality machinery
+  + smooth-2-simplex-from-path + path-plus-reverse identity. Face-
+  equality of constant 2-simplex via `congr 1` + Prop irrelevance
+  (`Manifold/Smooth2SimplexConstFaceEq.lean`, ~145 LOC);
+  `face0 (const P) = SmoothPath.const I X P` +
+  `single_smoothPath_const_smoothCycle_mem_stokesBoundaries`
+  (`Manifold/SmoothPathConstFromFace0.lean`, ~95 LOC);
+  `@[ext] SmoothPath.ext` (`Manifold/SmoothPathExt.lean`, ~70 LOC);
+  `Smooth2Simplex.ofSmoothPathFstProj γ` + face identifications
+  (face0 = γ.reverse, face1 = const γ.src, face2 = γ) + boundary
+  identity (`Manifold/Smooth2SimplexFromPath.lean`, ~230 LOC);
+  **`single γ + single γ.reverse ∈ stokesBoundaries`** for any γ
+  (`Manifold/SmoothPathReverseStokesBoundary.lean`, ~95 LOC);
+  direct integration computation `integrate (single γ + single
+  γ.reverse) om = 0` for any form
+  (`Manifold/SmoothPathReverseIntegrateZero.lean`, ~55 LOC);
+  canonical-H1 quotient class is zero
+  (`Manifold/SmoothPathReverseH1Zero.lean`, ~50 LOC);
+  `SmoothPath.const_reverse`, `SmoothPath.reverse_reverse` algebraic
+  identities (`Manifold/SmoothPathConstReverseEq.lean` ~55 LOC,
+  `Manifold/SmoothPathReverseReverse.lean` ~55 LOC); chain-level
+  concat-additive integration
+  (`Manifold/SmoothPathConcatIntegrateChain.lean`, ~50 LOC).
+
+Cumulative build: 9039 jobs clean. Zero `sorry`, zero `axiom`. The
+4-atomic-input canonical-bundle classical-content boundary holds
+end-to-end on any X with `[IsManifold 𝓘(ℂ, ℂ) ω X]`; on `RiemannSphere`
+specifically, items 11/5/12 discharge reduces to the single
+`Subsingleton (canonical _).H1` hypothesis (the canonical-Stokes-quotient
+analogue of `H₁(S²;ℤ) = 0`), with concrete homological identities
+(reverse cancellation, constant paths bound) fully foundationally laid.
+
+The detailed per-chip notes below cover Phase 1 (chips 1-7) only;
+Phase 2-3 chip details are summarised in `OPEN.md` and the per-file
+docstrings.
+
+## 2026-05-18 (canonical-bundle migration phase) — Period-lattice canonical Stokes bundle (7 chips, ~770 LOC, branch `feat/period-lattice-canonical-bundle`, MERGED to main)
 
 Refactors `C3PeriodLatticeStokesSpanTopInputs` so the `boundaries` and
 `closedForms` fields of the consumed `StokesBoundaryInvariance` bundle

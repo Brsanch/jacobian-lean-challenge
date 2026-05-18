@@ -205,11 +205,12 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **~127,162 LOC across 702 files** (2026-05-17
-late-night, +~6,900 LOC across 50 chips on top of the late-morning
-post-functoriality state — comprises the 36-chip late-evening arc,
-the 10-chip Item 14 + AJ-for-RS arc, and the 4-chip period-lattice
-bundle refactor). Major landings this session:
+**Current repo size:** **~135,668 LOC across 759 files** (2026-05-18,
++~8,500 LOC across 23 chips on top of the late-night 2026-05-17 state
+— comprises the 12-chip canonical-Stokes-bundle migration, the 7-chip
+items 11/5/12-discharge + smooth-singular constant-2-simplex arc, and
+the 4-chip SmoothPath-foundation + path-plus-reverse identity arc).
+Major landings this session:
 
 * **Item 1 → STRICT-CLOSED.** Full Forster Riesz arc: 10 chips,
   ~1,430 LOC (`DiskChartCoverDensity*.lean` + `DiskChartCoverRiesz.lean`
@@ -484,9 +485,13 @@ bundle refactor). Major landings this session:
   2-chain construction from `simplyConnectedS2_holds` on the
   Riemann sphere.
 
-  Build: 9037 jobs clean. Zero `sorry`, zero `axiom` across all
-  6 chips. **Cumulative 2026-05-18 arc: 21 chips, ~2175 LOC, all
-  MERGED + PUSHED to origin/main HEAD `dbfd7d8`.**
+  Build: 9039 jobs clean. Zero `sorry`, zero `axiom` across all
+  6 chips. **Cumulative 2026-05-18 arc: 23 chips, ~2280 LOC, all
+  MERGED + PUSHED to origin/main HEAD `bc2a239`.** Final-arc
+  chips also include: chain-level concat-additive integration
+  (`Manifold/SmoothPathConcatIntegrateChain.lean`, `integrate_single_concat_eq_single_add_single`)
+  and `(γ.reverse).reverse = γ`
+  (`Manifold/SmoothPathReverseReverse.lean`).
 
 **Prior-state landings (still relevant)**:
 
