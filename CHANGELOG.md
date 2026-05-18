@@ -1,5 +1,83 @@
 # Changelog
 
+## 2026-05-18 (late late + 5) — Generic genus-≥1 period-lattice: per-based-loop homology reduction (4 chips, ~711 LOC)
+
+First structural-reduction chip arc that gets the **generic genus-≥1**
+period-lattice picture into the tree. The fourth atomic input of
+`GenericGenusPeriodLatticeInputs basis` —
+`H1_spans_top_canonical` (the canonical-Stokes quotient is ℤ-spanned
+by the projections of the `cycleGens`) — now factors through a
+**per-based-loop homology decomposition hypothesis** plus
+smooth-path-connectedness, mirroring the existing genus-0 route via
+`cycle_in_stokesBoundaries_of_basedLoopsBound`. The genus-0 case is
+the trivial decomposition (all coefficients 0, recovering "single
+basedLoop ∈ stokesBoundaries"); the genus-≥1 case carries the chosen
+ℤ-combination.
+
+* `Manifold/GenericGenusH1SpansTopFromLoopHomology.lean` (~369 LOC) —
+  the headline reduction.
+  - `BasedLoopHomologyDecompositionHypothesis cycleGens p₀` predicate:
+    every smooth loop `γ` based at `p₀` admits a ℤ-tuple `n` with
+    `single γ - ∑ nᵢ • cycleGens i ∈ stokesBoundaries`.
+  - `singlePlusCorrectionCycle_eq_zsmul_mod_stokesBoundaries` —
+    per-path version: each `singlePlusCorrectionCycle γ` differs from
+    a ℤ-combination of `cycleGens` by a Stokes-boundary, via the
+    unconditional rebasing identity + the per-loop hypothesis applied
+    to `basedLoopOf γ`.
+  - `H1_spans_top_canonical_of_basedLoopHomology` — the structural
+    reduction. Aggregates the per-path decomposition over `c.support`
+    of any cycle `c`, internally replicating the `αShift`
+    cycle-property cancellation argument with an extra
+    `∑ Nᵢ • cycleGens i` term tracked alongside; the swap-of-summation
+    `Finset.sum_comm` + `Finset.sum_smul` collapses
+    `∑ γ ∑ i (f γ · nᵢ(γ)) • cycleGens i` to `∑ i Nᵢ • cycleGens i`.
+    The canonical quotient projection then puts `S.proj c` in
+    `Submodule.span ℤ {S.proj (cycleGens i)}`.
+
+* `Manifold/GenericGenusPeriodLatticeInputsFromBasedLoopHomology.lean`
+  (~153 LOC) — the clean-atomic constructor.
+  - `GenericGenusPeriodLatticeInputs.ofBasedLoopHomology` builds
+    `GenericGenusPeriodLatticeInputs basis` from the three "outer"
+    atomic inputs (`cycleGens`, `riemannBilinear`,
+    `holomorphicCanonicalClosed`) + smooth-path-connectedness
+    `(p₀, α, h_α_src, h_α_tgt)` + the per-loop hypothesis.
+  - `nonempty_*` headlines compose through to
+    `Nonempty (PeriodLatticeSymplecticBundle ...)`.
+
+* `Manifold/BasedLoopHomologyFromBasedLoopsBound.lean` (~92 LOC) —
+  trivial subsumption: `BasedSmoothLoopsBoundHypothesis I X p₀` ⟹
+  `BasedLoopHomologyDecompositionHypothesis cycleGens p₀` for **any**
+  `cycleGens` (taking all coefficients 0). Specialised to
+  `basedLoopHomologyDecompositionHypothesis_RS_holds` unconditional
+  on `RiemannSphere`.
+
+* `Manifold/GenericGenusPeriodLatticeInputsRiemannSphereViaBasedLoopHomology.lean`
+  (~97 LOC) — validation chip. Reproduces
+  `genericGenusPeriodLatticeInputs_RiemannSphere` via the new
+  per-based-loop homology route end-to-end on the known genus-0 case.
+
+**Net structural reduction.** For any compact connected complex
+1-manifold `X`, the analytic Jacobian period-lattice symplectic bundle
+now factors through the following reduced atomic data:
+
+1. `cycleGens : Fin (2g) → SmoothCycle 𝓘(ℝ, ℂ) X` (a chosen tuple);
+2. `riemannBilinear`: ℝ-linear independence of the 2g period vectors;
+3. `holomorphicCanonicalClosed`: real/imag components of every
+   holomorphic 1-form lie in `canonicalClosedForms`;
+4. `(p₀, α)`: a basepoint + smooth-path-connectedness data;
+5. `BasedLoopHomologyDecompositionHypothesis cycleGens p₀`: the
+   per-based-loop ℤ-combination-mod-stokesBoundaries hypothesis.
+
+(4)/(5) replace the single canonical-H₁ generation field of the prior
+atomic 4-tuple with smooth-path-connectedness + a per-loop hypothesis,
+which on a genus-`g` surface is exactly the smooth-Hurewicz content
+(every smooth loop's class is a ℤ-combination of the symplectic basis
+classes in `H₁(X; ℤ)`).
+
+Repo state: **143,442 LOC across 805 `.lean` files**, build
+**9090 jobs** clean (zero `sorry`, zero `axiom`). Scoreboard unchanged
+at 13/24.
+
 ## 2026-05-18 (late late + 4) — Full genus-0 period-lattice closure on RS + cotangent-bundle chart-pullback identity (8 chips, ~950 LOC, MERGED + PUSHED to origin/main HEAD `419b009`)
 
 Two intertwined arcs landed this session:

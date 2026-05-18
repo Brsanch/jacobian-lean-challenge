@@ -32,6 +32,56 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-18 (late late + 5) Generic genus-≥1 period-lattice:
+> per-based-loop homology reduction landed.** (4 chips, ~711 LOC.)
+>
+> The fourth atomic input of `GenericGenusPeriodLatticeInputs`
+> (`H1_spans_top_canonical`) now factors through a **per-based-loop
+> homology decomposition hypothesis** plus smooth-path-connectedness,
+> mirroring the existing genus-0 cycle-decomposition route. This is the
+> genuine generalisation of `BasedSmoothLoopsBoundHypothesis` (the
+> genus-0 case is the trivial decomposition with all coefficients 0;
+> the genus-≥1 case carries the chosen ℤ-combination).
+>
+> * `BasedLoopHomologyDecompositionHypothesis cycleGens p₀` predicate
+>   (`Manifold/GenericGenusH1SpansTopFromLoopHomology.lean`): every
+>   smooth loop `γ` based at `p₀` admits a ℤ-tuple `n` with
+>   `single γ - ∑ nᵢ • cycleGens i ∈ stokesBoundaries`.
+> * `H1_spans_top_canonical_of_basedLoopHomology` (same file): the
+>   structural reduction. Aggregates the per-path decomposition over
+>   `c.support` of any cycle `c`, internally replicating the αShift
+>   cycle-property cancellation argument with an extra
+>   `∑ Nᵢ • cycleGens i` term tracked alongside;
+>   `Finset.sum_comm` + `Finset.sum_smul` collapse the double-sum to
+>   `∑ i Nᵢ • cycleGens i`, and the canonical quotient projection puts
+>   `S.proj c ∈ Submodule.span ℤ {S.proj (cycleGens i)}`.
+> * `GenericGenusPeriodLatticeInputs.ofBasedLoopHomology`
+>   (`Manifold/GenericGenusPeriodLatticeInputsFromBasedLoopHomology.lean`)
+>   — clean-atomic constructor taking the three "outer" atomic inputs
+>   plus smooth-path-connectedness + the per-loop hypothesis.
+> * `basedLoopHomologyDecompositionHypothesis_RS_holds`
+>   (`Manifold/BasedLoopHomologyFromBasedLoopsBound.lean`) —
+>   `RiemannSphere` corollary unconditional, plus the trivial
+>   subsumption from `BasedSmoothLoopsBoundHypothesis`.
+> * `genericGenusPeriodLatticeInputs_RiemannSphere_via_basedLoopHomology`
+>   (`Manifold/GenericGenusPeriodLatticeInputsRiemannSphereViaBasedLoopHomology.lean`)
+>   — validation chip; reproduces the genus-0 RS closure via the new
+>   per-based-loop homology route end-to-end.
+>
+> Reduced atomic data at general genus `g = genus X`:
+> 1. `cycleGens : Fin (2g) → SmoothCycle 𝓘(ℝ, ℂ) X` (a chosen tuple);
+> 2. `riemannBilinear`: ℝ-linear independence of the 2g period vectors;
+> 3. `holomorphicCanonicalClosed`: real/imag components of every
+>    holomorphic 1-form lie in `canonicalClosedForms`;
+> 4. `(p₀, α)`: a basepoint + smooth-path-connectedness data;
+> 5. `BasedLoopHomologyDecompositionHypothesis cycleGens p₀`: the
+>    per-based-loop ℤ-combination-mod-stokesBoundaries hypothesis
+>    (smooth-Hurewicz on a genus-`g` surface).
+>
+> Repo state: **143,442 LOC across 805 `.lean` files**, build **9090
+> jobs** clean (zero `sorry`, zero `axiom`). Scoreboard unchanged at
+> 13/24.
+
 > **2026-05-18 (late late + 4) Full genus-0 period-lattice closure on `RS`
 > + cotangent-bundle chart-pullback identity landed.** (8 chips,
 > ~950 LOC, origin/main HEAD `419b009`.)
