@@ -1,5 +1,88 @@
 # Changelog
 
+## 2026-05-18 (continuation) — Concat-additivity in stokesBoundaries CLOSED (10 chips, ~2210 LOC, MERGED + PUSHED to origin/main HEAD `a349fd8`)
+
+Foundational chain-level identity:
+
+```
+single (γ.concat δ h) - single γ - single δ  ∈  stokesBoundaries I X
+```
+
+for any compatible smooth paths γ, δ : SmoothPath I X on any smooth
+manifold X. Equivalently, in the canonical Stokes H₁ quotient,
+`[γ.concat δ h] = [γ] + [δ]`. Net effect: concatenation of smooth
+paths is additive in homology — the structural identity needed to
+reduce arbitrary smooth 1-cycles into based loops at a fixed
+basepoint, which in turn is the last reduction toward
+`stokesBoundaries 𝓘(ℝ, ℂ) RiemannSphere = ⊤`.
+
+* **Concat 2-simplex (3 chips, ~580 LOC):**
+  - `Manifold/Smooth2SimplexFromConcat.lean` —
+    `Smooth2Simplex.ofSmoothPathConcat γ δ h` with toFun
+    `(x₀, x₁) := γ.concatAmbient δ (x₀/2 + x₁)`. `face1 σ = γ.concat δ h`
+    via `SmoothPath.ext` (load-bearing identity: both have the same
+    underlying `toPath.toFun` because face1's parameterisation
+    `σ(0, t) = γ.concatAmbient δ t` matches the concat ambient
+    exactly).
+  - `Manifold/SmoothPathBumpedHalf.lean` — `SmoothPath.bumpedHalfLeft γ`
+    and `bumpedHalfRight δ`: the bump-half-flat reparameterisations
+    of γ, δ. Public `ambient_zero_eq_src`, `ambient_one_eq_tgt`.
+  - `Manifold/Smooth2SimplexConcatFaceIdent.lean` — identifies
+    `face2 σ = γ.bumpedHalfLeft`, `face0 σ = δ.bumpedHalfRight`. So
+    the boundary chain is exactly
+    `single δ.bumpedHalfRight - single (γ.concat δ h)
+       + single γ.bumpedHalfLeft ∈ stokesBoundaries`.
+
+* **Left reparam-invariance (3 chips, ~770 LOC):**
+  - `Manifold/Smooth2SimplexReparamLeftT1.lean` — first triangle T₁
+    of the square-diagonal split of
+    `(s, t) ↦ γ.ambient((1-s)*t + s*concatRepLeft(t/2))`. Faces:
+    `face0=const γ.tgt`, `face2=γ`, `face1`=diagonal. Auxiliary
+    `reparamLeftF s t := (1-s)*t + s*concatRepLeft(t/2)` and its C^∞
+    proof + endpoint specialisations.
+  - `Manifold/Smooth2SimplexReparamLeftT2.lean` — second triangle T₂.
+    Faces: `face0=γ.bumpedHalfLeft.reverse`, `face1=const γ.src`,
+    `face2`=same diagonal (cancellation lemma).
+  - `Manifold/SmoothPathBumpedHalfLeftReparamInvariance.lean` —
+    after diagonal cancellation,
+    `∂(T₁+T₂) = const γ.tgt + γ + bumpedHalfLeft.reverse - const γ.src
+      ∈ stokesBoundaries`. Combined with const-membership and
+    reverse-cancellation:
+    `single γ - single γ.bumpedHalfLeft ∈ stokesBoundaries`
+    (`bumpedHalfLeft_reparam_invariance`).
+
+* **Right reparam-invariance (3 chips, ~640 LOC):**
+  - Symmetric: `Smooth2SimplexReparamRightT1.lean`,
+    `Smooth2SimplexReparamRightT2.lean`,
+    `SmoothPathBumpedHalfRightReparamInvariance.lean`.
+  - Headline `bumpedHalfRight_reparam_invariance`:
+    `single δ - single δ.bumpedHalfRight ∈ stokesBoundaries`.
+
+* **Concat-additivity capstone (1 chip, ~220 LOC):**
+  - `Manifold/SmoothPathConcatAdditivityStokes.lean` — linear
+    combination `-(face_ident) - (left_reparam) - (right_reparam)`
+    collapses to `single (γ.concat δ h) - single γ - single δ`.
+    Headline `concat_additive_in_stokesBoundaries`.
+
+Build: each file individually verified via
+`LEAN_NUM_THREADS=1 lake env lean`. Zero `sorry`, zero `axiom`
+across all 10 chips.
+
+**Net classical-input boundary** for the period-lattice side of
+C3 reduces from (1)-(4) to:
+
+1. `cycleGens` (symplectic basis choice);
+2. `riemannBilinear`;
+3. `HolomorphicStokesHypothesis X`;
+4. **`stokesBoundaries 𝓘(ℝ, ℂ) RiemannSphere = ⊤`**.
+
+For (4): with concat-additivity + reverse-cancellation +
+const-membership in hand, every smooth 1-cycle reduces to a sum of
+based smooth loops. The remaining classical input is: every smooth
+loop on a simply-connected smooth manifold bounds a smooth 2-chain.
+For RiemannSphere specifically, this is constructive via chart-based
+linear contraction in `ℂ` after avoiding a missed point.
+
 ## 2026-05-18 — Period-lattice canonical Stokes bundle + smooth-singular foundation + path-plus-reverse identity (23 chips, ~2280 LOC, MERGED to main, origin/main HEAD `bc2a239`)
 
 Three-phase arc shipping 23 chips totaling ~2280 LOC:
