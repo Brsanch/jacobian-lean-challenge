@@ -224,6 +224,32 @@ lemma chartPath_loop_integral_zero
   rw [data.chartPath_at_one_eq_at_zero]
   ring
 
+/-! ## Continuity of α.localCoeff ∘ chartPath -/
+
+/-- **Continuity of `t ↦ α.localCoeff y (chartPath t)`** on `[0, 1]`.
+Composition of the continuous `α.localCoeff y` (on chart-target) with
+the continuous `chartPath` (mapping `[0, 1]` into chart-target). -/
+lemma localCoeff_chartPath_continuousOn
+    (data : ChartContainedClosedLoop (X := X))
+    (α : HolomorphicOneForm X) :
+    ContinuousOn
+      (fun t : ℝ => α.localCoeff data.basePoint (data.chartPath t))
+      (Set.Icc (0 : ℝ) 1) := by
+  -- α.localCoeff is DifferentiableOn (chart-target), hence ContinuousOn.
+  have h_cont_on : ContinuousOn (α.localCoeff data.basePoint)
+      (chartAt ℂ data.basePoint).target :=
+    (α.localCoeff_differentiableOn data.basePoint).continuousOn
+  -- chartPath is continuous on [0,1] via MDifferentiableAt → ContinuousAt.
+  have h_chartPath_cont : ContinuousOn data.chartPath (Set.Icc (0 : ℝ) 1) := by
+    intro t ht
+    exact ((data.chartPath_mdifferentiableAt_of_unitInterval ht).continuousAt).continuousWithinAt
+  -- chartPath maps [0,1] into chart-target (via chart_image_in_ball + ball_sub_target).
+  have h_maps : Set.MapsTo data.chartPath (Set.Icc (0 : ℝ) 1)
+      (chartAt ℂ data.basePoint).target :=
+    fun t ht => data.ball_sub_target (data.chart_image_in_ball t ht)
+  -- Compose.
+  exact h_cont_on.comp h_chartPath_cont h_maps
+
 end ChartContainedClosedLoop
 
 end JacobianChallenge
