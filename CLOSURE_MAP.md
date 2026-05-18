@@ -759,10 +759,19 @@ Phase 4 (blocked — Hodge for compact Riemann surfaces)
 |---|---|---|
 | `AbelJacobiHypothesisBundle` | `Manifold/AbelJacobiArcSummary.lean` | **landed** |
 | `HolomorphicOneFormFiniteDim` | `Manifold/HodgeFiniteDimensional.lean` | **scaffolding landed 2026-05-17** (16 chips, +2,948 LOC) — full Forster proof reduced to two remaining steps (seminorm convergence + Riesz application). The `limitHolomorphicOneForm cover om_n h_diag : HolomorphicOneForm X` headline ships in `Manifold/DiskChartCoverLimitPackage.lean`. |
-| `PeriodLatticeDiscretenessBundle` | `Manifold/PeriodLatticeDiscretenessFromBilinear.lean` | open |
+| `PeriodLatticeDiscretenessBundle` | `Manifold/PeriodLatticeDiscretenessFromBilinear.lean` | superseded by `PeriodLatticeSymplecticBundle` (dead-code at every genus — see refactor) |
+| `PeriodLatticeSymplecticBundle` | `Manifold/PeriodLatticeSymplecticBundle.lean` | **structural-decomposition landed 2026-05-17 (very late late night)** via 8 chips on `feat/period-lattice-stokes-refactored` (~1,250 LOC, PUSHED). The bundle is now reachable from a single named typeclass `[Nonempty (C3PeriodLatticeStokesSpanTopInputs basis)]` via `Nonempty.periodLatticeSymplecticBundle_of_stokesSpanTop`. Genus-0 case unconditional in tree; RS case unconditional in tree (`nonempty_C3PeriodLatticeStokesSpanTopInputs_RiemannSphere`). Five atomic classical inputs remain for general genus ≥ 1: (i) `IntegrationStokesHypothesis` (single-simplex Stokes Prop, ~1k LOC of d²=0 algebra already in tree via `Smooth2Simplex.lean`); (ii) `holomorphic_closed` (d-closure of type-(1,0) forms); (iii) `cycleGens` (symplectic basis representatives); (iv) `riemannBilinear` (Hodge bilinear non-degeneracy); (v) `H1_spans_top` (cellular-homology generation of `SmoothCycle / boundaries`). |
 | `AbelJacobiInput` | `Manifold/AbelJacobiPoint.lean` | open (`SmoothPath.const` landed) |
 | `AbelHypothesis` | `Manifold/AbelJacobiPic0.lean` | open |
 | `JacobiInversion` | `Manifold/AbelJacobiIso.lean` | open |
+
+**Smooth-2-chain algebra (2026-05-17 very late late night, 3 chips, ~635 LOC, branch `feat/period-lattice-stokes-refactored`):**
+
+| Object | File | Status |
+|---|---|---|
+| `Smooth2Simplex I X` + `Smooth2Chain I X` + `boundary₂ : Smooth2Chain →ₗ[ℤ] SmoothChain` + `d² = 0` | `Manifold/Smooth2Simplex.lean` | **landed unconditional** (~370 LOC). Vertices, face parameter maps (smooth as affine), `face0/1/2 : SmoothPath`, `Smooth2Chain := Smooth2Simplex →₀ ℤ` with `Module ℤ`, and the `boundary_squared` identity proved via vertex cancellation. |
+| `boundary₂Cycle : Smooth2Chain →ₗ[ℤ] SmoothCycle` + `stokesBoundaries : AddSubgroup (SmoothCycle I X)` | `Manifold/Smooth2ChainStokesBoundary.lean` | **landed unconditional** (~140 LOC). The canonical Stokes-boundary subgroup as the image of `boundary₂Cycle`. |
+| `IntegrationStokesHypothesis I X closedForms : Prop` + `StokesBoundaryInvariance.ofSingleSimplexStokes` | `Manifold/StokesBoundaryInvarianceFromSimplex.lean` | **constructor landed** (~125 LOC). Collapses the 3-named-hypothesis `StokesBoundaryInvariance` to a single `Prop` at the single-simplex level + canonical `boundaries`. The single `Prop` is the irreducible Stokes-side classical content. |
 
 **Genus-0 RR `dim L(δp) ≥ 2` chain (0 open after A1 + A2 discharges; merged to main 2026-05-14):**
 
