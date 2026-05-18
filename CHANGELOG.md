@@ -1,5 +1,48 @@
 # Changelog
 
+## 2026-05-17 (very late late night) — Period-lattice classical-inputs data structure (1 chip, ~90 LOC, direct to `main`)
+
+New file `Manifold/C3PeriodLatticeClassicalInputs.lean` packages the
+three named classical hypotheses (from
+`PeriodLatticeSymplecticBundleClassical.lean`) into a single data
+structure `C3PeriodLatticeClassicalInputs basis` parametrised over a
+chosen ℂ-basis of holomorphic 1-forms:
+
+```
+structure C3PeriodLatticeClassicalInputs
+    (basis : Basis (Fin (genus X)) ℂ (HolomorphicOneForm X)) where
+  cycleGens : Fin (2 * genus X) → (PeriodPairingData.ofSmoothCycle X).H1
+  riemannBilinear : LinearIndependent ℝ
+    (fun i => periodVector data basis (cycleGens i))
+  homologySpans : ∀ γ, periodVector data basis γ ∈
+    Submodule.span ℤ (Set.range (fun i => periodVector data basis (cycleGens i)))
+```
+
+Plus the headline constructor:
+
+```
+noncomputable def C3PeriodLatticeClassicalInputs.toBundle (cls) :
+    PeriodLatticeSymplecticBundle (PeriodPairingData.ofSmoothCycle X) basis
+```
+
+via `PeriodLatticeSymplecticBundle.ofClassicalInputs`. Downstream code
+can now cite a SINGLE named hypothesis "period-lattice classical
+inputs exist" rather than threading three separate hypotheses.
+
+**Significance.** Final period-lattice closure-path chip in the arc.
+Together with the prior `PeriodLatticeSymplecticBundle.ofClassicalInputs`
+(reducing the bundle to 3 named hypotheses) and
+`abelHypothesis_of_abelJacobiDivHom_principal_zero` (reducing
+`AbelHypothesis` to generator-only), the **period-lattice + Abel**
+side of `C3FullInputSymp X` is now mechanically constructible from a
+small classical-input set: `C3PeriodLatticeClassicalInputs basis`
+plus the generator-only Abel theorem (one statement per
+`MeromorphicNonzero X`). Only Jacobi inversion remains as an open
+classical hypothesis.
+
+Build: `LEAN_NUM_THREADS=1 lake env lean ...` clean. Zero `sorry`,
+zero `axiom`.
+
 ## 2026-05-17 (very late late night) — `AbelHypothesis` from generators-only Abel input (1 chip, ~90 LOC, direct to `main`)
 
 New file `Manifold/AbelHypothesisFromPrincipal.lean` shipping
