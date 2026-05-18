@@ -109,6 +109,30 @@ lemma localPrimitiveOnX_spec
     (HolomorphicOneForm.exists_local_primitive_on_ball α data.basePoint
       data.ball_sub_target)
 
+/-! ## The `chartPath` is differentiable at points of `[0,1]` -/
+
+/-- **Differentiability of `chartPath`.** The composite
+`chartAt y ∘ γ.ambient : ℝ → ℂ` is differentiable at any `t : ℝ` such
+that `γ.ambient t ∈ (chartAt ℂ y).source`. Direct via
+`SmoothPath.mdifferentiableAt_chart_comp_ambient`. -/
+lemma chartPath_mdifferentiableAt
+    (data : ChartContainedClosedLoop (X := X)) {t : ℝ}
+    (h_in_source : data.γ.ambient t ∈ (chartAt ℂ data.basePoint).source) :
+    MDifferentiableAt 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ)
+      ((chartAt ℂ data.basePoint : X → ℂ) ∘ data.γ.ambient) t :=
+  SmoothPath.mdifferentiableAt_chart_comp_ambient data.γ
+    (φ := chartAt ℂ data.basePoint) (chart_mem_atlas ℂ data.basePoint)
+    h_in_source
+
+/-- **`chartPath` is differentiable at every `t ∈ [0, 1]`** (using the
+chart-source containment from the structure). -/
+lemma chartPath_mdifferentiableAt_of_unitInterval
+    (data : ChartContainedClosedLoop (X := X)) {t : ℝ}
+    (ht : t ∈ Set.Icc (0 : ℝ) 1) :
+    MDifferentiableAt 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ)
+      ((chartAt ℂ data.basePoint : X → ℂ) ∘ data.γ.ambient) t :=
+  data.chartPath_mdifferentiableAt (data.ambient_in_source t ht)
+
 end ChartContainedClosedLoop
 
 end JacobianChallenge
