@@ -1,5 +1,43 @@
 # Changelog
 
+## 2026-05-17 (very late late night) — Bundle-wiring removable singularity bridge (1 chip, ~95 LOC, direct to `main`)
+
+New file `Manifold/TraceExtensionRemovableSingularity.lean` (98 LOC)
+combining the prior `RemovableSingularityAdapter` agreement lemmas with
+`traceExtensionChartCoeff` (`Q v / k`, the algebraic-descent output of
+chip 3d-5/3d-6) into bundle-wiring-ready theorems:
+
+* `analyticAt_Q_sub_const` — for `Q : ℂ → ℂ` analytic at `0`,
+  `fun v => Q (v - w₀)` is analytic at `w₀`. Via `AnalyticAt.comp_of_eq'`
+  with the affine `id - const`.
+
+* `analyticAt_traceExtensionChartCoeff_sub_const` — the candidate
+  extended chart-coefficient `v ↦ Q (v - w₀) / k` is analytic at `w₀`
+  for `k ≥ 1`.
+
+* `removable_extension_analyticAt_of_traceExtensionChartCoeff_eventuallyEq`
+  — **one-shot bundle-wiring lemma**: if a scalar `g : ℂ → ℂ` matches
+  `v ↦ Q (v - w₀) / k` on a punctured nbhd of `w₀`, the canonical
+  removable extension is `AnalyticAt w₀`. No boundedness hypothesis
+  needs to be supplied by the caller.
+
+* `removable_extension_value_of_traceExtensionChartCoeff_eventuallyEq` —
+  the value of the extension at `w₀` is `Q 0 / k`. Direct via
+  `sub_self` + `rfl` on `traceExtensionChartCoeff_apply`.
+
+**Significance.** Together with the prior `RemovableSingularityAdapter`
+chip, this is the **direct downstream-friendly endpoint** for the
+algebraic-descent → manifold-extension bridge: a bundle-wiring chip
+that identifies the chart-pulldown of `f.fStarOmegaHol hnc α` near a
+critical value `v₀` of `f` (on a *punctured* chart-disc) with the
+algebraic-descent expression now has a one-line theorem to produce the
+analytic chart-coefficient on the *full* chart-disc, with explicit
+value at `v₀`.
+
+Build: `LEAN_NUM_THREADS=1 lake env lean
+JacobianChallenge/Manifold/TraceExtensionRemovableSingularity.lean`
+clean; zero `sorry`, zero `axiom`.
+
 ## 2026-05-17 (very late late night) — RemovableSingularityAdapter: analytic-continuation agreement (1 chip, ~55 LOC, direct to `main`)
 
 Three new theorems in `Manifold/RemovableSingularityAdapter.lean` bridging
