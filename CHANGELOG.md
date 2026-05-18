@@ -1,6 +1,52 @@
 # Changelog
 
-## 2026-05-18 (late late + 5) — Generic genus-≥1 period-lattice: per-based-loop homology reduction (4 chips, ~711 LOC)
+## 2026-05-18 (late late + 5) — Generic genus-≥1 period-lattice: per-based-loop homology + complex-valued Stokes consolidation (6 chips, ~964 LOC)
+
+**Follow-on chips 5–6 (after the per-based-loop homology reduction landed
+above).** Consolidate the holomorphic side's two real-valued vanishings
+into a single complex-valued statement, then package the most-atomic
+data list into a single one-shot constructor.
+
+* `Manifold/HolomorphicStokesFromComplexBoundary.lean` (~140 LOC) —
+  factors `HolomorphicStokesHypothesis X` (two real-valued vanishings)
+  through `HolomorphicComplexBoundaryVanishingHypothesis X` (a single
+  complex-valued vanishing: `complexChainPeriod (∂σ) om = 0` for every
+  smooth 2-simplex `σ` and every holomorphic `om`).
+  - `HolomorphicStokesHypothesis_of_complexBoundary` — Re/Im extraction
+    of the complex identity.
+  - `complexBoundary_of_HolomorphicStokesHypothesis` — reverse
+    direction; reassembles re + i · im.
+  - `holomorphicStokesHypothesis_iff_complexBoundary` — biconditional.
+  - `HolomorphicComponentsCanonicalClosed.of_complexBoundary` — direct
+    composition route.
+
+* `Manifold/GenericGenusPeriodLatticeAtomicHeadline.lean` (~110 LOC) —
+  the most-atomic entry point.
+  - `GenericGenusPeriodLatticeInputs.ofAtomicData` builds the full
+    inputs structure from the smallest atomic data list in tree:
+    `cycleGens` + `riemannBilinear` +
+    `HolomorphicComplexBoundaryVanishingHypothesis X` +
+    smooth-path-connectedness `(p₀, α)` +
+    `BasedLoopHomologyDecompositionHypothesis cycleGens p₀`.
+  - `nonempty_periodLatticeSymplecticBundle_ofAtomicData` —
+    `Nonempty` composition through to the symplectic bundle.
+
+**Net.** The user-facing atomic data list at general genus now reads:
+
+1. `cycleGens : Fin (2g) → SmoothCycle 𝓘(ℝ, ℂ) X` — chosen tuple;
+2. `riemannBilinear` — ℝ-linear independence of period vectors;
+3. `HolomorphicComplexBoundaryVanishingHypothesis X` — complex-valued
+   holomorphic-form Stokes vanishing on every smooth 2-simplex
+   boundary;
+4. `(p₀, α)` — basepoint + smooth-path-connectedness;
+5. `BasedLoopHomologyDecompositionHypothesis cycleGens p₀` — per-loop
+   ℤ-combination-mod-stokesBoundaries hypothesis.
+
+Repo state: **143,695 LOC across 807 `.lean` files**, build **9092
+jobs** clean (zero `sorry`, zero `axiom`). Scoreboard unchanged at
+13/24.
+
+## 2026-05-18 (late late + 5a) — Generic genus-≥1 period-lattice: per-based-loop homology reduction (4 chips, ~711 LOC)
 
 First structural-reduction chip arc that gets the **generic genus-≥1**
 period-lattice picture into the tree. The fourth atomic input of

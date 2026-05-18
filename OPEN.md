@@ -33,6 +33,30 @@ spec. Three statuses, with one tag for partial progress:
 **Current scoreboard:**
 
 > **2026-05-18 (late late + 5) Generic genus-≥1 period-lattice:
+> per-based-loop homology + complex-valued Stokes consolidation
+> landed.** (6 chips, ~964 LOC.)
+>
+> Follow-on chips 5–6 on top of the 4-chip per-based-loop homology
+> reduction below: consolidate the holomorphic side's two real-valued
+> vanishings into a single complex-valued statement
+> (`HolomorphicComplexBoundaryVanishingHypothesis`) and package the
+> most-atomic data list into a single constructor
+> (`GenericGenusPeriodLatticeInputs.ofAtomicData`).
+>
+> User-facing atomic data list at general genus:
+> 1. `cycleGens : Fin (2g) → SmoothCycle 𝓘(ℝ, ℂ) X` — chosen tuple;
+> 2. `riemannBilinear` — ℝ-linear independence of period vectors;
+> 3. `HolomorphicComplexBoundaryVanishingHypothesis X` — complex-valued
+>    holomorphic-form Stokes vanishing on every 2-simplex boundary;
+> 4. `(p₀, α)` — basepoint + smooth-path-connectedness;
+> 5. `BasedLoopHomologyDecompositionHypothesis cycleGens p₀` — per-loop
+>    ℤ-combination-mod-stokesBoundaries hypothesis.
+>
+> Repo state: **143,695 LOC across 807 `.lean` files**, build **9092
+> jobs** clean (zero `sorry`, zero `axiom`). Scoreboard unchanged at
+> 13/24.
+
+> **2026-05-18 (late late + 5a) Generic genus-≥1 period-lattice:
 > per-based-loop homology reduction landed.** (4 chips, ~711 LOC.)
 >
 > The fourth atomic input of `GenericGenusPeriodLatticeInputs`
