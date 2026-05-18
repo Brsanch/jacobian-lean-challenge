@@ -1,5 +1,47 @@
 # Changelog
 
+## 2026-05-17 (very late late night) — `DegreeOneFromSimpleZeroSimplePole` non-constancy fully closed (~220 LOC, direct to `main`)
+
+New file `Manifold/DegreeOneFromSimpleZeroSimplePoleDischarge.lean`
+ships:
+
+* `order_eq_one_at_Q1` — from `principalDivisorMap f = single Q₁ - single Q₂`
+  (and `Q₁ ≠ Q₂`), `mmeromorphicOrderAt f.toFun Q₁ = 1`. Uses
+  `principalDivisorMap_apply` + `Div.single_sub_single_apply` +
+  `MMeromorphicOn.orderFun` unfolding.
+
+* `order_eq_neg_one_at_Q2` — similarly `mmeromorphicOrderAt f.toFun Q₂ = -1`.
+
+* `order_eq_zero_off` — at `x ∉ {Q₁, Q₂}`, `mmeromorphicOrderAt f.toFun x = 0`
+  (via `MMeromorphicOn.orderFun_eq_zero_iff`).
+
+* `toRiemannSphere_nonconst` — **non-constancy fully discharged**:
+  `f.toRiemannSphere Q₂ = ∞` (from order -1, via
+  `toRiemannSphere_eq_infty_of_order_neg`) while a constant map would
+  force `f.toRiemannSphere Q₁ = ∞`, requiring order < 0 at Q₁,
+  contradicting `order = 1`.
+
+* `OrderOneSingleFibreRegular f Q₁` — named sub-hypothesis for the
+  remaining content: `(some 0 : RS) ∈ regularValueSet` AND
+  `fiberFinset = {Q₁}`. This is the focused analytic content
+  (locally-injective at Q₁ from order 1; uniqueness of the zero from
+  order-0 elsewhere) deferrable to a sister chip.
+
+* `degreeOneFromSimpleZeroSimplePole_holds_of_OrderOneSingleFibreRegular`
+  — the conditional discharge: under the named sub-hypothesis,
+  `DegreeOneFromSimpleZeroSimplePole X` holds.
+
+**Significance.** Half of item 16's full closure is now discharged:
+the non-constancy is unconditional, and the degree-1 conclusion reduces
+to a focused, single-statement analytic claim (fibre at 0 = {Q₁} +
+0 regular). The classical content for the remaining sub-hypothesis is
+**inverse function theorem applied to the chart pullback at a simple
+zero** + **value characterization of `toRiemannSphere`** — both
+standard, deferrable to a future chip.
+
+Build: `LEAN_NUM_THREADS=1 lake env lean ...` clean. Zero `sorry`,
+zero `axiom`.
+
 ## 2026-05-17 (very late late night) — Item 16 (`ofCurve_inj`) reduced to single classical hypothesis (~230 LOC across 2 chips, direct to `main`)
 
 Two follow-on chips composing into a conditional closure of item 16
