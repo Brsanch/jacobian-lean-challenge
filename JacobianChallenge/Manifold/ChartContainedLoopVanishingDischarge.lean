@@ -357,6 +357,41 @@ def ComplexChainPeriodEqChartIntegral_named
         (α.localCoeff data.basePoint (data.chartPath t)) *
           (deriv data.chartPath t)
 
+/-! ## Pointwise chart-eval identity (sub-ingredient)
+
+Factors `ComplexChainPeriodEqChartIntegral_named` into:
+  (i) a **pointwise** chart-pullback identity at each `t ∈ [0,1]`
+      (named `PointwiseChartEvalIdentity` below), and
+  (ii) the structural identification of `complexChainPeriod (single γ)`
+       with the ℂ-valued path integral
+       `∫ (α.eval (γ.ambient t)) (γ.velocity t)` (discharged here
+       under the `integrand_intervalIntegrable` hypothesis).
+
+The pointwise identity is the chart-bundle's nontrivial content; the
+structural identification is `Re + i·Im = id` plus interval-integral
+linearity. -/
+
+/-- **Named sub-ingredient: pointwise chart-pullback identity.**
+
+For each `t ∈ [0, 1]`, the cotangent pairing
+`(α.eval (γ.ambient t)) (γ.velocity t)` (as a ℂ-valued expression)
+equals the chart-coord product `α.localCoeff basePoint (chartPath t) *
+deriv chartPath t`.
+
+This is the **substantive content** of the chart-pullback step at the
+cotangent-bundle level: the value of a holomorphic 1-form along a path
+unfolds (via the coordChange on the cotangent bundle and the chain
+rule for `chart ∘ γ.ambient`) into the chart-local coefficient times
+the chart-image derivative. -/
+def PointwiseChartEvalIdentity
+    (data : ChartContainedClosedLoop (X := X))
+    (α : HolomorphicOneForm X) : Prop :=
+  ∀ t ∈ Set.Icc (0 : ℝ) 1,
+    ((α.eval (data.γ.ambient t) : (ℂ →L[ℂ] ℂ)) (data.γ.velocity t)
+      : ℂ)
+      = α.localCoeff data.basePoint (data.chartPath t) *
+          deriv data.chartPath t
+
 /-- **`ChartContainedLoopVanishingHypothesis_holds` from the two named ingredients.**
 Composes `chartPath_loop_integral_zero` with the chart-coord-integral
 identification to get `complexChainPeriod (single γ) α = 0`. -/
