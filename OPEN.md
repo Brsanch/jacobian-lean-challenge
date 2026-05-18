@@ -32,6 +32,39 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-17 (late late night) Symplectic-bundle migration arc landed.**
+> 13-chip arc (~1450 LOC) migrated the entire Abel-Jacobi chain to the
+> corrected `PeriodLatticeSymplecticBundle`, lifted manifold instances
+> on `Jacobian X` to any genus-0 X with `[Subsingleton (Pic0 X)]`, and
+> wired the full RS closure path. The legacy `PeriodLatticeDiscretenessBundle`
+> (`h1Basis : Basis (Fin 2g) ℤ data.H1` dead code at every genus) is no
+> longer on the critical path.
+>
+> **New entry points (all `_holds` theorems, downstream-discharge-friendly):**
+> * `JacobianAnalyticChoiceSymp X` (analytic Jacobian via classical-choice
+>   on the symplectic bundle) + 7 structural instances + `picZeroEquivSymp`.
+> * `nonempty_C3FullInputExtSymp_RiemannSphere` `instance` (unconditional).
+> * `nonempty_abelJacobiInputSymp_RiemannSphere` (unconditional).
+> * `Subsingleton (Pic0 RiemannSphere)` instance,
+>   `CompactSpace (Jacobian RiemannSphere)` instance,
+>   `ChartedSpace (Fin 0 → ℂ) (Jacobian RS)` instance,
+>   `IsManifold 𝓘(ℂ, Fin 0 → ℂ) ω (Jacobian RS)` instance,
+>   `ContMDiffAdd`/`LieAddGroup` instances,
+>   `ofCurve_contMDiff_RiemannSphere` theorem.
+> * Generic `compactSpace_Jacobian_holds [Subsingleton (Pic0 X)]`,
+>   `chartedSpace_Jacobian_holds (hgenus : genus X = 0)`,
+>   `isManifold_Jacobian_holds` (parametrised over any X with the two
+>   hypotheses).
+>
+> **Scoreboard unchanged at 13/24** — Basic.lean's verbatim signatures for
+> items 11/5/12/13/17 quantify over general X without `[Subsingleton (Pic0 X)]`;
+> the placeholder discrete-topology on `Pic0 X` cannot honestly support an
+> unconditional `CompactSpace` proof at general genus. A structural
+> redefinition of `JacobianChallenge.Jacobian X` (replacing the discrete
+> topology with the analytic-quotient topology under
+> `[Nonempty (C3FullInputExtSymp X)]`) is the remaining closure path; the
+> infrastructure for it is now in tree.
+
 - **STRICT-CLOSED:** **13 / 24** — items **1, 2, 3, 6, 7, 8, 9, 15, 19, 20,
   22, 23, 24**. Honest `PrincDiv := PrincDivHonestCandidate` and `Pic0`
   (honest, with manifold instances) live in
