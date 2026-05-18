@@ -1,5 +1,84 @@
 # Changelog
 
+## 2026-05-17 (late late night) — Symplectic-bundle migration of the AJ chain (7 chips, ~1305 LOC, direct to `main`)
+
+Follow-on to the late-night `PeriodLatticeSymplecticBundle` refactor.
+Lifts the full Abel-Jacobi chain (`AbelJacobiPath` → `AbelJacobiPoint`
+→ `AbelJacobiDiv` → `AbelJacobiPic0` → `AbelJacobiIso` → `C3FullInput`
+→ `C3FullInputExt` → `JacobianAnalyticChoice`) to the corrected
+symplectic bundle. The legacy `PeriodLatticeDiscretenessBundle`'s
+`h1Basis : Basis (Fin 2g) ℤ data.H1` is dead code at every genus for
+`data = ofSmoothCycle X`, so this migration moves the closure-relevant
+chain onto the actually-inhabitable bundle.
+
+### Chip 5 — `AbelJacobiInputSymp` + path/chain AJ (~180 LOC, `42555ec`)
+
+`Manifold/AbelJacobiPointSymp.lean`: `abelJacobiPathSymp` +
+`_eq_of_shared_endpoints` + `abelJacobiChainSymp` (`AddMonoidHom`) +
+`AbelJacobiInputSymp` structure + `abelJacobiPoint` / `relAbelJacobi`
++ `AbelJacobiInput.toSymp`.
+
+### Chip 6 — `C3FullInputSymp` + full divisor-/Pic⁰-level chain (~480 LOC, `24efbc8`)
+
+`Manifold/C3FullInputSymp.lean`: full mirror of the legacy
+`abelJacobiDiv` → `AbelHypothesis` → `JacobiInversion` →
+`abelJacobiEquiv` chain. `C3FullInputSymp` 5-field bundle +
+instance-discharge helpers + `C3FullInput.toSymp` conversion.
+Per-point / per-divisor identity bridges (`toSymp_abelJacobiPoint_eq`
+/ `toSymp_abelJacobiDiv_eq`) exploit `AnalyticJacobian =
+AnalyticJacobianSymp` definitional equality at the
+`(Fin g → ℂ) ⧸ periodLatticeImage` level.
+
+### Chip 7 — `C3FullInputExtSymp` (~230 LOC, `ccc41b7`)
+
+`Manifold/C3FullInputExtSymp.lean`: `AbelJacobiSmoothnessSymp` (item
+17) + `AbelJacobiInjectiveSymp` (item 16) + `C3FullInputExtSymp`
+3-field structure + `C3FullInputExt.toSymp`.
+
+### Chip 8 — `JacobianAnalyticChoiceSymp` + 7 instances + `picZeroEquivSymp` (~130 LOC, `0c72dde`)
+
+`Manifold/JacobianAnalyticChoiceSymp.lean`: `chosenC3Symp` via
+`Classical.choice`, `JacobianAnalyticChoiceSymp` abbrev, all 7
+structural typeclass instances (items 3, 4, 5, 10, 11, 12, 13), and
+`picZeroEquivSymp : Pic⁰ X ≃+ JacobianAnalyticChoiceSymp X`.
+
+### Chip 9 — Genus-0 / RS chain (~155 LOC, `f2e01b3`)
+
+`Manifold/Pic0RiemannSphereSymp.lean`: `Subsingleton.analyticJacobianSymp_of_genus_zero`,
+`abelHypothesis_of_genus_zero`, `jacobiInversion_of_genus_zero_and_subsingleton_pic0`,
+`abelJacobiEquiv_of_genus_zero`, `abelJacobiEquiv_of_RiemannSphere`,
+`abelJacobiEquiv_of_RiemannSphere_unconditional`.
+
+### Chip 10 — Path-connectedness discharges (~85 LOC, `c5b9fc2`)
+
+`Manifold/SmoothPathConnectedSymp.lean`: `ofSmoothPathConnected`,
+`nonempty_of_smoothPathConnected`, `nonempty_of_preconnected`,
+`nonempty_of_connected`.
+
+### Chip 11 — RS-specific `AbelJacobiInputSymp` existence (~45 LOC, this commit)
+
+`Manifold/SmoothPathConnectedRiemannSphereSymp.lean`:
+`nonempty_abelJacobiInputSymp_RiemannSphere` — unconditional
+existence on `RiemannSphere`.
+
+### Net state after migration
+
+The symplectic chain is now usable end-to-end as a parallel of the
+legacy chain. Every legacy → symplectic transition has a `toSymp`
+witness. The genus-0 + RS-unconditional path
+(`AbelJacobiInputSymp.abelJacobiEquiv_of_RiemannSphere_unconditional`)
+is in tree. The Basic.lean items 4, 5, 10, 11, 12, 13 STUB →
+STRICT-CLOSED flip has a documented closure path via
+`Nonempty (C3FullInputExtSymp X)` + `picZeroEquivSymp` (analogue of
+the legacy `picZeroEquiv`), now resting on the corrected bundle.
+
+The remaining gap is the same as before — discharging the classical
+content of `AbelHypothesis` + `JacobiInversion` + `AbelJacobiSmoothness`
++ `AbelJacobiInjective` at general genus. The migration makes those
+discharges target the actually-inhabitable bundle.
+
+Build clean throughout. Zero `sorry`, zero `axiom`.
+
 ## 2026-05-17 (late night) — Period-lattice bundle refactor: PeriodLatticeSymplecticBundle (4 chips, ~400 LOC, direct to `main`)
 
 Architectural refactor addressing a latent bug in
