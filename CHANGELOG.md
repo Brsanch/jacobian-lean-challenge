@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-05-18 (late late + 1) — Generic-genus entry point `GenericGenusPeriodLatticeInputs` (1 chip, ~140 LOC, MERGED + PUSHED to origin/main HEAD `2189d49`)
+
+Opens the genus ≥ 1 work. `Manifold/GenericGenusPeriodLatticeInputs.lean`
+ships a structure bundling the FOUR atomic canonical-bundle inputs:
+
+  structure GenericGenusPeriodLatticeInputs basis where
+    cycleGens                  -- Fin (2g) → H₁(X; ℤ): symplectic basis
+    riemannBilinear            -- ℝ-LI of period vectors
+    holomorphicCanonicalClosed -- holomorphic ω ⟹ Stokes-closed
+    H1_spans_top_canonical     -- ℤ-span of cycleGens = canonical H₁
+
+* `toBundle` — promotes to `C3PeriodLatticeStokesSpanTopInputs basis`
+  via the canonical-bundle constructor.
+* `nonempty_C3PeriodLatticeStokesSpanTopInputs_of_genericGenus`.
+* `nonempty_periodLatticeSymplecticBundle_of_genericGenus` — composite
+  to `PeriodLatticeSymplecticBundle`.
+
+For genus 0 (X with `Subsingleton (HolomorphicOneForm X)`), each of
+the four is unconditional in tree.
+
+For genus ≥ 1, each is genuinely-new classical content:
+* `cycleGens` — surface classification + symplectic basis.
+* `riemannBilinear` — Riemann bilinear / Hodge theory.
+* `holomorphicCanonicalClosed` — Stokes' theorem + Cauchy-Riemann.
+* `H1_spans_top_canonical` — cellular homology of compact orientable
+  2-manifolds.
+
+Build: clean, full library at **9070 jobs**.
+Zero `sorry`, zero `axiom`.
+
 ## 2026-05-18 (late late) — `BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) RS p₀` UNCONDITIONAL — Sard via Hausdorff + Möbius shift + chart-N pullback (6 chips, ~890 LOC, MERGED + PUSHED to origin/main HEAD `ce40ac7`)
 
 The load-bearing genus-0 input for canonical period-lattice closure

@@ -205,16 +205,26 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **~141,139 LOC across 788 files** (2026-05-18
-late late, +~1,070 LOC across 7 additional chips on top of the
-2026-05-18-late state, build **9068 jobs** clean). Latest arc:
-chart-N pullback discharge (`tubularBump` smooth-bump + tubular-
-neighborhood compactness), composite via avoid-∞, Möbius shift
-`mobiusComposed`, missed-point case split, **Sard via Hausdorff
-dimension discharge of `SmoothLoopHasMissedPointHypothesis`**, and
-the capstone `basedSmoothLoopsBoundHypothesis_RS_holds`. The full
-chain `BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) RiemannSphere p₀` is
-now **unconditional**. HEAD `ce40ac7`.
+**Current repo size:** **~141,277 LOC across 789 files** (2026-05-18
+late late, build **9070 jobs** clean). Latest landings:
+
+* **2026-05-18 late late (chart-N pullback + Möbius + missed-point
+  Sard)**: ~1,070 LOC / 7 chips. `BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ)
+  RiemannSphere p₀` UNCONDITIONAL via chart-N pullback discharge
+  (`tubularBump` smooth-bump + tubular-neighborhood compactness),
+  composite via avoid-∞, Möbius shift `mobiusComposed`, missed-point
+  case split, and **Sard via Hausdorff dimension** discharge of
+  `SmoothLoopHasMissedPointHypothesis`. HEAD `ce40ac7`.
+
+* **Generic-genus entry point** (HEAD `2189d49`): +~140 LOC.
+  `Manifold/GenericGenusPeriodLatticeInputs.lean` ships
+  `GenericGenusPeriodLatticeInputs X basis` — a structure bundling
+  the FOUR atomic canonical-bundle inputs (cycleGens +
+  riemannBilinear + holomorphicCanonicalClosed + H1_spans_top) plus
+  the chain to `Nonempty (PeriodLatticeSymplecticBundle data basis)`.
+  This is the entry point for all genus ≥ 1 period-lattice work.
+  Each of the four atomic inputs becomes an independently-dischargeable
+  named arc.
 Major landings this session:
 
 * **Item 1 → STRICT-CLOSED.** Full Forster Riesz arc: 10 chips,
