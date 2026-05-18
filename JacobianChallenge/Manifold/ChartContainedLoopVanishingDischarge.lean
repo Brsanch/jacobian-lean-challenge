@@ -172,6 +172,58 @@ lemma F_comp_chartPath_hasDerivAt
   -- Apply chain rule.
   exact hF_deriv.comp t h_chart_hasDerivAt
 
+/-! ## FTC applied to `F ∘ chartPath` -/
+
+/-- **FTC: ∫_0^1 deriv(F ∘ chartPath) = (F ∘ chartPath)(1) − (F ∘ chartPath)(0).**
+By `intervalIntegral.integral_eq_sub_of_hasDerivAt` applied with the
+chain-rule derivative supplied by `F_comp_chartPath_hasDerivAt`. -/
+lemma F_comp_chartPath_integral_eq_sub
+    (data : ChartContainedClosedLoop (X := X))
+    (α : HolomorphicOneForm X)
+    (h_integrable : IntervalIntegrable
+      (fun t => (α.localCoeff data.basePoint (data.chartPath t)) *
+                  (deriv data.chartPath t))
+      MeasureTheory.volume 0 1) :
+    ∫ t in (0 : ℝ)..1,
+        (α.localCoeff data.basePoint (data.chartPath t)) *
+          (deriv data.chartPath t)
+      = ((Classical.choose
+          (HolomorphicOneForm.exists_local_primitive_on_ball α data.basePoint
+            data.ball_sub_target)) ∘ data.chartPath) 1
+        - ((Classical.choose
+          (HolomorphicOneForm.exists_local_primitive_on_ball α data.basePoint
+            data.ball_sub_target)) ∘ data.chartPath) 0 := by
+  refine intervalIntegral.integral_eq_sub_of_hasDerivAt
+    (fun t ht => ?_) h_integrable
+  -- t ∈ [[0, 1]] = uIcc 0 1 = Icc 0 1 (since 0 ≤ 1).
+  have ht_icc : t ∈ Set.Icc (0 : ℝ) 1 := by
+    rwa [Set.uIcc_of_le zero_le_one] at ht
+  exact data.F_comp_chartPath_hasDerivAt α ht_icc
+
+/-- **FTC at a closed loop: ∫_0^1 (α.localCoeff y (chartPath t)) · (deriv chartPath t) = 0.**
+Combines `F_comp_chartPath_integral_eq_sub` with
+`chartPath_at_one_eq_at_zero` (closed-loop property). -/
+lemma chartPath_loop_integral_zero
+    (data : ChartContainedClosedLoop (X := X))
+    (α : HolomorphicOneForm X)
+    (h_integrable : IntervalIntegrable
+      (fun t => (α.localCoeff data.basePoint (data.chartPath t)) *
+                  (deriv data.chartPath t))
+      MeasureTheory.volume 0 1) :
+    ∫ t in (0 : ℝ)..1,
+        (α.localCoeff data.basePoint (data.chartPath t)) *
+          (deriv data.chartPath t) = 0 := by
+  rw [data.F_comp_chartPath_integral_eq_sub α h_integrable]
+  -- (F ∘ chartPath) 1 = (F ∘ chartPath) 0 since chartPath 1 = chartPath 0.
+  show (Classical.choose
+        (HolomorphicOneForm.exists_local_primitive_on_ball α data.basePoint
+          data.ball_sub_target)) (data.chartPath 1)
+      - (Classical.choose
+        (HolomorphicOneForm.exists_local_primitive_on_ball α data.basePoint
+          data.ball_sub_target)) (data.chartPath 0) = 0
+  rw [data.chartPath_at_one_eq_at_zero]
+  ring
+
 end ChartContainedClosedLoop
 
 end JacobianChallenge
