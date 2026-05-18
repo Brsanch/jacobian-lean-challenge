@@ -637,6 +637,7 @@ import JacobianChallenge.Manifold.C3FullInputExtSymp
 import JacobianChallenge.Manifold.JacobianAnalyticChoiceSymp
 import JacobianChallenge.Manifold.Pic0RiemannSphereSymp
 import JacobianChallenge.Manifold.SmoothPathConnectedSymp
+import JacobianChallenge.Manifold.SmoothPathConnectedRiemannSphereSymp
 import JacobianChallenge.Manifold.SmoothPathConnected
 import JacobianChallenge.Manifold.SmoothPathLinearInChart
 import JacobianChallenge.Manifold.SmoothPathLocalConvex
