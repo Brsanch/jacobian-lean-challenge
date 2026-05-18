@@ -1,5 +1,48 @@
 # Changelog
 
+## 2026-05-18 (late late + 2) — Per-path cycle-decomposition primitives + genus ≥ 1 barrier triage (1 chip, ~205 LOC, MERGED + PUSHED to origin/main HEAD `2d8855c`)
+
+`Manifold/SmoothCycleDecompositionToBasedLoops.lean` ships per-path
+infrastructure toward genus ≥ 1 `H1_spans_top_canonical`:
+
+* `basedLoopOf α γ := α(γ.src) ⋆ γ ⋆ (α γ.tgt).reverse` — based loop at p₀.
+* `rebasingCycleOf γ` packaged + `_mem_stokesBoundaries` via existing
+  `rebasing_in_stokesBoundaries`.
+* `singlePlusCorrectionCycle γ` (= `single γ + single (α γ.src) - single (α γ.tgt)`)
+  packaged as a SmoothCycle.
+* `singlePlusCorrectionCycle_mem_stokesBoundaries` (per-path discharge):
+  under `BasedSmoothLoopsBoundHypothesis I X p₀`, the chain
+  `single γ + α-correction ∈ stokesBoundaries`. Proof: sum the rebasing
+  cycle and `single (basedLoopOf γ)` (basedLoop in stokesBoundaries by
+  hypothesis); the `single (basedLoopOf γ)` summands cancel algebraically.
+
+**Genus ≥ 1 barrier triage.** After attempting each of the four atomic
+inputs of `GenericGenusPeriodLatticeInputs`, every one is **true-barrier
+blocked** on classical mathlib gaps:
+
+1. `holomorphicCanonicalClosed` — Stokes' theorem on smooth 2-simplices
+   is not in mathlib at this pin. Without it, the closure of
+   real/imaginary components of holomorphic 1-forms in
+   `canonicalClosedForms` cannot be discharged.
+2. `H1_spans_top_canonical` — Surface classification (compact orientable
+   genus-g 2-manifold ≅ Σ_g) + symplectic basis construction not in
+   mathlib.
+3. `cycleGens` — Depends on (2): cycle representatives of a symplectic
+   basis require surface classification.
+4. `riemannBilinear` — Riemann bilinear non-degeneracy depends on Hodge
+   theory (Hodge ⋆-operator, ω ∧ ω̄ positivity) not in mathlib at this
+   pin. Also requires `HolomorphicOneFormFiniteDim X` finished
+   (Forster Riesz arc has the seminorm-convergence + Riesz gaps from
+   2026-05-17).
+
+All four are *classical content not at the mathlib pin* — genuine
+external prerequisites, not Lean-tactical issues. The work delivered
+in this and the prior arc is the **structural framework + per-path
+infrastructure** ready to consume each input once the relevant mathlib
+prerequisite lands.
+
+Build: clean, full library at **9071 jobs**. Zero `sorry`, zero `axiom`.
+
 ## 2026-05-18 (late late + 1) — Generic-genus entry point `GenericGenusPeriodLatticeInputs` (1 chip, ~140 LOC, MERGED + PUSHED to origin/main HEAD `2189d49`)
 
 Opens the genus ≥ 1 work. `Manifold/GenericGenusPeriodLatticeInputs.lean`

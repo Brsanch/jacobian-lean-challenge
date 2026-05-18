@@ -216,15 +216,29 @@ late late, build **9070 jobs** clean). Latest landings:
   case split, and **Sard via Hausdorff dimension** discharge of
   `SmoothLoopHasMissedPointHypothesis`. HEAD `ce40ac7`.
 
-* **Generic-genus entry point** (HEAD `2189d49`): +~140 LOC.
-  `Manifold/GenericGenusPeriodLatticeInputs.lean` ships
-  `GenericGenusPeriodLatticeInputs X basis` — a structure bundling
-  the FOUR atomic canonical-bundle inputs (cycleGens +
-  riemannBilinear + holomorphicCanonicalClosed + H1_spans_top) plus
-  the chain to `Nonempty (PeriodLatticeSymplecticBundle data basis)`.
-  This is the entry point for all genus ≥ 1 period-lattice work.
-  Each of the four atomic inputs becomes an independently-dischargeable
-  named arc.
+* **Generic-genus entry point + per-path cycle decomposition**
+  (HEADs `2189d49`, `2d8855c`): +~345 LOC.
+  - `Manifold/GenericGenusPeriodLatticeInputs.lean` — structure bundling
+    the FOUR atomic canonical-bundle inputs + chain to `Nonempty
+    (PeriodLatticeSymplecticBundle data basis)`.
+  - `Manifold/SmoothCycleDecompositionToBasedLoops.lean` — per-path
+    `basedLoopOf` + rebasing primitives. `singlePlusCorrectionCycle γ`
+    ∈ stokesBoundaries under `BasedSmoothLoopsBoundHypothesis I X p₀`.
+
+  **Genus ≥ 1 barrier triage (2026-05-18 late late + 2).** All four
+  atomic inputs of `GenericGenusPeriodLatticeInputs` are true-barrier
+  blocked on classical mathlib gaps:
+  1. `holomorphicCanonicalClosed` — needs Stokes' theorem on smooth
+     2-simplices (not in mathlib).
+  2. `H1_spans_top_canonical` — needs surface classification (not in
+     mathlib).
+  3. `cycleGens` — depends on (2).
+  4. `riemannBilinear` — needs Hodge theory (not in mathlib) + finished
+     `HolomorphicOneFormFiniteDim` (Forster Riesz arc has remaining gaps).
+
+  The work delivered is the structural framework + per-path
+  infrastructure ready to consume each input once the relevant mathlib
+  prerequisite lands.
 Major landings this session:
 
 * **Item 1 → STRICT-CLOSED.** Full Forster Riesz arc: 10 chips,
