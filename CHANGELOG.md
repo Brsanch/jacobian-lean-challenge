@@ -1,5 +1,45 @@
 # Changelog
 
+## 2026-05-17 (very late late night) — Period lattice classical-input constructor (1 chip, ~140 LOC, direct to `main`)
+
+New file `Manifold/PeriodLatticeSymplecticBundleClassical.lean` shipping
+the classical-input boundary for `PeriodLatticeSymplecticBundle`:
+
+* `finrank_real_pi_fin_complex (g : ℕ) : finrank ℝ (Fin g → ℂ) = 2 * g`
+  — via `Module.finrank_pi_fintype` + `Complex.finrank_real_complex` +
+  `Fintype.card_fin`.
+
+* `PeriodLatticeSymplecticBundle.ofClassicalInputs` — given a tuple
+  `cycleGens : Fin (2 * genus X) → data.H1` of cycle generators
+  together with two named classical hypotheses:
+  - `h_LI : LinearIndependent ℝ (periodVector ∘ cycleGens)` — Riemann
+    bilinear non-degeneracy of the periods.
+  - `h_span : ∀ γ : data.H1, periodVector γ ∈ Submodule.span ℤ
+    (Set.range (periodVector ∘ cycleGens))` — the chosen tuple's
+    period vectors ℤ-span the period image (classically: chosen
+    homology classes generate H₁, plus Stokes for boundaries).
+  Produces a full `PeriodLatticeSymplecticBundle data α`. The
+  `periodBasis` field is constructed via `Basis.mk` on `h_LI` plus
+  the dimension count `Fintype.card (Fin (2g)) = 2g = finrank ℝ
+  (Fin g → ℂ)`, using `LinearIndependent.span_eq_top_of_card_eq_finrank'`
+  (the `'`-form that requires only `FiniteDimensional ℝ (Fin g → ℂ)`,
+  not `[Nonempty (Fin 2g)]` — so the genus-0 case flows through
+  identically).
+
+**Significance.** This is the cleanest named-classical-input
+boundary for the period-lattice side of `C3FullInputSymp X`.
+Previously, downstream consumers had to construct the full
+`PeriodLatticeSymplecticBundle` shape (a tuple + a basis + a
+compatibility statement + a spanning statement). With this chip, the
+construction reduces to **two** named classical hypotheses, both of
+which are standard textbook content: Riemann bilinear non-degeneracy
++ H₁ generation by a chosen tuple. The bundle construction itself is
+now mechanical.
+
+Builds: `LEAN_NUM_THREADS=1 lake env lean
+JacobianChallenge/Manifold/PeriodLatticeSymplecticBundleClassical.lean`
+clean; zero `sorry`, zero `axiom`.
+
 ## 2026-05-17 (very late late night) — `fStarOmegaHolOn` punctured-ball differentiability (1 chip, ~100 LOC, direct to `main`)
 
 New file `Manifold/FStarOmegaHolOnPuncturedDifferentiableOn.lean`
