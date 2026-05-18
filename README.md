@@ -13,24 +13,39 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-18 late):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
-Build clean at **9061 jobs** (zero `sorry`, zero `axiom`). Repo:
-**140,066 LOC across 781 `.lean` files**.
+**Current state (2026-05-18 late late):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
+Build clean at **9068 jobs** (zero `sorry`, zero `axiom`). Repo:
+**141,139 LOC across 788 `.lean` files**.
 
 Major recent landings (all on `main`):
 
-* **`stokesBoundaries 𝓘(ℝ, ℂ) RS = ⊤` reduced to ONE atomic input**
-  (2026-05-18 late, 22-chip arc, ~4,350 LOC, HEAD `9e1fe1a`).
-  Full concat-additivity in stokesBoundaries (no integration-side
-  approximation), rebasing + loop-rebasing identities, V-loop-bounds
-  unconditional on any normed ℝ-vector space, stokesBoundaries
-  pushforward, and the structural reduction
-  `LoopFactorsThroughVectorSpaceHypothesis ℂ RiemannSphere p₀` —
-  every smooth loop on RS factors through ℂ via a smooth chart-style
-  map. Two named sub-hypotheses (`SmoothLoopAvoidsInftyHypothesis`
-  + `SmoothLoopChartNPullbackExistsHypothesis`) jointly discharge
-  it via the chart-N inverse smoothness
-  (`chartN_symm_contMDiff`, `chartS_symm_contMDiff`).
+* **`BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) RiemannSphere p₀`
+  UNCONDITIONAL** (2026-05-18 late late, HEAD `ce40ac7`). The full
+  load-bearing genus-0 input for canonical period-lattice closure
+  is now structurally complete: every smooth loop on `RS` at any
+  basepoint has its single in `stokesBoundaries`. End-to-end pipeline:
+
+  ```
+  smooth loop on RS
+    → [Sard via Hausdorff dimH ≤ 1 < 2 = finrank ℝ ℂ]
+      misses some point
+    → [Möbius `mobiusComposed c` + chart-N pullback via `tubularBump`]
+      factors through ℂ as `γ = push f γ'`
+    → [V-loop-bounds linear contraction + stokesBoundaries pushforward]
+      based loop bounds a smooth 2-chain
+    → [loop-rebasing + rebasing] every smooth loop's single ∈ stokesBoundaries
+    → [concat-additivity + reverse-cancellation + const-membership +
+       cycle-boundary-cancellation]
+      every smooth 1-cycle's single ∈ stokesBoundaries
+    → stokesBoundaries 𝓘(ℝ, ℂ) RiemannSphere = ⊤
+  ```
+
+  ~5,140 LOC across ~30 chips landed 2026-05-18 (concat-additivity
+  arc → V-loop-bounds → factorisation pipeline → chart-symm smoothness
+  → structural reduction → chart-N pullback discharge → Möbius shift
+  → missed-point discharge → capstone). Headline:
+  `basedSmoothLoopsBoundHypothesis_RS_holds` in
+  `Manifold/StokesBoundariesTopRiemannSphere.lean`.
 
 * **A1 + A2 closed unconditionally** — the two RS-side classical inputs
   of the genus-0 Riemann–Roch chain (`LinearSystemAtInftyRS_BoundedBySimplePoleSpan`
