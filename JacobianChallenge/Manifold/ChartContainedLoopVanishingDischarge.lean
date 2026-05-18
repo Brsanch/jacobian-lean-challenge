@@ -7,7 +7,11 @@ import JacobianChallenge.Manifold.ChartContainedLoopPeriod
 import JacobianChallenge.Manifold.HolomorphicOneFormRealComponent
 import JacobianChallenge.Manifold.SmoothPathChartCompat
 import JacobianChallenge.Manifold.LoopPeriodConstant
+import JacobianChallenge.Manifold.ComplexManifoldRealification
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+import Mathlib.Geometry.Manifold.ContMDiff.Atlas
+import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+import Mathlib.Analysis.Calculus.ContDiff.Deriv
 
 set_option linter.unusedSectionVars false
 set_option maxHeartbeats 8000000
@@ -286,6 +290,57 @@ The substantive piece is the complex-to-real-scalars transfer of the
 chart's smoothness. -/
 def DerivChartPathContinuousOn_named (data : ChartContainedClosedLoop (X := X)) : Prop :=
   ContinuousOn (deriv data.chartPath) (Set.Icc (0 : ℝ) 1)
+
+/-- **Discharge of `DerivChartPathContinuousOn_named`.**
+The composite `chartPath = chart ∘ γ.ambient : ℝ → ℂ` is `C^∞` on the
+open preimage `U := γ.ambient⁻¹ chart.source ⊆ ℝ` because:
+  (a) `γ.ambient` is `C^∞` from `𝓘(ℝ,ℝ)` to `𝓘(ℝ,ℂ)`
+      (`SmoothPath.ambient_contMDiff`);
+  (b) the chart `chartAt ℂ basePoint` is `C^∞` on its source under the
+      real-realified manifold structure (`contMDiffOn_chart`, using
+      `complexManifoldRealification`).
+On vector spaces with trivial models, `ContMDiffOn 𝓘(ℝ,ℝ) 𝓘(ℝ,ℂ) ∞`
+collapses to `ContDiffOn ℝ ∞` via `contMDiffOn_iff_contDiffOn`. Then
+`ContDiffOn.continuousOn_deriv_of_isOpen` gives continuity of
+`deriv chartPath` on `U`, and `[0,1] ⊆ U` (via `ambient_in_source`)
+finishes the restriction. -/
+theorem derivChartPathContinuousOn_holds
+    (data : ChartContainedClosedLoop (X := X)) :
+    DerivChartPathContinuousOn_named data := by
+  show ContinuousOn (deriv data.chartPath) (Set.Icc (0 : ℝ) 1)
+  -- 1. Open neighborhood `U` of `[0,1]` in ℝ on which `chartPath` is C^∞.
+  set U : Set ℝ := data.γ.ambient ⁻¹' (chartAt ℂ data.basePoint).source with hU_def
+  have h_amb_cont : Continuous data.γ.ambient :=
+    data.γ.ambient_contMDiff.continuous
+  have hU_open : IsOpen U :=
+    (chartAt ℂ data.basePoint).open_source.preimage h_amb_cont
+  have hUcc : Set.Icc (0 : ℝ) 1 ⊆ U :=
+    fun t ht => data.ambient_in_source t ht
+  -- 2. `γ.ambient` is C^∞ from 𝓘(ℝ,ℝ) into 𝓘(ℝ,ℂ).
+  have h_amb : ContMDiff 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) ∞ data.γ.ambient :=
+    data.γ.ambient_contMDiff
+  -- 3. The chart is C^∞ on its source under the real manifold structure.
+  have h_chart :
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (chartAt ℂ data.basePoint)
+        (chartAt ℂ data.basePoint).source :=
+    contMDiffOn_chart
+  -- 4. Composition: chartPath = chart ∘ γ.ambient is ContMDiffOn ∞ on U.
+  have h_amb_on : ContMDiffOn 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) ∞ data.γ.ambient U :=
+    h_amb.contMDiffOn
+  have h_maps : Set.MapsTo data.γ.ambient U (chartAt ℂ data.basePoint).source :=
+    fun t ht => ht
+  have h_comp : ContMDiffOn 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) ∞ data.chartPath U :=
+    h_chart.comp h_amb_on h_maps
+  -- 5. Bridge to ContDiffOn ℝ via trivial-model identification.
+  have h_contDiffOn : ContDiffOn ℝ ∞ data.chartPath U :=
+    h_comp.contDiffOn
+  -- 6. ContDiffOn → ContinuousOn of `deriv` on the open `U`.
+  have h_one_le_top : (1 : WithTop ℕ∞) ≤ ∞ := by
+    exact_mod_cast (le_top : (1 : ℕ∞) ≤ ⊤)
+  have h_cont_U : ContinuousOn (deriv data.chartPath) U :=
+    h_contDiffOn.continuousOn_deriv_of_isOpen hU_open h_one_le_top
+  -- 7. Restrict to [0, 1].
+  exact h_cont_U.mono hUcc
 
 /-- **Named ingredient: complexChainPeriod identifies with the chart-coord integral.**
 For a `ChartContainedClosedLoop` `data` and `α : HolomorphicOneForm X`:
