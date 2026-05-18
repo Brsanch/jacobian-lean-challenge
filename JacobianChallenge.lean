@@ -705,3 +705,4 @@ import JacobianChallenge.Manifold.C3PeriodLatticeStokesCanonicalFromStokesBounda
 import JacobianChallenge.Manifold.C3PeriodLatticeCanonicalItemsDischarge
 import JacobianChallenge.Manifold.Smooth2SimplexConstFaceEq
 import JacobianChallenge.Manifold.SmoothPathConstFromFace0
+import JacobianChallenge.Manifold.SmoothPathExt
