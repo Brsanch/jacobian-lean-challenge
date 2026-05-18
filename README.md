@@ -14,13 +14,21 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 ## Status
 
 **Current state (2026-05-18 late late + 5):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
-Build clean at **9090 jobs** (zero `sorry`, zero `axiom`). Repo:
-**143,442 LOC across 805 `.lean` files**.
+Build clean at **9092 jobs** (zero `sorry`, zero `axiom`). Repo:
+**143,695 LOC across 807 `.lean` files**.
 
 Major recent landings (all on `main`):
 
-* **Generic genus-≥1 period-lattice: per-based-loop homology
-  reduction** (2026-05-18 late late + 5, 4 chips, ~711 LOC). The
+* **Generic genus-≥1 period-lattice: per-based-loop homology +
+  complex-valued Stokes consolidation** (2026-05-18 late late + 5,
+  6 chips, ~964 LOC). The fourth atomic input
+  (`H1_spans_top_canonical`) factors through a per-based-loop homology
+  decomposition hypothesis + smooth-path-connectedness; the holomorphic
+  side's two real-valued vanishings consolidate into a single
+  complex-valued `HolomorphicComplexBoundaryVanishingHypothesis`. The
+  most-atomic constructor
+  `GenericGenusPeriodLatticeInputs.ofAtomicData` packages the reduced
+  data list. The
   fourth atomic input of `GenericGenusPeriodLatticeInputs`
   (`H1_spans_top_canonical`) now factors through a per-based-loop
   homology decomposition hypothesis + smooth-path-connectedness, the
