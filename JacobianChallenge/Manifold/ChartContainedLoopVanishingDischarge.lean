@@ -133,6 +133,45 @@ lemma chartPath_mdifferentiableAt_of_unitInterval
       ((chartAt ℂ data.basePoint : X → ℂ) ∘ data.γ.ambient) t :=
   data.chartPath_mdifferentiableAt (data.ambient_in_source t ht)
 
+/-! ## Differentiability of `F ∘ chartPath` -/
+
+/-- **`F ∘ chartPath` is differentiable at each `t ∈ [0, 1]`.** The
+chain rule via `HasDerivAt.comp` applied to the local primitive `F`
+and the chart-coord path `chartPath`. -/
+lemma F_comp_chartPath_hasDerivAt
+    (data : ChartContainedClosedLoop (X := X))
+    (α : HolomorphicOneForm X)
+    {t : ℝ} (ht : t ∈ Set.Icc (0 : ℝ) 1) :
+    HasDerivAt
+      ((Classical.choose
+        (HolomorphicOneForm.exists_local_primitive_on_ball α data.basePoint
+          data.ball_sub_target)) ∘ data.chartPath)
+      ((α.localCoeff data.basePoint (data.chartPath t)) *
+        (deriv data.chartPath t)) t := by
+  -- The primitive F satisfies HasDerivAt F (α.localCoeff y z) z on the ball.
+  set F : ℂ → ℂ := Classical.choose
+    (HolomorphicOneForm.exists_local_primitive_on_ball α data.basePoint
+      data.ball_sub_target) with hF_def
+  -- chartPath t is in the ball (from the structure field).
+  have h_in_ball : data.chartPath t ∈ Metric.ball data.ballCentre data.ballRadius :=
+    data.chart_image_in_ball t ht
+  -- F has derivative α.localCoeff y at chartPath t.
+  have hF_deriv : HasDerivAt F
+      (α.localCoeff data.basePoint (data.chartPath t)) (data.chartPath t) :=
+    data.localPrimitiveOnX_spec α (data.chartPath t) h_in_ball
+  -- chartPath is differentiable at t (from MDifferentiableAt above).
+  -- Convert MDifferentiableAt 𝓘(ℝ,ℝ) 𝓘(ℝ,ℂ) chartPath t to HasDerivAt.
+  have h_chart_mdiff := data.chartPath_mdifferentiableAt_of_unitInterval ht
+  have h_chart_diff : DifferentiableAt ℝ data.chartPath t := by
+    -- MDifferentiableAt with model 𝓘(ℝ,ℝ) → 𝓘(ℝ,ℂ) is the same as DifferentiableAt ℝ.
+    show DifferentiableAt ℝ
+      ((chartAt ℂ data.basePoint : X → ℂ) ∘ data.γ.ambient) t
+    exact MDifferentiableAt.differentiableAt h_chart_mdiff
+  have h_chart_hasDerivAt : HasDerivAt data.chartPath (deriv data.chartPath t) t :=
+    h_chart_diff.hasDerivAt
+  -- Apply chain rule.
+  exact hF_deriv.comp t h_chart_hasDerivAt
+
 end ChartContainedClosedLoop
 
 end JacobianChallenge
