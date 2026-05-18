@@ -1,5 +1,61 @@
 # Changelog
 
+## 2026-05-18 (late late) — `BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) RS p₀` UNCONDITIONAL — Sard via Hausdorff + Möbius shift + chart-N pullback (6 chips, ~890 LOC, MERGED + PUSHED to origin/main HEAD `ce40ac7`)
+
+The load-bearing genus-0 input for canonical period-lattice closure
+is now structurally complete: every smooth loop on `RiemannSphere`
+at any basepoint has its single in `stokesBoundaries 𝓘(ℝ, ℂ) RS`.
+Repo: **141,139 LOC across 788 files**, full `lake build` at
+**9068 jobs**.
+
+The atomic predicate chain — `SmoothLoopHasMissedPointHypothesis`
+→ `LoopFactorsThroughVectorSpaceHypothesis` →
+`BasedSmoothLoopsBoundHypothesis` — is now end-to-end unconditional.
+
+* **`Manifold/SmoothPathTubularBump.lean`** (~165 LOC) — smooth bump
+  `tubularBump δ : ℝ → ℝ` (= product of two `Real.smoothTransition`)
+  with `=1` on `[0, 1]`, `=0` outside `[-δ, 1+δ]`. Plus
+  `exists_tubular_delta` (open `U ⊇ Icc 0 1 ⟹ ∃ δ > 0, Ioo (-δ) (1+δ) ⊆ U`).
+
+* **`Manifold/SmoothLoopChartNPullbackDischarge.lean`** (~205 LOC) —
+  `smoothLoopChartNPullbackExistsHypothesis_holds`. Constructs the
+  smooth pullback `γ' : SmoothPath 𝓘(ℝ, ℂ) ℂ` of a smooth loop with
+  image in `chartN.source`, via `g'(t) := tubularBump δ t *
+  chartN(γ.ambient t)`. Smoothness via two-region open cover
+  `Ioo (-δ_outer, 1+δ_outer) ∪ (Iio (-δ) ∪ Ioi (1+δ))`.
+
+* **`Manifold/LoopFactorsThroughVectorSpaceFromAvoidInfty.lean`** (~50 LOC) —
+  composite wiring the chart-N discharge into the structural reduction.
+
+* **`Manifold/RiemannSphereMobiusComposed.lean`** (~165 LOC) —
+  `mobiusComposed c := antipode ∘ translateBy (-c) : RS → RS` sending
+  `(some c) ↦ ∞`; `mobiusComposedInv c := translateBy c ∘ antipode`.
+  Smoothness in real model (`𝓘(ℝ, ℂ) ∞`) via composition + realification.
+
+* **`Manifold/LoopFactorsThroughVectorSpaceFromMissedPoint.lean`** (~195 LOC) —
+  `SmoothLoopHasMissedPointHypothesis p₀` predicate. Derives
+  `LoopFactorsThroughVectorSpaceHypothesis ℂ RS p₀` by case-split on
+  the missed point (∞ direct, finite `c` via `mobiusComposed`).
+
+* **`Manifold/SmoothLoopHasMissedPointDischarge.lean`** (~140 LOC) —
+  `smoothLoopHasMissedPointHypothesis_holds` UNCONDITIONAL via Sard
+  through Hausdorff dimension:
+  - `chartN ∘ γ.ambient` is locally Lipschitz on
+    `s := γ.ambient⁻¹ chartN.source ∩ Icc 0 1`
+    (smooth composition + `ContDiffAt.exists_lipschitzOnWith`).
+  - `dimH_image_le_of_locally_lipschitzOn` ⟹ `dimH image ≤ dimH s ≤ 1`.
+  - `1 < 2 = finrank ℝ ℂ` ⟹ `dense_compl_of_dimH_lt_finrank` ⟹
+    complement is dense, hence non-empty.
+  - Pick `z` in complement; `chartN.symm z` is the missed point.
+
+* **`Manifold/StokesBoundariesTopRiemannSphere.lean`** (~50 LOC) —
+  capstone composite `basedSmoothLoopsBoundHypothesis_RS_holds (p₀)`:
+  `BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) RiemannSphere p₀` is
+  unconditional.
+
+Build: each file clean via `LEAN_NUM_THREADS=1 lake env lean`. Zero
+`sorry`, zero `axiom`.
+
 ## 2026-05-18 (late) — Chart-symm smoothness + structural reduction to two atomic predicates (2 chips, ~250 LOC, MERGED + PUSHED to origin/main HEAD `9e1fe1a`)
 
 Continues toward an unconditional discharge of

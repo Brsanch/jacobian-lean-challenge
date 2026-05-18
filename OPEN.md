@@ -205,14 +205,16 @@ genus ≥ 1, blocked on classical mathlib gaps), Phase 3 ~7.1–15k
 (surface classification, blocked), Phase 4 ~6.9–12.8k (Hodge,
 blocked). See `CLOSURE_MAP.md` section F.
 
-**Current repo size:** **~140,066 LOC across 781 files** (2026-05-18
-late, +~4,400 LOC across 22 chips on top of the late-night
-2026-05-18 state, build **9061 jobs** clean). Latest arc:
-concat-additivity in stokesBoundaries + rebasing + V-loop-bounds +
-factorisation-pipeline + chartN/chartS.symm smoothness + structural
-reduction of `LoopFactorsThroughVectorSpaceHypothesis ℂ RiemannSphere
-p₀` to two named sub-hypotheses (avoid-∞ + chart-N pullback existence).
-HEAD `9e1fe1a`.
+**Current repo size:** **~141,139 LOC across 788 files** (2026-05-18
+late late, +~1,070 LOC across 7 additional chips on top of the
+2026-05-18-late state, build **9068 jobs** clean). Latest arc:
+chart-N pullback discharge (`tubularBump` smooth-bump + tubular-
+neighborhood compactness), composite via avoid-∞, Möbius shift
+`mobiusComposed`, missed-point case split, **Sard via Hausdorff
+dimension discharge of `SmoothLoopHasMissedPointHypothesis`**, and
+the capstone `basedSmoothLoopsBoundHypothesis_RS_holds`. The full
+chain `BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) RiemannSphere p₀` is
+now **unconditional**. HEAD `ce40ac7`.
 Major landings this session:
 
 * **Item 1 → STRICT-CLOSED.** Full Forster Riesz arc: 10 chips,
