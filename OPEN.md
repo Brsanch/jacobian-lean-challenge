@@ -432,6 +432,62 @@ bundle refactor). Major landings this session:
 
   Build: 9031 jobs clean. Zero `sorry`, zero `axiom`.
 
+  **Path-plus-reverse Stokes-boundary identity (2026-05-18 evening,
+  6 additional chips, ~675 LOC, MERGED, origin/main HEAD `dbfd7d8`).**
+  Extends the smooth-singular foundation by exhibiting concrete
+  non-trivial homological identities:
+
+  *Infrastructure*:
+  - `Manifold/SmoothPathExt.lean` — `SmoothPath.ext` extensionality
+    lemma (`@[ext]`-tagged): equality of smooth paths reduces to
+    matching src/tgt + pointwise toPath equality on unitInterval.
+    Proven via `rcases`-mk-elim + `Path.ext` + `Prop`
+    proof-irrelevance for the `smooth` existential.
+
+  *Smooth-2-simplex from a path*:
+  - `Manifold/Smooth2SimplexFromPath.lean` — for any
+    `γ : SmoothPath I X`, the smooth 2-simplex
+    `σ_γ(x) := γ.ambient (x 0)` (depending only on first coordinate)
+    has faces identified as `face0 σ_γ = γ.reverse`,
+    `face1 σ_γ = SmoothPath.const I X γ.src`, `face2 σ_γ = γ`. Hence
+    `boundary σ_γ = single γ.reverse - single (const γ.src) + single γ
+       ∈ stokesBoundaries`.
+
+  *Path-plus-reverse identity*:
+  - `Manifold/SmoothPathReverseStokesBoundary.lean` — combines the
+    above with `single (const γ.src) ∈ stokesBoundaries` (chip 15)
+    to conclude: **for ANY smooth path γ on ANY smooth manifold X,
+    `SmoothChain.single γ + SmoothChain.single γ.reverse` (packaged
+    as a SmoothCycle) lies in `stokesBoundaries I X`.** Witness:
+    `Smooth2Chain.single (ofSmoothPathFstProj γ) + Smooth2Chain.single
+    (Smooth2Simplex.const I X γ.src)`.
+  - `Manifold/SmoothPathReverseIntegrateZero.lean` — complementary
+    direct-computation: `SmoothChain.integrate (single γ + single
+    γ.reverse) om = 0` for any 1-form `om` (no closedness assumption),
+    via `SmoothPath.integrate_reverse`.
+  - `Manifold/SmoothPathReverseH1Zero.lean` —
+    `proj_single_smoothPath_plus_reverse_eq_zero`: the H₁-quotient
+    class `[single γ + single γ.reverse]` is zero in
+    `(StokesBoundaryInvariance.canonical I X).H1`.
+
+  *Auxiliary*:
+  - `Manifold/SmoothPathConstReverseEq.lean` — `SmoothPath.const_reverse`:
+    `(SmoothPath.const I X P).reverse = SmoothPath.const I X P` (via
+    `SmoothPath.ext`).
+
+  *Geometric content*: in the canonical Stokes-homology quotient on
+  ANY smooth manifold, every smooth path γ has `[γ.reverse] = -[γ]`.
+  Constant paths bound (chip 15), reverse cancellation holds
+  (chip 18). The remaining classical content for `stokesBoundaries
+  = ⊤` (genus-0 case) is the simply-connected → null-bounded chain
+  for non-constant loops — the smooth Hurewicz / null-homotopy →
+  2-chain construction from `simplyConnectedS2_holds` on the
+  Riemann sphere.
+
+  Build: 9037 jobs clean. Zero `sorry`, zero `axiom` across all
+  6 chips. **Cumulative 2026-05-18 arc: 21 chips, ~2175 LOC, all
+  MERGED + PUSHED to origin/main HEAD `dbfd7d8`.**
+
 **Prior-state landings (still relevant)**:
 
 * **`lieAddGroup_quotient_of_zlattice`** (chip 2) — unconditional
