@@ -380,6 +380,18 @@ theorem chartContainedLoopVanishingHypothesis_of_ingredients
     h1.mul h2
   exact h_cont.intervalIntegrable_of_Icc zero_le_one
 
+/-- **`ChartContainedLoopVanishingHypothesis_holds` from the bridge alone.**
+With `derivChartPathContinuousOn_holds` discharging the deriv-continuity
+ingredient unconditionally, the chart-contained-loop vanishing only
+requires the chart-coord-integral identification. -/
+theorem chartContainedLoopVanishingHypothesis_from_bridge
+    (h_bridge :
+      ∀ (data : ChartContainedClosedLoop (X := X)) (α : HolomorphicOneForm X),
+        ComplexChainPeriodEqChartIntegral_named data α) :
+    ChartContainedLoopVanishingHypothesis (X := X) :=
+  chartContainedLoopVanishingHypothesis_of_ingredients
+    (fun data => derivChartPathContinuousOn_holds data) h_bridge
+
 end ChartContainedClosedLoop
 
 end JacobianChallenge
