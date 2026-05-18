@@ -570,6 +570,94 @@ Major landings this session:
   No `sorry`, no `axiom` across all 10 chips. Each verified
   individually via `LEAN_NUM_THREADS=1 lake env lean`.
 
+  **Rebasing + V-loop-bounds + factorisation pipeline (2026-05-18
+  late night, 11 chips, ~1840 LOC, MERGED + PUSHED to origin/main
+  HEAD `3d765aa`).** Continues the period-lattice closure pipeline:
+  with concat-additivity now done, builds the full structural
+  framework reducing `stokesBoundaries 𝓘(ℝ, ℂ) RS = ⊤` to a single
+  named atomic predicate `LoopFactorsThroughVectorSpaceHypothesis ℂ RS p₀`.
+
+  *Rebasing arc (3 chips, ~510 LOC)*:
+  - `Manifold/SmoothPathRebasingIdentity.lean` — `triple_concat_in_stokesBoundaries`:
+    for α, γ, β smooth paths, `single (α ⋆ γ ⋆ β.reverse) - single α
+    - single γ - single β.reverse ∈ stokesBoundaries`. Proof: sum of
+    outer + inner concat-additivity.
+  - `Manifold/SmoothPathRebasingFull.lean` — `rebasing_in_stokesBoundaries`:
+    for any smooth path γ : a → b and based paths α : p₀ → a,
+    β : p₀ → b, `single γ - single (α ⋆ γ ⋆ β.reverse) + single α
+    - single β ∈ stokesBoundaries`. Proof: combine triple-concat with
+    path-plus-reverse.
+  - `Manifold/SmoothPathLoopRebasing.lean` — `loop_rebasing_in_stokesBoundaries`:
+    specialisation to a smooth loop γ (γ.src = γ.tgt) and α : p₀ → γ.src;
+    rebasing corrections collapse, giving
+    `single γ - single (α ⋆ γ ⋆ α.reverse) ∈ stokesBoundaries`.
+
+  *Named hypothesis (1 chip, ~150 LOC)*:
+  - `Manifold/BasedSmoothLoopsBound.lean` —
+    `BasedSmoothLoopsBoundHypothesis I X p₀ : Prop` saying every
+    smooth loop based at `p₀` has its single in stokesBoundaries.
+    Together with `loop_rebasing_in_stokesBoundaries`, gives
+    `single_smoothLoop_in_stokesBoundaries_of_basedLoopsBoundHypothesis`:
+    every smooth loop on a smooth-path-connected manifold has single
+    in stokesBoundaries.
+
+  *V-loop-bounds (3 chips, ~620 LOC)*:
+  - `Manifold/Smooth2SimplexLoopBoundsVectorSpaceT1.lean` —
+    `Smooth2Simplex.ofLoopBoundT1 γ`, the first triangle of the
+    square-diagonal split of the smooth homotopy
+    `H(s, t) := (1-s) • γ.ambient t + s • γ.src`. Faces: `face0 = const γ.src`,
+    `face2 = γ`, `face1` = diagonal.
+  - `Manifold/Smooth2SimplexLoopBoundsVectorSpaceT2.lean` — second
+    triangle. Faces: `face0 = const γ.src` (right edge), `face1 = const γ.src`
+    (bottom-left), `face2` = same diagonal (cancellation lemma).
+  - `Manifold/SmoothLoopBoundsInVectorSpace.lean` —
+    `single_smoothLoop_in_stokesBoundaries_vectorSpace`: every smooth
+    loop in a normed ℝ-vector space `V` has single in
+    `stokesBoundaries 𝓘(ℝ, V) V`. Discharges
+    `BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, V) V p₀` **unconditionally**
+    for any basepoint.
+
+  *stokesBoundaries pushforward (1 chip, ~210 LOC)*:
+  - `Manifold/Smooth2SimplexPush.lean` — `Smooth2Simplex.push f hf`,
+    `Smooth2Chain.push f hf`, `boundary₂_push` (compatibility), and
+    headline `stokesBoundaries_push`: pushforward via a smooth map
+    sends `stokesBoundaries I X → stokesBoundaries I Y`.
+
+  *Compose V-loop-bounds + push (2 chips, ~230 LOC)*:
+  - `Manifold/SmoothLoopBoundsViaChart.lean` —
+    `single_pushSmoothLoop_in_stokesBoundaries_of_vectorSpaceSource`:
+    for any smooth loop γ' in V and smooth map f : V → X (both
+    modelled on 𝓘(ℝ, V)), `single (push f hf γ') ∈ stokesBoundaries 𝓘(ℝ, V) X`.
+  - `Manifold/BasedSmoothLoopsBoundFromFactorisation.lean` —
+    named predicate `LoopFactorsThroughVectorSpaceHypothesis V X p₀`
+    (every smooth loop at p₀ factors as `push f γ'` for some smooth
+    f : V → X and smooth loop γ' in V) + headline
+    `basedSmoothLoopsBoundHypothesis_of_factorisation` discharging
+    `BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, V) X p₀` from the
+    factorisation predicate.
+
+  **Final classical-input boundary for the period-lattice side of C3
+  on RiemannSphere** reduces to a SINGLE atomic predicate:
+
+  ```
+  LoopFactorsThroughVectorSpaceHypothesis ℂ RiemannSphere p₀
+  ```
+
+  i.e., every smooth loop on RS at `p₀` factors as the pushforward of
+  some smooth loop in ℂ via a smooth (chart-style) map ℂ → RS.
+
+  Constructive discharge on RS (future arc): for any smooth loop
+  γ : SmoothPath 𝓘(ℝ, ℂ) RS at p₀, the measure-zero image
+  γ([0, 1]) ⊆ RS misses some `q`; stereographic projection from `q`
+  identifies `RS \ {q} ≅ ℂ` smoothly with `φ⁻¹ : ℂ → RS \ {q}` a
+  global smooth map (defined on all of ℂ); take `f := φ⁻¹` (extended
+  trivially as a total map ℂ → RS, image in RS \ {q}), and
+  γ' := φ ∘ γ : [0, 1] → ℂ. Then γ = push f γ' is the desired
+  factorisation.
+
+  All 11 chips clean (`LEAN_NUM_THREADS=1 lake env lean`).
+  Zero `sorry`, zero `axiom`.
+
 **Prior-state landings (still relevant)**:
 
 * **`lieAddGroup_quotient_of_zlattice`** (chip 2) — unconditional
