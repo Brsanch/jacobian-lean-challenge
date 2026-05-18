@@ -1,5 +1,52 @@
 # Changelog
 
+## 2026-05-17 (very late late night) — `AbelHypothesis` from generators-only Abel input (1 chip, ~90 LOC, direct to `main`)
+
+New file `Manifold/AbelHypothesisFromPrincipal.lean` shipping
+`abelHypothesis_of_abelJacobiDivHom_principal_zero`:
+
+```
+theorem abelHypothesis_of_abelJacobiDivHom_principal_zero
+    (B : AbelJacobiInputSymp α h)
+    (h_princ : ∀ f : MeromorphicNonzero X,
+        B.abelJacobiDivHom (principalDivisorMap f) = 0) :
+    AbelHypothesis B
+```
+
+Strips the subgroup-closure bookkeeping from
+`AbelHypothesis B = ∀ D ∈ PrincDiv X, B.abelJacobiDiv0Hom D = 0`,
+reducing it to the **generator-only** statement
+`∀ f, B.abelJacobiDivHom (principalDivisorMap f) = 0` — i.e. classical
+Abel's theorem stripped of the additional `AddSubgroup.closure` shape.
+
+The proof uses `AddSubgroup.closure_induction` to lift vanishing on
+generators to vanishing on the full closure. The `Div`-level
+`abelJacobiDivHom : Div X →+ AnalyticJacobianSymp …` (an `AddMonoidHom`)
+handles the algebraic closure operations (`+`, `0`, `neg`) via
+`map_add`, `map_zero`, `map_neg`.
+
+**Significance.** This is the cleanest named-classical-input boundary
+for the Abel side of `C3FullInputSymp X`. Combined with the prior
+`PeriodLatticeSymplecticBundle.ofClassicalInputs` chip
+(`PeriodLatticeSymplecticBundleClassical.lean`), constructing
+`C3FullInputSymp X` for general genus now reduces to **three** named
+classical hypotheses (plus the path-connectedness `AbelJacobiInputSymp`
+which is already unconditional via `nonempty_of_connected`):
+
+1. A tuple `cycleGens : Fin (2g) → SmoothCycle X` representing a
+   symplectic homology basis (the H₁ ≅ ℤ^{2g} classical theorem).
+2. Riemann bilinear non-degeneracy of the periods of `cycleGens`.
+3. Generator-only Abel vanishing
+   (`∀ f, abelJacobiDivHom (principalDivisorMap f) = 0`).
+
+Plus `JacobiInversion` (theta-divisor surjectivity) for the full bundle.
+
+Build: `LEAN_NUM_THREADS=1 lake env lean ...` clean. Zero `sorry`, zero
+`axiom`. Theorem uses an inline-`{X}`-instance signature (rather than a
+`variable`-block) because Lean's instance synthesis was confused by
+the auto-bound implicit `X` when `T2Space`/`CompactSpace` were declared
+only via `variable`.
+
 ## 2026-05-17 (very late late night) — Period lattice classical-input constructor (1 chip, ~140 LOC, direct to `main`)
 
 New file `Manifold/PeriodLatticeSymplecticBundleClassical.lean` shipping
