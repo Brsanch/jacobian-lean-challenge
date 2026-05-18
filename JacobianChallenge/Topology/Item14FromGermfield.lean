@@ -6,7 +6,7 @@ Authors: Bryan Sanchez
 import JacobianChallenge.Topology.RRGenusZeroGermComposition
 import JacobianChallenge.Topology.Item14FinalComposition
 import JacobianChallenge.Manifold.SurjectiveOfNonConstantDischarge
-import JacobianChallenge.Manifold.BijectiveAnalyticDischarge
+import JacobianChallenge.Manifold.BijectiveAnalyticToBiholomorphismDischarge
 import JacobianChallenge.Manifold.NearbyRegularWitnessUnconditional
 
 set_option diagnostics.threshold 100
