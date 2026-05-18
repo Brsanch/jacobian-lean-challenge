@@ -292,6 +292,77 @@ bundle refactor). Major landings this session:
   case `trivial_at_genus_zero` is unconditionally constructible
   (no bypass). Side-by-side refactor; legacy consumers untouched.
 
+  **Period-lattice classical-input structural decomposition +
+  Smooth2Simplex algebraic infrastructure (2026-05-17 very late late
+  night, 8 chips, ~1,250 LOC, branch
+  `feat/period-lattice-stokes-refactored`, PUSHED).** Chips 1–2
+  also landed on `origin/main` via fast-forward; chips 3–8 on the
+  feature branch.
+
+  *Structural-decomposition chain* (refines
+  `PeriodLatticeSymplecticBundle.ofClassicalInputs`):
+  ```
+  C3PeriodLatticeStokesSpanTopInputs basis
+       ↓ (H1_spans_top → homologyGeneration)
+  C3PeriodLatticeStokesInputs basis
+       ↓ (Stokes + holomorphic_closed + homologyGeneration → homologySpans)
+  C3PeriodLatticeClassicalInputs basis
+       ↓ .toBundle
+  PeriodLatticeSymplecticBundle data α
+       ↓ ofSymplectic_compactSpace / _chartedSpace
+  items 5, 11, 12, 13 wiring.
+  ```
+  The five atomic fields of `C3PeriodLatticeStokesSpanTopInputs basis`
+  are: `cycleGens : Fin 2g → SmoothCycle X`, `riemannBilinear`
+  (ℝ-LI of period vectors), `stokes : StokesBoundaryInvariance`,
+  `holomorphic_closed`, `H1_spans_top` (cycleGens project to a
+  ℤ-generating set of `H₁ := SmoothCycle / boundaries`).
+
+  *Headlines on the feature branch* (in addition to the legacy
+  bundle's `trivial_at_genus_zero`):
+  - `nonempty_C3PeriodLatticeStokesSpanTopInputs_RiemannSphere`
+    UNCONDITIONAL (genus 0 + Subsingleton HolomorphicOneForm RS,
+    both unconditional in tree).
+  - `Nonempty.periodLatticeSymplecticBundle_of_stokesSpanTop` —
+    `[Nonempty (C3PeriodLatticeStokesSpanTopInputs basis)] →
+     Nonempty (PeriodLatticeSymplecticBundle data basis)`.
+
+  *Classical-content infrastructure* (chips 6–8, ~635 LOC):
+  - `Manifold/Smooth2Simplex.lean` (~370 LOC) — Concrete
+    `Smooth2Simplex I X` (C^∞ map `(Fin 2 → ℝ) → X`), three face
+    parameter maps with `ContMDiff` proofs, `face0/1/2 : SmoothPath`,
+    `Smooth2Chain := Smooth2Simplex →₀ ℤ` with `Module ℤ`
+    structure, `boundary₂ : Smooth2Chain →ₗ[ℤ] SmoothChain`, and
+    the unconditional **`d² = 0` identity** (proved via vertex
+    cancellation on the formal combination
+    `face₀ - face₁ + face₂`).
+  - `Manifold/Smooth2ChainStokesBoundary.lean` (~140 LOC) —
+    `boundary₂Cycle : Smooth2Chain →ₗ[ℤ] SmoothCycle` (factored
+    through `SmoothCycle` via d²=0). Defines the **canonical**
+    `stokesBoundaries I X : AddSubgroup (SmoothCycle I X) := image
+    of boundary₂Cycle`, with `mem_stokesBoundaries_iff` and
+    zero/add/neg closure lemmas.
+  - `Manifold/StokesBoundaryInvarianceFromSimplex.lean` (~125 LOC) —
+    Collapses `StokesBoundaryInvariance` to a single `Prop`:
+    `IntegrationStokesHypothesis I X closedForms :=`
+    `∀ σ, ∀ ω ∈ closedForms, integrate (∂σ) ω = 0`.
+    `ofSingleSimplexStokes` lifts to the chain level via
+    `Finsupp.induction_linear` + integrate-linearity, plugging
+    `stokesBoundaries` in as the canonical `boundaries`.
+
+  *Net classical-input boundary for the period-lattice side of C3*:
+  reduces to (i) the single-simplex Stokes `Prop`, (ii)
+  `holomorphic_closed` (d-closure of holomorphic forms on complex
+  1-manifolds), (iii) `cycleGens` choice, (iv) Riemann bilinear
+  non-degeneracy, (v) `H1_spans_top` (cellular-homology / surface
+  classification). `boundaries` is now CANONICAL. The algebraic
+  `Smooth2Simplex` / d²=0 layer is fully unconditional.
+
+  No `sorry`, no `axiom` across all 8 chips. Build: each file
+  verified individually via `LEAN_NUM_THREADS=1 lake env lean`.
+  Scoreboard unchanged at 13/24 — the inputs (i)–(v) remain real
+  classical content not at the mathlib pin.
+
 **Prior-state landings (still relevant)**:
 
 * **`lieAddGroup_quotient_of_zlattice`** (chip 2) — unconditional
