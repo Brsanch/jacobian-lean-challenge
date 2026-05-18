@@ -250,6 +250,18 @@ lemma localCoeff_chartPath_continuousOn
   -- Compose.
   exact h_cont_on.comp h_chartPath_cont h_maps
 
+/-! ## Continuity of `deriv chartPath` on `[0, 1]` via pointwise HasDerivAt -/
+
+/-- **`chartPath` has a derivative at each `t ∈ [0, 1]`.** Direct from
+the chain rule `mfderiv (φ ∘ γ.ambient)` already computed in
+`SmoothPath.mfderiv_chart_comp_ambient_apply_one` + the
+ℝ-differentiability bridge `MDifferentiableAt.hasDerivAt`. -/
+lemma chartPath_hasDerivAt
+    (data : ChartContainedClosedLoop (X := X)) {t : ℝ}
+    (ht : t ∈ Set.Icc (0 : ℝ) 1) :
+    HasDerivAt data.chartPath (deriv data.chartPath t) t :=
+  (data.chartPath_mdifferentiableAt_of_unitInterval ht).differentiableAt.hasDerivAt
+
 end ChartContainedClosedLoop
 
 end JacobianChallenge
