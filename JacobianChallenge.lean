@@ -813,3 +813,4 @@ import JacobianChallenge.Manifold.ComplexTorusPiecewiseLiftLocalAgreement
 import JacobianChallenge.Manifold.ComplexTorusGlobalLift
 import JacobianChallenge.Manifold.ComplexTorusGlobalLiftIdentity
 import JacobianChallenge.Manifold.ComplexTorusGlobalLiftSmoothInterior
+import JacobianChallenge.Manifold.ComplexTorusGlobalLiftSmoothSeam
