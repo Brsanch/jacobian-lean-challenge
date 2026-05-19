@@ -791,3 +791,5 @@ import JacobianChallenge.Manifold.ComplexTorusH1SpansTop
 import JacobianChallenge.Manifold.ComplexTorusGenericGenusBundle
 import JacobianChallenge.Manifold.ComplexTorusTangentCoordChangeId
 import JacobianChallenge.Manifold.ComplexTorusDz
+import JacobianChallenge.Manifold.ComplexTorusBasicInstances
+import JacobianChallenge.Manifold.ComplexTorusGenusLowerBound
