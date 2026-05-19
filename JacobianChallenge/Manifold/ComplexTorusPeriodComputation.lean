@@ -80,11 +80,11 @@ variable (L : Submodule ℤ ℂ)
 
 /-- The smooth witness function `f t = mkQ ((t : ℂ) * lam)` is the
 ambient lift of `torusBasisLoop lam hlam` on `ℝ`. -/
-private noncomputable def torusBasisAmbient (lam : ℂ) : ℝ → ℂ ⧸ L :=
+noncomputable def torusBasisAmbient (lam : ℂ) : ℝ → ℂ ⧸ L :=
   fun t : ℝ => L.mkQ ((t : ℂ) * lam)
 
 /-- `torusBasisAmbient L lam` is `ContMDiff` everywhere. -/
-private lemma torusBasisAmbient_contMDiff (lam : ℂ) :
+lemma torusBasisAmbient_contMDiff (lam : ℂ) :
     ContMDiff 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) ∞ (torusBasisAmbient L lam) := by
   have h_mul : ContMDiff (𝓘(ℝ, ℝ)) (𝓘(ℝ, ℂ)) ∞
       (fun t : ℝ => (t : ℂ) * lam) := by

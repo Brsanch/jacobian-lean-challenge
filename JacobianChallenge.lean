@@ -795,3 +795,4 @@ import JacobianChallenge.Manifold.ComplexTorusBasicInstances
 import JacobianChallenge.Manifold.ComplexTorusGenusLowerBound
 import JacobianChallenge.Manifold.ComplexTorusPeriodComputation
 import JacobianChallenge.Manifold.ComplexTorusMkQMfderiv
+import JacobianChallenge.Manifold.ComplexTorusPeriodValue
