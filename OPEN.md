@@ -89,13 +89,15 @@ spec. Three statuses, with one tag for partial progress:
 > | `H1_spans_top_canonical` = `SmoothHurewiczHypothesisTorus` | Open — universal-cover lifting `ℂ → ℂ ⧸ L` + lattice classification (structurally reduced in tree to a one-named-atom form, **unconditional in α**) |
 > | smooth-path-connectedness | **Unconditional in tree** (ComplexTorus.α); was implicit-open in the prior framing |
 > | `holomorphicCanonicalClosed` | Open — chart-pullback Cauchy on each 2-simplex |
-> | `riemannBilinear` | Open — Hodge theory (ℝ-linear-independence of period vectors) |
-> | `genus (ℂ ⧸ L) = 1` | Open — Hodge identification (newly explicit at the T² instantiation; was implicit at general X) |
+> | `riemannBilinear` | Open — period computation `∫_{γ_lam} dz = lam` + ℝ-linear-independence of `(lam₁, lam₂)` in ℂ (purely algebraic given the period computation) |
+> | `genus (ℂ ⧸ L) = 1` | **Lower bound `1 ≤ genus` UNCONDITIONAL in tree** (via `dz` construction + Forster-Riesz finite-dim + Nontrivial); **upper bound `genus ≤ 1` open** — Liouville-style argument on universal cover ℂ → ℂ⧸L (every holomorphic 1-form on T_L lifts to bounded holomorphic on ℂ, hence constant, hence a scalar multiple of `dz`) |
 >
-> **Honest count:** still 4 open classical atoms (Hurewicz=H1,
-> riemannBilinear, holomorphicCanonicalClosed, and now `genus_eq`).
-> The `cycleGens` and `α` rows are *prior-implicit atoms that are now
-> explicit and discharged on T²*, not net-new work.
+> **Honest count:** 4 open classical content pieces remain. The
+> `genus_eq` atom has its lower bound CLOSED (significant new
+> classical content shipped — explicit `dz : HolomorphicOneForm
+> (ℂ⧸L)` constructed from the cotangent-bundle triviality, then
+> Forster-Riesz + Nontrivial gives `1 ≤ Module.finrank`). Three open
+> atoms remaining + the `genus ≤ 1` upper bound.
 >
 > Repo state: **148,333 LOC across 834 `.lean` files**, build
 > **9119 jobs** clean (zero `sorry`, zero `axiom`). Scoreboard
