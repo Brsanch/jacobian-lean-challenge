@@ -797,3 +797,5 @@ import JacobianChallenge.Manifold.ComplexTorusPeriodComputation
 import JacobianChallenge.Manifold.ComplexTorusMkQMfderiv
 import JacobianChallenge.Manifold.ComplexTorusPeriodValue
 import JacobianChallenge.Manifold.ComplexTorusRiemannBilinear
+import JacobianChallenge.Manifold.ComplexTorusCoveringMap
+import JacobianChallenge.Manifold.ComplexTorusContinuousPathLift
