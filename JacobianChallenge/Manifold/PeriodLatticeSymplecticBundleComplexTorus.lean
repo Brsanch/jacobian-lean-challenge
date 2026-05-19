@@ -100,7 +100,7 @@ independent. The proof transports `riemannBilinear_torus` (dim 1) along
 * `LinearEquiv.piCongrLeft'` on the inner `Fin (genus (ℂ⧸L)) ≃ Fin 1`
   index (an ℝ-linear isomorphism between the two ℂ-valued function
   spaces). -/
-private theorem riemannBilinear_transport
+theorem riemannBilinear_transport
     (lam₁ lam₂ : ℂ) (hlam₁ : lam₁ ∈ L) (hlam₂ : lam₂ ∈ L)
     (h_indep : LinearIndependent ℝ ![lam₁, lam₂]) :
     LinearIndependent ℝ
