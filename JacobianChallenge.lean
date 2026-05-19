@@ -828,3 +828,4 @@ import JacobianChallenge.Manifold.ComplexTorusProjBordism
 import JacobianChallenge.Manifold.ComplexTorusBasisLoopAdditive
 import JacobianChallenge.Manifold.ComplexTorusBasisLoopZSpan
 import JacobianChallenge.Manifold.ComplexTorusSmoothHurewiczFromBasis
+import JacobianChallenge.Manifold.ComplexTorusZBasisExistence
