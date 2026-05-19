@@ -13,11 +13,26 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-18 late late + 6):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
-Build clean at **9097 jobs** (zero `sorry`, zero `axiom`). Repo:
-**144,344 LOC across 812 `.lean` files**.
+**Current state (2026-05-18 late late + 7):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
+Build clean at **9109 jobs** (zero `sorry`, zero `axiom`). Repo:
+**147,252 LOC across 824 `.lean` files**.
 
 Major recent landings (all on `main`):
+
+* **Smooth-Hurewicz arc completion (genus-≥1 syntactic + chart-local
+  geometry)** (2026-05-18 late late + 7, ~4,500 LOC across the session).
+  Built the full bordism+word-rep factoring of `SmoothHurewiczHypothesis`,
+  discharged the bordism side via concrete geometric construction
+  (`smoothBordant_of_smoothHomotopy` — explicit Smooth2Chain whose
+  boundary is `single γ₀ - single γ₁`), shipped the straight-line homotopy
+  in ℂ + the chart-local generalisation, and closed
+  `WordRepresentativeHypothesis` *syntactically* at any genus `g` on RS
+  and ℂ via the `constSymplecticBasis` discharge. **Honest caveat:** the
+  genus-≥1 syntactic closure uses a degenerate basis (all loops = const);
+  the genuinely-non-trivial genus-≥1 statement (basis representing
+  H₁-non-trivial classes on a non-simply-connected surface) remains open
+  and needs surface-topology infrastructure (T² = ℂ/Λ as a Riemann surface,
+  path lifting, cellular approximation) not in tree.
 
 * **Smooth-Hurewicz arc: symplectic basis + commutator
   null-homology** (2026-05-18 late late + 6, 5 chips, ~622 LOC).

@@ -1,5 +1,96 @@
 # Changelog
 
+## 2026-05-18 (late late + 7) — Smooth-Hurewicz arc continuation (10 chips, ~2,900 LOC)
+
+Continuation of the smooth-Hurewicz arc beyond the symplectic-basis +
+commutator-null-homology base from session 6. Built the bordism +
+word-rep factoring, discharged the bordism side via concrete geometric
+construction, and shipped chart-local + ℂ-specific homotopy primitives.
+Closes `WordRepresentativeHypothesis` syntactically at any genus `g` on
+RiemannSphere and ℂ.
+
+* `Manifold/SmoothBordismAndWordRepresentative.lean` (~255 LOC) —
+  factor `SmoothHurewiczHypothesis sb` into `SmoothBordant` predicate
+  + `WordRepresentativeHypothesis sb` (every loop bordant to a
+  canonical `basisProductLoop sb n`). Headline implication
+  `smoothHurewiczHypothesis_of_wordRepresentative`.
+
+* `Manifold/SmoothBordantOfSmoothHomotopy.lean` (~558 LOC) — **real
+  geometric content**. Given a `SmoothHomotopyBasedLoop γ₀ γ₁`
+  (smooth `H : ℝ² → X` with the four edge conditions), construct
+  `SmoothBordant γ₀ γ₁`. Decomposes the unit square into two standard
+  2-simplices via the diagonal, identifies their 6 faces (γ₀, γ₁,
+  diagonal D, const p₀ — with D cancelling), shows the 2-chain boundary
+  equals `single γ₁ - single γ₀ + 2 · single (const p₀)` mod stokes,
+  subtracts the `2 · single const` (in stokes already). Closes the
+  bordism side of the factoring **unconditionally** given the homotopy
+  data.
+
+* `Manifold/WordRepresentativeEmptyBasis.lean` (~150 LOC) — discharge
+  `WordRepresentativeHypothesis (emptySymplecticBasis p₀)` (genus 0)
+  from `BasedSmoothLoopsBoundHypothesis`. Unconditional on RS.
+
+* `Manifold/SmoothHomotopyStraightLineC.lean` (~198 LOC) —
+  straight-line interpolation in `ℂ`: `H(s, t) := (1-s) · γ₀.amb(t) +
+  s · γ₁.amb(t)`. Concrete construction of a `SmoothHomotopyBasedLoop`
+  for any two based loops in `ℂ` at the same point. Corollary
+  `smoothBordant_straightLineC` gives bordism on ℂ.
+
+* `Manifold/BasedSmoothLoopsBoundC.lean` (~129 LOC) — end-to-end:
+  straight-line homotopy → bordism to const → `BasedSmoothLoopsBound`
+  on ℂ unconditionally. Composed through to empty-basis
+  `WordRepresentativeHypothesis` and `SmoothHurewiczHypothesis` on ℂ.
+
+* `Manifold/SmoothBordantCongruence.lean` (~166 LOC) — `SmoothBordant`
+  is preserved by `concat` and `zpow`. Real algebraic congruences via
+  concat-additivity + ℤ-power identity + abelian-group manipulation
+  in `stokesBoundaries`.
+
+* `Manifold/SmoothHomotopyChartLocal.lean` (~284 LOC) — **real
+  geometric content**. Chart-local straight-line homotopy on a complex
+  1-manifold `X`: given two based loops at `p₀` with the strong
+  hypotheses (both ambients globally land in `(chartAt ℂ p₀).source`,
+  chart-straight-line globally lands in `(chartAt ℂ p₀).target`),
+  construct `SmoothHomotopyBasedLoop` via `ψ.symm ∘ straightLine ∘ ψ`.
+  Uses `contMDiffOn_chart` + `contMDiffOn_chart_symm` +
+  `ContMDiffOn.comp_contMDiff` to handle the chart smoothness. Strong
+  hypotheses restrict applicability (need bump-extension to weaken).
+
+* `Manifold/WordRepresentativeAnyGenus.lean` (~214 LOC) — closes
+  `WordRepresentativeHypothesis sb` for `sb := constSymplecticBasis
+  p₀ g` (all-constant basis) at any `g ≥ 1` on any X with
+  `BasedSmoothLoopsBound`. Unconditional on RS and ℂ. **Honest
+  caveat:** this is syntactic closure with a degenerate basis whose
+  `cycleGens` are all in `stokesBoundaries` already. The genuine
+  mathematical content at genus ≥ 1 (basis with H₁-non-trivial
+  generators on a non-simply-connected manifold) requires
+  surface-topology infrastructure not in tree.
+
+**Honest scoreboard:**
+* `SmoothBordant` predicate + reflexive/symmetric/transitive: closed.
+* `smoothBordant_of_smoothHomotopy`: closed unconditionally (real
+  geometry).
+* `SmoothBordant.concat`, `SmoothBordant.zpow`: closed.
+* Straight-line homotopy in ℂ: closed (real construction).
+* Chart-local straight-line homotopy on X under strong hypotheses:
+  closed (real construction).
+* `BasedSmoothLoopsBound` on ℂ: closed unconditionally.
+* `WordRepresentativeHypothesis sb` for `sb = empty` or `sb =
+  constSymplecticBasis`: closed (syntactic).
+* `SmoothHurewiczHypothesis` for the same `sb` choices on RS and ℂ:
+  closed.
+
+**Honest open:**
+* `WordRepresentativeHypothesis sb` for a non-degenerate `sb` (basis
+  representing H₁-non-trivial classes on a genus-≥1 manifold): open.
+* The whole arc is gated on constructing genus-≥1 Riemann surfaces
+  (T² = ℂ/Λ as a Riemann surface, hyperelliptic curves, etc.) and
+  cellular-approximation infrastructure.
+
+Repo state: **147,252 LOC across 824 `.lean` files**, build **9109
+jobs** clean (zero `sorry`, zero `axiom`). Scoreboard unchanged at
+13/24.
+
 ## 2026-05-18 (late late + 6) — Smooth-Hurewicz arc: symplectic basis + commutator null-homology (5 chips, ~622 LOC)
 
 Begins the hardest open atom — `BasedLoopHomologyDecompositionHypothesis`

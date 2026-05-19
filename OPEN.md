@@ -32,6 +32,45 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-18 (late late + 7) Smooth-Hurewicz arc continuation.**
+> (10 chips, ~2,900 LOC across the session, cumulative ~3,500 LOC with
+> the session-6 base.)
+>
+> * `SmoothBordismAndWordRepresentative.lean` — factor
+>   `SmoothHurewiczHypothesis sb` into `SmoothBordant` + `WordRepresentativeHypothesis sb`.
+> * `SmoothBordantOfSmoothHomotopy.lean` (~558 LOC) — **real
+>   geometric content**: `SmoothHomotopyBasedLoop γ₀ γ₁ ⟹ SmoothBordant
+>   γ₀ γ₁` via explicit 2-chain construction (two simplices covering the
+>   unit square via the diagonal). Boundary computation: 6 face
+>   identifications (γ₀, γ₁, diagonal cancels, 2 const p₀'s). Closes
+>   the bordism side unconditionally given the homotopy data.
+> * `WordRepresentativeEmptyBasis.lean` — empty-basis word-rep from
+>   `BasedSmoothLoopsBound`; unconditional on RS.
+> * `SmoothHomotopyStraightLineC.lean` (~198 LOC) — straight-line
+>   homotopy `(s, t) ↦ (1-s) γ₀.amb(t) + s γ₁.amb(t)` constructs a
+>   `SmoothHomotopyBasedLoop` on `X = ℂ`. Real construction.
+> * `BasedSmoothLoopsBoundC.lean` — `BasedSmoothLoopsBound` on ℂ
+>   unconditional via the straight-line route.
+> * `SmoothBordantCongruence.lean` — `SmoothBordant.concat`,
+>   `SmoothBordant.zpow` algebraic congruences.
+> * `SmoothHomotopyChartLocal.lean` (~284 LOC) — **real geometric
+>   content**: chart-local straight-line homotopy on arbitrary complex
+>   1-manifold `X` under strong hypotheses (γ.ambients globally in
+>   chart-source + chart-straight-line globally in chart-target).
+>   Uses `contMDiffOn_chart` + `ContMDiffOn.comp_contMDiff`.
+> * `WordRepresentativeAnyGenus.lean` — discharges
+>   `WordRepresentativeHypothesis (constSymplecticBasis p₀ g)` at any
+>   `g ≥ 1` on RS and ℂ. **Honest caveat:** uses a *degenerate* basis
+>   (all loops = const), so the cycleGens are all already in
+>   `stokesBoundaries`. The chip closes the syntactic Prop at any `g`
+>   but does not capture genuine genus-≥1 mathematical content. The
+>   non-degenerate genus-≥1 statement requires surface topology
+>   (T² = ℂ/Λ, cellular approximation, path lifting) not in tree.
+>
+> Repo state: **147,252 LOC across 824 `.lean` files**, build **9109
+> jobs** clean (zero `sorry`, zero `axiom`). Scoreboard unchanged at
+> 13/24.
+
 > **2026-05-18 (late late + 6) Smooth-Hurewicz arc: symplectic basis +
 > commutator null-homology landed.** (5 chips, ~622 LOC.)
 >
