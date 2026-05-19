@@ -32,6 +32,42 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 (late) `SmoothPathLiftHypothesisTorus L` CLOSED unconditionally on T².**
+> (17 chips, 2,558 LOC. Headline:
+> `smoothPathLiftHypothesisTorus_holds : SmoothPathLiftHypothesisTorus L`.)
+>
+> Every smooth based loop `γ` at `0` on `ℂ ⧸ L` admits a smooth
+> ambient lift `Γ : ℝ → ℂ` with `Γ(0) = 0` and `mkQ ∘ Γ = γ.ambient`
+> on `Icc 0 1`. This is the universal-cover smooth-lift content of
+> the SmoothHurewicz reduction chain, now unconditional on the
+> complex torus.
+>
+> **Construction.** Chart-anchor Lebesgue partition (`exists_chartAnchor_partition`)
+> + cumulative seam-shift `∈ L` + per-piece chart-symm composition +
+> seam consistency + local agreement near seams (via continuity into
+> discrete `L` + `discRadius_separates`) + global piecewise
+> `pwLiftGlobal` smooth on `Ioo (-δ) (1+δ)` for some `δ > 0`, then
+> bump-multiplier `smoothBump δ` (`= 1` on `Icc 0 1`, supported on
+> `Icc (-δ/2) (1+δ/2)`) to extend smoothly to all of `ℝ`.
+>
+> ## Atomic-input status on `T_L = ℂ ⧸ L` (after this session)
+>
+> | Atom | Status |
+> |---|---|
+> | `cycleGens` | **Unconditional in tree** |
+> | `SmoothPathLiftHypothesisTorus L` | **Unconditional in tree** (universal-cover smooth-lift content) |
+> | `SmoothHurewiczHypothesisTorus` | Open — bordism + word-rep identification on top of the closed lift atom |
+> | smooth-path-connectedness | **Unconditional in tree** |
+> | `riemannBilinear` | **Unconditional in tree** (CLOSED 2026-05-19 morning) |
+> | `genus (ℂ ⧸ L) = 1` lower bound | **Unconditional in tree** |
+> | `holomorphicCanonicalClosed` | Open — chart-pullback Cauchy on 2-simplices |
+> | `genus (ℂ ⧸ L) ≤ 1` upper bound | Open — Liouville on universal cover |
+>
+> Repo state: **153,172 LOC across 866 `.lean` files**, build
+> **9151 jobs** clean. Zero `sorry`, zero `axiom`. Scoreboard
+> unchanged at 13/24 — the new content unblocks structural reductions
+> on T² without flipping the verbatim `Basic.lean` items.
+
 > **2026-05-19 `riemannBilinear` CLOSED + `SmoothHurewicz` arc opened.**
 > (16 chips total across two arcs, ~2,300 LOC. Net atom closure:
 > **1 full atom + 1 half-atom**.)

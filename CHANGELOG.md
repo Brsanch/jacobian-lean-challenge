@@ -1,5 +1,78 @@
 # Changelog
 
+## 2026-05-19 (late) — `SmoothPathLiftHypothesisTorus L` CLOSED on T² (17 chips, 2,558 LOC)
+
+Closes the hardest open atom on the SmoothHurewicz reduction chain
+for the genus-1 period lattice. Every smooth based loop on `ℂ ⧸ L`
+admits an unconditional smooth ambient lift to `ℂ`.
+
+### Construction outline
+
+For a smooth based loop `γ` on `ℂ ⧸ L` with `γ.src = 0`:
+
+1. **Chart-anchor Lebesgue partition.** `N : ℕ`, `xs : Fin N → ℂ`
+   with `γ.ambient([k/N, (k+1)/N]) ⊆ (localChart L _ (xs k)).symm.source`.
+2. **Per-piece chart-symm composition** `t ↦ (chart_{xs k}).symm
+   (γ.ambient t)` smooth on the sub-interval.
+3. **Cumulative seam-shift** `cumulativeShift k ∈ L`, recursively
+   chosen so adjacent pieces match at seams.
+4. **Per-piece shifted lift** `pwLiftPiece k t := chart-symm + shift k`,
+   smooth + lifts `γ.ambient`, with `pwLiftPiece 0 0 = 0`.
+5. **Seam consistency + local agreement.** `pwLiftPiece k` and
+   `pwLiftPiece (k+1)` agree at the shared seam, and on a small open
+   nbhd of the seam (via continuity into discrete `L` +
+   `discRadius_separates`).
+6. **Global piecewise `pwLiftGlobal`** via `whichPiece N t :=
+   ⌊t·N⌋₊` (clipped). Lift identity on `Icc 0 1` + ContMDiffOn on
+   `Ioo (-δ) (1 + δ)` for explicit `δ > 0`.
+7. **Bump multiplier.** `smoothBump δ : ℝ → ℝ` smooth, `= 1` on
+   `Icc 0 1`, supported on `Icc (-δ/2) (1 + δ/2)`. Define
+   `lift := smoothBump δ • pwLiftGlobal`. Globally smooth (interior
+   via smul of two smooth pieces; outside bump support, lift = 0).
+
+### What this arc ships (17 new files)
+
+| # | File | LOC |
+|---|---|--:|
+| 1 | `Manifold/ComplexTorusLebesgueChartCover.lean` | 206 |
+| 2 | `Manifold/ComplexTorusChartLiftOnSubinterval.lean` | 88 |
+| 3 | `Manifold/ComplexTorusChartSymmDiff.lean` | 75 |
+| 4 | `Manifold/ComplexTorusCumulativeShift.lean` | 189 |
+| 5 | `Manifold/ComplexTorusPiecewiseLift.lean` | 147 |
+| 6 | `Manifold/ComplexTorusPiecewiseLiftSeam.lean` | 73 |
+| 7 | `Manifold/ComplexTorusPiecewiseLiftLocalAgreement.lean` | 218 |
+| 8 | `Manifold/ComplexTorusGlobalLift.lean` | 95 |
+| 9 | `Manifold/ComplexTorusGlobalLiftIdentity.lean` | 131 |
+| 10 | `Manifold/ComplexTorusGlobalLiftSmoothInterior.lean` | 142 |
+| 11 | `Manifold/ComplexTorusGlobalLiftSmoothSeam.lean` | 247 |
+| 12 | `Manifold/ComplexTorusGlobalLiftSmoothOnOpen.lean` | 144 |
+| 13 | `Manifold/ComplexTorusGlobalLiftSmoothEndpoints.lean` | 226 |
+| 14 | `Manifold/ComplexTorusGlobalLiftSmoothOnIcc.lean` | 66 |
+| 15 | `Manifold/ComplexTorusGlobalLiftExtended.lean` | 233 |
+| 16 | `Manifold/ComplexTorusBumpMultiplier.lean` | 130 |
+| 17 | `Manifold/SmoothPathLiftTorusHolds.lean` | 148 |
+| | **Total** | **2,558** |
+
+Headline: `smoothPathLiftHypothesisTorus_holds (L : Submodule ℤ ℂ)
+[DiscreteTopology L] [IsZLattice ℝ L] : SmoothPathLiftHypothesisTorus L`.
+
+### Atomic-input status on `X := ℂ ⧸ L` (after this session)
+
+| Atom | Status |
+|---|---|
+| `cycleGens` | **Unconditional** |
+| `SmoothHurewiczHypothesisTorus` | Open — but the universal-cover lift hypothesis it relies on is now **closed** (smooth lift `ℝ → ℂ` for every based loop, `mkQ ∘ lift = γ.ambient` on `[0,1]`); remaining content is the bordism / word-rep identification |
+| smooth-path-connectedness | **Unconditional** |
+| `holomorphicCanonicalClosed` | Open — chart-pullback Cauchy on 2-simplices |
+| `riemannBilinear` | **Unconditional** (CLOSED 2026-05-19 morning) |
+| `genus (ℂ ⧸ L) = 1` lower | **Unconditional** |
+| `genus (ℂ ⧸ L) ≤ 1` upper | Open — Liouville on universal cover |
+
+Repo state: **153,172 LOC across 866 `.lean` files**, build **9151
+jobs** clean. Zero `sorry`, zero `axiom`. Scoreboard unchanged at 13/24
+in `Basic.lean` (the new content unblocks structural reductions on T²
+without flipping the verbatim-`Basic.lean` items).
+
 ## 2026-05-19 — `riemannBilinear` CLOSED on T² + path-lift arc opened (16 chips, ~2,300 LOC across two arcs)
 
 Continues the complex-torus arc. Closes the `riemannBilinear` atom

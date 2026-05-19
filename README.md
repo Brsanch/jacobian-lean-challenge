@@ -13,11 +13,24 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-19):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
-Build clean at **9134 jobs** (zero `sorry`, zero `axiom`). Repo:
-**150,614 LOC across 849 `.lean` files**.
+**Current state (2026-05-19 late):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
+Build clean at **9151 jobs** (zero `sorry`, zero `axiom`). Repo:
+**153,172 LOC across 866 `.lean` files**.
 
 Major recent landings (all on `main`):
+
+* **`SmoothPathLiftHypothesisTorus L` CLOSED unconditionally on T²**
+  (2026-05-19 late, 17 chips, 2,558 LOC). The universal-cover
+  smooth-lift content of the SmoothHurewicz reduction chain is now
+  unconditional. Every smooth based loop `γ` at `0` on `ℂ ⧸ L`
+  admits a smooth ambient lift `Γ : ℝ → ℂ` with `Γ(0) = 0` and
+  `mkQ ∘ Γ = γ.ambient` on `Icc 0 1`. Construction: chart-anchor
+  Lebesgue partition + cumulative seam-shift `∈ L` + per-piece
+  chart-symm composition + local agreement near seams (continuity
+  into discrete `L` + `discRadius_separates`) + bump multiplier
+  to extend smoothly to `ℝ`. Closes the hardest open atom on the
+  reduction chain; remaining genus-1 content is the bordism /
+  word-rep identification + the Cauchy-Stokes side.
 
 * **`riemannBilinear` CLOSED on T² + `SmoothHurewicz` arc opened**
   (2026-05-19, 16 chips across two arcs, ~2,300 LOC). End-to-end
