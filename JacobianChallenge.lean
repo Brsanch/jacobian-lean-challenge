@@ -805,3 +805,4 @@ import JacobianChallenge.Manifold.SmoothPathVelocityContinuous
 import JacobianChallenge.Manifold.ComplexTorusLocalSmoothLift
 import JacobianChallenge.Manifold.ComplexTorusLebesgueChartCover
 import JacobianChallenge.Manifold.ComplexTorusChartLiftOnSubinterval
+import JacobianChallenge.Manifold.ComplexTorusChartSymmDiff
