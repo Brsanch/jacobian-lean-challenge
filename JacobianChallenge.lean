@@ -819,3 +819,4 @@ import JacobianChallenge.Manifold.ComplexTorusGlobalLiftSmoothEndpoints
 import JacobianChallenge.Manifold.ComplexTorusGlobalLiftSmoothOnIcc
 import JacobianChallenge.Manifold.ComplexTorusGlobalLiftExtended
 import JacobianChallenge.Manifold.ComplexTorusBumpMultiplier
+import JacobianChallenge.Manifold.SmoothPathLiftTorusHolds
