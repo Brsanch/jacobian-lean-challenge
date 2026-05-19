@@ -789,3 +789,5 @@ import JacobianChallenge.Manifold.ComplexTorusPeriodLatticeInputs
 import JacobianChallenge.Manifold.ComplexTorusPathConnected
 import JacobianChallenge.Manifold.ComplexTorusH1SpansTop
 import JacobianChallenge.Manifold.ComplexTorusGenericGenusBundle
+import JacobianChallenge.Manifold.ComplexTorusTangentCoordChangeId
+import JacobianChallenge.Manifold.ComplexTorusDz
