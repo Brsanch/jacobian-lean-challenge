@@ -839,3 +839,4 @@ import JacobianChallenge.Manifold.PeriodLatticeSymplecticBundleComplexTorus
 import JacobianChallenge.Manifold.AbelJacobiInputSympComplexTorus
 import JacobianChallenge.Manifold.ComplexTorusAlphaPeriodValue
 import JacobianChallenge.Manifold.AbelJacobiPointComplexTorus
+import JacobianChallenge.Manifold.PeriodLatticeImageComplexTorus
