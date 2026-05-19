@@ -32,6 +32,74 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 (late++) `SmoothHurewiczHypothesisTorus` CLOSED unconditionally on T² (6 chips, ~1,985 LOC).**
+>
+> Closes the previously hardest open atom on T_L = ℂ ⧸ L: every
+> smooth based loop on `ℂ ⧸ L` is homologous mod `stokesBoundaries`
+> to a ℤ-combination of two canonical torus basis loops, where the
+> basis is the canonical ZLattice basis of `L` over ℤ. Removes the
+> remaining open analytic atom from the Hurewicz row on T_L.
+>
+> **Headline result.**
+> `ComplexTorus.exists_smoothHurewiczHypothesisTorus :`
+> `  ∃ (lam₁ lam₂ : ℂ) (hlam₁ : lam₁ ∈ L) (hlam₂ : lam₂ ∈ L),`
+> `    SmoothHurewiczHypothesisTorus L lam₁ lam₂ hlam₁ hlam₂`
+> for any discrete full-rank ℤ-lattice `L ≤ ℂ`.
+>
+> **The six chips.**
+>
+> * **Chip A** — `ComplexTorusProjStraightLineMap` (199 LOC).
+>   `H(s, t) := mkQ((1-s)·Γ(t) + s·t·λ)` as a smooth `(Fin 2 → ℝ) →
+>   ℂ ⧸ L` map.  Four edge identities (left = mkQ ∘ Γ, right = mkQ
+>   ∘ (·λ), bottom = 0, top = 0).
+> * **Chip B** — `ProjSimplices + ProjFaces + ProjFace1UL +
+>   ProjBordism` (135 + 293 + 123 + 204 LOC).  Two `Smooth2Simplex`es
+>   `σ_LR(s,t) := H(s+t, t)`, `σ_UL(s,t) := H(s, s+t)` cover `[0,1]²`
+>   via `Δ²`. Six face identifications, two of which (`face1 σ_LR =
+>   face2 σ_UL = diagonal`) cancel. Boundary sum `∂(σ_LR + σ_UL) =
+>   single γ_λ - single γ + 2·single (const 0)`, giving the bordism
+>   `single γ - single (torusBasisLoop λ) ∈ stokesBoundaries` where
+>   λ = Γ(1) ∈ L.
+> * **Chip C** — `ComplexTorusBasisLoopAdditive` (329 LOC).  Simplex
+>   `σ(u,v) := mkQ((u+v)·a + v·b)` with faces `γ_b`, `γ_{a+b}`,
+>   `γ_a` (using `mkQ(a + tb) = mkQ(tb)` since `a ∈ L`). Boundary
+>   identity gives `single γ_{a+b}.cycle - single γ_a.cycle - single
+>   γ_b.cycle ∈ stokesBoundaries`.
+> * **Chip D** — `ComplexTorusBasisLoopZSpan` (324 LOC).  ℤ-induction
+>   (`Int.induction_on zero/succ/pred`) proves
+>   `single γ_{n·a}.cycle - n • single γ_a.cycle ∈ stokesBoundaries`.
+>   Base via `γ_0 = SmoothPath.const _ _ 0`. Positive step via
+>   additivity. Negative step via additivity + `γ_a + γ_{-a}.cycle
+>   ∈ stokesBoundaries`.
+> * **Chip E** — `ComplexTorusSmoothHurewiczFromBasis` (256 LOC).
+>   Headline (conditional): under `IsZBasisOfL L lam₁ lam₂`,
+>   `smoothHurewiczHypothesisTorus_holds_of_basis` discharges
+>   `SmoothHurewiczHypothesisTorus`.
+> * **Chip F** — `ComplexTorusZBasisExistence` (~135 LOC). Uses
+>   mathlib's `ZLattice.module_free` + `Module.Free.chooseBasis` +
+>   reindexing to produce `basisFin2OfL : Basis (Fin 2) ℤ L` (card =
+>   `finrank ℤ L = finrank ℝ ℂ = 2`). `basisFin2OfL_isZBasisOfL`
+>   gives `IsZBasisOfL L (b 0) (b 1)` via `Module.Basis.sum_repr`.
+>   `exists_smoothHurewiczHypothesisTorus` is the unconditional
+>   existence headline.
+>
+> ## Atomic-input status on `T_L = ℂ ⧸ L` (after this session)
+>
+> | Atom | Status |
+> |---|---|
+> | `cycleGens` | **Unconditional** |
+> | `SmoothPathLiftHypothesisTorus L` | **Unconditional** |
+> | `SmoothHurewiczHypothesisTorus` | **Unconditional (NEW this session)** |
+> | smooth-path-connectedness | **Unconditional** |
+> | `riemannBilinear` | **Unconditional** |
+> | `genus (ℂ ⧸ L) = 1` lower bound | **Unconditional** |
+> | `holomorphicCanonicalClosed` | Open — chart-pullback Cauchy on 2-simplices |
+> | `genus (ℂ ⧸ L) ≤ 1` upper bound | Open — Liouville on universal cover |
+>
+> Only two open atoms remain for full period-lattice closure on T_L.
+> Scoreboard unchanged at 13/24 — this work unblocks structural
+> reductions on T² but does not flip the verbatim `Basic.lean` items.
+
 > **2026-05-19 (late) `SmoothPathLiftHypothesisTorus L` CLOSED unconditionally on T².**
 > (17 chips, 2,558 LOC. Headline:
 > `smoothPathLiftHypothesisTorus_holds : SmoothPathLiftHypothesisTorus L`.)
