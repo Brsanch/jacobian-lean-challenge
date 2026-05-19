@@ -32,6 +32,67 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-18 (late late + 8) Complex torus `ℂ ⧸ L` infrastructure as
+> the genus-1 example.** (10 chips, ~1,100 LOC.)
+>
+> The prior session's caveat — "non-degenerate genus-≥1 needs surface
+> topology (T² = ℂ/Λ, cellular approximation, path lifting) not in
+> tree" — is now partially closed: `ℂ ⧸ L` exists as a concrete
+> complex 1-manifold with an explicit symplectic basis and the
+> period-lattice generation chain runs end-to-end against a single
+> named Hurewicz hypothesis.
+>
+> * `SmoothHomotopyHurewiczHypothesis.lean` (~90 LOC) — abstraction:
+>   the *smooth-homotopy* upgrade of `WordRepresentativeHypothesis`.
+>   Witness is a concrete `SmoothHomotopyBasedLoop` from γ to a
+>   `basisProductLoop`, not just algebraic bordism. Downgrades to
+>   `WordRepresentativeHypothesis sb` via
+>   `smoothBordant_of_smoothHomotopy`.
+> * `SmoothHomotopyHurewiczC.lean` (~65 LOC) — discharge on ℂ for
+>   `constSymplecticBasis` via the straight-line homotopy.
+> * `PeriodLatticeComplexQuotientGeneric.lean` (~165 LOC) — generic
+>   `IsManifold 𝓘(ℂ, E) ω (E ⧸ L)` over any finite-dim complex
+>   normed `E`. Stated as a `def` to avoid diamond with the existing
+>   `Fin g → ℂ` instance.
+> * `ComplexTorus.lean` (~165 LOC) — specialises to `E = ℂ`,
+>   yielding `IsManifold 𝓘(ℂ, ℂ) ω (ℂ ⧸ L)` as a regular instance.
+>   Derives `mkQ_contMDiff` (both complex and real models).
+> * `ComplexTorusBasisLoop.lean` (~115 LOC) — for `lam ∈ L`, the
+>   smooth based loop `t ↦ π((t : ℂ) * lam)` at `0 ∈ ℂ ⧸ L`.
+> * `ComplexTorusSymplecticBasis.lean` (~95 LOC) — bundles a pair
+>   of torus basis loops as `SmoothSymplecticBasis 𝓘(ℝ, ℂ) (ℂ⧸L) 0 1`.
+> * `BasedLoopAtPush.lean` (~60 LOC) — pushforward of `BasedLoopAt`
+>   along smooth maps; intended use is `mkQ : ℂ → ℂ ⧸ L` for
+>   "lift in ℂ, project to T²" constructions.
+> * `ComplexTorusPathConnected.lean` (~95 LOC) — **unconditional**
+>   smooth-path-connectedness data `α : T² → SmoothPath` from `0`
+>   to `x` via the projection of `t ↦ (t : ℂ) * x.out`. Discharges
+>   the α / h_α_src / h_α_tgt ingredients with no classical content.
+> * `ComplexTorusPeriodLatticeInputs.lean` (~95 LOC) — surfaces the
+>   named atoms `SmoothHurewiczHypothesisTorus` and
+>   `SmoothHomotopyHurewiczHypothesisTorus`, plus the structural
+>   reduction to `BasedLoopHomologyDecompositionHypothesis`.
+> * `ComplexTorusH1SpansTop.lean` (~75 LOC) — the headline:
+>   `SmoothHurewiczHypothesisTorus L lam₁ lam₂ ⟹ H1_spans_top_canonical`
+>   on `(symplecticBasis L lam₁ lam₂).cycleGens` in the canonical
+>   Stokes quotient, **unconditional in α**.
+>
+> Atomic-input status on `X := ℂ ⧸ L`:
+>
+> | Atom | Status on `T_L = ℂ ⧸ L` |
+> |---|---|
+> | `cycleGens` | **Unconditional in tree** (symplecticBasis.cycleGens) |
+> | `H1_spans_top_canonical` | Reduces unconditionally to one named atom (`SmoothHurewiczHypothesisTorus`) |
+> | smooth-path-connectedness | **Unconditional in tree** (ComplexTorus.α) |
+> | `holomorphicCanonicalClosed` | Open — chart-pullback Cauchy on each 2-simplex |
+> | `riemannBilinear` | Open — Hodge theory (one-dim ℂ-space of dz periods, ℝ-linear-independence of period vectors) |
+> | `genus (ℂ ⧸ L) = 1` | Open — Hodge identification |
+> | `SmoothHurewiczHypothesisTorus` | Open — universal-cover lifting `ℂ → ℂ ⧸ L` + lattice classification |
+>
+> Repo state: **148,333 LOC across 834 `.lean` files**, build
+> **9119 jobs** clean (zero `sorry`, zero `axiom`). Scoreboard
+> unchanged at 13/24.
+
 > **2026-05-18 (late late + 7) Smooth-Hurewicz arc continuation.**
 > (10 chips, ~2,900 LOC across the session, cumulative ~3,500 LOC with
 > the session-6 base.)
