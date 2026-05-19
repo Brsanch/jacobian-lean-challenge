@@ -77,17 +77,25 @@ spec. Three statuses, with one tag for partial progress:
 >   on `(symplecticBasis L lam₁ lam₂).cycleGens` in the canonical
 >   Stokes quotient, **unconditional in α**.
 >
-> Atomic-input status on `X := ℂ ⧸ L`:
+> Atomic-input status on `X := ℂ ⧸ L` (relative to the prior 4-atom
+> framing of `GenericGenusPeriodLatticeInputs`; the `H1_spans_top`
+> row and the named Hurewicz atom are the **same classical content**,
+> rewritten as the universal-cover lifting that the structural
+> reduction consumes — not two separate atoms):
 >
 > | Atom | Status on `T_L = ℂ ⧸ L` |
 > |---|---|
 > | `cycleGens` | **Unconditional in tree** (symplecticBasis.cycleGens) |
-> | `H1_spans_top_canonical` | Reduces unconditionally to one named atom (`SmoothHurewiczHypothesisTorus`) |
-> | smooth-path-connectedness | **Unconditional in tree** (ComplexTorus.α) |
+> | `H1_spans_top_canonical` = `SmoothHurewiczHypothesisTorus` | Open — universal-cover lifting `ℂ → ℂ ⧸ L` + lattice classification (structurally reduced in tree to a one-named-atom form, **unconditional in α**) |
+> | smooth-path-connectedness | **Unconditional in tree** (ComplexTorus.α); was implicit-open in the prior framing |
 > | `holomorphicCanonicalClosed` | Open — chart-pullback Cauchy on each 2-simplex |
-> | `riemannBilinear` | Open — Hodge theory (one-dim ℂ-space of dz periods, ℝ-linear-independence of period vectors) |
-> | `genus (ℂ ⧸ L) = 1` | Open — Hodge identification |
-> | `SmoothHurewiczHypothesisTorus` | Open — universal-cover lifting `ℂ → ℂ ⧸ L` + lattice classification |
+> | `riemannBilinear` | Open — Hodge theory (ℝ-linear-independence of period vectors) |
+> | `genus (ℂ ⧸ L) = 1` | Open — Hodge identification (newly explicit at the T² instantiation; was implicit at general X) |
+>
+> **Honest count:** still 4 open classical atoms (Hurewicz=H1,
+> riemannBilinear, holomorphicCanonicalClosed, and now `genus_eq`).
+> The `cycleGens` and `α` rows are *prior-implicit atoms that are now
+> explicit and discharged on T²*, not net-new work.
 >
 > Repo state: **148,333 LOC across 834 `.lean` files**, build
 > **9119 jobs** clean (zero `sorry`, zero `axiom`). Scoreboard

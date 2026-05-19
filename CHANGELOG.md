@@ -85,19 +85,25 @@ the in-tree framework now consumes them directly.
 ### Atomic-input status on the torus
 
 After this session, the four atomic inputs of
-`GenericGenusPeriodLatticeInputs` on `X := ℂ ⧸ L` reduce to:
+`GenericGenusPeriodLatticeInputs` on `X := ℂ ⧸ L` reduce to (note:
+`H1_spans_top` and `SmoothHurewiczHypothesisTorus` are the **same
+classical content**, not two separate atoms — the latter is the
+universal-cover-lifting form that the in-tree structural reduction
+consumes):
 
 | Atom | Status on `T_L = ℂ ⧸ L` |
 |---|---|
 | `cycleGens` | Unconditional in tree |
-| `H1_spans_top_canonical` | Reduces to one named atom (`SmoothHurewiczHypothesisTorus`) |
-| smooth-path-connectedness | Unconditional in tree |
+| `H1_spans_top_canonical` = `SmoothHurewiczHypothesisTorus` | Open — universal-cover lifting (structurally reduced in tree, unconditional in α) |
+| smooth-path-connectedness | Unconditional in tree (was implicit-open) |
 | `holomorphicCanonicalClosed` | Open — chart-pullback Cauchy |
 | `riemannBilinear` | Open — Hodge theory |
-| `genus (ℂ ⧸ L) = 1` | Open — Hodge identification |
-| `SmoothHurewiczHypothesisTorus` | Open — universal-cover lifting |
+| `genus (ℂ ⧸ L) = 1` | Open — Hodge identification (new explicit atom at T² instantiation) |
 
-Three substantive classical-content atoms remain; the rest is in tree.
+**Honest count:** still 4 open classical atoms (Hurewicz=H1,
+riemannBilinear, holomorphicCanonicalClosed, `genus_eq`). The
+`cycleGens` and `α` rows are prior-implicit atoms that are now
+explicit and discharged on T², not net-new work.
 
 Build **9119 jobs** clean, **148,333 LOC across 834 `.lean` files**.
 Zero `sorry`, zero `axiom`. Scoreboard unchanged at 13/24.
