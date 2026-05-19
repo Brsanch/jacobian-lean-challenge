@@ -32,6 +32,73 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 (late+++++) 2D-lift scaffolding for `holomorphicCanonicalClosed` (3 chips, ~370 LOC).**
+>
+> Building toward unconditional `RealImagDzInCanonicalClosed L`. Ships
+> the data scaffolding (partials + horizontal-then-vertical lift
+> formula); the analytic discharge of the lift's smoothness and
+> `mfderiv` identity is the next sub-arc.
+>
+> **Three chips.**
+>
+> * `Manifold/ComplexTorusSmooth2SimplexPartial.lean` (~85 LOC) —
+>   `basisVec`, `partial1`, `partial2` for a `Smooth2Simplex 𝓘(ℝ, ℂ) (ℂ ⧸ L)`.
+>
+> * `Manifold/ComplexTorusTwoSimplexLift.lean` (~145 LOC) —
+>   `twoSimplexLift σ p := ∫_0^{p 0} partial1 σ ![s, 0] ds +
+>   ∫_0^{p 1} partial2 σ ![p 0, t] dt`. Plus `twoSimplexLift_apply`
+>   and `twoSimplexLift_at_origin`.
+>
+> * `Manifold/ComplexTorusDzComponentsClosed.lean` (~95 LOC) —
+>   `RealImagDzInCanonicalClosed L` named predicate and the
+>   conditional closures `holomorphicComponentsCanonicalClosed_of_realImagDz`,
+>   `holomorphicStokesHypothesis_of_realImagDz`.
+>
+> **Three follow-up chips (next session).** Each is a focused 200-500
+> LOC analytic content piece:
+>
+> * `Manifold/ComplexTorusSmooth2SimplexPartialSmooth.lean` —
+>   `ContMDiff ∞ (partial1 σ)` and `ContMDiff ∞ (partial2 σ)` as maps
+>   `(Fin 2 → ℝ) → ℂ`. Strategy: local chart-symm composition makes
+>   `chartSymm ∘ σ.toFun` smooth on the chart preimage; `fderiv`
+>   applied to `basisVec i` gives `partial_i σ` locally. Patch via
+>   `mkQ.mfderiv = id` (proved) and the manifold smoothness of
+>   `chartAt`. No new substantive content beyond standard manifold
+>   smoothness threading.
+>
+> * `Manifold/ComplexTorusTwoSimplexLiftSmooth.lean` —
+>   `ContMDiff ∞ (twoSimplexLift σ)`. Combines the partial-smoothness
+>   chip with `intervalIntegral` parametric smoothness
+>   (`Mathlib.Analysis.Calculus.ParametricIntervalIntegral`).
+>
+> * `Manifold/ComplexTorusTwoSimplexLiftMfderiv.lean` —
+>   `mfderiv (twoSimplexLift σ) p = mfderiv σ.toFun p`. The substantive
+>   content: `∂_y σ̃ = partial2 σ` is direct FTC; `∂_x σ̃ = partial1 σ`
+>   requires Schwarz's mixed-partials theorem
+>   (`Mathlib.Analysis.Calculus.FDeriv.Symmetric`) on σ.toFun viewed
+>   through a chart. After that, `mfderiv` equality follows from
+>   ℝ-bilinearity (a linear map is determined by its action on the
+>   basis).
+>
+> Once those three chips are in tree, the boundary-integral
+> telescope chip closes `RealImagDzInCanonicalClosed L`
+> unconditionally: each face integral on `T_L` equals
+> `twoSimplexLift σ (face_iParam 1) - twoSimplexLift σ (face_iParam 0)`
+> by chain rule + FTC, and the three signed differences telescope to
+> `0` around the simplex vertices.
+>
+> ## Atomic-input status on `T_L = ℂ ⧸ L` (after this session)
+>
+> | Atom | Status |
+> |---|---|
+> | `cycleGens` | **Unconditional** |
+> | `SmoothPathLiftHypothesisTorus L` | **Unconditional** |
+> | `SmoothHurewiczHypothesisTorus` | **Unconditional** |
+> | smooth-path-connectedness | **Unconditional** |
+> | `riemannBilinear` | **Unconditional** |
+> | `genus (ℂ ⧸ L) = 1` (both bounds) | **Unconditional** |
+> | `RealImagDzInCanonicalClosed L` | Open — 3 chip sub-arc (smoothness + Schwarz + mfderiv-equality) then telescope |
+
 > **2026-05-19 (late++++) Structural reduction of `holomorphicCanonicalClosed` to `RealImagDzInCanonicalClosed` (2 chips, ~300 LOC).**
 >
 > With `genus (ℂ ⧸ L) = 1` closed unconditionally (every
