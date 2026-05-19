@@ -784,3 +784,7 @@ import JacobianChallenge.Manifold.PeriodLatticeComplexQuotientGeneric
 import JacobianChallenge.Manifold.ComplexTorus
 import JacobianChallenge.Manifold.ComplexTorusBasisLoop
 import JacobianChallenge.Manifold.ComplexTorusSymplecticBasis
+import JacobianChallenge.Manifold.BasedLoopAtPush
+import JacobianChallenge.Manifold.ComplexTorusPeriodLatticeInputs
+import JacobianChallenge.Manifold.ComplexTorusPathConnected
+import JacobianChallenge.Manifold.ComplexTorusH1SpansTop
