@@ -52,7 +52,7 @@ variable (L : Submodule ℤ E)
 
 /-! ### Chart-transition translation property (re-derived generically) -/
 
-private lemma transition_eventuallyEq_translation_generic
+lemma transition_eventuallyEq_translation_generic
     {r : ℝ} (hrL : ∀ x ∈ (L : Set E), ‖x‖ < r → x = 0)
     (c c' : E)
     {x₀ : E}
