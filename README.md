@@ -13,11 +13,30 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-18 late late + 7):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
-Build clean at **9109 jobs** (zero `sorry`, zero `axiom`). Repo:
-**147,252 LOC across 824 `.lean` files**.
+**Current state (2026-05-19):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
+Build clean at **9134 jobs** (zero `sorry`, zero `axiom`). Repo:
+**150,614 LOC across 849 `.lean` files**.
 
 Major recent landings (all on `main`):
+
+* **`riemannBilinear` CLOSED on T² + `SmoothHurewicz` arc opened**
+  (2026-05-19, 16 chips across two arcs, ~2,300 LOC). End-to-end
+  closure of `riemannBilinear` (period computation `∫_{γ_lam} dz =
+  lam` via mfderiv-mkQ-is-id + chain rule + integration; ℝ-linear-
+  independence via `(Fin 1 → ℂ) ≃ₗ[ℝ] ℂ`). Substantial
+  `SmoothHurewicz` infrastructure: `mkQ` is a covering map (via
+  mathlib's `AddSubgroup.isAddQuotientCoveringMap_of_comm`),
+  continuous lift (`contLift`), named smooth-lift atom
+  (`SmoothPathLiftHypothesisTorus`), and chart-based local smooth
+  lift (`localLift`) with smoothness + anchor identity. Also closes
+  `1 ≤ genus (ℂ ⧸ L)` lower bound via Forster-Riesz + `dz_ne_zero`.
+  Net atom closure: **1 full atom + 1 half-atom**.
+
+* **Complex torus `ℂ ⧸ L` infrastructure as the genus-1 example**
+  (2026-05-18 late late + 8, 10 chips, ~1,100 LOC). `IsManifold
+  𝓘(ℂ, ℂ) ω (ℂ ⧸ L)` instance, symplectic basis, smooth-path-
+  connectedness, named Hurewicz hypothesis on T², `H1_spans_top`
+  reduction unconditional in α.
 
 * **Smooth-Hurewicz arc completion (genus-≥1 syntactic + chart-local
   geometry)** (2026-05-18 late late + 7, ~4,500 LOC across the session).

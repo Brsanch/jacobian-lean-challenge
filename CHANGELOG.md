@@ -1,5 +1,92 @@
 # Changelog
 
+## 2026-05-19 — `riemannBilinear` CLOSED on T² + path-lift arc opened (16 chips, ~2,300 LOC across two arcs)
+
+Continues the complex-torus arc. Closes the `riemannBilinear` atom
+end-to-end (full period computation `∫_{γ_lam} dz = lam` + ℝ-linear
+independence) and ships substantial infrastructure for
+`SmoothHurewiczHypothesisTorus` (covering map, continuous lift,
+named smooth-lift atom, chart-based local smooth lift primitives).
+
+### `riemannBilinear` closure arc (7 chips)
+
+* `Manifold/ComplexTorusTangentCoordChangeId.lean` — chart-changes
+  on T² are translations, so `fderiv_chart_change_eq_id` and hence
+  `tangentCoordChange_eq_id_on_overlap`. The cotangent coord-change
+  also collapses to identity via the precomposition formula
+  (`cotangentBundleCore_coordChange_eq_id_on_overlap`).
+* `Manifold/ComplexTorusDz.lean` — **canonical `dz : HolomorphicOneForm
+  (ℂ ⧸ L)`** as the constant cotangent section (identity ℂ →L[ℂ] ℂ
+  at every point). Smoothness via the cotangent-coord-change
+  triviality. `dz_ne_zero` + `nontrivial_holomorphicOneForm`.
+* `Manifold/ComplexTorusBasicInstances.lean` — `Nonempty`,
+  `CompactSpace`, `T2Space` instances on `ℂ ⧸ L` (via the
+  `NormedAddCommGroup` quotient + lattice closedness).
+* `Manifold/ComplexTorusGenusLowerBound.lean` — `1 ≤ genus (ℂ ⧸ L)`
+  UNCONDITIONAL via Forster-Riesz `Module.Finite` + `Nontrivial` from
+  `dz_ne_zero`.
+* `Manifold/ComplexTorusPeriodComputation.lean` — chain rule entry
+  point. `mfderiv_ofReal_mul_const_apply_one` + the helper
+  `torusBasisAmbient`.
+* `Manifold/ComplexTorusMkQMfderiv.lean` — **`mfderiv mkQ p v = v`**
+  for ALL `p : ℂ`. Lighter version on chart-ball + L-shift
+  generalization via chain rule on `mkQ ∘ (·+lam) = mkQ`.
+* `Manifold/ComplexTorusPeriodValue.lean` —
+  `torusBasisLoop_integrate_realComp_dz = lam.re`, imag analog, and
+  the headline **`complexPeriod_torusBasisLoop_dz`**:
+  `complexPeriod γ_lam.singleCycle (dz L) = lam`.
+* `Manifold/ComplexTorusRiemannBilinear.lean` — **CLOSES
+  `riemannBilinear` on T²** modulo the user supplying
+  `(basis_one : Basis (Fin 1) ℂ ...)` with `basis_one 0 = dz L` and
+  `LinearIndependent ℝ ![lam₁, lam₂]`.
+
+### `SmoothHurewiczHypothesisTorus` arc (9 chips, partial closure)
+
+* `Manifold/ComplexTorusCoveringMap.lean` — `mkQ_isCoveringMap`
+  via mathlib's `AddSubgroup.isAddQuotientCoveringMap_of_comm` +
+  Submodule ↔ AddSubgroup quotient identification.
+* `Manifold/ComplexTorusContinuousPathLift.lean` — `contLift` via
+  mathlib's `IsCoveringMap.liftPath`; `contLift_endpoint_mem_L`
+  classifies continuous loops on T² by their lift's endpoint in L.
+* `Manifold/ComplexTorusSmoothPathLift.lean` —
+  `smoothLift γ t := ∫_0^t γ.velocity s ds : ℂ` integration-based
+  definition + `smoothLift_zero`.
+* `Manifold/ComplexTorusHurewiczFromLift.lean` —
+  `SmoothPathLiftHypothesisTorus` named atom + endpoint corollary.
+* `Manifold/SmoothPathVelocityContinuous.lean` — velocity
+  continuity for SmoothPath into a normed-space codomain
+  (FTC entry point).
+* `Manifold/ComplexTorusLocalSmoothLift.lean` — chart-based local
+  smooth lift `(localChart L _ x₀).symm ∘ γ.ambient`:
+  - `chart_symm_mkQ_in_ball`, `mkQ_localLift`, `chartComp_contMDiffOn`,
+    **`localLift_contMDiffOn`** (C^∞ on chart-source preimage),
+    **`localLift_at_anchor`** (anchor identity gives `localLift 0 = 0`
+    when γ starts at 0 and `x₀ = 0`).
+
+Full `SmoothHurewicz` closure still needs: Lebesgue subdivision
+glue (mathlib has `exists_monotone_Icc_subset_open_cover_unitInterval`),
+covering-map uniqueness gluing, smooth homotopy construction,
+ZLattice basis decomposition, bordism identification with
+`basisProductLoop`.
+
+### Atomic-input status on T² (after this session)
+
+| Atom | Status |
+|---|---|
+| `cycleGens` | Unconditional |
+| `H1_spans_top_canonical` ≡ `SmoothHurewiczHypothesisTorus` | Open — partial closure shipped (covering map + continuous lift + named smooth-lift atom + local smooth-lift primitives) |
+| smooth-path-connectedness | Unconditional |
+| `holomorphicCanonicalClosed` | Open — chart-pullback Cauchy on 2-simplices |
+| **`riemannBilinear`** | **CLOSED** (modulo user-supplied ℝ-independence of lattice basis) |
+| `genus (ℂ ⧸ L) = 1` lower | **CLOSED** (Forster-Riesz + `dz_ne_zero` + `Nontrivial`) |
+| `genus (ℂ ⧸ L) ≤ 1` upper | Open — Liouville on universal cover |
+
+**Net atom closure this session: 1 full atom (`riemannBilinear`),
+1 half-atom (`genus_eq` lower bound).**
+
+Build 9134 jobs clean, **150,614 LOC across 849 `.lean` files**.
+Zero `sorry`, zero `axiom`. Scoreboard unchanged at 13/24.
+
 ## 2026-05-18 (late late + 8) — Complex torus `ℂ ⧸ L` infrastructure as the genus-1 example (10 chips, ~1,100 LOC)
 
 Opens the "T² as a Riemann surface" gap called out in the prior

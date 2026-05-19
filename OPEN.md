@@ -32,6 +32,73 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 `riemannBilinear` CLOSED + `SmoothHurewicz` arc opened.**
+> (16 chips total across two arcs, ~2,300 LOC. Net atom closure:
+> **1 full atom + 1 half-atom**.)
+>
+> Closes `riemannBilinear` on T² end-to-end (full period computation
+> `∫_{γ_lam} dz = lam` + ℝ-linear independence). Ships substantial
+> infrastructure for `SmoothHurewicz` (covering map, continuous lift,
+> chart-based local smooth lift primitives) without full closure.
+>
+> **riemannBilinear closure arc** (7 chips, ~1,150 LOC):
+>
+> * `ComplexTorusTangentCoordChangeId.lean` (~225 LOC) — chart-
+>   changes on T² are translations →
+>   `tangentCoordChange = id` → cotangent triviality.
+> * `ComplexTorusDz.lean` (~245 LOC) — canonical `dz : HolomorphicOneForm
+>   (ℂ ⧸ L)` constructed from cotangent triviality. `dz_ne_zero` +
+>   `nontrivial_holomorphicOneForm`.
+> * `ComplexTorusBasicInstances.lean` (~85 LOC) — `Nonempty`,
+>   `CompactSpace`, `T2Space` on `ℂ ⧸ L`.
+> * `ComplexTorusGenusLowerBound.lean` (~70 LOC) — **`1 ≤ genus`**
+>   UNCONDITIONAL via Forster-Riesz + `dz_ne_zero`.
+> * `ComplexTorusPeriodComputation.lean` (~135 LOC) —
+>   `mfderiv (t ↦ (t : ℂ) * lam) t 1 = lam`.
+> * `ComplexTorusMkQMfderiv.lean` (~300 LOC) — **`mfderiv mkQ p v = v`
+>   for ALL p**: ball case via chart-symm chain rule +
+>   L-shift generalization.
+> * `ComplexTorusPeriodValue.lean` (~190 LOC) —
+>   **`complexPeriod γ_lam.singleCycle (dz L) = lam`**: chain rule
+>   for `mkQ ∘ (·*lam)`, integrand identification with `lam.re`/`lam.im`,
+>   integration.
+> * `ComplexTorusRiemannBilinear.lean` (~220 LOC) — **CLOSES
+>   `riemannBilinear`** via period vector pointwise identification
+>   + the `(Fin 1 → ℂ) ≃ₗ[ℝ] ℂ` equivalence.
+>
+> **SmoothHurewicz arc** (9 chips, ~1,150 LOC, partial closure):
+>
+> * `ComplexTorusCoveringMap.lean` (~75 LOC) — `mkQ_isCoveringMap`
+>   via mathlib's `AddSubgroup.isAddQuotientCoveringMap_of_comm`.
+> * `ComplexTorusContinuousPathLift.lean` (~95 LOC) — `contLift` +
+>   `contLift_endpoint_mem_L` (loops classified by lattice element).
+> * `ComplexTorusSmoothPathLift.lean` (~85 LOC) — integration-based
+>   `smoothLift γ t := ∫_0^t γ.velocity s ds`.
+> * `ComplexTorusHurewiczFromLift.lean` (~110 LOC) —
+>   `SmoothPathLiftHypothesisTorus` named atom + endpoint corollary.
+> * `SmoothPathVelocityContinuous.lean` (~95 LOC) — velocity
+>   continuity for vector-space-valued SmoothPath.
+> * `ComplexTorusLocalSmoothLift.lean` (~165 LOC) — chart-based local
+>   smooth lift primitives: `localLift`, `localLift_eqOn_chartComp`,
+>   `mkQ_localLift`, `chartComp_contMDiffOn`,
+>   **`localLift_contMDiffOn`**, **`localLift_at_anchor`**.
+>
+> ## Atomic-input status on `T_L = ℂ ⧸ L` (after this session)
+>
+> | Atom | Status |
+> |---|---|
+> | `cycleGens` | **Unconditional in tree** |
+> | `H1_spans_top_canonical` = `SmoothHurewiczHypothesisTorus` | Open — covering map + continuous lift + named smooth-lift atom + chart-based local smooth lift primitives shipped; full closure needs Lebesgue subdivision + uniqueness gluing + homotopy + bordism |
+> | smooth-path-connectedness | **Unconditional in tree** |
+> | `holomorphicCanonicalClosed` | Open — chart-pullback Cauchy on 2-simplices |
+> | **`riemannBilinear`** | **CLOSED** (modulo user-supplied ℝ-independence) |
+> | `genus (ℂ ⧸ L) = 1` lower | **CLOSED** (Forster-Riesz + `dz_ne_zero`) |
+> | `genus (ℂ ⧸ L) ≤ 1` upper | Open — Liouville on universal cover |
+>
+> Repo state: **150,614 LOC across 849 `.lean` files**, build
+> **9134 jobs** clean. Zero `sorry`, zero `axiom`. Scoreboard
+> unchanged at 13/24.
+
 > **2026-05-18 (late late + 8) Complex torus `ℂ ⧸ L` infrastructure as
 > the genus-1 example.** (10 chips, ~1,100 LOC.)
 >
