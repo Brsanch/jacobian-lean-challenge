@@ -32,6 +32,64 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 (late++++) Structural reduction of `holomorphicCanonicalClosed` to `RealImagDzInCanonicalClosed` (2 chips, ~300 LOC).**
+>
+> With `genus (ℂ ⧸ L) = 1` closed unconditionally (every
+> `α : HolomorphicOneForm T_L` is `c • dz L`), the predicate
+> `HolomorphicComponentsCanonicalClosed (ℂ ⧸ L)` reduces to a single
+> named atomic hypothesis on `dz L` only:
+>
+> ```
+> RealImagDzInCanonicalClosed L :=
+>   realComponent (dz L) ∈ canonicalClosedForms 𝓘(ℝ, ℂ) (ℂ ⧸ L) ∧
+>   imagComponent (dz L) ∈ canonicalClosedForms 𝓘(ℝ, ℂ) (ℂ ⧸ L)
+> ```
+>
+> Headlines now in tree (conditional on `RealImagDzInCanonicalClosed`):
+> `holomorphicComponentsCanonicalClosed_of_realImagDz` and
+> `holomorphicStokesHypothesis_of_realImagDz`.
+>
+> **Two reduction chips.**
+>
+> * **Chip A** — `Manifold/ComplexTorusHolomorphicCanonicalClosedReduction.lean`
+>   (~205 LOC). ℂ-scalar identities at the pointwise level
+>   (`realPart_complex_smul_pointwise`, `imagPart_complex_smul_pointwise`),
+>   their section-level lifts (`realComponent_complex_smul`,
+>   `imagComponent_complex_smul`), and the structural reduction
+>   `holomorphicComponentsCanonicalClosed_of_dz_components`.
+>
+> * **Chip B** — `Manifold/ComplexTorusDzComponentsClosed.lean`
+>   (~95 LOC). Named predicate `RealImagDzInCanonicalClosed L` plus
+>   the conditional closure headlines.
+>
+> **Remaining work (multi-session):** discharge `RealImagDzInCanonicalClosed L`
+> unconditionally. The classical content is FTC-telescoping around the
+> boundary of every smooth 2-simplex on `T_L`, mediated by a **smooth
+> 2-simplex lift** `σ̃ : (Fin 2 → ℝ) → ℂ` of
+> `σ : (Fin 2 → ℝ) → (ℂ ⧸ L)`. Constructed via path integration
+> `σ̃(x, y) := p₀ + ∫_0^x ∂_1 σ(s, 0) ds + ∫_0^y ∂_2 σ(x, t) dt`. Then
+> `mkQ ∘ σ̃ = σ` (ODE uniqueness using `mkQ.mfderiv = id`), each face
+> integral equals `σ̃(v_j) - σ̃(v_i)` (FTC), and the three boundary
+> integrals telescope to `0` around the simplex vertices.
+>
+> ## Atomic-input status on `T_L = ℂ ⧸ L` (after this session)
+>
+> | Atom | Status |
+> |---|---|
+> | `cycleGens` | **Unconditional** |
+> | `SmoothPathLiftHypothesisTorus L` | **Unconditional** |
+> | `SmoothHurewiczHypothesisTorus` | **Unconditional** |
+> | smooth-path-connectedness | **Unconditional** |
+> | `riemannBilinear` | **Unconditional** |
+> | `genus (ℂ ⧸ L) = 1` (both bounds) | **Unconditional** |
+> | `realComponent (dz L)` Stokes-closed | Open — 2D smooth lift + FTC telescope |
+> | `imagComponent (dz L)` Stokes-closed | Open — same, on imaginary part |
+>
+> The two remaining open atoms are the genuine classical Stokes
+> content (2D lift + FTC telescope) — packaged together as the
+> single named predicate `RealImagDzInCanonicalClosed L`. Both
+> succumb to the same construction.
+
 > **2026-05-19 (late+++) `genus (ℂ ⧸ L) ≤ 1` upper bound CLOSED unconditionally on T_L (2 chips, ~330 LOC).**
 >
 > Closes the upper bound `Module.finrank ℂ (HolomorphicOneForm (ℂ ⧸ L)) ≤ 1`
