@@ -807,3 +807,4 @@ import JacobianChallenge.Manifold.ComplexTorusLebesgueChartCover
 import JacobianChallenge.Manifold.ComplexTorusChartLiftOnSubinterval
 import JacobianChallenge.Manifold.ComplexTorusChartSymmDiff
 import JacobianChallenge.Manifold.ComplexTorusCumulativeShift
+import JacobianChallenge.Manifold.ComplexTorusPiecewiseLift
