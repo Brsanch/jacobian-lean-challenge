@@ -213,6 +213,127 @@ theorem mfderiv_mkQ_apply_in_ball (p : ℂ)
   rw [h_eq.mfderiv_eq]
   exact mfderiv_chartAt_symm_eq_id L p hp
 
+/-! ## Generalization to all `p ∈ ℂ` via L-translation invariance -/
+
+/-- For any lattice element `lam ∈ L`, the translation `x ↦ x + lam`
+sends the smooth structure on ℂ to itself with derivative `id`. The
+key fact `mkQ ∘ (· + lam) = mkQ` is the L-periodicity of the quotient
+projection. -/
+private lemma mfderiv_translation (p : ℂ) (lam : ℂ) :
+    (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (fun x : ℂ => x + lam) p : ℂ →L[ℝ] ℂ)
+      = ContinuousLinearMap.id ℝ ℂ := by
+  rw [mfderiv_eq_fderiv (f := fun x : ℂ => x + lam) (x := p)]
+  have h : HasFDerivAt (fun x : ℂ => x + lam)
+      (ContinuousLinearMap.id ℝ ℂ) p := by
+    have h_id : HasFDerivAt (fun x : ℂ => x) (ContinuousLinearMap.id ℝ ℂ) p :=
+      hasFDerivAt_id p
+    have h_const : HasFDerivAt (fun _ : ℂ => lam) (0 : ℂ →L[ℝ] ℂ) p :=
+      hasFDerivAt_const lam p
+    have h_add := h_id.add h_const
+    convert h_add using 1
+    ext v; simp
+  exact h.fderiv
+
+/-- `(· + lam)` is MDifferentiableAt every point (trivially, since it's
+ContDiff). -/
+private lemma mdifferentiableAt_translation (p : ℂ) (lam : ℂ) :
+    MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (fun x : ℂ => x + lam) p := by
+  rw [mdifferentiableAt_iff_differentiableAt]
+  exact (differentiable_id.add_const lam).differentiableAt
+
+/-- **L-shift invariance applied at a value `v : ℂ`.** For any
+lattice element `lam ∈ L` and any `p : ℂ`, the `mfderiv` of `mkQ`
+at `p + lam` applied to `v` equals the `mfderiv` of `mkQ` at `p`
+applied to `v`.
+
+The TangentSpace types `TangentSpace _ (mkQ (p + lam))` and
+`TangentSpace _ (mkQ p)` are *definitionally* both ℂ (since
+`TangentSpace I (_x : M) := E` ignores its base-point argument).
+So the equality is at the type ℂ. -/
+private lemma mfderiv_mkQ_shift_apply
+    {lam : ℂ} (hlam : lam ∈ L) (p : ℂ) (v : ℂ) :
+    (((mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (L.mkQ : ℂ → ℂ ⧸ L) (p + lam)
+        : ℂ →L[ℝ] TangentSpace 𝓘(ℝ, ℂ) (L.mkQ (p + lam))) v) : ℂ)
+      = (((mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (L.mkQ : ℂ → ℂ ⧸ L) p
+          : ℂ →L[ℝ] TangentSpace 𝓘(ℝ, ℂ) (L.mkQ p)) v) : ℂ) := by
+  -- `mkQ ∘ (· + lam) = mkQ` as functions (L-invariance).
+  have h_fun_eq : (L.mkQ : ℂ → ℂ ⧸ L) ∘ (fun x : ℂ => x + lam) = L.mkQ := by
+    funext x
+    show L.mkQ (x + lam) = L.mkQ x
+    rw [map_add]
+    have h0 : L.mkQ lam = 0 := (Submodule.Quotient.mk_eq_zero L).mpr hlam
+    rw [h0, add_zero]
+  -- Chain rule on (mkQ ∘ (·+lam)) at p:
+  --   mfderiv (mkQ ∘ (·+lam)) p = (mfderiv mkQ (p+lam)) ∘L (mfderiv (·+lam) p)
+  -- Applied to v: = (mfderiv mkQ (p+lam)) ((mfderiv (·+lam) p) v) = (mfderiv mkQ (p+lam)) v
+  -- (since mfderiv (·+lam) p v = v).
+  have h_diff_lam : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ)
+      (fun x : ℂ => x + lam) p := mdifferentiableAt_translation p lam
+  have h_diff_mkQ_shift : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ)
+      (L.mkQ : ℂ → ℂ ⧸ L) (p + lam) :=
+    (mkQ_contMDiff_real L 1).contMDiffAt.mdifferentiableAt one_ne_zero
+  have h_chain_apply :
+      ((mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ)
+        ((L.mkQ : ℂ → ℂ ⧸ L) ∘ (fun x : ℂ => x + lam)) p) v : ℂ)
+        = ((mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) L.mkQ (p + lam))
+            ((mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (fun x : ℂ => x + lam) p) v) : ℂ) := by
+    rw [mfderiv_comp p h_diff_mkQ_shift h_diff_lam]
+    rfl
+  -- The translation mfderiv applied to v gives v.
+  have h_trans_apply :
+      ((mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (fun x : ℂ => x + lam) p) v : ℂ) = v := by
+    rw [mfderiv_translation p lam]
+    rfl
+  rw [h_trans_apply] at h_chain_apply
+  -- h_chain_apply : (mfderiv (mkQ ∘ (·+lam)) p v) = (mfderiv mkQ (p+lam) v).
+  -- And mkQ ∘ (·+lam) = mkQ as functions, so the LHS = mfderiv mkQ p v.
+  rw [h_fun_eq] at h_chain_apply
+  -- h_chain_apply : (mfderiv mkQ p v) = (mfderiv mkQ (p+lam) v).
+  exact h_chain_apply.symm
+
+/-- **`mfderiv mkQ p` applied to any `v : ℂ` equals `v`** for any
+`p : ℂ`. Generalizes `mfderiv_mkQ_apply_in_ball` to all of ℂ via the
+L-shift invariance argument. -/
+theorem mfderiv_mkQ_apply (p : ℂ) (v : ℂ) :
+    (((mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (L.mkQ : ℂ → ℂ ⧸ L) p
+        : ℂ →L[ℝ] TangentSpace 𝓘(ℝ, ℂ) (L.mkQ p)) v) : ℂ) = v := by
+  -- Pick p₀ := (mkQ p).out. Then p₀ + (p - p₀) = p, and (p - p₀) ∈ L.
+  set p₀ : ℂ := (L.mkQ p).out with hp₀_def
+  set lam : ℂ := p - p₀ with hlam_def
+  have h_mkQ_p₀ : L.mkQ p₀ = L.mkQ p := by
+    show (Quotient.mk'' (Quotient.out (L.mkQ p)) : ℂ ⧸ L) = L.mkQ p
+    exact Quotient.out_eq (L.mkQ p)
+  have hlam_mem : lam ∈ L := by
+    have : L.mkQ lam = 0 := by
+      rw [hlam_def, map_sub, h_mkQ_p₀, sub_self]
+    exact (Submodule.Quotient.mk_eq_zero L).mp this
+  have h_p_eq : p₀ + lam = p := by
+    rw [hlam_def]; ring
+  -- p₀ is the canonical representative; ball ((mkQ p₀).out) (r/2) = ball p₀ (r/2)
+  -- contains p₀ trivially.
+  have h_p₀_out : (L.mkQ p₀).out = p₀ := by rw [h_mkQ_p₀]
+  have h_p₀_in_ball : p₀ ∈ Metric.ball ((L.mkQ p₀).out) (discRadius L / 2) := by
+    rw [h_p₀_out]
+    have hr_pos : 0 < discRadius L := discRadius_pos L
+    have hr2_pos : 0 < discRadius L / 2 := by linarith
+    simp [Metric.mem_ball, dist_self, hr2_pos]
+  -- Apply the ball version to p₀.
+  have h_p₀_id : (mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (L.mkQ : ℂ → ℂ ⧸ L) p₀
+      : ℂ →L[ℝ] TangentSpace 𝓘(ℝ, ℂ) (L.mkQ p₀)) = ContinuousLinearMap.id ℝ ℂ :=
+    mfderiv_mkQ_apply_in_ball L p₀ h_p₀_in_ball
+  have h_p₀_apply :
+      (((mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (L.mkQ : ℂ → ℂ ⧸ L) p₀
+          : ℂ →L[ℝ] TangentSpace 𝓘(ℝ, ℂ) (L.mkQ p₀)) v) : ℂ) = v := by
+    rw [h_p₀_id]
+    rfl
+  -- Use shift invariance.
+  have h_shift := mfderiv_mkQ_shift_apply L hlam_mem p₀ v
+  -- h_shift : mfderiv mkQ (p₀ + lam) v = mfderiv mkQ p₀ v (both coerced to ℂ).
+  rw [h_p_eq] at h_shift
+  -- h_shift : mfderiv mkQ p v = mfderiv mkQ p₀ v (in ℂ).
+  rw [h_shift]
+  exact h_p₀_apply
+
 end ComplexTorus
 
 end JacobianChallenge

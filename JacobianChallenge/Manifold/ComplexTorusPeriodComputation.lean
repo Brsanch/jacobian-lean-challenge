@@ -5,6 +5,7 @@ Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.ComplexTorusBasisLoop
 import JacobianChallenge.Manifold.ComplexTorusTangentCoordChangeId
+import JacobianChallenge.Manifold.ComplexTorusMkQMfderiv
 import Mathlib.Geometry.Manifold.MFDeriv.FDeriv
 
 set_option linter.unusedSectionVars false
@@ -71,6 +72,63 @@ lemma mfderiv_ofReal_mul_const_apply_one (lam : ℂ) (t : ℝ) :
   change ((Complex.ofRealCLM (1 : ℝ) : ℂ)) • lam = lam
   rw [show (Complex.ofRealCLM (1 : ℝ) : ℂ) = ((1 : ℝ) : ℂ) from rfl,
       Complex.ofReal_one, one_smul]
+
+/-! ## Velocity of `t ↦ mkQ ((t : ℂ) * lam) : ℝ → ℂ ⧸ L` -/
+
+variable (L : Submodule ℤ ℂ)
+  [DiscreteTopology L] [IsZLattice ℝ L]
+
+/-- The smooth witness function `f t = mkQ ((t : ℂ) * lam)` is the
+ambient lift of `torusBasisLoop lam hlam` on `ℝ`. -/
+private noncomputable def torusBasisAmbient (lam : ℂ) : ℝ → ℂ ⧸ L :=
+  fun t : ℝ => L.mkQ ((t : ℂ) * lam)
+
+/-- `torusBasisAmbient L lam` is `ContMDiff` everywhere. -/
+private lemma torusBasisAmbient_contMDiff (lam : ℂ) :
+    ContMDiff 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) ∞ (torusBasisAmbient L lam) := by
+  have h_mul : ContMDiff (𝓘(ℝ, ℝ)) (𝓘(ℝ, ℂ)) ∞
+      (fun t : ℝ => (t : ℂ) * lam) := by
+    have h_ofReal : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) ((↑) : ℝ → ℂ) :=
+      Complex.ofRealCLM.contDiff
+    exact (h_ofReal.mul contDiff_const).contMDiff
+  have h_mkQ : ContMDiff (𝓘(ℝ, ℂ)) (𝓘(ℝ, ℂ)) ∞ (L.mkQ : ℂ → ℂ ⧸ L) :=
+    mkQ_contMDiff_real L ∞
+  exact h_mkQ.comp h_mul
+
+/-- **Velocity of `torusBasisAmbient L lam` at any `t : ℝ`, applied
+to `1`, equals `lam` (in `ℂ` via the TangentSpace identification).**
+Chain rule combining `mfderiv_mkQ_apply` and
+`mfderiv_ofReal_mul_const_apply_one`. -/
+theorem mfderiv_torusBasisAmbient_apply_one (lam : ℂ) (t : ℝ) :
+    (((mfderiv 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) (torusBasisAmbient L lam) t
+        : ℝ →L[ℝ] TangentSpace 𝓘(ℝ, ℂ) (torusBasisAmbient L lam t)) (1 : ℝ))
+        : ℂ) = lam := by
+  -- Chain rule: mfderiv (mkQ ∘ g) t = (mfderiv mkQ (g t)) ∘L (mfderiv g t).
+  -- Then apply at 1.
+  have h_g_diff : MDifferentiableAt 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ)
+      (fun u : ℝ => (u : ℂ) * lam) t := by
+    rw [mdifferentiableAt_iff_differentiableAt]
+    have : Differentiable ℝ (fun u : ℝ => (u : ℂ) * lam) := by
+      exact (Complex.ofRealCLM.differentiable).mul_const lam
+    exact this.differentiableAt
+  have h_mkQ_diff : MDifferentiableAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ)
+      (L.mkQ : ℂ → ℂ ⧸ L) ((t : ℂ) * lam) :=
+    (mkQ_contMDiff_real L 1).contMDiffAt.mdifferentiableAt one_ne_zero
+  -- mfderiv (mkQ ∘ (·*lam)) t = (mfderiv mkQ ((t:ℂ)*lam)) ∘L (mfderiv (·*lam) t).
+  show ((((mfderiv 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ)
+      ((L.mkQ : ℂ → ℂ ⧸ L) ∘ (fun u : ℝ => (u : ℂ) * lam)) t) (1 : ℝ))
+        : ℂ)) = lam
+  rw [mfderiv_comp t h_mkQ_diff h_g_diff]
+  -- Goal: ((mfderiv mkQ ((t:ℂ)*lam)).comp (mfderiv (·*lam) t)) 1 = lam.
+  -- This equals (mfderiv mkQ ((t:ℂ)*lam)) ((mfderiv (·*lam) t) 1) by .comp definition.
+  -- Then (mfderiv (·*lam) t) 1 = lam, and (mfderiv mkQ ((t:ℂ)*lam)) lam = lam.
+  -- Combine all in one step via a `change` followed by chain.
+  change ((mfderiv 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (L.mkQ : ℂ → ℂ ⧸ L) ((t : ℂ) * lam))
+      ((mfderiv 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) (fun u : ℝ => (u : ℂ) * lam) t : ℝ →L[ℝ] ℂ)
+        (1 : ℝ))
+      : ℂ) = lam
+  rw [mfderiv_ofReal_mul_const_apply_one lam t]
+  exact mfderiv_mkQ_apply L ((t : ℂ) * lam) lam
 
 end ComplexTorus
 
