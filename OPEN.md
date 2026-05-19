@@ -32,6 +32,61 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 (late+++) `genus (ℂ ⧸ L) ≤ 1` upper bound CLOSED unconditionally on T_L (2 chips, ~330 LOC).**
+>
+> Closes the upper bound `Module.finrank ℂ (HolomorphicOneForm (ℂ ⧸ L)) ≤ 1`
+> on the complex torus `T_L = ℂ ⧸ L`. Combined with the already-closed
+> lower bound (Forster-Riesz + `dz_ne_zero`), this gives
+> `genus (ℂ ⧸ L) = 1` unconditionally.
+>
+> **Strategy: Liouville via global cotangent triviality.**
+>
+> 1. The cotangent bundle of `T_L` is canonically trivial: chart
+>    transitions on `T_L` are translations with identity Fréchet
+>    derivative (`ComplexTorusTangentCoordChangeId.lean`). So
+>    `α.eval : T_L → (ℂ →L[ℂ] ℂ)` is globally `ContMDiff ω` (no chart
+>    plumbing past the chart neighborhood).
+> 2. The **coefficient function** `dzCoeff α p := (α.eval p) (1 : ℂ)` is
+>    `ContMDiff 𝓘(ℂ,ℂ) 𝓘(ℂ,ℂ) ω` (compose `α.eval` with
+>    `ContinuousLinearMap.apply ℂ ℂ 1`).
+> 3. The unconditional Liouville result
+>    `Topology.LiouvilleForContMDiffOmega.contMDiff_omega_isConstant`
+>    fires on `T_L` (compact, connected, T2, charted, IsManifold ω
+>    complex 1-manifold). So `dzCoeff α` is constant.
+> 4. Let `c := dzCoeff α 0`. By ℂ-linearity of `α.eval p`,
+>    `α.eval p v = v • α.eval p 1 = v • c = c • v = c • (id v) = c • (dz L).eval p v`.
+>    So `α = c • dz L`.
+> 5. Hence every `α` is a ℂ-scalar multiple of `dz L`, and
+>    `finrank ≤ 1` via `finrank_le_one`.
+>
+> **The two chips.**
+>
+> * **Chip A** — `Manifold/ComplexTorusConnected.lean` (~50 LOC).
+>   `ConnectedSpace (ℂ ⧸ L)` instance via
+>   `Function.Surjective.connectedSpace` on `L.mkQ : ℂ → ℂ ⧸ L`
+>   (continuous + surjective image of connected `ℂ` is connected).
+>
+> * **Chip B** — `Manifold/ComplexTorusGenusUpperBound.lean` (~280 LOC).
+>   `dzCoeff`, `dzCoeff_contMDiff`, `dzCoeff_isConstant`,
+>   `exists_smul_dz`, `holomorphicOneForm_eq_span_dz`,
+>   `finrank_holomorphicOneForm_le_one`, `genus_le_one`,
+>   **`genus_eq_one`** (combining lower + upper).
+>
+> ## Atomic-input status on `T_L = ℂ ⧸ L` (after this session)
+>
+> | Atom | Status |
+> |---|---|
+> | `cycleGens` | **Unconditional** |
+> | `SmoothPathLiftHypothesisTorus L` | **Unconditional** |
+> | `SmoothHurewiczHypothesisTorus` | **Unconditional** |
+> | smooth-path-connectedness | **Unconditional** |
+> | `riemannBilinear` | **Unconditional** |
+> | `genus (ℂ ⧸ L) = 1` lower bound | **Unconditional** |
+> | **`genus (ℂ ⧸ L) ≤ 1` upper bound** | **Unconditional (NEW this session)** |
+> | `holomorphicCanonicalClosed` | Open — chart-pullback Cauchy on 2-simplices |
+>
+> Only ONE open atom remains for full period-lattice closure on `T_L`.
+
 > **2026-05-19 (late++) `SmoothHurewiczHypothesisTorus` CLOSED unconditionally on T² (6 chips, ~1,985 LOC).**
 >
 > Closes the previously hardest open atom on T_L = ℂ ⧸ L: every
