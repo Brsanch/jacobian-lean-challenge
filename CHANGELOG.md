@@ -1,5 +1,64 @@
 # Changelog
 
+## 2026-05-19 (late+++) — `genus (ℂ ⧸ L) ≤ 1` upper bound CLOSED on T_L (2 chips, ~330 LOC)
+
+Closes the upper-bound half of the `genus (ℂ ⧸ L) = 1` atom on the
+complex torus, unconditionally. Combined with the already-closed
+lower bound (Forster-Riesz + `dz_ne_zero` in
+`ComplexTorusGenusLowerBound.lean`), this gives
+`genus (ℂ ⧸ L) = 1` unconditionally.
+
+### Strategy outline
+
+The cotangent bundle of `T_L` is canonically trivial because chart
+transitions on `T_L` are translations with identity Fréchet derivative
+(`ComplexTorusTangentCoordChangeId.lean`). For any holomorphic 1-form
+`α : HolomorphicOneForm (ℂ ⧸ L)`:
+
+1. **Coefficient function.** `dzCoeff α : ℂ ⧸ L → ℂ`,
+   `dzCoeff α p := (α.eval p) (1 : ℂ)`. The bundle triviality plus
+   `cotangentSection_contMDiffAt_iff` make `α.eval` globally
+   `ContMDiff ω`, and composing with
+   `ContinuousLinearMap.apply ℂ ℂ 1 : (ℂ →L[ℂ] ℂ) →L[ℂ] ℂ` yields
+   `ContMDiff 𝓘(ℂ,ℂ) 𝓘(ℂ,ℂ) ω (dzCoeff α)`.
+
+2. **Liouville.** `Topology.LiouvilleForContMDiffOmega.contMDiff_omega_isConstant`
+   is already unconditional for compact connected complex 1-manifolds.
+   `T_L` is compact (existing `instCompactSpace`), connected (NEW —
+   surjective image of connected `ℂ` via `L.mkQ`), T2 (existing
+   `instT2Space`), `ChartedSpace ℂ`, and `IsManifold 𝓘(ℂ) ω`. So
+   `dzCoeff α` is constant — call the value `c`.
+
+3. **Reconstruction.** By ℂ-linearity of `α.eval p : ℂ →L[ℂ] ℂ`,
+   `α.eval p v = v • α.eval p 1 = v • c = c • v = c • (id v) =
+   c • (dz L).eval p v`. So `α = c • dz L` in `HolomorphicOneForm T_L`.
+
+4. **Dimension bound.** Every `α` is a ℂ-scalar multiple of `dz L`,
+   so `finrank ℂ (HolomorphicOneForm (ℂ ⧸ L)) ≤ 1` via mathlib's
+   `finrank_le_one`.
+
+### Files added
+
+| # | File | LOC |
+|---|---|--:|
+| 1 | `Manifold/ComplexTorusConnected.lean` | 50 |
+| 2 | `Manifold/ComplexTorusGenusUpperBound.lean` | 280 |
+
+### Atomic-input status on `T_L` (after this session)
+
+| Atom | Status |
+|---|---|
+| `cycleGens` | Unconditional |
+| `SmoothPathLiftHypothesisTorus L` | Unconditional |
+| `SmoothHurewiczHypothesisTorus` | Unconditional |
+| smooth-path-connectedness | Unconditional |
+| `riemannBilinear` | Unconditional |
+| `genus (ℂ ⧸ L) = 1` lower bound | Unconditional |
+| **`genus (ℂ ⧸ L) ≤ 1` upper bound** | **Unconditional (NEW)** |
+| `holomorphicCanonicalClosed` | Open — chart-pullback Cauchy on 2-simplices |
+
+Only one open atom remains for full period-lattice closure on `T_L`.
+
 ## 2026-05-19 (late) — `SmoothPathLiftHypothesisTorus L` CLOSED on T² (17 chips, 2,558 LOC)
 
 Closes the hardest open atom on the SmoothHurewicz reduction chain
