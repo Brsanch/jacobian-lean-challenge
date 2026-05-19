@@ -793,3 +793,5 @@ import JacobianChallenge.Manifold.ComplexTorusTangentCoordChangeId
 import JacobianChallenge.Manifold.ComplexTorusDz
 import JacobianChallenge.Manifold.ComplexTorusBasicInstances
 import JacobianChallenge.Manifold.ComplexTorusGenusLowerBound
+import JacobianChallenge.Manifold.ComplexTorusPeriodComputation
+import JacobianChallenge.Manifold.ComplexTorusMkQMfderiv
