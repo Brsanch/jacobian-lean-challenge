@@ -788,3 +788,4 @@ import JacobianChallenge.Manifold.BasedLoopAtPush
 import JacobianChallenge.Manifold.ComplexTorusPeriodLatticeInputs
 import JacobianChallenge.Manifold.ComplexTorusPathConnected
 import JacobianChallenge.Manifold.ComplexTorusH1SpansTop
+import JacobianChallenge.Manifold.ComplexTorusGenericGenusBundle
