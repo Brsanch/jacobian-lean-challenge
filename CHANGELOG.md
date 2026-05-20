@@ -1,5 +1,109 @@
 # Changelog
 
+## 2026-05-20 late — Period-lattice + classical-content scaffolding + item-14 advances (35 commits + merge, ~3,778 LOC)
+
+Final state: build **9291 jobs**, **1011 `.lean` files**, **173,331
+LOC**. Zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
+STRICT-CLOSED** — work is foundational plumbing + named classical
+hypotheses; the items 5/11/12/13/17/18/21 cannot flip until the
+universal `[HasJacobianAnalyticStructure X]` instance lands.
+`origin/main` HEAD `ce776c9` (merge of
+`feat/item14-rr-genus-zero-reduction`).
+
+### Arc A — Period-lattice plumbing + classical scaffolding (20 commits, ~2,200 LOC)
+
+**Class-keyed analytic Jacobian chain** (8 chips, ~700 LOC):
+
+* `Manifold/CanonicalAnalyticJacobianFromClass.lean` — per-basis form
+  with 7 instances under `[HasSmoothHomologyDataPackage X basis_ω]`.
+* `Manifold/DefaultHolomorphicOneFormBasis.lean` — canonical basis via
+  `Module.finBasis`.
+* `Manifold/HasJacobianAnalyticStructure.lean` — basis-anonymous class
+  wrapper, RS + T_L instances, `CanonicalAnalyticJacobianAnonymous` Type
+  with 7 instances.
+* `Manifold/HasBasedSmoothLoopsBound.lean` — BSLB class wrapper + RS
+  instance.
+* `Manifold/HasJacobianAnalyticStructureSubsingleton.lean` —
+  Subsingleton-ω + BSLB → the class.
+* `Manifold/CanonicalAnalyticJacobianSubsingleton.lean` — subsingleton
+  of target at genus 0. (Initial draft committed accidentally with a
+  failing proof; fixed in `50896a4` to use
+  `QuotientAddGroup.mk_surjective`.)
+* `Manifold/CanonicalOfCurve.lean` — Abel-Jacobi point map +
+  `canonicalOfCurve_self`.
+* `Manifold/CanonicalOfCurveContMDiffSubsingleton.lean` — smoothness
+  + constancy at genus 0.
+
+**Canonical pushforward / pullback** (2 chips, ~220 LOC):
+
+* `Manifold/CanonicalPushforwardPullbackLift.lean` — per-curve lifts
+  on canonical lattices.
+* `Manifold/CanonicalPushforwardPullbackContMDiff.lean` — smoothness
+  corollaries.
+
+**End-to-end smoke tests** (2 chips, ~160 LOC):
+
+* `Manifold/CanonicalAnalyticJacobianRiemannSphereSmokeTest.lean` —
+  compose all 7 instances + `canonicalOfCurve` on RS.
+* `Manifold/CanonicalAnalyticJacobianComplexTorusSmokeTest.lean` —
+  same on T_L (genus 1).
+
+**Classical-content scaffolding** (8 chips, ~850 LOC):
+
+* `Manifold/HodgeInnerProductHypothesis.lean` — named `∃` positive-
+  definite Hermitian form on `H⁰(Ω)`; genus-0 vacuous.
+* `Manifold/HodgeFormMatrix.lean` — matrix representation
+  `H_ij = H(ω_i, ω_j)` + `conjTranspose` + diagonal positivity.
+* `Manifold/PeriodMatrix.lean` — the 2g × g complex period matrix
+  with row = period vector.
+* `Manifold/RiemannBilinearRelations.lean` — first + second + bundled
+  existence (second via `Complex.re` positivity since ℂ has no
+  `PartialOrder` for `Matrix.PosDef`).
+* `Manifold/RiemannBilinearImpliesLI.lean` — ℝ-LI conclusion +
+  genus-0 + Subsingleton-ω discharges.
+* `Manifold/StandardSymplecticForm.lean` — J = [[0, I]; [-I, 0]] +
+  top-left/bottom-right zero-block lemmas + **anti-symmetry
+  `J^T = -J` proven** via 4-case index analysis.
+* `Manifold/HodgeRiemannBridge.lean` — the deep identity
+  `i Π^T J Π̄ = H.toMatrix` + **Hermitian half proven** via
+  `toMatrix_conjTranspose`.
+
+### Arc B — Item 14 advances (15 commits, ~1,580 LOC)
+
+* `Manifold/ChartLocalPrimitiveExtend.lean` + `EqOn`/`EventuallyEq`
+  bridge.
+* `Manifold/PathPrimitive*ChartLocal.lean` — `ContMDiffAt` /
+  `mfderiv` / `ContinuousAt` / `ContinuousOn` transfer theorems
+  + named `ChartLocalPrimitiveSmoothExt` + FTC + Continuous hypotheses.
+* `Manifold/PathPrimitiveGlobalSmoothFTC.lean` — global
+  `pathPrimitive ContMDiff` + FTC via
+  `PathPrimitiveAdmissibleChartCover`.
+* `Topology/S2ImpliesGenus0From*.lean` — BSLB + per-basis
+  admissibility (2-input + 3-input reductions).
+* `Manifold/PathPrimitiveAdmissibleRiemannSphere.lean` — RS
+  unconditional via `Subsingleton ω`.
+* `Topology/Item14RiemannSphereViaAdmissibility.lean` — **unconditional
+  item 14 biconditional on `RiemannSphere`** via BSLB+admissibility.
+* `Manifold/HasAdmissibleChartCover.lean` + `HasConvexTargetChartCover`
+  — typeclass form + RS instance + class-driven compositions +
+  automatic admissibility under Subsingleton ω.
+
+### Net effect
+
+Items 5/11/12/13 (CompactSpace, ChartedSpace, IsManifold, LieAddGroup
+on `Jacobian X`) and items 17/18/21 (smoothness of `ofCurve`,
+`pushforward`, `pullback`) are now reducible to a single named class
+hypothesis `[HasJacobianAnalyticStructure X]` — once that lands
+universally, all 7 structural items flow via the canonical-analytic-
+Jacobian chain. The remaining classical content is documented as
+named hypotheses with the precise mathlib infrastructure gaps each
+needs (differential forms, integration over manifolds, surface
+classification, Hodge theory).
+
+Item 14 has an unconditional biconditional on `RiemannSphere` via the
+BSLB+admissibility route, and a class-driven path for general X
+through `HasAdmissibleChartCover` + `HasConvexTargetChartCover`.
+
 ## 2026-05-20 (continuation) — Triple structural reduction: chip D + AbelGenerator + Item 14 (23 commits, ~3,377 LOC)
 
 Final state: build 9251 jobs, 965 `.lean` files, 168,266 LOC. Zero
