@@ -32,6 +32,27 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 (late++++++++) Item-14 reverse-leg ingredient consolidation (1 chip, ~100 LOC).**
+>
+> Ships `loopPeriodVanishes_from_frameStable_and_subdivision`
+> (`Manifold/LoopPeriodVanishesFromFrameStableAndSubdivision.lean`).
+> Reduces the three named ingredients of
+> `Item14ReverseLegFullAssembly.loopPeriodVanishes_from_ingredients`
+> to **two**: per-loop `CotangentChartFrameStable` +
+> `SubdivisionTelescopingToLoop_named`. The deriv-continuity and
+> chart-integral-bridge ingredients are absorbed via the existing
+> `pointwiseChartEvalIdentity_of_frameStable` chain.
+>
+> After this consolidation, the open frontier for `LoopPeriodVanishes`
+> on a simply-connected `X` (and hence the reverse leg of item 14) is
+> precisely two named hypotheses: frame-stability (structural;
+> automatic on RS for `basePoint ≠ ∞`, fails on T_L) + subdivision
+> telescoping (Whitney smoothing + orientation cancellation — the deep
+> classical content).
+>
+> Item count unchanged (still 13/24 STRICT-CLOSED). Build **9201 jobs
+> clean** (was 9198).
+
 > **2026-05-19 (late+++++++) `Div.evalSumHom` + closed-form Abel-Jacobi `Pic⁰ X ≃+ X` on any compact AddCommGroup manifold (9 chips, ~900 LOC).**
 >
 > Builds the divisor-evaluation homomorphism
@@ -74,7 +95,8 @@ spec. Three statuses, with one tag for partial progress:
 >   `pic0EquivComplexTorus_default`, `evalSumPic0Equiv_default` —
 >   `Manifold/C3FullInputExtSympComplexTorusDefault.lean`.
 >
-> Repo total **9197 jobs clean** (was 9191). Zero `sorry`, zero `axiom`.
+> Repo total **9201 jobs clean** (was 9191; 161,295 LOC across 915 `.lean` files).
+> Zero `sorry`, zero `axiom`.
 > Item count unchanged (still 13/24 STRICT-CLOSED) but the discharge
 > infrastructure for `TLDivSumHypothesis L` now factors through a
 > generic kernel-of-evalSumHom statement amenable to multiplicative-
@@ -124,7 +146,7 @@ spec. Three statuses, with one tag for partial progress:
 >   theorem `∮_∂R d log f = 0` on a fundamental parallelogram).
 > * `TLAbelConverseHypothesis L` — Weierstrass σ-function existence.
 >
-> Repo total **162,648 LOC across 907 `.lean` files**; build **9191 jobs**
+> Repo total **161,295 LOC across 915 `.lean` files**; build **9201 jobs**
 > clean (zero `sorry`, zero `axiom`).
 
 > **2026-05-19 (late+++++) 2D-lift scaffolding for `holomorphicCanonicalClosed` (3 chips, ~370 LOC).**
