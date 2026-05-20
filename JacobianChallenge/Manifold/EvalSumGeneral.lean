@@ -5,6 +5,7 @@ Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Divisor.EvalSum
 import JacobianChallenge.Divisor.PrincipalDivisorRange
+import JacobianChallenge.Manifold.ResidueTheoremUnconditional
 
 set_option linter.unusedSectionVars false
 set_option maxHeartbeats 1600000
@@ -175,6 +176,57 @@ noncomputable def Pic0.evalSumLiftEquiv
     (hConv : EvalSumAbelConverseHypothesis X)
     (c : Pic0 X) :
     Pic0.evalSumLiftEquiv X h hConv c = Pic0.evalSumLift X h c := rfl
+
+/-! ## Clean joint characterization
+
+The two named hypotheses together are equivalent to saying that the
+divisor-class quotient `Pic0 X` *is* the kernel of `evalSumDiv0Hom`,
+i.e. `(PrincDiv X).addSubgroupOf (Div0 X) = ker (Div0.evalSumHom X)`. -/
+
+/-- **Joint characterization.** `EvalSumAbelHypothesis X` and
+`EvalSumAbelConverseHypothesis X` together are equivalent to
+`(PrincDiv X).addSubgroupOf (Div0 X) = ker (Div0.evalSumHom X)`. -/
+theorem PrincDiv_addSubgroupOf_Div0_eq_ker_evalSumDiv0Hom_iff
+    [ConnectedSpace X] :
+    (PrincDiv X).addSubgroupOf (Div0 X) = (Div0.evalSumHom X).ker ↔
+      EvalSumAbelHypothesis X ∧ EvalSumAbelConverseHypothesis X := by
+  constructor
+  · intro h_eq
+    constructor
+    · -- Forward direction (Abel): show every principal divisor has evalSum 0.
+      intro f
+      -- The Div0-element with underlying divisor (f).
+      have h_deg : (principalDivisorMap f).degree = 0 := residue_theorem f
+      let D : Div0 X := ⟨principalDivisorMap f,
+        AddMonoidHom.mem_ker.mpr h_deg⟩
+      -- D ∈ (PrincDiv X).addSubgroupOf (Div0 X) since (D : Div X) = (f) ∈ PrincDiv.
+      have hD_mem : D ∈ (PrincDiv X).addSubgroupOf (Div0 X) :=
+        principalDivisorMap_mem_PrincDiv f
+      -- Apply h_eq: D ∈ ker (Div0.evalSumHom X), so evalSum ((D : Div X)) = 0.
+      have hD_ker : D ∈ (Div0.evalSumHom X).ker := h_eq ▸ hD_mem
+      rw [AddMonoidHom.mem_ker, Div0.evalSumHom_apply] at hD_ker
+      exact hD_ker
+    · -- Reverse direction (converse): for D ∈ Div0 with evalSum = 0, D is principal.
+      intro D hD_sum
+      -- D ∈ ker (Div0.evalSumHom X).
+      have hD_ker : D ∈ (Div0.evalSumHom X).ker := by
+        rw [AddMonoidHom.mem_ker]
+        show Div.evalSum (D : Div X) = 0
+        exact hD_sum
+      -- Apply h_eq.symm: D ∈ (PrincDiv X).addSubgroupOf (Div0 X).
+      have hD_princ : D ∈ (PrincDiv X).addSubgroupOf (Div0 X) := h_eq.symm ▸ hD_ker
+      exact hD_princ
+  · rintro ⟨hAbel, hConv⟩
+    apply le_antisymm
+    · -- (PrincDiv).addSubgroupOf (Div0) ≤ ker (Div0.evalSumHom).
+      intro D hD
+      rw [AddMonoidHom.mem_ker, Div0.evalSumHom_apply]
+      have h_princ : (D : Div X) ∈ PrincDiv X := hD
+      exact evalSumHom_eq_zero_on_PrincDiv_of_evalSumAbelHypothesis X hAbel _ h_princ
+    · -- ker (Div0.evalSumHom) ≤ (PrincDiv).addSubgroupOf (Div0).
+      intro D hD
+      rw [AddMonoidHom.mem_ker, Div0.evalSumHom_apply] at hD
+      exact hConv D hD
 
 end JacobianChallenge
 
