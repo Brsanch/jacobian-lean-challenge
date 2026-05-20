@@ -89,6 +89,22 @@ theorem evalSumHom_eq_zero_on_PrincDiv_of_TLDivSum
   · intro x _ hx
     rw [map_neg, hx, neg_zero]
 
+/-- **Kernel-containment form.** `TLDivSumHypothesis L` is equivalent to
+`PrincDiv (ℂ ⧸ L) ≤ ker evalSumHom`. -/
+theorem TLDivSumHypothesis_iff_PrincDiv_le_ker_evalSumHom :
+    TLDivSumHypothesis L ↔
+      PrincDiv (ℂ ⧸ L) ≤ (Div.evalSumHom (X := ℂ ⧸ L)).ker := by
+  constructor
+  · intro hTL D hD
+    rw [AddMonoidHom.mem_ker]
+    exact evalSumHom_eq_zero_on_PrincDiv_of_TLDivSum L hTL D hD
+  · intro h_ker f
+    have h_mem : principalDivisorMap f ∈ PrincDiv (ℂ ⧸ L) :=
+      principalDivisorMap_mem_PrincDiv f
+    have h_in_ker := h_ker h_mem
+    rw [AddMonoidHom.mem_ker] at h_in_ker
+    exact h_in_ker
+
 /-! ## Closure under multiplicative-group operations on `MeromorphicNonzero`
 
 These structural lemmas let `TLDivSumHypothesis L` be discharged by
