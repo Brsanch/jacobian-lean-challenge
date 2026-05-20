@@ -32,6 +32,73 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-20 (full day) Triple structural reduction: chip D + AbelGenerator + Item 14 minimal-input lift (23 commits, ~3,377 LOC). origin/main HEAD `dbcc798`. Build 9251 jobs / 965 `.lean` files / 168,266 LOC.**
+>
+> Item count: **13 / 24 STRICT-CLOSED** (unchanged). Three structural
+> reductions across path (a) [period lattice], path (b) [Abel–Jacobi
+> → item 16], and item 14 (genus_eq_zero_iff_homeo), all leveraging
+> chip D's unconditional `HolomorphicStokesHypothesis`.
+>
+> **(1) Period-lattice atom-3 UNCONDITIONAL** (chip D arc; `66ccc83`
+> + cleanup commits). `UniformChartContainmentDepth_named X` +
+> `HolomorphicComplexBoundaryVanishing X` +
+> `HolomorphicStokesHypothesis X` +
+> `HolomorphicComponentsCanonicalClosed X` all unconditional on every
+> compact connected complex 1-manifold. Joint blocker for items
+> 5/11/12/13/17/18/21 reduced **from 4 named atoms to 3**.
+> Composite constructor `ofThreeNamedAtoms` ships the drop-one
+> variant.
+>
+> **(2) AbelGenerator arc reduced to 2 named universal predicates**
+> (commits `6050a19` through `e01640b`). Per-`f` reduction with
+> regular endpoints + constant-case discharge + `IsConstantMap →
+> principalDivisorMap = 0` bridge composes into
+> `abelGeneratorPeriodCondition_of_named_predicates`, which takes
+> exactly two named universal predicates:
+> * `LevelSetChainPeriodInLattice` — substantive Stokes/residue
+>   content of step 9 (period of the concrete `regularLevelSetChain f`
+>   lies in `periodLatticeImage`).
+> * `HasRegularEndpoints` — universal `0, ∞ ∈ regularValueSet f` for
+>   every non-constant `f` (classical Möbius/density content).
+>
+> Plus full real+imag decomposition of the period vector
+> (`complexChainPeriodVector_levelSetChain_apply_re_eq_sum` /
+> `_im_eq_sum`) exposing the substantive content as two real-valued
+> `Finset.sum`s of per-path real integrals.
+>
+> **(3) Item 14 factored into 5 minimal named hypotheses** (commits
+> `820aa3d` through `dbcc798`). `genus_eq_zero_iff_homeo_from_minimal_inputs`
+> composes both legs of item 14 from:
+> * forward leg input: `ExistsSimplePoleGermAtSomePoint X` (RR-class
+>   existence).
+> * reverse leg inputs (4): smooth-path-connectedness,
+>   `BasedSmoothLoopsBoundHypothesis`, per-basis `ContMDiff ω
+>   (pathPrimitive)`, per-basis FTC at `eval`.
+>
+> Chip D supplies the per-simplex Stokes step internally. The reverse
+> leg's substantive input weakened from "smooth Poincaré-disc filling"
+> to the strictly weaker `BasedSmoothLoopsBoundHypothesis` (any
+> 2-chain bounding) — closing it for general simply-connected X still
+> needs classical content (cellular/smooth approximation) but no
+> longer requires the stronger single-2-simplex-with-two-constant-faces
+> structure.
+>
+> Two parallel reverse-leg reductions provided:
+> `s2ImpliesGenus0_of_smoothlyNullBoundedHypothesis` (stronger input,
+> finest structural granularity) and
+> `s2ImpliesGenus0_of_basedSmoothLoopsBoundHypothesis` (weaker input,
+> uses 2-chain linearity over chip D).
+>
+> Plus auxiliary infrastructure: `SmoothBordant ↔ singleCycle ∈
+> stokesBoundaries` biconditional (`ad13e6b`) and
+> `LevelSetChainPeriodInLattice` named predicate (`e63d194`).
+>
+> Net: every remaining open content is a single named classical
+> hypothesis with clear mathematical content. No 1-chip closures
+> available; the next item flip requires a multi-session arc on one
+> of the remaining named hypotheses (e.g., `BasedSmoothLoopsBoundHypothesis`
+> for general simply-connected X via cellular/Whitney approximation).
+
 > **2026-05-20 Period-lattice push: `UniformChartContainmentDepth_named X` UNCONDITIONAL via Lebesgue + iterated-midpoint diameter (5 chips, ~1,178 LOC).**
 >
 > Closes the **classical Lebesgue-number existence statement** that was
