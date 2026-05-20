@@ -79,8 +79,10 @@ spec. Three statuses, with one tag for partial progress:
 
 > **2026-05-20 (period-lattice three-atom packaging) Bundle 3 remaining named period-lattice atoms into a single structure; discharge α-data via smoothPathConnected_of_preconnected; validate on RS + T_L unconditionally (4 chips, ~504 LOC). origin/main HEAD `423f95e`.**
 >
-> Item count: **13/24 STRICT-CLOSED** (unchanged). Stack of structural
-> reductions on the period-lattice side of items 5/11/12/13/17/18/21.
+> Item count: **14/24 STRICT-CLOSED** (after this session's table-audit
+> flips of items 1 and 16 — both already honestly closed in tree but
+> the scoreboard was stale). Plus a stack of structural reductions on
+> the period-lattice side of items 5/11/12/13/17/18/21.
 >
 > **(A) α-data atom dropped**
 > (`GenericGenusPeriodLatticeInputsFromThreeNamedAtomsNoAlpha.lean`).
@@ -1319,12 +1321,18 @@ spec. Three statuses, with one tag for partial progress:
 > `[Nonempty (C3FullInputExtSymp X)]`) is the remaining closure path; the
 > infrastructure for it is now in tree.
 
-- **STRICT-CLOSED:** **13 / 24** — items **1, 2, 3, 6, 7, 8, 9, 15, 19, 20,
-  22, 23, 24**. Honest `PrincDiv := PrincDivHonestCandidate` and `Pic0`
+- **STRICT-CLOSED:** **14 / 24** — items **1, 2, 3, 6, 7, 8, 9, 15, 16, 19,
+  20, 22, 23, 24**. Honest `PrincDiv := PrincDivHonestCandidate` and `Pic0`
   (honest, with manifold instances) live in
   `Divisor/PrincipalDivisorRange.lean`. `Pic0.pushforward (hf)` uses
   `JacobianPushforward.lean`; `Pic0.pullbackWeighted (h_desc)` uses
   `Pic0.divPullbackWeighted_descent_of_smooth` in `JacobianPullback.lean`.
+  **Item 16** (`ofCurve_inj`) closed via `JacobianChallenge.ofCurve_inj_holds`
+  in `Manifold/ChartDerivNeZeroImpliesNonCriticalDischarge.lean`
+  (unconditional discharge chain: `PrincDivWitnessExtraction` → degree-1
+  via `DegreeOneFromSimpleZeroSimplePoleDischarge` →
+  `bijective_of_degreeFiber_eq_one` + `bijectiveAnalyticIsBiholomorphism_holds`
+  → `genus_eq_zero_iff_homeo_of_HolomorphicEquiv_RiemannSphere`).
   **Item 1** (`genus X : ℕ`) became STRICT-CLOSED via the 10-chip Forster
   density-bound arc (2026-05-17, `DiskChartCoverDensity*.lean` +
   `DiskChartCoverRiesz.lean` + `DiskChartCoverFiniteDim.lean`):
@@ -2513,7 +2521,7 @@ whenever a status changes.
 
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 1 | `genus X : ℕ` | **STUB** | Body: `JacobianChallenge.genus X = Module.finrank ℂ (HolomorphicOneForm X)`. Returns `0` by convention if `HolomorphicOneForm X` is infinite-dimensional, and finite-dimensionality on compact connected `X` is **not yet proved** (Hodge theory). The anti-hack pair (item 14, `genus_eq_zero_iff_homeo`) is **OPEN**. |
+| 1 | `genus X : ℕ` | **STRICT-CLOSED** *(post-Forster, 2026-05-17)* | Body: `JacobianChallenge.genus X = Module.finrank ℂ (HolomorphicOneForm X)`. **Finite-dimensionality on a compact connected complex 1-manifold is unconditional** via `DiskChartCover.holomorphicOneFormFiniteDim_holds` (`Manifold/DiskChartCoverFiniteDim.lean`), so the junk-zero convention does not kick in and `Module.finrank` returns the honest geometric genus. The anti-hack pair (item 14, `genus_eq_zero_iff_homeo`) is **OPEN** but is not a status blocker for item 1 itself. |
 | 2 | `Jacobian X : Type u` | **STRICT-CLOSED** *(post-ZZ256, 2026-05-12)* | Body: `Jacobian X := Pic0 X` with `Pic0 X = Div0 X ⧸ (PrincDiv X).addSubgroupOf (Div0 X)` and **`PrincDiv X := PrincDivHonestCandidate X`** (honest principal-divisor subgroup, in `Divisor/PrincipalDivisorRange.lean`). |
 | 3 | `instance : AddCommGroup (Jacobian X)` | **STRICT-CLOSED** *(post-ZZ256)* | Inherits from the honest `Pic0` quotient. |
 | 4 | `instance : TopologicalSpace (Jacobian X)` | **STUB** | Discrete (`⊥`). The challenge wants the complex-manifold topology (item 5 `ChartedSpace`); discrete is not it. |
@@ -2533,7 +2541,7 @@ whenever a status changes.
 | 13 | `instance : LieAddGroup ... ω (Jacobian X)` | **OPEN** | `sorry`. Requires item 12 plus smoothness of group ops. |
 | 14 | `genus_eq_zero_iff_homeo` (anti-hack vs. `genus := 0`) | **OPEN** | `sorry`. Architecturally closed via `genus_eq_zero_iff_homeo_from_all_conditionals` in [`Topology/Item14FinalComposition.lean`](JacobianChallenge/Topology/Item14FinalComposition.lean). Open content factors onto the four named classical inputs listed at the top of this file. |
 | 15 | `ofCurve_self : ofCurve P P = 0` | **STRICT-CLOSED** *(post-ZZ256)* | Real proof reducing to `[δP − δP] = 0` in honest `Pic⁰`. |
-| 16 | `ofCurve_inj` (anti-hack vs. `Jacobian := PUnit`) | **OPEN** *(post-ZZ256 regression)* | The previous STUB proof exploited `PrincDiv X = ⊥` to make the quotient faithful. Under honest `PrincDiv` that argument fails; `Jacobian.lean`'s `ofCurve_inj` is now `sorry` (Basic.lean transitively). Genuinely requires Abel–Jacobi (Phase 2). |
+| 16 | `ofCurve_inj` (anti-hack vs. `Jacobian := PUnit`) | **STRICT-CLOSED** *(post-ZZ:OfCurveInj, 2026-05-XX)* | Body in `Basic.lean` line 143–144: `JacobianChallenge.ofCurve_inj_holds P h` (`Manifold/ChartDerivNeZeroImpliesNonCriticalDischarge.lean`). Discharge chain (all unconditional in tree): suppose `[δ Q₁ - δ P] = [δ Q₂ - δ P]` in `Pic⁰ X` for `Q₁ ≠ Q₂` ⇒ extract `f : MeromorphicNonzero X` with `principalDivisorMap f = single Q₁ - single Q₂` (via `PrincDivWitnessExtraction`) ⇒ `f.toRiemannSphere` is non-constant, degree 1 (via `DegreeOneFromSimpleZeroSimplePoleDischarge`) ⇒ `bijective_of_degreeFiber_eq_one` + `bijectiveAnalyticIsBiholomorphism_holds` give a biholomorphism `X ≃ RiemannSphere` ⇒ `genus_eq_zero_iff_homeo_of_HolomorphicEquiv_RiemannSphere` gives `genus X = 0`, contradicting `0 < genus X`. |
 | 17 | `Jacobian.ofCurve_contMDiff` | **OPEN** | `sorry`. Requires item 5 (`ChartedSpace`) plus a real `ofCurve`. |
 | 18 | `Jacobian.pushforward_contMDiff` | **OPEN** | `sorry`. Requires item 5 plus a real `pushforward`. |
 | 19 | `pushforward_id_apply` | **STRICT-CLOSED** *(post-ZZ256)* | Real proof via `Pic0.pushforward_id` (in `JacobianPushforward.lean`) ↦ `Div.singletonMap_id_apply`. |
