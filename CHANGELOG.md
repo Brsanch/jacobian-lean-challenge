@@ -1,5 +1,62 @@
 # Changelog
 
+## 2026-05-19 (late+++++++) — `pointwiseChartEvalIdentity` UNCONDITIONAL (1 chip + 1 composite, ~360 LOC)
+
+Drops the frame-stability hypothesis from the chart-pullback
+pointwise identity:
+
+```
+(α.eval x : ℂ →L[ℂ] ℂ) v = α.localCoeff y (chart_y x) * deriv chartPath t
+```
+
+now holds at every `t ∈ [0, 1]` for **every** `ChartContainedClosedLoop`
+on every compact connected complex 1-manifold — no
+`CotangentChartFrameStable` assumption.
+
+**The bridge.** The cotangent coordChange used by `localCoeff` runs
+under the model `𝓘(ℂ, ℂ)`; the tangent coordChange that appears in
+the chain-rule via `mfderiv_chartAt_eq_tangentCoordChange` runs under
+`𝓘(ℝ, ℂ)` (because `γ.ambient : ℝ → X` is only ℝ-smooth). The two
+refer to the same underlying chart-change derivative, related by
+`.restrictScalars ℝ` (`tangentBundleCore_coordChange_restrictScalars_eq`,
+already in tree).
+
+Combined with ℂ-linearity of `α.toFun x : ℂ →L[ℂ] ℂ` and the cocycle
+`T_yx ∘ T_xy = id` of `tangentBundleCore.coordChange`, the two
+non-trivial coord changes cancel exactly.
+
+**Ships:**
+
+* `Manifold/PointwiseChartEvalUnconditional.lean` (~270 LOC):
+  * `T_yx`, `T_xy` — shorthand for the two relevant 𝓘(ℂ, ℂ)
+    tangent coord changes at `x = γ.ambient t`.
+  * `T_yx_T_xy_apply` — cocycle inversion `T_yx (T_xy v) = v`.
+  * `localCoeff_apply_at_chartImage` —
+    `α.localCoeff y (chart_y x) = α.toFun x (T_yx 1)`.
+  * `deriv_chartPath_eq_T_xy_velocity` —
+    `deriv chartPath t = T_xy v`
+    (chain rule + restrictScalars bridge).
+  * **`pointwiseChartEvalIdentity_unconditional`** — headline.
+  * **`chartContainedLoopVanishingHypothesis_holds_unconditional`** —
+    composite discharge dropping frame stability.
+
+* `Manifold/LoopPeriodVanishesFromSubdivision.lean` (~75 LOC):
+  `loopPeriodVanishes_from_subdivision_alone` — composes with
+  `SubdivisionTelescopingToLoop_named`, so the **only** remaining
+  open input for the reverse leg of item 14 on simply-connected
+  `X` is the subdivision-telescoping ingredient (the deep
+  classical content).
+
+**After this chip,** the open frontier on simply-connected `X` for
+`LoopPeriodVanishes` is exactly **one** named hypothesis (was two):
+
+* `SubdivisionTelescopingToLoop_named X` — Whitney smoothing of
+  null-homotopy subdivision + orientation-cancellation telescoping.
+
+Build **9203 jobs** clean (was 9201). Zero `sorry`, zero `axiom`.
+Item count unchanged (still 13/24 STRICT-CLOSED) but the open frontier
+on the reverse leg of item 14 is sharpened.
+
 ## 2026-05-19 (late++++++) — Item-14 reverse-leg ingredient consolidation (1 chip, ~100 LOC)
 
 Reduces the named-ingredient count of
