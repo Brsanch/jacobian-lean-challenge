@@ -32,6 +32,27 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 (late+++++++++) `pointwiseChartEvalIdentity` UNCONDITIONAL on any compact connected complex 1-manifold (1 chip + 1 composite, ~360 LOC).**
+>
+> Ships `pointwiseChartEvalIdentity_unconditional` and
+> `chartContainedLoopVanishingHypothesis_holds_unconditional`
+> (`Manifold/PointwiseChartEvalUnconditional.lean`). Drops the
+> `CotangentChartFrameStable` hypothesis from the chart-pullback
+> pointwise identity by keeping the non-trivial cotangent/tangent
+> coord changes alive and showing they cancel via the cocycle of
+> `tangentBundleCore` together with the `ℝ ↔ ℂ` restrictScalars
+> bridge `tangentBundleCore_coordChange_restrictScalars_eq` and the
+> `ℂ`-linearity of `α.toFun x`.
+>
+> Composite ships `loopPeriodVanishes_from_subdivision_alone`
+> (`Manifold/LoopPeriodVanishesFromSubdivision.lean`), so the only
+> remaining open input for the reverse leg of item 14 on simply-
+> connected `X` is **one** named hypothesis (was two):
+> `SubdivisionTelescopingToLoop_named X`.
+>
+> Item count unchanged (still 13/24 STRICT-CLOSED). Build **9203 jobs
+> clean** (was 9201).
+
 > **2026-05-19 (late++++++++) Item-14 reverse-leg ingredient consolidation (1 chip, ~100 LOC).**
 >
 > Ships `loopPeriodVanishes_from_frameStable_and_subdivision`
