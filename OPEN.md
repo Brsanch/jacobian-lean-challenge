@@ -32,6 +32,51 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-20 (period-lattice three-atom packaging + class wrapper + general-X constructor + item 14 4-input reduction + item 14 2-input subsingleton reduction; 11 chips, ~1010 LOC). origin/main HEAD `8864eb4`.**
+>
+> Two arcs in a single session:
+>
+> **Arc A — Period-lattice three-atom packaging (chips A-F).**
+> * (A) α-data atom dropped via `smoothPathConnected_of_preconnected`
+>   (`GenericGenusPeriodLatticeInputsFromThreeNamedAtomsNoAlpha.lean`).
+> * (B) Three remaining atoms bundled into a single structure
+>   `SmoothHomologyDataPackage basis_ω`
+>   (`SmoothHomologyDataPackage.lean`).
+> * (C) Unconditional discharge on `RiemannSphere`
+>   (`SmoothHomologyDataPackageRiemannSphere.lean`).
+> * (D) Unconditional discharge on `T_L = ℂ ⧸ L`
+>   (`SmoothHomologyDataPackageComplexTorus.lean`).
+> * (E) General-X end-to-end constructor:
+>   `c3FullInputExtSymp_of_package` + the `Nonempty` headline take
+>   `(SmoothHomologyDataPackage + 4 named hypotheses)` →
+>   `Nonempty (C3FullInputExtSymp X)`
+>   (`C3FullInputExtSympFromPackage.lean`).
+> * (F) Class wrapper `HasSmoothHomologyDataPackage X basis_ω` + RS/T_L
+>   instances (`SmoothHomologyDataPackageClass.lean`).
+> * (G) Subsingleton-ω + BSLB inhabitant of the package
+>   (`SmoothHomologyDataPackageSubsingleton.lean`).
+>
+> Net: at general genus on a compact connected complex 1-manifold, the
+> period-lattice side of items 5/11/12/13/17/18/21 factors through a
+> **single classical existence statement** `Nonempty
+> (SmoothHomologyDataPackage basis_ω)`.
+>
+> **Arc B — Item 14 minimal-inputs further reductions (chips H–J).**
+> * (H) Drop `h_conn_from_sc` from the 5-input version via
+>   `smoothPathConnected_of_preconnected`. Item 14 now reduces to
+>   **4 minimal named hypotheses**
+>   (`Topology/Item14From4MinimalInputs.lean`).
+> * (I) Under `Subsingleton (HolomorphicOneForm X)`, the per-basis
+>   smoothness + FTC hypotheses are vacuous: item 14 reduces to
+>   **2 minimal named hypotheses**
+>   (`Topology/Item14FromSubsingletonHolomorphicOneForm.lean`).
+>   `hSP` + `h_bslb` only.
+> * (J) End-to-end RS validation of the 2-input chip
+>   (`Topology/Item14ForRiemannSphereVia2InputChip.lean`):
+>   plug `existsSimplePoleGermAtSomePoint_RiemannSphere` +
+>   `basedSmoothLoopsBoundHypothesis_RS_holds` into the 2-input form,
+>   confirming the chain composes correctly on RS.
+
 > **2026-05-20 (period-lattice three-atom packaging) Bundle 3 remaining named period-lattice atoms into a single structure; discharge α-data via smoothPathConnected_of_preconnected; validate on RS + T_L unconditionally (4 chips, ~504 LOC). origin/main HEAD `423f95e`.**
 >
 > Item count: **13/24 STRICT-CLOSED** (unchanged). Stack of structural
