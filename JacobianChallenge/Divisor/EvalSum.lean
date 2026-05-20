@@ -116,6 +116,16 @@ evaluation sum is `1 • x = x`. -/
   rw [supportFinset_single]
   simp [single_apply]
 
+/-! ### `evalSum` on a singleton-difference divisor
+
+The standard `ofCurve` representative `single Q − single P` evaluates
+to `Q − P`. This is the formula that closes the AJ map on `T_L`'s
+`ofCurve` to `Q − P` (in `ℂ ⧸ L`). -/
+
+@[simp] lemma evalSum_single_sub_single [DecidableEq X] (P Q : X) :
+    evalSum ((single Q : Div X) - single P) = Q - P := by
+  rw [evalSum_sub, evalSum_single, evalSum_single]
+
 end Div
 
 end JacobianChallenge
