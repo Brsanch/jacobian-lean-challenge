@@ -74,6 +74,31 @@ theorem liftedFun_periodic_zsmul (f : MeromorphicNonzero (ℂ ⧸ L))
     liftedFun L f (z + n • om) = liftedFun L f z :=
   liftedFun_periodic L f (L.smul_mem (n : ℤ) hom) z
 
+/-! ## Order-correspondence: assumed lifting hypothesis -/
+
+/-- **The per-`f` lifting hypothesis.** Asserts that `liftedFun L f` on
+`ℂ` has the same chart-pullback order at every `z ∈ ℂ` as `f` has at
+`L.mkQ z ∈ ℂ ⧸ L`. This is the analytic content of the statement
+"`liftedFun L f` and `f` define the same divisor up to lattice
+translation".
+
+It is a **named hypothesis** because the discharge requires careful
+local-chart manipulation (the chart at `L.mkQ z` is centered at
+`(L.mkQ z).out`, not at `z`, so the equality of orders requires
+identifying a lattice translate `δ ∈ L` with `liftedFun = (f ∘
+chartAt.symm) ∘ (· - δ)` locally near `z` and invoking translation-
+invariance of `MeromorphicAt`). The actual discharge is a follow-up
+chip; the current file consumes the named hypothesis. -/
+def LiftedOrderCorrespondence (f : MeromorphicNonzero (ℂ ⧸ L)) : Prop :=
+  ∀ z : ℂ,
+    meromorphicOrderAt (liftedFun L f) z
+      = mmeromorphicOrderAt 𝓘(ℂ, ℂ) f.toFun (L.mkQ z)
+
+/-- **Total lift hypothesis on `L`**: every `f` admits an order-
+correspondence lift. -/
+def LiftedOrderCorrespondenceTotal : Prop :=
+  ∀ f : MeromorphicNonzero (ℂ ⧸ L), LiftedOrderCorrespondence L f
+
 end ComplexTorus
 
 end JacobianChallenge
