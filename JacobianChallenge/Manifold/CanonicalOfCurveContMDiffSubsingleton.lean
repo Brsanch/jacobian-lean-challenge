@@ -55,6 +55,19 @@ theorem canonicalOfCurve_contMDiff_of_subsingleton_omega
         X → CanonicalAnalyticJacobianAnonymous X) :=
   contMDiff_of_subsingleton
 
+/-- **`canonicalOfCurve P Q = 0` at genus 0 — strengthened from
+`canonicalOfCurve_self`.** Under both class hypotheses, every value of
+`canonicalOfCurve P` is `0`, not just at `Q = P`. Direct from
+`Subsingleton.elim` on the canonical analytic Jacobian (which is itself
+subsingleton at genus 0). -/
+@[simp] theorem canonicalOfCurve_const_of_subsingleton_omega
+    [HasJacobianAnalyticStructure X]
+    [Subsingleton (HolomorphicOneForm X)]
+    (P Q : X) :
+    canonicalOfCurve P Q
+      = (0 : CanonicalAnalyticJacobianAnonymous X) :=
+  Subsingleton.elim _ _
+
 end JacobianChallenge
 
 end
