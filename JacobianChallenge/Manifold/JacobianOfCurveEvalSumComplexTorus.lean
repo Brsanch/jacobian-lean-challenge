@@ -76,6 +76,37 @@ theorem evalSumPic0Equiv_ofCurve
       = Q :=
   evalSumPic0_ofCurve_zero L hTL Q
 
+/-! ## Conditional `ofCurve_inj` on T_L
+
+Under the two named classical hypotheses, `Jacobian.ofCurve P` is
+injective on `ℂ ⧸ L`. The argument uses injectivity of
+`evalSumPic0Equiv` (from `TLAbelConverseHypothesis`) to lift the
+left-cancellation `Q₁ - P = Q₂ - P → Q₁ = Q₂` from `ℂ ⧸ L` back to
+`Pic⁰ (ℂ ⧸ L)`.
+
+This is a conditional discharge of Basic.lean Item 16 (`ofCurve_inj`)
+for the special case `X = ℂ ⧸ L`. -/
+
+/-- **Conditional `ofCurve_inj` on T_L.** Under both named classical
+hypotheses, `Jacobian.ofCurve P : (ℂ ⧸ L) → Pic⁰ (ℂ ⧸ L)` is
+injective. -/
+theorem ofCurve_injective_complexTorus
+    (hTL : TLDivSumHypothesis L)
+    (hConverse : TLAbelConverseHypothesis L)
+    (P : ℂ ⧸ L) :
+    Function.Injective
+      (JacobianChallenge.Jacobian.ofCurve (X := ℂ ⧸ L) P) := by
+  intro Q₁ Q₂ h
+  have h_eval : evalSumPic0Equiv L hTL hConverse
+        (JacobianChallenge.Jacobian.ofCurve (X := ℂ ⧸ L) P Q₁)
+      = evalSumPic0Equiv L hTL hConverse
+        (JacobianChallenge.Jacobian.ofCurve (X := ℂ ⧸ L) P Q₂) := by
+    rw [h]
+  rw [evalSumPic0Equiv_ofCurve L hTL hConverse,
+      evalSumPic0Equiv_ofCurve L hTL hConverse] at h_eval
+  -- h_eval : Q₁ - P = Q₂ - P
+  exact sub_left_inj.mp h_eval
+
 end ComplexTorus
 
 end JacobianChallenge
