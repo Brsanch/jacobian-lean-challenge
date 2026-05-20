@@ -916,4 +916,5 @@ import JacobianChallenge.Manifold.AbelJacobiPointDiffeomorphComplexTorus
 import JacobianChallenge.Manifold.CanonicalAnalyticJacobianFromClass
 import JacobianChallenge.Manifold.DefaultHolomorphicOneFormBasis
 import JacobianChallenge.Manifold.HasJacobianAnalyticStructure
+import JacobianChallenge.Manifold.CanonicalOfCurve
 
