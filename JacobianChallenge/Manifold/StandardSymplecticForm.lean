@@ -91,6 +91,56 @@ is zero.** -/
   have hi2 := i.isLt
   omega
 
+/-- **Top-right block (rows `< g`, cols `≥ g`): `1` iff `j = i + g`,
+else `0`.** -/
+lemma standardSymplectic_top_right
+    (g : ℕ) (i j : Fin (2 * g))
+    (hi : i.val < g) :
+    standardSymplectic g i j = (if j.val = i.val + g then 1 else 0) := by
+  unfold standardSymplectic
+  rw [dif_pos hi]
+
+/-- **Bottom-left block (rows `≥ g`, cols `< g`): `-1` iff `i = j + g`,
+else `0`.** -/
+lemma standardSymplectic_bottom_left
+    (g : ℕ) (i j : Fin (2 * g))
+    (hi : ¬ i.val < g) :
+    standardSymplectic g i j = (if j.val + g = i.val then -1 else 0) := by
+  unfold standardSymplectic
+  rw [dif_neg hi]
+
+/-- **Anti-symmetry of `standardSymplectic`: `J^T = -J`.** -/
+theorem standardSymplectic_antisymm (g : ℕ) :
+    (standardSymplectic g)ᵀ = -standardSymplectic g := by
+  funext i j
+  -- `Jᵀ i j = J j i`; goal: `J j i = -(J i j)`.
+  show standardSymplectic g j i = -(standardSymplectic g i j)
+  -- Case-split on `i.val < g` and `j.val < g`.
+  by_cases hi : i.val < g
+  · by_cases hj : j.val < g
+    · -- both in top half: both J entries are 0.
+      simp [standardSymplectic_top_left g j i hj hi,
+            standardSymplectic_top_left g i j hi hj]
+    · -- i top, j bottom: J i j (top-right), J j i (bottom-left).
+      rw [standardSymplectic_top_right g i j hi,
+          standardSymplectic_bottom_left g j i hj]
+      by_cases h : j.val = i.val + g
+      · rw [if_pos h, if_pos (by omega : i.val + g = j.val)]
+      · rw [if_neg h, if_neg (by omega : ¬ (i.val + g = j.val))]
+        simp
+  · by_cases hj : j.val < g
+    · -- i bottom, j top.
+      rw [standardSymplectic_bottom_left g i j hi,
+          standardSymplectic_top_right g j i hj]
+      by_cases h : j.val + g = i.val
+      · rw [if_pos h, if_pos (by omega : i.val = j.val + g)]
+        simp
+      · rw [if_neg h, if_neg (by omega : ¬ (i.val = j.val + g))]
+        simp
+    · -- both bottom: both J entries are 0.
+      simp [standardSymplectic_bottom_right g j i hj hi,
+            standardSymplectic_bottom_right g i j hi hj]
+
 end JacobianChallenge
 
 end
