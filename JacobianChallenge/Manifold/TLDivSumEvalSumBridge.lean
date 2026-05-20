@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.AbelHypothesisReductionComplexTorus
+import JacobianChallenge.Manifold.EvalSumGeneral
 import JacobianChallenge.Divisor.EvalSum
 import JacobianChallenge.Divisor.PrincipalDivisorRange
 import JacobianChallenge.Divisor.ChipAliases
@@ -65,6 +66,11 @@ theorem TLDivSumHypothesis_iff_evalSumHom_principalDivisor_zero :
     TLDivSumHypothesis L ↔
       ∀ f : MeromorphicNonzero (ℂ ⧸ L),
         Div.evalSumHom (principalDivisorMap f) = (0 : ℂ ⧸ L) := Iff.rfl
+
+/-- **`TLDivSumHypothesis L` is the T_L specialization of
+`EvalSumAbelHypothesis (ℂ ⧸ L)`.** -/
+theorem TLDivSumHypothesis_iff_evalSumAbelHypothesis :
+    TLDivSumHypothesis L ↔ EvalSumAbelHypothesis (ℂ ⧸ L) := Iff.rfl
 
 /-! ## Closure-induction upgrade: vanishing on all of `PrincDiv` -/
 

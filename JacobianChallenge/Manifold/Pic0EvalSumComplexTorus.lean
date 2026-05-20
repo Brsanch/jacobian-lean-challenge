@@ -191,6 +191,38 @@ noncomputable def evalSumPic0Equiv
     (c : Pic0 (ℂ ⧸ L)) :
     evalSumPic0Equiv L hTL hConverse c = evalSumPic0 L hTL c := rfl
 
+/-! ## `TLAbelConverseHypothesis` ↔ `EvalSumAbelConverseHypothesis (ℂ⧸L)` -/
+
+/-- **`TLAbelConverseHypothesis L` is the T_L specialization of
+`EvalSumAbelConverseHypothesis (ℂ ⧸ L)`.** -/
+theorem TLAbelConverseHypothesis_iff_evalSumAbelConverseHypothesis :
+    TLAbelConverseHypothesis L ↔ EvalSumAbelConverseHypothesis (ℂ ⧸ L) := Iff.rfl
+
+/-! ## Identification of the general `Pic0.evalSumLiftEquiv` with `evalSumPic0Equiv` on T_L -/
+
+/-- **`Pic0.evalSumLift (ℂ⧸L)` agrees with `evalSumPic0` on T_L.** -/
+theorem Pic0_evalSumLift_eq_evalSumPic0
+    (hTL : TLDivSumHypothesis L) :
+    (Pic0.evalSumLift (ℂ ⧸ L) hTL : Pic0 (ℂ ⧸ L) → (ℂ ⧸ L))
+      = evalSumPic0 L hTL := by
+  ext c
+  induction c using QuotientAddGroup.induction_on with
+  | H D =>
+  show Pic0.evalSumLift (ℂ ⧸ L) hTL (QuotientAddGroup.mk D)
+    = evalSumPic0 L hTL (QuotientAddGroup.mk D)
+  rw [Pic0.evalSumLift_mk, evalSumPic0_mk]
+
+/-- **The general `Pic0.evalSumLiftEquiv` and T_L `evalSumPic0Equiv`
+agree as functions on T_L.** -/
+theorem Pic0_evalSumLiftEquiv_eq_evalSumPic0Equiv
+    (hTL : TLDivSumHypothesis L)
+    (hConverse : TLAbelConverseHypothesis L) :
+    (Pic0.evalSumLiftEquiv (ℂ ⧸ L) hTL hConverse : Pic0 (ℂ ⧸ L) → (ℂ ⧸ L))
+      = evalSumPic0Equiv L hTL hConverse := by
+  ext c
+  show Pic0.evalSumLift (ℂ ⧸ L) hTL c = evalSumPic0 L hTL c
+  exact congrFun (Pic0_evalSumLift_eq_evalSumPic0 L hTL) c
+
 end ComplexTorus
 
 end JacobianChallenge
