@@ -13,11 +13,28 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-19 late):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
-Build clean at **9151 jobs** (zero `sorry`, zero `axiom`). Repo:
-**153,172 LOC across 866 `.lean` files**.
+**Current state (2026-05-19 late++++++):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
+Build clean at **9191 jobs** (zero `sorry`, zero `axiom`). Repo:
+**162,648 LOC across 907 `.lean` files**.
 
 Major recent landings (all on `main`):
+
+* **Full T_L period-lattice closure + `ℂ⧸L ≃ₘ AnalyticJacobianSymp`
+  smooth diffeomorphism UNCONDITIONAL** (2026-05-19 late++++++, 20
+  chips, ~3,037 LOC). End-to-end closure of the period-lattice /
+  Abel-Jacobi infrastructure on the complex torus. `Nonempty
+  (PeriodLatticeSymplecticBundle … T_L)` unconditional via
+  `SmoothSymplecticBasis.reindex`; explicit AJ point formula
+  `abelJacobiPoint Q = mk (fun _ => Q.out)`; full lattice
+  characterization `periodLatticeImage = {fun _ => z : z ∈ L}`; two
+  classical hypotheses CLOSED unconditional (`AbelJacobiInjective`,
+  `AbelJacobiSmoothness`); `AbelHypothesis` reduced to T_L-level
+  `TLDivSumHypothesis` (Abel's elliptic theorem) and
+  `JacobiInversion.injective` reduced to `TLAbelConverseHypothesis`
+  (Weierstrass σ existence); `JacobiInversion.surjective` conditional
+  on `AbelHypothesis`. Headline `abelJacobiPointDiffeomorph` packages
+  ℂ⧸L ≃ₘ AnalyticJacobianSymp as a mathlib `Diffeomorph` —
+  UNCONDITIONAL.
 
 * **`SmoothPathLiftHypothesisTorus L` CLOSED unconditionally on T²**
   (2026-05-19 late, 17 chips, 2,558 LOC). The universal-cover

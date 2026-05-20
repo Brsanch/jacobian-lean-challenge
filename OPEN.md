@@ -32,6 +32,53 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 (late++++++) Full T_L period-lattice closure + ℂ⧸L ≃ₘ AnalyticJacobianSymp smooth diffeomorphism UNCONDITIONAL (20 chips, ~3,037 LOC).**
+>
+> End-to-end closure of the period-lattice/Abel-Jacobi infrastructure
+> on the complex torus T_L = ℂ ⧸ L. Eight continuation turns shipped
+> 20 chips landing:
+>
+> 1. `Nonempty (PeriodLatticeSymplecticBundle … T_L)` UNCONDITIONAL
+>    via `SmoothSymplecticBasis.reindex` + `LinearEquiv.piCongrLeft'`.
+> 2. Explicit AJ point formula:
+>    `abelJacobiPoint Q = QuotientAddGroup.mk (fun _ => Q.out)`.
+> 3. Full lattice characterization
+>    `periodLatticeImage = {fun _ => z : z ∈ L}` (⊆ + ⊇).
+> 4. Two open classical hypotheses CLOSED unconditionally:
+>    `AbelJacobiInjectiveSymp`, `AbelJacobiSmoothnessSymp`.
+> 5. `AbelHypothesis` reduced to `TLDivSumHypothesis L` (Abel's
+>    elliptic theorem).
+> 6. `JacobiInversion.injective` reduced to `TLAbelConverseHypothesis L`
+>    (Weierstrass σ-function existence); `JacobiInversion.surjective`
+>    conditional on `AbelHypothesis`.
+> 7. **Headline** `nonempty_C3FullInputExtSymp_complexTorus_of_two_named_hypotheses`:
+>    full `Nonempty (C3FullInputExtSymp (ℂ⧸L))` from the two named
+>    classical T_L inputs.
+> 8. **`abelJacobiPointDiffeomorph`** UNCONDITIONAL: smooth
+>    diffeomorphism `ℂ⧸L ≃ₘ AnalyticJacobianSymp` packaged as a
+>    mathlib `Diffeomorph`.
+>
+> ## Ingredient status for `Nonempty (C3FullInputExtSymp (ℂ⧸L))`
+>
+> | Ingredient | Status |
+> |---|---|
+> | `Nonempty (PLSB …)` | **Unconditional** |
+> | `AbelJacobiInputSymp` | **Unconditional** |
+> | `AbelJacobiInjectiveSymp` | **Unconditional** |
+> | `AbelJacobiSmoothnessSymp` | **Unconditional** |
+> | `AbelHypothesis` | Reduced to `TLDivSumHypothesis L` |
+> | `JacobiInversion.surjective` | Conditional on `AbelHypothesis` |
+> | `JacobiInversion.injective` | Reduced to `TLAbelConverseHypothesis L` |
+>
+> **Open classical content (textbook elliptic-function theory, not in mathlib pin):**
+>
+> * `TLDivSumHypothesis L` — Abel's elliptic theorem (residue
+>   theorem `∮_∂R d log f = 0` on a fundamental parallelogram).
+> * `TLAbelConverseHypothesis L` — Weierstrass σ-function existence.
+>
+> Repo total **162,648 LOC across 907 `.lean` files**; build **9191 jobs**
+> clean (zero `sorry`, zero `axiom`).
+
 > **2026-05-19 (late+++++) 2D-lift scaffolding for `holomorphicCanonicalClosed` (3 chips, ~370 LOC).**
 >
 > Building toward unconditional `RealImagDzInCanonicalClosed L`. Ships
