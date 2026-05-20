@@ -1,5 +1,58 @@
 # Changelog
 
+## 2026-05-19 (late++++++++) — Chart-contained 2-simplex boundary period = 0 + Stokes from 2-simplex subdivision (1 chip, ~210 LOC)
+
+Ships `ChartContainedSmooth2Simplex X`
+(`Manifold/ChartContainedSmooth2Simplex.lean`): a
+`Smooth2Simplex 𝓘(ℝ, ℂ) X` bundled with an explicit
+`ChartContainedClosedLoop` whose path is
+`Smooth2Simplex.boundaryLoop σ`. The chart-containment data on the
+boundary-loop ambient is taken as input (the construction of that
+ambient from raw chart-containment of `σ.toFun '' Δ²` is the upstream
+Whitney-smoothing question, deferred to a downstream subdivision
+chip).
+
+**Headline.**
+```
+complexChainPeriod_boundary_eq_zero : ∀ (data : ChartContainedSmooth2Simplex X)
+    (α : HolomorphicOneForm X),
+  complexChainPeriod (Smooth2Simplex.boundary data.σ) α = 0
+```
+Proof composes `Smooth2Simplex.boundaryLoop_integrate_eq` (chain
+integral = path integral over the boundary loop) with the new
+unconditional chart-contained-loop discharge
+`chartContainedLoopVanishingHypothesis_holds_unconditional`.
+
+**Subdivision-telescoping to 2-simplices.**
+`SubdivisionTelescopingTo2Simplex_named X : Prop` — the 2-simplex
+analog of `SubdivisionTelescopingToLoop_named`. Cleaner than the loop
+version because `Δ²` has a natural subdivision structure (barycentric).
+
+**The headline reductions.**
+* `holomorphicComplexBoundaryVanishingHypothesis_of_subdivisionTo2Simplex`
+  — composes the chart-contained headline with subdivision
+  telescoping (sum of zeros).
+* `holomorphicStokesHypothesis_of_subdivisionTo2Simplex` — via
+  `HolomorphicStokesHypothesis_of_complexBoundary`.
+* `holomorphicComponentsCanonicalClosed_of_subdivisionTo2Simplex` —
+  via `HolomorphicComponentsCanonicalClosed.of_hypothesis`.
+
+**Atomic-input status at general genus.** The third atomic input of
+`GenericGenusPeriodLatticeInputs` (`holomorphicCanonicalClosed`) now
+reduces to a **single** named hypothesis at general genus:
+`SubdivisionTelescopingTo2Simplex_named X`. The remaining open atoms
+at general genus are:
+
+| Atom | Status |
+|---|---|
+| `cycleGens` | Open — surface classification |
+| `riemannBilinear` | Open — Hodge bilinear non-degeneracy |
+| **`holomorphicCanonicalClosed`** | **Reduced to `SubdivisionTelescopingTo2Simplex_named`** |
+| `H1_spans_top_canonical` | Open — cellular homology of compact surfaces |
+
+Build **9204 jobs** clean (was 9203). Zero `sorry`, zero `axiom`.
+Item count unchanged (still 13/24 STRICT-CLOSED).
+
 ## 2026-05-19 (late+++++++) — `pointwiseChartEvalIdentity` UNCONDITIONAL (1 chip + 1 composite, ~360 LOC)
 
 Drops the frame-stability hypothesis from the chart-pullback

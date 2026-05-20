@@ -32,6 +32,38 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 (late++++++++++) Chart-contained 2-simplex boundary period = 0 + Stokes from 2-simplex subdivision (1 chip, ~210 LOC).**
+>
+> Ships `ChartContainedSmooth2Simplex X`
+> (`Manifold/ChartContainedSmooth2Simplex.lean`): a `Smooth2Simplex 𝓘(ℝ, ℂ) X`
+> bundled with an explicit `ChartContainedClosedLoop` witnessing
+> chart-containment of its boundary loop. The chip composes
+> `Smooth2Simplex.boundaryLoop_integrate_eq` (chain integral = path
+> integral over the boundary loop) with the new unconditional
+> chart-contained-loop discharge to give:
+>
+> ```
+> complexChainPeriod_boundary_eq_zero : ∀ data α,
+>   complexChainPeriod (Smooth2Simplex.boundary data.σ) α = 0
+> ```
+>
+> Plus the 2-simplex subdivision-telescoping named hypothesis
+> `SubdivisionTelescopingTo2Simplex_named`, whose discharge would
+> give `HolomorphicComplexBoundaryVanishingHypothesis X` /
+> `HolomorphicStokesHypothesis X` /
+> `HolomorphicComponentsCanonicalClosed X` (the third atomic input
+> of `GenericGenusPeriodLatticeInputs` at general genus).
+>
+> **After this chip,** the third atomic input of the general-genus
+> period-lattice bundle (`holomorphicCanonicalClosed`) reduces to a
+> single named hypothesis: `SubdivisionTelescopingTo2Simplex_named X`
+> (Whitney-smoothed barycentric subdivision of `Δ²` until each
+> sub-2-simplex is chart-contained, with orientation cancellation
+> on interior edges).
+>
+> Item count unchanged (still 13/24 STRICT-CLOSED). Build **9204 jobs
+> clean** (was 9203).
+
 > **2026-05-19 (late+++++++++) `pointwiseChartEvalIdentity` UNCONDITIONAL on any compact connected complex 1-manifold (1 chip + 1 composite, ~360 LOC).**
 >
 > Ships `pointwiseChartEvalIdentity_unconditional` and
