@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-05-19 (late++++++) — Item-14 reverse-leg ingredient consolidation (1 chip, ~100 LOC)
+
+Reduces the named-ingredient count of
+`Item14ReverseLegFullAssembly.loopPeriodVanishes_from_ingredients`
+from three to two: the deriv-continuity ingredient is already
+unconditional (`derivChartPathContinuousOn_holds`), and the
+chart-integral-bridge ingredient is consolidated into the
+per-loop **cotangent-frame-stability** hypothesis via the existing
+`pointwiseChartEvalIdentity_of_frameStable` chain.
+
+After this consolidation, the open frontier for
+`LoopPeriodVanishes` on a simply-connected `X` is precisely two
+named hypotheses:
+
+* `∀ data, CotangentChartFrameStable data` — structural (automatic
+  on RS for `basePoint ≠ ∞`; fails on T_L; equivalent in spirit to
+  "`chartAt` is constant on each chart-source");
+* `SubdivisionTelescopingToLoop_named X` — the deep classical
+  content (Whitney smoothing of null-homotopy subdivision +
+  orientation-cancellation telescoping).
+
+Ships `loopPeriodVanishes_from_frameStable_and_subdivision` in
+`Manifold/LoopPeriodVanishesFromFrameStableAndSubdivision.lean`.
+
+Build: 9201 jobs clean (was 9198).
+
 ## 2026-05-19 (late+++++) — `Div.evalSumHom` + closed-form Abel–Jacobi `evalSumPic0Equiv` on T_L (4 chips, ~530 LOC)
 
 Builds a clean **divisor-evaluation homomorphism**
