@@ -61,7 +61,8 @@ spec. Three statuses, with one tag for partial progress:
 > **single classical existence statement** `Nonempty
 > (SmoothHomologyDataPackage basis_ω)`.
 >
-> **Arc B — Item 14 minimal-inputs further reductions (chips H–J).**
+> **Arc B — Item 14 minimal-inputs further reductions (chips H–K) +
+> table-audit flips (chips L–M).**
 > * (H) Drop `h_conn_from_sc` from the 5-input version via
 >   `smoothPathConnected_of_preconnected`. Item 14 now reduces to
 >   **4 minimal named hypotheses**
@@ -76,6 +77,21 @@ spec. Three statuses, with one tag for partial progress:
 >   plug `existsSimplePoleGermAtSomePoint_RiemannSphere` +
 >   `basedSmoothLoopsBoundHypothesis_RS_holds` into the 2-input form,
 >   confirming the chain composes correctly on RS.
+> * (K) Parallel composition of item 14 via the
+>   `genus_eq_zero_iff_homeo_from_all_conditionals` route, discharging
+>   the 3 unconditional inputs to leave **2 minimal classical inputs**:
+>   `RiemannRochGenusZero X` + topological-sphere uniformization
+>   (`Topology/Item14From2MinimalClassicalInputs.lean`).
+> * (L) **Item 1 flip to STRICT-CLOSED** (table-audit). Body
+>   `Module.finrank ℂ (HolomorphicOneForm X)` is honest because
+>   `DiskChartCover.holomorphicOneFormFiniteDim_holds` is unconditional
+>   (junk-zero convention never kicks in).
+> * (M) **Item 16 flip to STRICT-CLOSED** (table-audit). Basic.lean
+>   line 143–144 uses `JacobianChallenge.ofCurve_inj_holds` which is
+>   unconditional in tree via the chain `PrincDivWitnessExtraction` →
+>   degree-1 → biholomorphism → `genus_eq_zero_iff_homeo_of_HolomorphicEquiv_RiemannSphere`.
+>
+> **Item count: 13/24 → 14/24 STRICT-CLOSED.**
 
 > **2026-05-20 (period-lattice three-atom packaging) Bundle 3 remaining named period-lattice atoms into a single structure; discharge α-data via smoothPathConnected_of_preconnected; validate on RS + T_L unconditionally (4 chips, ~504 LOC). origin/main HEAD `423f95e`.**
 >
