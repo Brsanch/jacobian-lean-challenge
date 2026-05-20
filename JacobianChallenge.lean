@@ -938,4 +938,5 @@ import JacobianChallenge.Manifold.CanonicalAnalyticJacobianRiemannSphereSmokeTes
 import JacobianChallenge.Manifold.CanonicalAnalyticJacobianComplexTorusSmokeTest
 import JacobianChallenge.Manifold.HasBasedSmoothLoopsBound
 import JacobianChallenge.Manifold.HodgeInnerProductHypothesis
+import JacobianChallenge.Manifold.HodgeFormMatrix
 
