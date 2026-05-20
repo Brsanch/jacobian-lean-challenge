@@ -1,5 +1,55 @@
 # Changelog
 
+## 2026-05-19 (late+++++) — `Div.evalSumHom` + closed-form Abel–Jacobi `evalSumPic0Equiv` on T_L (4 chips, ~530 LOC)
+
+Builds a clean **divisor-evaluation homomorphism**
+`Div.evalSumHom : Div X →+ X` for any topological additive group `X`
+(`Divisor/EvalSum.lean`), and uses it to give a **PLSB-independent
+closed-form Abel–Jacobi isomorphism** on `T_L`:
+
+```
+evalSumPic0Equiv L hTL hConv : Pic⁰ (ℂ ⧸ L) ≃+ (ℂ ⧸ L)
+  [D] ↦ ∑ x ∈ supp D, D x • x
+```
+
+conditional on the two named classical hypotheses (`TLDivSumHypothesis`
+and `TLAbelConverseHypothesis`). The two-hypothesis-only headline
+`nonempty_C3FullInputExtSymp_complexTorus_from_two_named_hypotheses`
+drops the explicit PLSB-witness parameter from the prior
+`…_of_two_named_hypotheses` entry point (PLSB is filled in by
+`nonempty_periodLatticeSymplecticBundle_complexTorus`).
+
+### Files
+
+* `Divisor/EvalSum.lean` (new, ~115 LOC) — `Div.evalSum`,
+  `evalSumHom`, basic arithmetic (zero / add / neg / sub / single).
+* `Manifold/TLDivSumEvalSumBridge.lean` (new, ~170 LOC) —
+  `TLDivSumHypothesis_iff_evalSum_principalDivisor_zero`,
+  `evalSumHom_eq_zero_on_PrincDiv_of_TLDivSum` (free upgrade via
+  `AddSubgroup.closure_induction`), `TLDivSum_holds_at_one / _at_mul /
+  _at_invMer / _at_const`, plus the inductive `MultiplicativeClosure`
+  predicate and `TLDivSumHypothesis_of_multiplicatively_generating`
+  reduction (Abel discharge needs only a multiplicative generating set).
+* `Manifold/Pic0EvalSumComplexTorus.lean` (new, ~155 LOC) —
+  `evalSumPic0`, `evalSumPic0_single_sub_single`,
+  `evalSumPic0_surjective`, `pic0EquivComplexTorus_eq_evalSumPic0`
+  (identification with the existing AJ iso), `evalSumPic0_injective`
+  (from `TLAbelConverseHypothesis`), bundled `evalSumPic0Equiv`.
+* `Manifold/C3FullInputExtSympComplexTorusDefault.lean` (new, ~95
+  LOC) — `nonempty_C3FullInputExtSymp_complexTorus_from_two_named_hypotheses`
+  (no PLSB parameter), `pic0EquivComplexTorus_default`,
+  `evalSumPic0Equiv_default`.
+
+### Closure status
+
+The two open classical hypotheses (`TLDivSumHypothesis L`,
+`TLAbelConverseHypothesis L`) are unchanged in number — but
+`TLDivSumHypothesis L` discharge now factors cleanly through
+`Div.evalSumHom` and is reducible to a *multiplicative generating set*
+discharge via `TLDivSumHypothesis_of_multiplicatively_generating`.
+
+Build: 9195 jobs clean (was 9191). Zero `sorry`, zero `axiom`.
+
 ## 2026-05-19 (late++++) — T_L period-lattice closure + smooth diffeomorphism `ℂ⧸L ≃ₘ AnalyticJacobianSymp` (20 chips, ~3,037 LOC)
 
 End-to-end closure of the period-lattice/Abel-Jacobi infrastructure on
