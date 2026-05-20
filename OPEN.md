@@ -32,6 +32,34 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 (late++++++++++++) `GenericGenusPeriodLatticeInputs` from FOUR named-atom inputs (1 chip, ~145 LOC).**
+>
+> Ships `GenericGenusPeriodLatticeInputs.ofFourNamedAtoms`
+> (`Manifold/GenericGenusPeriodLatticeInputsFromFourNamedAtoms.lean`).
+> A composite constructor taking ALL FOUR atomic inputs in their
+> cleanest reduced/named form:
+>
+> ```
+> GenericGenusPeriodLatticeInputs.ofFourNamedAtoms :
+>   basis + p₀ + (sb : SmoothSymplecticBasis 𝓘(ℝ, ℂ) X p₀ (genus X))   -- atom 1
+>     → riemannBilinear (sb.cycleGens period vectors)                   -- atom 2
+>     → SubdivisionTelescopingTo2Simplex_named X                        -- atom 3
+>     → SmoothHurewiczHypothesis sb                                     -- atom 4
+>     → smooth-path-connectedness data
+>     → GenericGenusPeriodLatticeInputs basis
+> ```
+>
+> Plus the headline composite
+> `nonempty_periodLatticeSymplecticBundle_ofFourNamedAtoms` producing
+> `Nonempty (PeriodLatticeSymplecticBundle ...)` directly from the
+> four named inputs.
+>
+> This is the **'everything reduced to named classical hypotheses'**
+> composite. The remaining open content at general genus is precisely
+> the four named hypotheses + smooth-path-connectedness data.
+>
+> Build **9206 jobs** clean (was 9205). Item count unchanged.
+
 > **2026-05-19 (late+++++++++++) `GenericGenusPeriodLatticeInputs.ofSubdivisionAtom` constructor (1 chip, ~85 LOC).**
 >
 > Ships `GenericGenusPeriodLatticeInputs.ofSubdivisionAtom` in
