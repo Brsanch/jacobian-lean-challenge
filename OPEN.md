@@ -32,6 +32,24 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-20 late (period-lattice plumbing + classical-content scaffolding + item-14 advances; two parallel arcs in one branch, 35 feat/fix commits + merge, ce776c9, +3,778 Lean LOC across 34 new files). origin/main HEAD `ce776c9`. Repo now 1011 `.lean` files / 173,331 LOC. Build 9291 jobs clean. Item count unchanged: **14/24 STRICT-CLOSED** (no items flipped this session — work is *foundational plumbing + named classical hypotheses*, the items 5/11/12/13/17/18/21 cannot flip until the universal `[HasJacobianAnalyticStructure X]` instance lands).**
+>
+> **Arc A — Period-lattice plumbing + classical-content scaffolding (20 commits, ~2,200 LOC).**
+>
+> Class-keyed analytic Jacobian chain (8 chips, ~700 LOC): `CanonicalAnalyticJacobianFromClass` (per-basis form with 7 instances under `[HasSmoothHomologyDataPackage X basis_ω]`), `DefaultHolomorphicOneFormBasis`, `HasJacobianAnalyticStructure` (basis-anonymous class + RS/T_L instances + `CanonicalAnalyticJacobianAnonymous` with 7 instances), `HasBasedSmoothLoopsBound` (BSLB class + RS instance), `HasJacobianAnalyticStructureSubsingleton` (Subsingleton-ω + BSLB → the class), `CanonicalAnalyticJacobianSubsingleton` (subsingleton of target at genus 0 — fix to `QuotientAddGroup.mk_surjective`), `CanonicalOfCurve` (Abel-Jacobi point map + self-vanishing), `CanonicalOfCurveContMDiffSubsingleton` (smoothness + constancy at genus 0).
+>
+> Canonical pushforward/pullback (2 chips, ~220 LOC): `CanonicalPushforwardPullbackLift` (per-curve lifts on canonical lattices), `CanonicalPushforwardPullbackContMDiff` (smoothness corollaries).
+>
+> End-to-end smoke tests (2 chips, ~160 LOC): `CanonicalAnalyticJacobianRiemannSphereSmokeTest`, `CanonicalAnalyticJacobianComplexTorusSmokeTest` — both compose all 7 structural instances + `canonicalOfCurve` on RS and T_L unconditionally.
+>
+> Classical-content scaffolding (8 chips, ~850 LOC): `HodgeInnerProductHypothesis` (named `∃` positive-definite Hermitian form on `H⁰(Ω)`; genus-0 vacuous), `HodgeFormMatrix` (matrix representation `H_ij = H(ω_i, ω_j)` + conjTranspose + diagonal positivity), `PeriodMatrix` (the 2g × g complex period matrix with row = period vector), `RiemannBilinearRelations` (first + second + bundled existence; second via `Complex.re`-positivity since ℂ has no `PartialOrder` for `Matrix.PosDef`), `RiemannBilinearImpliesLI` (ℝ-LI conclusion + genus-0 + Subsingleton-ω discharges), `StandardSymplecticForm` (J = [[0,I];[-I,0]] + top-left/bottom-right zero-block lemmas + **anti-symmetry J^T = -J proven** via 4-case index analysis), `HodgeRiemannBridge` (the deep identity `i Π^T J Π̄ = H.toMatrix` + Hermitian half proven via `toMatrix_conjTranspose`).
+>
+> **Arc B — Item 14 advances (15 commits, ~1,580 LOC).**
+>
+> `ChartLocalPrimitiveExtend` wrapper + `EqOn`/`EventuallyEq` bridge to `pathPrimitive`; `ContMDiffAt` / `mfderiv` / `ContinuousAt` / `ContinuousOn` transfer theorems; named `ChartLocalPrimitiveSmoothExt` + FTC + Continuous hypotheses + smoothness ⇒ continuity implication; global `pathPrimitive ContMDiff` + FTC via `PathPrimitiveAdmissibleChartCover`; `S2ImpliesGenus0` from BSLB + per-basis admissibility (2-input + 3-input reductions); `pathPrimitiveAdmissibleChartCover_RS` unconditional; **unconditional item 14 biconditional on `RiemannSphere`** via the BSLB+admissibility route; `HasAdmissibleChartCover` typeclass + RS instance + class-driven compositions; `HasConvexTargetChartCover` + automatic admissibility under Subsingleton ω.
+>
+> **Net contribution.** Arc A built the *complete mechanical plumbing* so that once a universal `[HasJacobianAnalyticStructure X]` instance lands, items 5/11/12/13 flip via a C3 rewire of `JacobianChallenge.Jacobian X` to `CanonicalAnalyticJacobianAnonymous X` — and items 17/18/21 flip via the per-curve `canonicalPushforward/Pullback_contMDiff`. Arc B reduced item 14 to two named classical inputs (BSLB + per-basis admissibility) on RS unconditionally, and laid the class-driven infrastructure for general X. Together these reduce the remaining open content to a *small* set of named classical hypotheses, each documented with its required mathlib infrastructure.
+
 > **2026-05-20 (period-lattice three-atom packaging + class wrapper + general-X constructor + item 14 4-input → 2-input → 2-classical-input reductions + auto-instance + table-audit flips of items 1 and 16; 16 commits total = 13 feat + 3 docs, +1444/-4 lines = +1317 Lean LOC across 12 new files + 127 OPEN.md docs). origin/main HEAD `29a332e`. Repo now 977 `.lean` files / 169,587 LOC. Item count: 13/24 → **14/24 STRICT-CLOSED**.**
 >
 > Two arcs in a single session:
@@ -2937,9 +2955,25 @@ duplicate file listing.
 
 ## Paths to the next STRICT-CLOSED
 
+(*Stale entry purged 2026-05-20 late: items 1 and 16 are now STRICT-
+CLOSED; the only remaining items are 5, 11, 12, 13, 14, 17, 18, 21.*)
+
 Reaching the next **STRICT-CLOSED** requires landing one of:
-(a) honest period lattice → `ChartedSpace` on `Jacobian` (flips items 4,
-5, 10, plus 11/12/13 cascade),
-(b) Abel-Jacobi (flips item 16),
-(c) closed-orientable-surface classification (item 14), or
-(d) Hodge L² finite-dimensionality of `HolomorphicOneForm` (item 1).
+
+* **(a) Universal `[HasJacobianAnalyticStructure X]` instance** — flips
+  items 5, 11, 12, 13 (and unlocks 17/18/21 modulo per-curve content)
+  via the C3 rewire of `JacobianChallenge.Jacobian X` to
+  `CanonicalAnalyticJacobianAnonymous X`. Deep classical content:
+  surface classification (for `SmoothSymplecticBasis`), smooth
+  Hurewicz (for `SmoothHurewiczHypothesis`), Riemann bilinear
+  positivity (for the `bilinear` field — chain `Hodge inner product` →
+  `HodgeRiemannBridgeHypothesis` → Riemann second → ℝ-LI now sketched
+  via named hypotheses).
+* **(b) Item 14 universal discharge** — `RiemannRochGenusZero X` +
+  topological-sphere uniformization, *or* universal
+  `HasAdmissibleChartCover` (now class-driven). Currently
+  unconditional on `RiemannSphere`.
+* **(c) Per-curve smoothness content for items 17/18/21** — discharge
+  `AbelJacobiSmoothness` + per-curve `JacobianAnalyticPushforwardLift`
+  / `PullbackLift` with explicit lattice-match certificates. Concrete
+  analytic content (FTC for path integrals, `∫_{f_*γ} ω = ∫_γ f^* ω`).

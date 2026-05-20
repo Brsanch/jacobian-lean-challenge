@@ -13,11 +13,39 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-19 late+++++++):** 13 of 24 items STRICT-CLOSED, 2 STUB, 9 OPEN.
-Build clean at **9201 jobs** (zero `sorry`, zero `axiom`). Repo:
-**161,295 LOC across 915 `.lean` files**.
+**Current state (2026-05-20 late):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
+Build clean at **9291 jobs** (zero `sorry`, zero `axiom`). Repo:
+**173,331 LOC across 1011 `.lean` files**.
 
 Major recent landings (all on `main`):
+
+* **Period-lattice plumbing + classical-content scaffolding + item-14
+  advances** (2026-05-20 late, two arcs, 35 commits + merge,
+  ~3,778 LOC across 34 new files, HEAD `ce776c9`). *No items flipped*
+  — work is foundational plumbing + named classical hypotheses; items
+  5/11/12/13/17/18/21 are now reducible to a single class hypothesis
+  `[HasJacobianAnalyticStructure X]` once it lands universally. **Arc
+  A** (period-lattice + classical, ~2,200 LOC): class-keyed
+  `CanonicalAnalyticJacobian` chain with 7 instances per X
+  (Compact/Charted/IsManifold/LieAddGroup on the analytic Jacobian
+  Type); basis-anonymous `HasJacobianAnalyticStructure X` class + RS
+  + T_L instances; `CanonicalOfCurve` with self-vanishing +
+  smoothness/constancy at genus 0; canonical pushforward/pullback
+  lifts + smoothness corollaries; RS + T_L smoke tests confirming
+  end-to-end composition; classical scaffolding via
+  `HodgeInnerProductHypothesis`, `HodgeFormMatrix`, `PeriodMatrix`,
+  `RiemannBilinearRelations` (first + second + bundled),
+  `RiemannBilinearImpliesLI` (genus-0 discharge),
+  `StandardSymplecticForm` (anti-symmetry `J^T = -J` proven),
+  `HodgeRiemannBridge` (the deep identity `i Π^T J Π̄ = H.toMatrix`,
+  Hermitian half proven). **Arc B** (item 14, ~1,580 LOC):
+  `ChartLocalPrimitiveExtend` + ContMDiff/mfderiv/Continuous transfer
+  theorems; global `pathPrimitive ContMDiff` + FTC via
+  `PathPrimitiveAdmissibleChartCover`; `S2ImpliesGenus0` from BSLB +
+  admissibility; **unconditional item-14 biconditional on `RiemannSphere`**;
+  `HasAdmissibleChartCover` + `HasConvexTargetChartCover` typeclasses
+  with class-driven compositions and automatic admissibility under
+  Subsingleton ω.
 
 * **Full T_L period-lattice closure + `ℂ⧸L ≃ₘ AnalyticJacobianSymp`
   smooth diffeomorphism UNCONDITIONAL** (2026-05-19 late++++++, 20
