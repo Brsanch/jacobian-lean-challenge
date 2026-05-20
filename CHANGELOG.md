@@ -1,5 +1,92 @@
 # Changelog
 
+## 2026-05-19 (late++++) — T_L period-lattice closure + smooth diffeomorphism `ℂ⧸L ≃ₘ AnalyticJacobianSymp` (20 chips, ~3,037 LOC)
+
+End-to-end closure of the period-lattice/Abel-Jacobi infrastructure on
+the complex torus T_L = ℂ ⧸ L. Eight continuation turns shipped 20
+chips that:
+
+1. Land `Nonempty (PeriodLatticeSymplecticBundle … T_L)` unconditional
+   (via `SmoothSymplecticBasis.reindex` accessor layer +
+   `LinearEquiv.piCongrLeft'` for inner-index transport).
+2. Compute the AJ point map explicitly:
+   `abelJacobiPoint Q = QuotientAddGroup.mk (fun _ => Q.out)`.
+3. Characterize `periodLatticeImage` as the constant functions valued
+   in `L` (full ⊇ + ⊆ biconditional via Hurewicz +
+   Stokes-period-vanishing).
+4. Discharge **two** of the four open classical hypotheses
+   UNCONDITIONALLY: `AbelJacobiInjectiveSymp` and
+   `AbelJacobiSmoothnessSymp`.
+5. Reduce `AbelHypothesis` to the clean T_L-level statement
+   `TLDivSumHypothesis L` (Abel's theorem on elliptic functions).
+6. Reduce `JacobiInversion.injective` to `TLAbelConverseHypothesis L`
+   (Weierstrass σ-function existence); surjectivity conditional on
+   `AbelHypothesis`. Final closure headline
+   `nonempty_C3FullInputExtSymp_complexTorus_of_two_named_hypotheses`
+   takes the two named classical T_L inputs to
+   `Nonempty (C3FullInputExtSymp (ℂ⧸L))`.
+7. Build the **smooth diffeomorphism** `ℂ⧸L ≃ₘ AnalyticJacobianSymp`
+   (`abelJacobiPointDiffeomorph`) — UNCONDITIONAL, mathlib
+   `Diffeomorph` typed.
+
+### Files added (21 new files, 3,037 LOC)
+
+| # | File | LOC |
+|---|---|--:|
+| 1 | `Manifold/SmoothSymplecticBasisReindex.lean` | 136 |
+| 2 | `Manifold/PeriodLatticeSymplecticBundleComplexTorus.lean` | 263 |
+| 3 | `Manifold/AbelJacobiInputSympComplexTorus.lean` | 137 |
+| 4 | `Manifold/ComplexTorusAlphaPeriodValue.lean` | 158 |
+| 5 | `Manifold/AbelJacobiPointComplexTorus.lean` | 91 |
+| 6 | `Manifold/PeriodLatticeImageComplexTorus.lean` | 145 |
+| 7 | `Manifold/GenericGenusPeriodLatticeInputsComplexTorus.lean` | 135 |
+| 8 | `Manifold/PeriodLatticeImageComplexTorusReverse.lean` | 203 |
+| 9 | `Manifold/AbelJacobiInjectiveComplexTorus.lean` | 118 |
+| 10 | `Manifold/AbelJacobiSmoothnessComplexTorus.lean` | 352 |
+| 11 | `Manifold/AnalyticJacobianSympComplexTorusEquiv.lean` | 150 |
+| 12 | `Manifold/AbelHypothesisReductionComplexTorus.lean` | 109 |
+| 13 | `Manifold/C3FullInputExtSympComplexTorus.lean` | 69 |
+| 14 | `Manifold/JacobiInversionSurjectiveComplexTorus.lean` | 144 |
+| 15 | `Manifold/JacobiInversionInjectiveComplexTorus.lean` | 164 |
+| 16 | `Manifold/Pic0EquivComplexTorus.lean` | 94 |
+| 17 | `Manifold/AbelJacobiPointBijectiveComplexTorus.lean` | 95 |
+| 18 | `Manifold/AbelJacobiPointAdditiveComplexTorus.lean` | 124 |
+| 19 | `Manifold/AbelJacobiPointHomeomorphComplexTorus.lean` | 101 |
+| 20 | `Manifold/AnalyticJacobianSympEquivContMDiff.lean` | 150 |
+| 21 | `Manifold/AbelJacobiPointDiffeomorphComplexTorus.lean` | 99 |
+
+### Ingredient status for `Nonempty (C3FullInputExtSymp (ℂ⧸L))`
+
+| Ingredient | Status |
+|---|---|
+| `Nonempty (PLSB …)` | ✅ Unconditional |
+| `AbelJacobiInputSymp` | ✅ Unconditional |
+| `AbelJacobiInjectiveSymp` | ✅ Unconditional |
+| `AbelJacobiSmoothnessSymp` | ✅ Unconditional |
+| `AbelHypothesis` | ⏳ Reduced to `TLDivSumHypothesis L` (named classical input) |
+| `JacobiInversion.surjective` | ✅ Conditional on `AbelHypothesis` |
+| `JacobiInversion.injective` | ⏳ Reduced to `TLAbelConverseHypothesis L` (named classical input) |
+
+### Unconditional manifold-level identification
+
+`abelJacobiPointDiffeomorph h : ℂ ⧸ L ≃ₘ AnalyticJacobianSymp` — full
+smooth diffeomorphism via mathlib's `Diffeomorph` (forward
+`abelJacobiPoint_contMDiff`, inverse `analyticJacobianSympEquiv_contMDiff`).
+The point-level Abel-Jacobi theorem realized at every level: `Equiv`
+→ `AddEquiv` → `Homeomorph` → `Diffeomorph`, all unconditional.
+
+### Open classical content
+
+Both remaining named hypotheses are textbook elliptic-function theory,
+not in mathlib pin:
+
+* `TLDivSumHypothesis L` — Abel's elliptic theorem (residue theorem
+  `∮_∂R d log f = 0` on a fundamental parallelogram).
+* `TLAbelConverseHypothesis L` — Weierstrass σ-function existence.
+
+Repo state: **162,648 LOC across 907 `.lean` files**, build **9191
+jobs** clean. Zero `sorry`, zero `axiom`.
+
 ## 2026-05-19 (late+++) — `genus (ℂ ⧸ L) ≤ 1` upper bound CLOSED on T_L (2 chips, ~330 LOC)
 
 Closes the upper-bound half of the `genus (ℂ ⧸ L) = 1` atom on the
