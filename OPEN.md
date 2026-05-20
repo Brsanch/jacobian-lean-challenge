@@ -32,6 +32,54 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 (late+++++++) `Div.evalSumHom` + closed-form Abel-Jacobi `Pic⁰ X ≃+ X` on any compact AddCommGroup manifold (9 chips, ~900 LOC).**
+>
+> Builds the divisor-evaluation homomorphism
+> `Div.evalSumHom : Div X →+ X` for any topological additive group `X`,
+> and uses it to give a **PLSB-independent closed-form Abel-Jacobi
+> isomorphism** for any compact AddCommGroup manifold `X` (T_L being the
+> canonical example):
+>
+> ```
+> Pic0.evalSumLiftEquiv X hAbel hConv : Pic⁰ X ≃+ X
+>   [D] ↦ ∑ x ∈ supp D, D x • x
+> ```
+>
+> Conditional on `EvalSumAbelHypothesis X` (Abel's theorem statement at
+> the X-level) and `EvalSumAbelConverseHypothesis X` (Weierstrass σ
+> existence at the X-level). For `X = ℂ⧸L` these specialize to the
+> existing `TLDivSumHypothesis L` and `TLAbelConverseHypothesis L`
+> (via definitional `Iff` lemmas).
+>
+> ### New chip menu
+>
+> * `Div.evalSum` / `evalSumHom` (and `_single` / `_single_sub_single`
+>   lemmas) — `Divisor/EvalSum.lean`.
+> * `EvalSumAbelHypothesis` / `EvalSumAbelConverseHypothesis` —
+>   `Manifold/EvalSumGeneral.lean`.
+> * `Pic0.evalSumLift` / `_surjective` / `_injective` /
+>   `Pic0.evalSumLiftEquiv` — `Manifold/EvalSumGeneral.lean`.
+> * `PrincDiv_addSubgroupOf_Div0_eq_ker_evalSumDiv0Hom_iff` (joint
+>   characterization) — `Manifold/EvalSumGeneral.lean`.
+> * T_L specializations: `evalSumPic0`, `evalSumPic0Equiv`,
+>   `evalSumPic0_ofCurve`, `evalSumPic0Equiv_ofCurve_zero`,
+>   `ofCurve_injective_complexTorus` —
+>   `Manifold/Pic0EvalSumComplexTorus.lean`,
+>   `Manifold/JacobianOfCurveEvalSumComplexTorus.lean`.
+> * Multiplicative-generators reduction: `MultiplicativeClosure`
+>   inductive predicate +
+>   `TLDivSumHypothesis_of_multiplicatively_generating` —
+>   `Manifold/TLDivSumEvalSumBridge.lean`.
+> * Two-hypothesis-only headlines: `…_from_two_named_hypotheses`,
+>   `pic0EquivComplexTorus_default`, `evalSumPic0Equiv_default` —
+>   `Manifold/C3FullInputExtSympComplexTorusDefault.lean`.
+>
+> Repo total **9197 jobs clean** (was 9191). Zero `sorry`, zero `axiom`.
+> Item count unchanged (still 13/24 STRICT-CLOSED) but the discharge
+> infrastructure for `TLDivSumHypothesis L` now factors through a
+> generic kernel-of-evalSumHom statement amenable to multiplicative-
+> generator reduction.
+
 > **2026-05-19 (late++++++) Full T_L period-lattice closure + ℂ⧸L ≃ₘ AnalyticJacobianSymp smooth diffeomorphism UNCONDITIONAL (20 chips, ~3,037 LOC).**
 >
 > End-to-end closure of the period-lattice/Abel-Jacobi infrastructure
