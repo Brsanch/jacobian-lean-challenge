@@ -192,6 +192,7 @@ import JacobianChallenge.Manifold.PathPrimitiveLocalSmoothFTCNamed
 import JacobianChallenge.Manifold.PathPrimitiveGlobalSmoothFTC
 import JacobianChallenge.Manifold.PathPrimitiveAdmissibleRiemannSphere
 import JacobianChallenge.Manifold.HasAdmissibleChartCoverClass
+import JacobianChallenge.Manifold.HasConvexTargetChartCover
 import JacobianChallenge.Manifold.PathPrimitiveBasisReduction
 import JacobianChallenge.Manifold.PathPrimitiveLinear
 import JacobianChallenge.Manifold.PrimitiveOnSmoothPathConnected
@@ -939,4 +940,5 @@ import JacobianChallenge.Manifold.CanonicalAnalyticJacobianComplexTorusSmokeTest
 import JacobianChallenge.Manifold.HasBasedSmoothLoopsBound
 import JacobianChallenge.Manifold.HodgeInnerProductHypothesis
 import JacobianChallenge.Manifold.HodgeFormMatrix
+import JacobianChallenge.Manifold.PeriodMatrix
 
