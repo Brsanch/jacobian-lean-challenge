@@ -32,7 +32,7 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
-> **2026-05-20 (period-lattice three-atom packaging + class wrapper + general-X constructor + item 14 4-input reduction + item 14 2-input subsingleton reduction; 11 chips, ~1010 LOC). origin/main HEAD `8864eb4`.**
+> **2026-05-20 (period-lattice three-atom packaging + class wrapper + general-X constructor + item 14 4-input → 2-input → 2-classical-input reductions + auto-instance + table-audit flips of items 1 and 16; 16 commits total = 13 feat + 3 docs, +1444/-4 lines = +1317 Lean LOC across 12 new files + 127 OPEN.md docs). origin/main HEAD `29a332e`. Repo now 977 `.lean` files / 169,587 LOC. Item count: 13/24 → **14/24 STRICT-CLOSED**.**
 >
 > Two arcs in a single session:
 >
