@@ -943,4 +943,5 @@ import JacobianChallenge.Manifold.HodgeInnerProductHypothesis
 import JacobianChallenge.Manifold.HodgeFormMatrix
 import JacobianChallenge.Manifold.PeriodMatrix
 import JacobianChallenge.Manifold.RiemannBilinearRelations
+import JacobianChallenge.Manifold.RiemannBilinearImpliesLI
 
