@@ -32,6 +32,84 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-20 Period-lattice push: `UniformChartContainmentDepth_named X` UNCONDITIONAL via Lebesgue + iterated-midpoint diameter (5 chips, ~1,178 LOC).**
+>
+> Closes the **classical Lebesgue-number existence statement** that was
+> the last open content of the third atomic period-lattice input
+> (`holomorphicCanonicalClosed`) at general genus. With this discharge,
+> all of
+> `HolomorphicComplexBoundaryVanishingHypothesis X`,
+> `HolomorphicStokesHypothesis X`, and
+> `HolomorphicComponentsCanonicalClosed X` hold **unconditional** on
+> every compact connected complex 1-manifold.
+>
+> **Headline chips (post-crash recovery + 4 follow-up chips, all on
+> `origin/main`).**
+>
+> * **`SubdivisionTelescopingFromUniformDepth.lean`** (recovery, `06e8bb1`)
+>   — bridges the iterated-midpoint arc into
+>   `GenericGenusPeriodLatticeInputs.ofFourNamedAtoms`. Per-witness
+>   conversion `ChartContainmentWitness → ChartContainedSmooth2Simplex`
+>   + unconditional iterated-midpoint period-sum identity.
+>
+> * **`Smooth2SimplexAffineReparamComp.lean`** (chip A, `b6e4b61`) —
+>   `affineCombo` / `affineReparam` composition identity: composing
+>   two `affineCombo`s gives `affineCombo` with target vertices the
+>   outer combination of the inner vertices.
+>
+> * **`IteratedMidpointAffineForm.lean`** (chip B, `08ef0a5`) — inductive
+>   predicate `IsIteratedSubdivision σ n T` (`refl` + `step` via
+>   `midpointSubdivision`) + membership theorem for `iteratedMidpointList`
+>   + **affine form**: every `T` at depth `n` has
+>   `T.toFun = (affineReparam σ A B C).toFun` for some `A B C ∈ Δ²`.
+>
+> * **`IteratedMidpointDiameter.lean`** (chip C, `9a26568`) —
+>   strengthens the affine form with the **depth-`n` coordinate-wise
+>   diameter bound**:
+>   `ParameterTriangleBound A B C ((1/2)^n)` (i.e., every pairwise
+>   coordinate difference of `A, B, C` is `≤ (1/2)^n`). By induction on
+>   `IsIteratedSubdivision`, with the explicit halving identity
+>   `affineCombo A B C s - affineCombo A B C t
+>     = (linear combination of (A-B), (A-C), (B-C) with
+>        bounded weights)`.
+>
+> * **`UniformChartContainmentDepth.lean`** (chip D, `66ccc83`) —
+>   **headline**:
+>   ```
+>   theorem uniformChartContainmentDepth_named_holds :
+>     UniformChartContainmentDepth_named X
+>   ```
+>   unconditional on every compact connected complex 1-manifold via
+>   classical Lebesgue's number lemma:
+>   1. `isCompact_standardSimplex2` (closed + bounded in `Fin 2 → ℝ`,
+>      Heine-Borel).
+>   2. For each `q : X`, an `r_q > 0` with
+>      `Metric.ball (chartAt q q) r_q ⊆ chart.target` via
+>      `Metric.isOpen_iff`.
+>   3. Open cover of `standardSimplex2` by
+>      `σ⁻¹ (chart.source ∩ chart⁻¹ ball)` indexed by `p ∈ Δ²`.
+>   4. Lebesgue → `δ > 0`.
+>   5. `exists_pow_lt_of_lt_one` → `n` with `(1/2)^n < δ`.
+>   6. For each `T` at depth `n`, parameter image
+>      `⊆ closedBall A ((1/2)^n) ⊆ ball A δ ⊆` cover element → witness.
+>
+>   Plus the three downstream corollaries
+>   `holomorphicComplexBoundaryVanishingHypothesis_holds_unconditional`,
+>   `holomorphicStokesHypothesis_holds_unconditional`,
+>   `holomorphicComponentsCanonicalClosed_holds_unconditional`.
+>
+> **Downstream effect.** Of the 4 atomic period-lattice inputs of
+> `GenericGenusPeriodLatticeInputs.ofFourNamedAtoms`, atom 3
+> (`SubdivisionTelescopingTo2Simplex_named X`) is now unconditional.
+> Three named hypotheses remain at general genus: `SmoothSymplecticBasis`
+> (surface classification), `riemannBilinear` (Hodge ℝ-linear
+> independence), and `SmoothHurewiczHypothesis sb` (smooth-Hurewicz).
+> No items in `Basic.lean`'s sorry list flip from this alone — those
+> items share all four atoms as a joint blocker.
+>
+> Repo state: ~163,667 + ~2,568 LOC, build 9230 jobs clean. Zero `sorry`,
+> zero `axiom`. Item count unchanged (still 13/24 STRICT-CLOSED).
+
 > **2026-05-19 (afternoon) Period-lattice push: `MidpointSubdivisionTelescoping` UNCONDITIONAL + iterated subdivision (7 chips, ~1,390 LOC).**
 >
 > Closes the **orientation-cancellation + Whitney-smoothing**
