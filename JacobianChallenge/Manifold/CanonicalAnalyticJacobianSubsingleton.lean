@@ -59,18 +59,23 @@ theorem subsingleton_finGenusToComplex_of_subsingleton_omega
   haveI : Unique (Fin 0 → ℂ) := Pi.uniqueOfIsEmpty _
   infer_instance
 
-set_option maxHeartbeats 1600000 in
 /-- **`Subsingleton (JacobianOfLattice X data)` from a subsingleton
 ambient.** Auxiliary: any `JacobianOfLattice X data` with subsingleton
 `Fin (genus X) → ℂ` is itself subsingleton. Direct construction via
-surjectivity of the quotient map. -/
+surjectivity of the quotient map. `JacobianOfLattice X data` is by
+definition `(Fin (genus X) → ℂ) ⧸ data.lattice` (`AddSubgroup`-quotient
+via `QuotientAddGroup.Quotient`), so the surjective lift uses
+`QuotientAddGroup.mk_surjective`. -/
 theorem subsingleton_jacobianOfLattice_of_subsingleton_ambient
     [hsub : Subsingleton (Fin (JacobianChallenge.genus X) → ℂ)]
     (data : PeriodLatticeOfRankTwoG X) :
     Subsingleton (JacobianOfLattice X data) := by
   refine ⟨fun x y => ?_⟩
-  obtain ⟨a, rfl⟩ := Submodule.Quotient.mk_surjective _ x
-  obtain ⟨b, rfl⟩ := Submodule.Quotient.mk_surjective _ y
+  -- `JacobianOfLattice X data` is `(Fin g → ℂ) ⧸ data.lattice` with
+  -- `data.lattice : AddSubgroup _`, so the quotient is a
+  -- `QuotientAddGroup.Quotient`.
+  obtain ⟨a, rfl⟩ := QuotientAddGroup.mk_surjective (s := data.lattice) x
+  obtain ⟨b, rfl⟩ := QuotientAddGroup.mk_surjective (s := data.lattice) y
   rw [Subsingleton.elim a b]
 
 /-- **`Subsingleton (CanonicalAnalyticJacobianAnonymous X)` at genus 0.**
