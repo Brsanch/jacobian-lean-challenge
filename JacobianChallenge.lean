@@ -184,6 +184,7 @@ import JacobianChallenge.Manifold.ChartLocalPrimitiveSmoothness
 import JacobianChallenge.Manifold.LoopPeriodConstant
 import JacobianChallenge.Manifold.PathPrimitiveBasisFTC
 import JacobianChallenge.Manifold.PathPrimitiveChartLocalBridge
+import JacobianChallenge.Manifold.ChartLocalPrimitiveExtend
 import JacobianChallenge.Manifold.PathPrimitiveBasisReduction
 import JacobianChallenge.Manifold.PathPrimitiveLinear
 import JacobianChallenge.Manifold.PrimitiveOnSmoothPathConnected
