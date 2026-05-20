@@ -927,4 +927,5 @@ import JacobianChallenge.Manifold.HasJacobianAnalyticStructure
 import JacobianChallenge.Manifold.CanonicalOfCurve
 import JacobianChallenge.Manifold.HasJacobianAnalyticStructureSubsingleton
 import JacobianChallenge.Manifold.CanonicalOfCurveContMDiffSubsingleton
+import JacobianChallenge.Manifold.CanonicalPushforwardPullbackLift
 
