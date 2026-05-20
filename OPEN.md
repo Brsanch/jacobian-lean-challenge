@@ -32,6 +32,56 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-20 (period-lattice three-atom packaging) Bundle 3 remaining named period-lattice atoms into a single structure; discharge α-data via smoothPathConnected_of_preconnected; validate on RS + T_L unconditionally (4 chips, ~504 LOC). origin/main HEAD `423f95e`.**
+>
+> Item count: **13/24 STRICT-CLOSED** (unchanged). Stack of structural
+> reductions on the period-lattice side of items 5/11/12/13/17/18/21.
+>
+> **(A) α-data atom dropped**
+> (`GenericGenusPeriodLatticeInputsFromThreeNamedAtomsNoAlpha.lean`).
+> `GenericGenusPeriodLatticeInputs.ofThreeNamedAtomsNoAlpha` and the
+> `nonempty_periodLatticeSymplecticBundle_ofThreeNamedAtomsNoAlpha`
+> headline discharge the smooth-path-connectedness data
+> `(α, h_α_src, h_α_tgt)` from `[ConnectedSpace X]` via the
+> unconditional `smoothPathConnected_of_preconnected` + `Classical.choose`.
+> Inputs at general genus: **3 named atoms + base point** (was 3 + base
+> + α-tuple + α_src + α_tgt).
+>
+> **(B) 3 atoms bundled into a single structure**
+> (`SmoothHomologyDataPackage.lean`). `SmoothHomologyDataPackage basis_ω`
+> packs the three remaining inputs into one structure:
+> * `symplecticBasis : SmoothSymplecticBasis 𝓘(ℝ, ℂ) X basePoint (genus X)`;
+> * `hurewicz : SmoothHurewiczHypothesis symplecticBasis`;
+> * `bilinear : LinearIndependent ℝ (period vectors against `basis_ω`)`.
+>
+> Plus the headline composite
+> `nonempty_periodLatticeSymplecticBundle_of_smoothHomologyDataPackage`.
+> The period-lattice side of items 5/11/12/13/17/18/21 now factors
+> through a **single classical existence statement** `Nonempty
+> (SmoothHomologyDataPackage basis_ω)`.
+>
+> **(C) Unconditional discharge on `RiemannSphere`**
+> (`SmoothHomologyDataPackageRiemannSphere.lean`). `Nonempty
+> (SmoothHomologyDataPackage basis_ω)` on `RS` via `IsEmpty (Fin (2 *
+> genus RS))` + empty-tuple `Finset.sum_of_isEmpty` +
+> `basedSmoothLoopsBoundHypothesis_RS_holds` +
+> `linearIndependent_empty_type`. End-to-end check
+> `nonempty_periodLatticeSymplecticBundle_RiemannSphere_of_package`
+> reproduces the known unconditional RS closure via the single-input route.
+>
+> **(D) Unconditional discharge on `T_L = ℂ ⧸ L`**
+> (`SmoothHomologyDataPackageComplexTorus.lean`). `Nonempty
+> (SmoothHomologyDataPackage (basis_g_dz L))` on `T_L` via:
+> * `symplecticBasisG L` (the dim-`genus T_L` reindex of the dim-1
+>   explicit symplectic basis);
+> * `smoothHurewiczHypothesisTorus_holds_of_basis` +
+>   `basisFin2OfL_isZBasisOfL` (Hurewicz unconditional on T_L);
+> * `riemannBilinear_transport` + `basisFin2OfL_realLinearIndependent`
+>   (Riemann bilinear unconditional on T_L).
+>
+> End-to-end check `nonempty_periodLatticeSymplecticBundle_complexTorus_of_package`
+> reproduces the known unconditional T_L closure via the single-input route.
+
 > **2026-05-20 (full day) Triple structural reduction: chip D + AbelGenerator + Item 14 minimal-input lift (23 commits, ~3,377 LOC). origin/main HEAD `dbcc798`. Build 9251 jobs / 965 `.lean` files / 168,266 LOC.**
 >
 > Item count: **13 / 24 STRICT-CLOSED** (unchanged). Three structural
