@@ -112,6 +112,70 @@ noncomputable def Pic0.evalSumLift
     Pic0.evalSumLift X h (QuotientAddGroup.mk D)
       = Div.evalSum (D : Div X) := rfl
 
+/-! ## Surjectivity (free on any AddCommGroup `X`)
+
+For any `X` carrying an `AddCommGroup` structure, the map
+`Pic0.evalSumLift` is surjective: every `Q ∈ X` is the image of the
+class of `single Q − single 0`. -/
+
+/-- **`Pic0.evalSumLift` is surjective** on any compact AddCommGroup
+manifold. Every `Q ∈ X` is the image of the class of
+`single Q − single (0 : X)`. -/
+theorem Pic0.evalSumLift_surjective
+    (h : EvalSumAbelHypothesis X) :
+    Function.Surjective (Pic0.evalSumLift X h) := by
+  classical
+  intro Q
+  refine ⟨QuotientAddGroup.mk
+    ⟨Div.single Q - Div.single (0 : X),
+      Div.single_sub_single_mem_Div0 (0 : X) Q⟩, ?_⟩
+  rw [Pic0.evalSumLift_mk]
+  show Div.evalSum ((Div.single Q - Div.single (0 : X)) : Div X) = Q
+  rw [Div.evalSum_single_sub_single, sub_zero]
+
+/-! ## Converse hypothesis + bundled `Pic0 X ≃+ X` -/
+
+/-- **Abel converse hypothesis on `X`**: every degree-zero divisor
+whose support-weighted sum vanishes in `X` is principal. T_L
+specialization is `TLAbelConverseHypothesis L`. -/
+def EvalSumAbelConverseHypothesis : Prop :=
+  ∀ D : Div0 X,
+    Div.evalSum (D : Div X) = (0 : X) → (D : Div X) ∈ PrincDiv X
+
+/-- **`Pic0.evalSumLift` is injective from the converse hypothesis.** -/
+theorem Pic0.evalSumLift_injective
+    (h : EvalSumAbelHypothesis X)
+    (hConv : EvalSumAbelConverseHypothesis X) :
+    Function.Injective (Pic0.evalSumLift X h) := by
+  classical
+  rw [injective_iff_map_eq_zero]
+  intro c hc
+  induction c using QuotientAddGroup.induction_on with
+  | H D =>
+  rw [Pic0.evalSumLift_mk] at hc
+  -- hc : Div.evalSum (D : Div X) = 0
+  have h_princ : (D : Div X) ∈ PrincDiv X := hConv D hc
+  show (QuotientAddGroup.mk D : Pic0 X) = 0
+  rw [QuotientAddGroup.eq_zero_iff]
+  exact h_princ
+
+/-- **Closed-form Abel–Jacobi `AddEquiv` `Pic⁰ X ≃+ X`** on any
+compact AddCommGroup manifold, conditional on the two named
+hypotheses. -/
+noncomputable def Pic0.evalSumLiftEquiv
+    (h : EvalSumAbelHypothesis X)
+    (hConv : EvalSumAbelConverseHypothesis X) :
+    Pic0 X ≃+ X :=
+  AddEquiv.ofBijective (Pic0.evalSumLift X h)
+    ⟨Pic0.evalSumLift_injective X h hConv,
+     Pic0.evalSumLift_surjective X h⟩
+
+@[simp] lemma Pic0.evalSumLiftEquiv_apply
+    (h : EvalSumAbelHypothesis X)
+    (hConv : EvalSumAbelConverseHypothesis X)
+    (c : Pic0 X) :
+    Pic0.evalSumLiftEquiv X h hConv c = Pic0.evalSumLift X h c := rfl
+
 end JacobianChallenge
 
 end
