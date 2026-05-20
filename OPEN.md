@@ -32,6 +32,89 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 (afternoon) Period-lattice push: `MidpointSubdivisionTelescoping` UNCONDITIONAL + iterated subdivision (7 chips, ~1,390 LOC).**
+>
+> Closes the **orientation-cancellation + Whitney-smoothing**
+> content of the third atomic period-lattice input
+> (`holomorphicCanonicalClosed`) at general genus. Reduces the open
+> frontier from `SubdivisionTelescopingTo2Simplex_named X` (Whitney
+> smoothing + orientation cancellation, both deep classical content)
+> to `UniformChartContainmentDepth_named X` (a pure
+> Lebesgue-number existence statement).
+>
+> **Headline chips.**
+>
+> * **`Smooth2SimplexAffineSegmentPath.lean`** — `affineSegmentPath σ p q`
+>   primitive (the smooth path `t ↦ σ((1-t)p + tq)`), face
+>   identifications for `affineReparam σ a b c` (each face = an
+>   `affineSegmentPath`), reverse identity at the SmoothPath level.
+>
+> * **`Smooth2SimplexAffineSegmentPathReverse.lean`** — integrate-level
+>   reverse `∫_{σ(q,p)} = -∫_{σ(p,q)}` + complex-period-level reverse
+>   + pair-sum-zero (key building block for **orientation cancellation**).
+>
+> * **`Smooth2SimplexAffineSegmentPathMidpoint.lean`** — interior
+>   velocity formula via `mfderiv` chain rule, velocity scaling under
+>   midpoint subdivision, integrand scaling, half-integrals via
+>   `intervalIntegral.integral_comp_div`, **full midpoint splitting at
+>   the integrate level**:
+>   ```
+>   (affineSegmentPath σ a c).integrate ω
+>     = (affineSegmentPath σ a (midpoint a c)).integrate ω
+>       + (affineSegmentPath σ (midpoint a c) c).integrate ω
+>   ```
+>   This is the building block for **Whitney smoothing** (the 4-way
+>   midpoint subdivision boundary-period telescoping).
+>
+> * **`Smooth2SimplexAffineSegmentPathComplexMidpoint.lean`** —
+>   midpoint splitting lifted to complex period level.
+>
+> * **`MidpointSubdivisionTelescopingHolds.lean`** — **headline**:
+>   `MidpointSubdivisionTelescoping σ α` UNCONDITIONAL on any compact
+>   connected complex 1-manifold. Composes the three interior-edge
+>   reverse cancellations with the three boundary-edge midpoint
+>   consolidations via `linear_combination`. Drops the previously
+>   open `MidpointSubdivisionTelescoping σ α` *named* hypothesis
+>   (per-step orientation-cancellation telescoping) by proving it
+>   as a theorem.
+>
+> * **`IteratedMidpointSubdivision.lean`** — `iteratedMidpointList σ
+>   n : List (Smooth2Simplex 𝓘(ℝ,ℂ) X)` recursive 4-way midpoint
+>   subdivision yielding `4ⁿ` sub-simplices, plus the period-sum
+>   identity
+>   ```
+>   complexChainPeriod (∂σ) α
+>     = ((iteratedMidpointList σ n).map …).sum
+>   ```
+>   by induction on `n`, using the unconditional
+>   `MidpointSubdivisionTelescoping`.
+>
+> * **`BoundaryPeriodFromDepthN.lean`** — `ChartContainmentWitness T`
+>   structure + the **end-to-end discharge**:
+>   `complexChainPeriod (∂σ) α = 0` from the existence of a depth `n`
+>   at which every sub-simplex in `iteratedMidpointList σ n` admits a
+>   chart-containment witness. Plus the named hypothesis
+>   `UniformChartContainmentDepth_named X` and bridges to
+>   `HolomorphicComplexBoundaryVanishingHypothesis X` /
+>   `HolomorphicStokesHypothesis X` /
+>   `HolomorphicComponentsCanonicalClosed X`.
+>
+> **Open content remaining for the third atomic input.** Just the
+> Lebesgue-number existence:
+> ```
+> UniformChartContainmentDepth_named X :=
+>   ∀ σ, ∃ n, ∀ T ∈ iteratedMidpointList σ n, Nonempty (ChartContainmentWitness T)
+> ```
+> Classically true: σ.toFun is continuous on the compact `Δ²`, so the
+> pulled-back cover of `Δ²` by `σ`-preimages of chart-sources has a
+> Lebesgue number; midpoint subdivision diameters halve at each step,
+> so an `n` always exists. Formalizing this in Lean is the remaining
+> work for general-genus closure.
+>
+> Repo state: ~163,667 + ~1,390 LOC (across 939 `.lean` files), build
+> 9225 jobs clean. Zero `sorry`, zero `axiom`. Item count unchanged
+> (still 13/24 STRICT-CLOSED).
+
 > **2026-05-20 Period-lattice push: 21 chips, ~2,275 LOC.**
 >
 > Builds out the period-lattice atom-3/atom-4 reduction infrastructure
