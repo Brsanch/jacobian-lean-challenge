@@ -32,6 +32,90 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-20 Period-lattice push: 21 chips, ~2,275 LOC.**
+>
+> Builds out the period-lattice atom-3/atom-4 reduction infrastructure
+> end-to-end, plus the constructive `Smooth2Simplex` subdivision
+> primitives. Net effect: the third atomic input of
+> `GenericGenusPeriodLatticeInputs` (`holomorphicCanonicalClosed`) at
+> general genus is reduced to a single named hypothesis
+> `SubdivisionTelescopingTo2Simplex_named X`. All four atoms are
+> available in cleanest named form via
+> `GenericGenusPeriodLatticeInputs.ofFourNamedAtoms`. The
+> chart-pullback pointwise identity is unconditional (no frame
+> stability). On RS, the subdivision-telescoping atoms discharge
+> trivially via `Subsingleton (HolomorphicOneForm RS)`.
+>
+> **Headline chips.**
+>
+> * **`pointwiseChartEvalIdentity_unconditional`** —
+>   `Manifold/PointwiseChartEvalUnconditional.lean`.
+>   Drops the `CotangentChartFrameStable` hypothesis from the
+>   chart-pullback pointwise identity. The bridge:
+>   `tangentBundleCore_coordChange_restrictScalars_eq` (in tree) +
+>   cocycle of `tangentBundleCore.coordChange` + ℂ-linearity of
+>   `α.toFun x`. Yields
+>   `chartContainedLoopVanishingHypothesis_holds_unconditional` on
+>   every compact connected complex 1-manifold.
+>
+> * **`ChartContainedSmooth2Simplex`** family
+>   (`Manifold/ChartContainedSmooth2Simplex.lean`,
+>   `…FromFaces.lean`, `…BoundaryDirect.lean`, `…FromSimplexImage.lean`).
+>   For any `Smooth2Simplex 𝓘(ℝ, ℂ) X` whose
+>   `σ.toFun '' standardSimplex2` lies in a single chart-ball,
+>   `complexChainPeriod (∂σ) α = 0`. Three increasingly user-friendly
+>   surfaces: explicit `ChartContainedClosedLoop` bundling, per-face
+>   chart-containment, single Δ²-condition.
+>
+> * **`SubdivisionTelescopingTo2Simplex_named X`** named-hypothesis +
+>   the three composite reductions to
+>   `HolomorphicComplexBoundaryVanishingHypothesis X`,
+>   `HolomorphicStokesHypothesis X`, and
+>   `HolomorphicComponentsCanonicalClosed X`.
+>
+> * **`GenericGenusPeriodLatticeInputs.ofFourNamedAtoms`**
+>   (`Manifold/GenericGenusPeriodLatticeInputsFromFourNamedAtoms.lean`).
+>   The 'everything reduced to named classical hypotheses'
+>   constructor: takes `SmoothSymplecticBasis` + `riemannBilinear` +
+>   `SubdivisionTelescopingTo2Simplex_named X` +
+>   `SmoothHurewiczHypothesis sb` + smooth-path-connectedness, and
+>   produces the full structure (and `Nonempty
+>   (PeriodLatticeSymplecticBundle ...)`).
+>
+> * **`Smooth2Simplex.affineReparam`** + `midpointSubdivision`
+>   (`Manifold/Smooth2SimplexAffineReparam.lean`,
+>   `Smooth2SimplexMidpointSubdivision.lean`,
+>   `MidpointSubdivisionChartContained.lean`,
+>   `MidpointSubdivisionTelescoping.lean`).
+>   Constructive building blocks for the Δ²-subdivision content of
+>   `SubdivisionTelescopingTo2Simplex_named`. Convexity of
+>   `standardSimplex2` lets chart-containment of `σ` inherit to each
+>   midpoint sub-triangle; a 1-step telescoping headline composes
+>   chart-contained sub-triangle vanishing with a named
+>   `MidpointSubdivisionTelescoping σ α` hypothesis.
+>
+> * **Subsingleton discharges** for the subdivision-telescoping atoms
+>   (`Manifold/SubdivisionTelescopingFromSubsingleton.lean`).
+>   For any `X` with `Subsingleton (HolomorphicOneForm X)`, both
+>   `SubdivisionTelescopingToLoop_named X` and
+>   `SubdivisionTelescopingTo2Simplex_named X` discharge trivially via
+>   the empty subdivision list. Applies to `RiemannSphere`. Companion
+>   `LoopPeriodVanishesOfSubsingleton.lean` gives the
+>   `LoopPeriodVanishes` analogue.
+>
+> * **End-to-end RS exercise** —
+>   `HoloCanonClosedRSViaSubdivision.lean` smoke-tests the four-atom
+>   chain by deriving `HolomorphicComponentsCanonicalClosed RS` via
+>   the subdivision route (alternate to the in-tree subsingleton
+>   discharge).
+>
+> Repo state after this session: **163,667 LOC across 932 `.lean`
+> files**, build **9218 jobs** clean. Zero `sorry`, zero `axiom`.
+> Item count unchanged (still 13/24 STRICT-CLOSED) — this push reduces
+> the open frontier on items 5/11/12/13/17/18/21 to four named classical
+> hypotheses (plus the existing item-14 forward leg's
+> `ExistsSimplePoleGermAtSomePoint X`).
+
 > **2026-05-19 (late++++++++++++) `GenericGenusPeriodLatticeInputs` from FOUR named-atom inputs (1 chip, ~145 LOC).**
 >
 > Ships `GenericGenusPeriodLatticeInputs.ofFourNamedAtoms`

@@ -1,5 +1,76 @@
 # Changelog
 
+## 2026-05-20 — Period-lattice push: 21 chips, ~2,275 LOC
+
+Builds out the period-lattice atom-3/atom-4 reduction chain
+end-to-end, plus the constructive `Smooth2Simplex` subdivision
+primitives. After this session, the third atomic input of
+`GenericGenusPeriodLatticeInputs` at general genus reduces to a
+single named hypothesis (`SubdivisionTelescopingTo2Simplex_named X`);
+the chart-pullback pointwise identity is unconditional; and on RS
+the named subdivision-telescoping atoms discharge trivially via
+`Subsingleton (HolomorphicOneForm RS)`.
+
+### Files added (21 chips)
+
+* `Manifold/PointwiseChartEvalUnconditional.lean` (~270 LOC) —
+  `pointwiseChartEvalIdentity_unconditional` (drops frame stability).
+* `Manifold/LoopPeriodVanishesFromSubdivision.lean` (~75 LOC) —
+  composite reducing to a single named subdivision hypothesis.
+* `Manifold/ChartContainedSmooth2Simplex.lean` (~210 LOC) — the
+  chart-contained 2-simplex bundle + `SubdivisionTelescopingTo2Simplex_named`.
+* `Manifold/ChartContainedSmooth2SimplexFromFaces.lean` (~310 LOC) —
+  constructor from per-face chart-containment via concat/reverse
+  ambient bookkeeping.
+* `Manifold/ChartContainedSmooth2SimplexBoundaryDirect.lean` (~95 LOC) —
+  direct boundary-period-zero headline from face-data.
+* `Manifold/ChartContainedSmooth2SimplexFromSimplexImage.lean` (~130 LOC) —
+  single Δ²-condition surface using `standardSimplex2` + face-membership
+  lemmas.
+* `Manifold/Smooth2SimplexAffineReparam.lean` (~135 LOC) — affine
+  reparameterisation primitive for Δ²-subdivision.
+* `Manifold/Smooth2SimplexMidpointSubdivision.lean` (~155 LOC) —
+  concrete 4-way midpoint subdivision data + corner-vertex evaluations.
+* `Manifold/MidpointSubdivisionChartContained.lean` (~320 LOC) —
+  chart-containment inheritance via `affineCombo_mem_standardSimplex2`
+  (Δ²-convexity) + per-sub-triangle headlines.
+* `Manifold/MidpointSubdivisionTelescoping.lean` (~135 LOC) — 1-step
+  midpoint-telescoping named hypothesis + chart-contained-σ discharge
+  reducing `complexChainPeriod (∂σ) α` to `0`.
+* `Manifold/GenericGenusPeriodLatticeInputsFromSubdivision.lean` (~90 LOC) —
+  atom-3-reduced constructor `GenericGenusPeriodLatticeInputs.ofSubdivisionAtom`.
+* `Manifold/GenericGenusPeriodLatticeInputsFromFourNamedAtoms.lean`
+  (~145 LOC) — full four-named-atom composite constructor + headline.
+* `Manifold/SubdivisionTelescopingToLoopRS.lean` (~65 LOC) —
+  RS-specific loop-atom subsingleton discharge.
+* `Manifold/SubdivisionTelescopingTo2SimplexRS.lean` (~55 LOC) —
+  RS-specific 2-simplex atom subsingleton discharge.
+* `Manifold/SubdivisionTelescopingFromSubsingleton.lean` (~70 LOC) —
+  generalised subsingleton discharges (loop + 2-simplex).
+* `Manifold/HoloCanonClosedRSViaSubdivision.lean` (~55 LOC) —
+  end-to-end RS smoke test of the subdivision pipeline.
+* `Manifold/LoopPeriodVanishesOfSubsingleton.lean` (~45 LOC) —
+  `LoopPeriodVanishes` from subsingleton 1-forms.
+
+### Repo state
+
+**163,667 LOC across 932 `.lean` files**; build **9218 jobs** clean
+(zero `sorry`, zero `axiom`).
+
+Item count unchanged (still 13/24 STRICT-CLOSED). The open frontier
+on items 5/11/12/13/17/18/21 reduces (via the four-named-atom route)
+to four named classical hypotheses:
+
+| Atom | Named open content |
+|---|---|
+| 1. cycleGens | `SmoothSymplecticBasis 𝓘(ℝ, ℂ) X p₀ (genus X)` |
+| 2. riemannBilinear | ℝ-linear independence of the 2g period vectors |
+| 3. holomorphicCanonicalClosed | **`SubdivisionTelescopingTo2Simplex_named X`** (Whitney-smoothed Δ²-subdivision telescoping) |
+| 4. H1_spans_top_canonical | `SmoothHurewiczHypothesis sb` (smooth-Hurewicz on the chosen basis) |
+
+Plus the existing item-14 forward leg's
+`ExistsSimplePoleGermAtSomePoint X`.
+
 ## 2026-05-19 (late++++++++) — Chart-contained 2-simplex boundary period = 0 + Stokes from 2-simplex subdivision (1 chip, ~210 LOC)
 
 Ships `ChartContainedSmooth2Simplex X`
