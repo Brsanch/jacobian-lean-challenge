@@ -1,5 +1,101 @@
 # Changelog
 
+## 2026-05-20 (continuation) — Triple structural reduction: chip D + AbelGenerator + Item 14 (23 commits, ~3,377 LOC)
+
+Final state: build 9251 jobs, 965 `.lean` files, 168,266 LOC. Zero
+`sorry`, zero `axiom`. Item count: 13 / 24 STRICT-CLOSED (unchanged).
+`origin/main` HEAD `dbcc798`.
+
+### (1) Chip D arc — period-lattice atom-3 UNCONDITIONAL
+
+* `Manifold/SubdivisionTelescopingFromUniformDepth.lean` (~160 LOC,
+  `06e8bb1`) — recovery commit; bridges `UniformChartContainmentDepth_named X`
+  to `SubdivisionTelescopingTo2Simplex_named X`.
+* `Manifold/Smooth2SimplexAffineReparamComp.lean` (~95 LOC, `b6e4b61`)
+  — `affineCombo` / `affineReparam` composition identity.
+* `Manifold/IteratedMidpointAffineForm.lean` (~204 LOC, `08ef0a5`) —
+  `IsIteratedSubdivision` predicate + affine form for
+  `iteratedMidpointList` elements.
+* `Manifold/IteratedMidpointDiameter.lean` (~412 LOC, `9a26568`) —
+  depth-`n` coordinate-wise pairwise diameter bound
+  `ParameterTriangleBound A B C ((1/2)^n)`.
+* **`Manifold/UniformChartContainmentDepth.lean`** (~309 LOC,
+  `66ccc83`) — **headline**: `uniformChartContainmentDepth_named_holds`
+  UNCONDITIONAL via Lebesgue + iterated-midpoint diameter. Three
+  corollaries unconditional:
+  `holomorphicComplexBoundaryVanishingHypothesis_holds_unconditional`,
+  `holomorphicStokesHypothesis_holds_unconditional`,
+  `holomorphicComponentsCanonicalClosed_holds_unconditional`.
+* `Manifold/GenericGenusPeriodLatticeInputsFromThreeNamedAtoms.lean`
+  (~110 LOC, `97158eb`) — `ofThreeNamedAtoms` composite constructor
+  + OPEN.md update.
+* `Manifold/C3PeriodLatticeStokesCanonicalUnconditional.lean`
+  (~80 LOC, `25372c9`) — `ofStokesUnconditional` (drops Stokes
+  argument).
+
+### (2) AbelGenerator arc — 2 named universal predicates
+
+* `Manifold/SmoothBordantConst.lean` (~132 LOC, `ad13e6b`) —
+  `SmoothBordant ↔ singleCycle ∈ stokesBoundaries` biconditional.
+* `Manifold/AbelGeneratorAtRegularEndpoints.lean` (~148 LOC,
+  `6050a19`) — per-`f` AbelGenerator reduction with concrete
+  `regularLevelSetChain`.
+* `Manifold/AbelGeneratorUniversalLift.lean` (~106 LOC, `f192a80`)
+  — universal lift from per-`f` + endpoints + constant.
+* `Manifold/AbelGeneratorPrincipalDivisorZero.lean` (~102 LOC,
+  `9ff5ab0`) — trivial-divisor discharge + factored universal lift.
+* `Manifold/AbelGeneratorFinalLift.lean` +
+  `Manifold/PrincipalDivisorOfConstantMap.lean` (~200 LOC, `10aa5df`)
+  — `IsConstantMap → principalDivisorMap = 0` bridge + final
+  2-hypothesis universal lift.
+* `Manifold/HasRegularEndpoints.lean` (~100 LOC, `4611e93`) —
+  named predicate + accessors.
+* `Manifold/LevelSetChainPeriodVectorSum.lean` +
+  `Manifold/ComplexChainPeriodSingle.lean` (~140 LOC, `87f1db3`) —
+  Finset-sum decomposition + single-path complex-chain-period
+  identity.
+* `Manifold/LevelSetChainPeriodVectorExplicit.lean` (~100 LOC,
+  `9192bec`) — explicit real+imag decomposition of period vector.
+* `Manifold/LevelSetChainPeriodVectorRealImag.lean` +
+  `Manifold/LevelSetChainPeriodInLattice.lean` (~205 LOC, `e63d194`)
+  — real/imag split as `ℝ`-valued sums + named substantive predicate.
+* `Manifold/AbelGeneratorFromNamedPredicates.lean` (~75 LOC,
+  `e01640b`) — final 2-named-predicate statement.
+
+### (3) Item 14 — minimal-input composition via chip D
+
+* `Manifold/SmoothNullBounding.lean` (~95 LOC, `820aa3d`) —
+  `SmoothNullBounding γ x₀ → LoopPeriodVanishes` via chip D.
+* `Manifold/SmoothlyNullBoundedLoopPeriod.lean` (~70 LOC, `8d3daec`)
+  — universal aggregator.
+* `Topology/S2ImpliesGenus0FromSmoothlyNullBounded.lean` (~75 LOC,
+  `cc530b5`) — `S2ImpliesGenus0` from `SmoothlyNullBoundedHypothesis`.
+* `Manifold/LoopPeriodVanishesOfBasedSmoothLoopsBound.lean`
+  (~150 LOC, `af72306`) — universal `LoopPeriodVanishes` from the
+  **weaker** `BasedSmoothLoopsBoundHypothesis` via chip D + 2-chain
+  linearity.
+* `Topology/S2ImpliesGenus0FromBasedSmoothLoopsBound.lean` (~80 LOC,
+  `58bc446`) — `S2ImpliesGenus0` from `BasedSmoothLoopsBoundHypothesis`.
+* `Topology/Item14FromTwoNamedClassical.lean` (~85 LOC, `dbcc798`)
+  — `genus_eq_zero_iff_homeo_from_minimal_inputs`: item 14
+  biconditional from 5 minimal named hypotheses (forward:
+  `ExistsSimplePoleGermAtSomePoint`; reverse: 4 inputs with
+  `BasedSmoothLoopsBoundHypothesis` as the substantive piece).
+
+### Net structural impact
+
+* Joint blocker for items 5/11/12/13/17/18/21 reduced **4 → 3 named
+  atoms** (`SmoothSymplecticBasis`, `riemannBilinear`,
+  `SmoothHurewiczHypothesis sb`).
+* AbelGenerator arc reduced to **2 named universal predicates**.
+* Item 14 factored into **5 minimal named hypotheses**, with the
+  reverse-leg substantive piece weakened from "smooth Poincaré-disc
+  filling" to "any 2-chain bounding".
+
+Every remaining open content is a single named classical hypothesis;
+each is multi-day-to-multi-week Lean work (no 1-chip discharges
+remain).
+
 ## 2026-05-20 — Period-lattice push: 21 chips, ~2,275 LOC
 
 Builds out the period-lattice atom-3/atom-4 reduction chain
