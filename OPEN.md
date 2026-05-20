@@ -32,6 +32,31 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-19 (late+++++++++++) `GenericGenusPeriodLatticeInputs.ofSubdivisionAtom` constructor (1 chip, ~85 LOC).**
+>
+> Ships `GenericGenusPeriodLatticeInputs.ofSubdivisionAtom` in
+> `Manifold/GenericGenusPeriodLatticeInputsFromSubdivision.lean`.
+> A constructor that takes the 4 atoms at general genus with the
+> third atom replaced by the cleaner
+> `SubdivisionTelescopingTo2Simplex_named`:
+>
+> ```
+> GenericGenusPeriodLatticeInputs.ofSubdivisionAtom :
+>   (cycleGens) → (riemannBilinear) →
+>   SubdivisionTelescopingTo2Simplex_named X →
+>   (H1_spans_top_canonical) →
+>   GenericGenusPeriodLatticeInputs basis
+> ```
+>
+> Makes the dependency on the deep classical content explicit at the
+> constructor surface: the third atom is no longer the raw Stokes
+> closed-form predicate but the named 2-simplex subdivision-telescoping
+> hypothesis. The discharge of `holomorphicCanonicalClosed` from the
+> subdivision atom goes through the unconditional chart-contained
+> discharge.
+>
+> Build **9205 jobs** clean (was 9204). Item count unchanged.
+
 > **2026-05-19 (late++++++++++) Chart-contained 2-simplex boundary period = 0 + Stokes from 2-simplex subdivision (1 chip, ~210 LOC).**
 >
 > Ships `ChartContainedSmooth2Simplex X`
