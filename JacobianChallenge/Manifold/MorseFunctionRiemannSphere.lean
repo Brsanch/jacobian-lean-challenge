@@ -98,6 +98,17 @@ lemma heightLocalℂ_continuous : Continuous heightLocalℂ := by
   have : (0 : ℝ) < 1 + ‖z‖^2 := by positivity
   exact this.ne'
 
+/-- The chart-local form is real-`C^∞` on `ℂ`. -/
+lemma heightLocalℂ_contDiff : ContDiff ℝ (⊤ : ℕ∞) heightLocalℂ := by
+  unfold heightLocalℂ
+  refine ContDiff.div contDiff_const ?_ ?_
+  · -- `ContDiff ℝ ∞ (fun z => 1 + ‖z‖^2)`.
+    exact contDiff_const.add (contDiff_norm_sq ℂ)
+  · -- Pointwise: `1 + ‖z‖^2 ≠ 0`.
+    intro z
+    have : (0 : ℝ) < 1 + ‖z‖^2 := by positivity
+    exact this.ne'
+
 /-- **Tendsto-to-0 at infinity:** as `z → ∞` in `cocompact ℂ`,
 `1/(1+‖z‖²) → 0`. -/
 lemma heightLocalℂ_tendsto_zero_cocompact :
