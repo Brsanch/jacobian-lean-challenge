@@ -29,7 +29,12 @@ on every such `L`.
 
 ## What this file ships
 
-* `hasJacobianHodgeChain_complexTorus_unconditional` — the headline.
+* `hasJacobianHodgeChain_complexTorus_unconditional` — the headline
+  theorem.
+* `instHasJacobianHodgeChain_complexTorus` — the headline as a
+  typeclass instance, so the global bridge
+  `HasJacobianHodgeChain X ⟹ HasJacobianAnalyticStructure X` fires
+  on every `T_L = ℂ ⧸ L`.
 
 No `sorry`, no `axiom`. -/
 
@@ -60,6 +65,15 @@ theorem hasJacobianHodgeChain_complexTorus_unconditional :
   -- Apply chip 19q with the canonical lattice basis ℝ-LI premise.
   exact Complex.im_star_mul_ne_zero_of_linearIndependent_pair
     (basisFin2OfL_realLinearIndependent L)
+
+/-- **Typeclass instance form of the headline.** Wires
+`HasJacobianHodgeChain (ℂ ⧸ L)` into instance synthesis so the global
+bridge `HasJacobianHodgeChain X ⟹ HasJacobianAnalyticStructure X` and
+all downstream canonical-Jacobian constructions fire automatically on
+every complex torus `T_L`. -/
+instance instHasJacobianHodgeChain_complexTorus :
+    HasJacobianHodgeChain (ℂ ⧸ L) :=
+  hasJacobianHodgeChain_complexTorus_unconditional L
 
 end ComplexTorus
 
