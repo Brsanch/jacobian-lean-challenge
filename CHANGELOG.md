@@ -1,5 +1,58 @@
 # Changelog
 
+## 2026-05-21 PR #4 — Item-14 reverse leg: `SmoothPath.subpath` primitive (1 commit + merge, +111 LOC)
+
+Final state: build **9316 jobs**, **1056 `.lean` files**, **179,900
+LOC**. Zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
+STRICT-CLOSED**. `origin/main` HEAD `b48070b` (merge of
+`feat/item14-bslb-chain-assembly` via PR #4).
+
+Single new file `Manifold/SmoothPathSubpath.lean`:
+
+* `SmoothPath.subpathAmbient γ a b t := γ.ambient (a + t * (b - a))` —
+  the affine reparam of `γ.ambient` onto `[a, b]`.
+* `subpathAmbient_zero` / `_one` — endpoint identifications.
+* `contMDiff_subpathAmbient` — smoothness via composition of `γ.ambient`'s
+  `ContMDiff ∞` with the affine reparam's `ContDiff ∞`.
+* `SmoothPath.subpath γ a b ha hab hb : SmoothPath IM X` — the packaged
+  sub-arc as a `SmoothPath`, with `src := γ.ambient a` and
+  `tgt := γ.ambient b`.
+* `subpath_src` / `_tgt` simp lemmas.
+
+This is the **foundational primitive for chart-cover Lebesgue
+subdivision of a smooth loop**. Combined with
+`lebesgueSubdivision_of_chartCover` (PR #1), it extracts each piece
+of γ as a `SmoothPath` qualifying for the chart-local polygonal-
+approximation bordism (PR #3).
+
+### Architectural blocker identified for the final concatenation chip
+
+Investigating the next chip — concatenating sub-arc bordisms across
+the Lebesgue subdivision — revealed a genuine mathematical
+obstruction. The chart-local bordism (PR #3) requires `γ_n.ambient`
+to be **globally** chart-contained (∀ t : ℝ). But `γ.subpath.ambient`
+outside `[0, 1]` is `Classical.choose`-determined and might not stay
+in the chart's source.
+
+The "bump-extension" workaround (constructing a smooth `σ : ℝ → [0, 1]`
+with `σ = identity` on `[0, 1]`) was shown **mathematically
+impossible**: `σ`'s smoothness at `t = 0` forces matching derivatives
+`σ'(0⁻) = σ'(0⁺) = 1`, which forces `σ < 0` just left of `0`,
+contradicting `σ ≥ 0`.
+
+Genuine fixes available (next session):
+
+1. **Restructure `Smooth2Simplex`** to use `ContMDiffOn [0, 1]²`
+   instead of `ContMDiff` globally on `Fin 2 → ℝ`. Major refactor:
+   `boundary`, `boundary₂`, `boundary₂Cycle`, the integration
+   machinery, `stokesBoundaries` would all need parallel adaptation.
+2. **Explicit bump extension via `ContDiffBump`** in a finer SmoothPath
+   structure that exposes its ambient (rather than burying it in
+   `Classical.choose`).
+3. **Strong-hypothesis pattern**: define a `BasedSmoothLoopsBound_BumpedCover`
+   predicate for X with finite chart cover where loops can be
+   guaranteed globally chart-contained.
+
 ## 2026-05-21 PR #3 — Item-14 reverse leg: chart-local polygonal-approximation bordism (3 commits + merge, +230 LOC)
 
 Final state: build **9316 jobs**, **1055 `.lean` files**, **179,789
