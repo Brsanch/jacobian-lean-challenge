@@ -90,6 +90,40 @@ theorem CotangentSpace.wedge_pointwise_zero
         - (show ℂ →L[ℂ] ℂ from v) b * (show ℂ →L[ℂ] ℂ from w) a = 0 :=
   cotangent_wedge_pointwise_zero _ _ a b
 
+/-- **The abstract alternating-pair function on cotangent vectors.**
+
+Given two cotangent vectors `v, w : ℂ →L[ℂ] ℂ`, this is the bilinear
+form `(a, b) ↦ v a * w b - v b * w a`. Classically this is the
+"wedge product" of `v` and `w` evaluated on the pair `(a, b)`. On a
+1-complex-dim base it is identically zero (chip 5). -/
+noncomputable def cotangentAltPair (v w : ℂ →L[ℂ] ℂ) (a b : ℂ) : ℂ :=
+  v a * w b - v b * w a
+
+/-- **The alternating pair vanishes identically.** Direct from chip 5
+(`cotangent_wedge_pointwise_zero`). -/
+@[simp]
+theorem cotangentAltPair_eq_zero (v w : ℂ →L[ℂ] ℂ) (a b : ℂ) :
+    cotangentAltPair v w a b = 0 :=
+  cotangent_wedge_pointwise_zero v w a b
+
+/-- **Antisymmetry of the alternating pair under swap of v, w.**
+
+`cotangentAltPair w v a b = - cotangentAltPair v w a b`. Holds by
+construction — algebraic, not via the vanishing fact. -/
+theorem cotangentAltPair_swap (v w : ℂ →L[ℂ] ℂ) (a b : ℂ) :
+    cotangentAltPair w v a b = - cotangentAltPair v w a b := by
+  unfold cotangentAltPair
+  ring
+
+/-- **Antisymmetry of the alternating pair under swap of `a, b`.**
+
+`cotangentAltPair v w b a = - cotangentAltPair v w a b`. Holds by
+construction — algebraic, not via the vanishing fact. -/
+theorem cotangentAltPair_swap_args (v w : ℂ →L[ℂ] ℂ) (a b : ℂ) :
+    cotangentAltPair v w b a = - cotangentAltPair v w a b := by
+  unfold cotangentAltPair
+  ring
+
 end JacobianChallenge
 
 end
