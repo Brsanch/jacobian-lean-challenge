@@ -949,4 +949,6 @@ import JacobianChallenge.Manifold.HodgeRiemannBridge
 import JacobianChallenge.Manifold.HodgeRiemannBridgeComposition
 import JacobianChallenge.Manifold.RiemannBilinearImpliesLIGeneral
 import JacobianChallenge.Manifold.PeriodSigmaInvertibility
+import JacobianChallenge.Manifold.PeriodSigmaRealLI
+import JacobianChallenge.Manifold.BilinearFromHodgeChain
 
