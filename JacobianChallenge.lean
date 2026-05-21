@@ -1037,3 +1037,4 @@ import JacobianChallenge.Manifold.AbelTheoremHypothesis
 import JacobianChallenge.Manifold.MrdouglasnyOpenAxiomBridges
 import JacobianChallenge.Manifold.MorseFunctionRiemannSphere
 import JacobianChallenge.Manifold.ULiftChartedSpaceTransfer
+import JacobianChallenge.Manifold.SumCommutatorsNullHomologous
