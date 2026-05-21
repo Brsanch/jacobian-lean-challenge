@@ -25,11 +25,78 @@ working tree's branch state independent of the parallel session.
 /Volumes/4TB SD/.../jacobian-lean-challenge-item14  [feat/item14-classical-content]
 ```
 
-## 2026-05-21 session progress: chain-assembly arc landed
+## 2026-05-21 session COMPLETE — 4 PRs landed on `origin/main`
+
+**Final `origin/main` HEAD: `b48070b`** (post PR #4 merge). Repo at
+**1056 .lean files, 179,900 LOC, build 9316 jobs clean**. Zero
+`sorry`, zero `axiom`. Item count unchanged at **14 / 24
+STRICT-CLOSED** — this session's work is substantive *infrastructure*
+toward item-14 reverse-leg closure on simply-connected X; the
+final cross-piece glue is the one chip identified below as the next
+arc.
+
+### PRs merged
+
+* **PR #1 `be4146d`** — chain assembly + Dolbeault + chart-cell infra
+  (+3,639 LOC, 23 new files). Headline closed: any *closed polygonal
+  loop in a single full-target chart* explicitly bounds a fan 2-chain
+  (lies in `stokesBoundaries`), via List-induction on
+  `fanChain`/`polygonalChain`/`spokeResidue`.
+
+* **PR #2 `4e3ed97`** — SmoothHomotopyPath diagonal-split + bordism
+  conclusion (+478 LOC). Headline: for any `SmoothHomotopyPath γ₀ γ₁`,
+  the SmoothCycle `single γ₁ - single γ₀ ∈ stokesBoundaries`.
+
+* **PR #3 `5934aad`** — chart-local polygonal-approximation bordism
+  (+230 LOC, refactored `SmoothHomotopyPath` edges to `unitInterval`).
+  Headline: any γ globally chart-contained in a full-target chart is
+  smoothly bordant to its chart-straight-line approximation.
+
+* **PR #4 `b48070b`** — `SmoothPath.subpath` primitive (+111 LOC). The
+  affine-reparam sub-arc extraction supporting the chart-cover
+  Lebesgue subdivision.
+
+### Next-session frontier (genuine mathematical-architectural choice)
+
+Wiring the four ingredients above into a complete
+`BasedSmoothLoopsBoundHypothesis X p₀` discharge requires resolving a
+genuine mathematical obstruction: the chart-local bordism's
+hypothesis is `γ.ambient` globally chart-contained (∀ t : ℝ), but
+sub-arcs from Lebesgue subdivision are only chart-contained on
+`[0, 1]`. The bump-extension workaround was shown **mathematically
+impossible** (no smooth `σ : ℝ → [0, 1]` with `σ = identity` on
+`[0, 1]` exists — derivative-matching at the boundary forces σ < 0
+just outside).
+
+Three real options for the next session, each non-trivial:
+
+1. **Restructure `Smooth2Simplex` and `stokesBoundaries`** to use
+   `ContMDiffOn [0, 1]²` instead of `ContMDiff` globally. Major
+   refactor cascading through `boundary`, `boundary₂`,
+   `boundary₂Cycle`, the integration machinery. Tractable but big.
+
+2. **Define a finer SmoothPath structure** that exposes its ambient
+   field (rather than burying it in `Classical.choose`), so a custom
+   bump-extended ambient can be threaded through. Use
+   `ContDiffBump` machinery from mathlib.
+
+3. **Strong-hypothesis pattern**: define a
+   `BasedSmoothLoopsBound_BumpedCover X` predicate for X equipped
+   with a finite chart cover where loops *can* be guaranteed
+   globally chart-contained (e.g., via missed-point reductions like
+   the RS case). This sidesteps the obstruction by requiring extra
+   data per X.
+
+The full chain-assembly closure is **one chip away once the choice is
+made**. All the substantive classical content (chain cancellation,
+fan triangulation, bordism kernel) is already in tree.
+
+---
+
+## Earlier 2026-05-21 progress notes (preserved)
 
 Branch advanced ~28 more chips beyond the prior 2026-05-20 batch.
-All single-file builds clean, no axiom, no sorry. Branch remains
-local-only.
+All single-file builds clean, no axiom, no sorry.
 
 ### Key new infrastructure (in addition to chips 2–8)
 
