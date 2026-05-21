@@ -217,6 +217,34 @@ lemma heightRiemannSphere_contMDiffAt_coe (z : ℂ) :
   filter_upwards [Filter.univ_mem] with w _
   rfl
 
+/-- **`ContMDiffAt` at `∞ : RS`.**
+
+At `x = ∞`, `chartAt ℂ ∞ = chartS`, and the chart-local form is
+`heightLocalℂ_S` (chip 40 ContDiff). -/
+lemma heightRiemannSphere_contMDiffAt_infty :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) heightRiemannSphere
+      ((∞ : RiemannSphere)) := by
+  rw [contMDiffAt_iff]
+  refine ⟨heightRiemannSphere_continuous.continuousAt, ?_⟩
+  have h_range : Set.range (𝓘(ℝ, ℂ) : ModelWithCorners ℝ ℂ ℂ) = Set.univ :=
+    ModelWithCorners.range_eq_univ _
+  rw [h_range, contDiffWithinAt_univ]
+  refine (heightLocalℂ_S_contDiff.contDiffAt).congr_of_eventuallyEq ?_
+  filter_upwards [Filter.univ_mem] with w _
+  -- Chart-pullback at ∞ equals heightLocalℂ_S via the chartS local identity.
+  exact heightRiemannSphere_chartS_local w
+
+/-- **Full `ContMDiff` smoothness of `heightRiemannSphere` on RS.**
+
+Combines `_contMDiffAt_coe` (chartN side) and `_contMDiffAt_infty`
+(chartS side). -/
+theorem heightRiemannSphere_contMDiff :
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) heightRiemannSphere := by
+  intro x
+  induction x using OnePoint.rec with
+  | infty => exact heightRiemannSphere_contMDiffAt_infty
+  | coe z => exact heightRiemannSphere_contMDiffAt_coe z
+
 end RiemannSphere
 
 end JacobianChallenge
