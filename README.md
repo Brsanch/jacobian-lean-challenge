@@ -13,11 +13,36 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-20):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
+**Current state (2026-05-21):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
 Zero `sorry`, zero `axiom`. Repo:
-**175,732 LOC across 1,041 `.lean` files**.
+**179,290 LOC across 1,068 `.lean` files**. Build 9,349 jobs clean.
 
 Major recent landings:
+
+* **Chip 19q-r + chip 20a-r: T_L unconditional Hodge–Riemann +
+  general-genus structural reductions** (2026-05-21, 23 commits,
+  +2,015 LOC across 22 new files, branch
+  `feat/c3-chip-19-iperiodform-hermitian` continuing the chip 19
+  arc). *T_L:* `HasJacobianHodgeChain (ℂ ⧸ L)` is now a typeclass
+  instance (chip 19q biconditional `ℝ-LI ![a, b] ⟺ Im(star a · b) ≠ 0`
+  composed with `basisFin2OfL_realLinearIndependent` and orientation
+  by-cases). `CompleteHodgeRiemannHypothesis`,
+  `RiemannBilinearRelations`, ℝ-LI of period vectors, and the first
+  relation are all UNCONDITIONAL on T_L. Explicit period matrix
+  entries: `(0, 0) = lam₁`, `(1, 0) = lam₂`. *Universal genus 0:*
+  CHRH + RBR + ℝ-LI of period vectors UNCONDITIONAL on every compact
+  connected complex 1-manifold with `genus X = 0` via
+  `DiskChartCover.holomorphicOneFormFiniteDim_holds` +
+  `holomorphicOneForm_subsingleton_of_genus_eq_zero` +
+  `completeHodgeRiemannHypothesis_of_subsingleton`. *General genus:*
+  diagonal of `pmatᵀ · J.cast · pmat` vanishes from anti-sym `J`;
+  first relation ⟺ strict-upper-triangular vanishing; second relation
+  reduces to positivity (Hermitian conjunct automatic). At `g = 2`
+  reduces to a single scalar equation `N 0 1 = 0` + 2 × 2 Hermitian
+  PD. Per-genus picture for CHRH: `g = 0` vacuous, `g = 1` one
+  diagonal positivity, `g = 2` one scalar zero + 2 × 2 PD, `g ≥ 3`
+  `g(g − 1)/2` scalar zeros + `g × g` PD. *No items flip* — the same
+  `[HasJacobianAnalyticStructure X]` universality blocker remains.
 
 * **Chip 19 arc: Hodge–Riemann second-relation full reduction**
   (2026-05-20, 16 commits, +1,616 LOC across 16 new files, branch

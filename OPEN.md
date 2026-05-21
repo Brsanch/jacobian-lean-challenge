@@ -32,7 +32,7 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
-> **2026-05-21 (chip 19q-r + chip 20a-q — T_L unconditional Hodge-Riemann chain + general-genus structural reductions; 20 commits on `feat/c3-chip-19-iperiodform-hermitian` extending the chip 19 arc base, +~1,700 Lean LOC across 20 new files + manifest edits). Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; further *structural reduction* of the named classical content required by the items 5/11/12/13/17/18/21 chain).**
+> **2026-05-21 (chip 19q-r + chip 20a-r — T_L unconditional Hodge-Riemann chain + general-genus structural reductions; 23 commits on `feat/c3-chip-19-iperiodform-hermitian` extending the chip 19 arc base, +2,015 Lean LOC across 22 new files + 1 docs file + manifest edits. Repo now 1,068 `.lean` files / 179,290 LOC. Build 9,349 jobs clean, zero `sorry`, zero `axiom`). Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; further *structural reduction* of the named classical content required by the items 5/11/12/13/17/18/21 chain).**
 >
 > **Headline (T_L = ℂ ⧸ L):**
 > * `HasJacobianHodgeChain (ℂ ⧸ L)` UNCONDITIONAL (chip 19q `ℝ-LI ⟹ Im ≠ 0` for ℂ-pairs + chip 19r composition). Registered as `instHasJacobianHodgeChain_complexTorus` typeclass instance.
@@ -64,11 +64,14 @@ spec. Three statuses, with one tag for partial progress:
 > **Headline (T_L explicit computation):**
 > * Period matrix entries on T_L: `(0,0) = lam₁`, `(1,0) = lam₂` (chip 20q).
 >
-> **Per-genus minimal-inputs summary (after chips 20e/f/g/n/p):**
+> **Headline (genus 2):**
+> * `CompleteHodgeRiemannHypothesis` at `g = 2` from a single scalar first-relation equation + 2 × 2 Hermitian PD (chip 20r). Composes chip 20h with chip 20p.
+>
+> **Per-genus minimal-inputs summary (after chips 20e/f/g/n/p/r):**
 > * `g = 0`: CHRH unconditional (chip 20a). 0 first-relation entries, 0 PD content.
 > * `g = 1`: CHRH ⟸ scalar diagonal positivity (chip 19h, re-derived through chip 20p). 0 first-relation entries.
-> * `g = 2`: CHRH ⟸ (1 strict-upper entry + 2×2 Hermitian PD).
-> * `g ≥ 3`: CHRH ⟸ (`g(g − 1)/2` strict-upper entries + `g × g` Hermitian PD).
+> * `g = 2`: CHRH ⟸ (1 strict-upper entry + 2×2 Hermitian PD) (chip 20r).
+> * `g ≥ 3`: CHRH ⟸ (`g(g − 1)/2` strict-upper entries + `g × g` Hermitian PD) (chip 20p).
 
 > **2026-05-20 (chip 19 arc — Hodge–Riemann second-relation full reduction; 16 commits on `feat/c3-chip-19-iperiodform-hermitian`, +1,616 Lean LOC across 16 new files + 1 manifest edit). Repo now 1,041 `.lean` files / 175,732 LOC. Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; the chip 19 arc is a *structural reduction* of the named classical content required by the items 5/11/12/13/17/18/21 chain).**
 >
