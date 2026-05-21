@@ -941,6 +941,7 @@ import JacobianChallenge.Manifold.CanonicalAnalyticJacobianComplexTorusSmokeTest
 import JacobianChallenge.Manifold.HasBasedSmoothLoopsBound
 import JacobianChallenge.Manifold.HodgeInnerProductHypothesis
 import JacobianChallenge.Manifold.HodgeFormMatrix
+import JacobianChallenge.Manifold.HodgeFormFromMatrix
 import JacobianChallenge.Manifold.PeriodMatrix
 import JacobianChallenge.Manifold.PeriodMatrixAntiHermitian
 import JacobianChallenge.Manifold.RiemannBilinearRelations
