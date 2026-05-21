@@ -83,6 +83,21 @@ lemma heightRiemannSphere_chartN_local (z : ℂ) :
   show heightRiemannSphere (((z : ℂ) : RiemannSphere)) = 1 / (1 + ‖z‖^2)
   exact heightRiemannSphere_coe z
 
+/-- The chart-local ℂ-form of `heightRiemannSphere`. -/
+noncomputable def heightLocalℂ : ℂ → ℝ := fun z => 1 / (1 + ‖z‖^2)
+
+@[simp] lemma heightLocalℂ_apply (z : ℂ) :
+    heightLocalℂ z = 1 / (1 + ‖z‖^2) := rfl
+
+/-- The chart-local form is continuous on `ℂ`. -/
+lemma heightLocalℂ_continuous : Continuous heightLocalℂ := by
+  unfold heightLocalℂ
+  refine Continuous.div continuous_const
+    (continuous_const.add (continuous_norm.pow 2)) ?_
+  intro z
+  have : (0 : ℝ) < 1 + ‖z‖^2 := by positivity
+  exact this.ne'
+
 end RiemannSphere
 
 end JacobianChallenge
