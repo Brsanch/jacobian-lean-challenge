@@ -199,6 +199,24 @@ lemma heightRiemannSphere_continuous :
     intro z
     exact (heightRiemannSphere_coe z).symm
 
+/-- **`ContMDiffAt` at any `(z : ℂ) : RS` point.**
+
+For `x = (z : ℂ) : RS` (i.e., `x ≠ ∞`), `chartAt ℂ x = chartN`, and the
+chart-local form is `heightLocalℂ` (chip 39 ContDiff). -/
+lemma heightRiemannSphere_contMDiffAt_coe (z : ℂ) :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) (⊤ : ℕ∞) heightRiemannSphere
+      ((z : RiemannSphere)) := by
+  rw [contMDiffAt_iff]
+  refine ⟨heightRiemannSphere_continuous.continuousAt, ?_⟩
+  -- `Set.range 𝓘(ℝ, ℂ) = Set.univ`.
+  have h_range : Set.range (𝓘(ℝ, ℂ) : ModelWithCorners ℝ ℂ ℂ) = Set.univ :=
+    ModelWithCorners.range_eq_univ _
+  rw [h_range, contDiffWithinAt_univ]
+  -- The chart-local form coincides with heightLocalℂ.
+  refine (heightLocalℂ_contDiff.contDiffAt).congr_of_eventuallyEq ?_
+  filter_upwards [Filter.univ_mem] with w _
+  rfl
+
 end RiemannSphere
 
 end JacobianChallenge
