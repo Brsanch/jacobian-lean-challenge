@@ -135,6 +135,28 @@ lemma bilinearChartInterp_in_target_on_unit_square
   unfold bilinearChartInterp
   convert h using 2 <;> simp [w, z]
 
+/-! ## Chart-cell `Smooth2Simplex` from a full-target chart
+
+When the chart `φ` has `φ.target = univ` (e.g. the standard
+`chartN`/`chartS` on `RiemannSphere`), the bilinear interpolation
+`B : ℝ² → ℂ` lands in `φ.target = ℂ` automatically, and the lifted
+map `φ.symm ∘ B` is smooth globally as a `(Fin 2 → ℝ) → X` map. -/
+
+variable {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+
+/-- Convert a `Function.uncurry`-style `ℝ × ℝ → ℂ` smooth map into a
+`(Fin 2 → ℝ) → ℂ` smooth map by reindexing. -/
+private lemma contDiff_of_uncurry_finTwo {f : ℝ → ℝ → ℂ}
+    (hf : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) (Function.uncurry f)) :
+    ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (fun x : Fin 2 → ℝ => f (x 0) (x 1)) := by
+  have h_reindex : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (fun x : Fin 2 → ℝ => (x 0, x 1)) := by
+    refine ContDiff.prodMk ?_ ?_
+    · exact (ContinuousLinearMap.proj (R := ℝ) (φ := fun _ : Fin 2 => ℝ) 0).contDiff
+    · exact (ContinuousLinearMap.proj (R := ℝ) (φ := fun _ : Fin 2 => ℝ) 1).contDiff
+  exact hf.comp h_reindex
+
 end JacobianChallenge
 
 end
