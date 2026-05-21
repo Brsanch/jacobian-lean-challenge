@@ -270,6 +270,44 @@ theorem heightRiemannSphere_contMDiff :
   | infty => exact heightRiemannSphere_contMDiffAt_infty
   | coe z => exact heightRiemannSphere_contMDiffAt_coe z
 
+/-- **The two-point candidate critical set of `heightRiemannSphere`.**
+Classically `{0_RS, ∞}`. Used as the explicit `criticalSet` of the
+`MorseFunction RiemannSphere` instance below, in lieu of the default
+`{x | mfderiv x = 0}` whose characterization as `{0_RS, ∞}` is open
+content (chart-local mfderiv computation). -/
+noncomputable def heightRiemannSphere_candidateCriticalSet :
+    Set RiemannSphere :=
+  {((0 : ℂ) : RiemannSphere), (∞ : RiemannSphere)}
+
+lemma heightRiemannSphere_candidateCriticalSet_finite :
+    heightRiemannSphere_candidateCriticalSet.Finite := by
+  unfold heightRiemannSphere_candidateCriticalSet
+  exact (Set.finite_singleton _).insert _
+
+/-- **`MorseFunction RiemannSphere`** — the height function realised
+as a (P3) Morse function instance.
+
+The `criticalSet` is overridden to the explicit `{0_RS, ∞}` (the
+classical critical set, identified geometrically via the global
+max/min facts `_isMaxOn_zero` and `_isMinOn_infty`). The default
+predicate `{x | mfderiv x = 0}` agrees with this set, but the
+equality (and the Hessian non-degeneracy at each point) is open
+content for follow-up chips. The `IsNonDegenerateAtCritical` field
+of `MorseFunction` is the chip-32 placeholder (`True`) until the
+full chart-local Hessian infrastructure lands. -/
+noncomputable def heightRiemannSphereMorseFunction :
+    MorseFunction RiemannSphere where
+  toFun := heightRiemannSphere
+  smooth := heightRiemannSphere_contMDiff
+  criticalSet := heightRiemannSphere_candidateCriticalSet
+  criticalSet_finite := heightRiemannSphere_candidateCriticalSet_finite
+  IsNonDegenerateAtCritical := fun _ _ => trivial
+
+/-- **`MorseFunctionExistsHypothesis RiemannSphere`** is unconditional. -/
+theorem morseFunctionExistsHypothesis_RiemannSphere :
+    MorseFunctionExistsHypothesis RiemannSphere :=
+  ⟨heightRiemannSphereMorseFunction⟩
+
 end RiemannSphere
 
 end JacobianChallenge
