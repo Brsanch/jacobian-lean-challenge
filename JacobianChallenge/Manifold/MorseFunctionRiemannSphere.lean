@@ -109,6 +109,48 @@ lemma heightLocalℂ_contDiff : ContDiff ℝ (⊤ : ℕ∞) heightLocalℂ := by
     have : (0 : ℝ) < 1 + ‖z‖^2 := by positivity
     exact this.ne'
 
+/-- **The chart-S local form** of `heightRiemannSphere`:
+`w ↦ ‖w‖² / (1 + ‖w‖²)`. This is `heightRiemannSphere ∘ chartS.symm`. -/
+noncomputable def heightLocalℂ_S : ℂ → ℝ :=
+  fun w => ‖w‖^2 / (1 + ‖w‖^2)
+
+@[simp] lemma heightLocalℂ_S_apply (w : ℂ) :
+    heightLocalℂ_S w = ‖w‖^2 / (1 + ‖w‖^2) := rfl
+
+@[simp] lemma heightLocalℂ_S_zero : heightLocalℂ_S 0 = 0 := by
+  simp [heightLocalℂ_S]
+
+/-- The chartS local form is real-`C^∞` on `ℂ`. -/
+lemma heightLocalℂ_S_contDiff : ContDiff ℝ (⊤ : ℕ∞) heightLocalℂ_S := by
+  unfold heightLocalℂ_S
+  refine ContDiff.div (contDiff_norm_sq ℂ) ?_ ?_
+  · exact contDiff_const.add (contDiff_norm_sq ℂ)
+  · intro z
+    have : (0 : ℝ) < 1 + ‖z‖^2 := by positivity
+    exact this.ne'
+
+/-- **chartS-local identity** for `heightRiemannSphere`: at `w ≠ 0`,
+`heightRiemannSphere (chartS.symm w) = heightLocalℂ_S w`. The point
+`w = 0` lifts to `∞ : RS` with `heightRiemannSphere ∞ = 0 = heightLocalℂ_S 0`. -/
+lemma heightRiemannSphere_chartS_local (w : ℂ) :
+    heightRiemannSphere (chartSInvFun w) = heightLocalℂ_S w := by
+  unfold chartSInvFun heightLocalℂ_S
+  by_cases hw : w = 0
+  · subst hw
+    simp
+  · rw [if_neg hw]
+    show heightRiemannSphere ((w⁻¹ : ℂ) : RiemannSphere) = _
+    rw [heightRiemannSphere_coe]
+    -- Goal: `1 / (1 + ‖w⁻¹‖^2) = ‖w‖^2 / (1 + ‖w‖^2)`.
+    have hw_norm : ‖w‖ ≠ 0 := norm_ne_zero_iff.mpr hw
+    have hw_norm_sq : ‖w‖^2 ≠ 0 := pow_ne_zero 2 hw_norm
+    have hw_inv_sq : ‖w⁻¹‖^2 = 1 / ‖w‖^2 := by
+      rw [norm_inv]
+      field_simp
+    rw [hw_inv_sq]
+    field_simp
+    ring
+
 /-- **Tendsto-to-0 at infinity:** as `z → ∞` in `cocompact ℂ`,
 `1/(1+‖z‖²) → 0`. -/
 lemma heightLocalℂ_tendsto_zero_cocompact :
