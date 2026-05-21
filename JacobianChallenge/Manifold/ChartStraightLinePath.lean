@@ -106,6 +106,63 @@ noncomputable def chartStraightLinePath_univ
     (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ : ℂ) :
     (chartStraightLinePath_univ q h_univ z₀ z₁).tgt = (chartAt ℂ q).symm z₁ := rfl
 
+/-! ## Faces of `affineChartTriangleSimplex_univ` as chart-straight-line paths
+
+`Smooth2Simplex.boundary` of `affineChartTriangleSimplex_univ q hu z₀ z₁ z₂`
+equals `single (face from v₁ to v₂) - single (face from v₀ to v₂) +
+single (face from v₀ to v₁)`. Each face evaluates a chart-target
+straight line; we identify each face's `toFun` with the corresponding
+`chartStraightLineMap`. -/
+
+private lemma face2_toFun_eq
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ z₂ : ℂ) (t : ℝ) :
+    (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+        (Smooth2Simplex.face2Param t)
+      = chartStraightLineMap q z₀ z₁ t := by
+  show (chartAt ℂ q).symm
+      (affineChartTriangle z₀ z₁ z₂
+        ((Smooth2Simplex.face2Param t) 0)
+        ((Smooth2Simplex.face2Param t) 1))
+    = (chartAt ℂ q).symm ((1 - t) • z₀ + t • z₁)
+  congr 1
+  show affineChartTriangle z₀ z₁ z₂ t 0 = (1 - t) • z₀ + t • z₁
+  unfold affineChartTriangle
+  show (1 - t - 0) • z₀ + t • z₁ + (0 : ℝ) • z₂ = (1 - t) • z₀ + t • z₁
+  module
+
+private lemma face1_toFun_eq
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ z₂ : ℂ) (t : ℝ) :
+    (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+        (Smooth2Simplex.face1Param t)
+      = chartStraightLineMap q z₀ z₂ t := by
+  show (chartAt ℂ q).symm
+      (affineChartTriangle z₀ z₁ z₂
+        ((Smooth2Simplex.face1Param t) 0)
+        ((Smooth2Simplex.face1Param t) 1))
+    = (chartAt ℂ q).symm ((1 - t) • z₀ + t • z₂)
+  congr 1
+  show affineChartTriangle z₀ z₁ z₂ 0 t = (1 - t) • z₀ + t • z₂
+  unfold affineChartTriangle
+  show (1 - 0 - t) • z₀ + (0 : ℝ) • z₁ + t • z₂ = (1 - t) • z₀ + t • z₂
+  module
+
+private lemma face0_toFun_eq
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ z₂ : ℂ) (t : ℝ) :
+    (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+        (Smooth2Simplex.face0Param t)
+      = chartStraightLineMap q z₁ z₂ t := by
+  show (chartAt ℂ q).symm
+      (affineChartTriangle z₀ z₁ z₂
+        ((Smooth2Simplex.face0Param t) 0)
+        ((Smooth2Simplex.face0Param t) 1))
+    = (chartAt ℂ q).symm ((1 - t) • z₁ + t • z₂)
+  congr 1
+  show affineChartTriangle z₀ z₁ z₂ (1 - t) t = (1 - t) • z₁ + t • z₂
+  unfold affineChartTriangle
+  show (1 - (1 - t) - t) • z₀ + (1 - t) • z₁ + t • z₂
+      = (1 - t) • z₁ + t • z₂
+  module
+
 end JacobianChallenge
 
 end
