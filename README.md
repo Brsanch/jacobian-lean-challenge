@@ -13,11 +13,39 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-20 late):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
-Build clean at **9291 jobs** (zero `sorry`, zero `axiom`). Repo:
-**173,331 LOC across 1011 `.lean` files**.
+**Current state (2026-05-20):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
+Zero `sorry`, zero `axiom`. Repo:
+**175,732 LOC across 1,041 `.lean` files**.
 
-Major recent landings (all on `main`):
+Major recent landings:
+
+* **Chip 19 arc: Hodge–Riemann second-relation full reduction**
+  (2026-05-20, 16 commits, +1,616 LOC across 16 new files, branch
+  `feat/c3-chip-19-iperiodform-hermitian`). Structurally closes the
+  Hodge–Riemann second bilinear bundle. Reduces
+  `CompleteHodgeRiemannHypothesis` from a 5-named-hypothesis bundle
+  `(J, H, IsPositiveDefinite, first, bridge)` to
+  **(anti-sym `J` + first relation + matrix positivity)** — the Hodge
+  form choice and the bridge identity are both eliminated as separate
+  atoms via `canonicalHodgeFormFromAntiSymm` +
+  `hodgeFormFromMatrix_toMatrix`. At genus 1, reduces further to a
+  SINGLE scalar inequality on the period matrix's diagonal. Validates
+  the chain on `T_L = ℂ ⧸ L` end-to-end:
+  `HasJacobianHodgeChain (ℂ ⧸ L)` from a single
+  `0 < Im(star lam₁ · lam₂)` input on the explicit in-tree basis. Key
+  artifacts: `PeriodMatrixAntiHermitian` (`iPeriodMatrixForm_isHermitian`),
+  `HodgeFormFromMatrix` (`hodgeFormFromMatrix` + `toMatrix` recovery),
+  `HodgeFormFromPeriodMatrix[PD]` (canonical Hodge form, bridge
+  automatic, PD bridge), `CompleteHodgeRiemannFromAntiSymm`,
+  `CompleteHodgeRiemannFromStandardSymplectic`,
+  `RiemannBilinearMatrixPosGenusOne` (genus-1 quadratic-form collapse),
+  `PeriodMatrixFormStandardSymplecticOne[Symbolic]` (closed-form
+  diagonal `(2 · Im(star (pm 0 0) · pm 1 0) : ℂ)`),
+  `CompleteHodgeRiemannGenusOneOrientation`,
+  `CompleteHodgeRiemannComplexTorus`,
+  `HasJacobianHodgeChainComplexTorus[FromOrientation/Swap/FromNonzero]`.
+  *No items flip* — this is a structural reduction of the named
+  classical content required by the items 5/11/12/13/17/18/21 chain.
 
 * **Period-lattice plumbing + classical-content scaffolding + item-14
   advances** (2026-05-20 late, two arcs, 35 commits + merge,

@@ -32,6 +32,92 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-20 (chip 19 arc — Hodge–Riemann second-relation full reduction; 16 commits on `feat/c3-chip-19-iperiodform-hermitian`, +1,616 Lean LOC across 16 new files + 1 manifest edit). Repo now 1,041 `.lean` files / 175,732 LOC. Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; the chip 19 arc is a *structural reduction* of the named classical content required by the items 5/11/12/13/17/18/21 chain).**
+>
+> Structurally closes the Hodge–Riemann second-relation bundle. Reduces
+> `CompleteHodgeRiemannHypothesis` from a 5-named-hypothesis bundle
+> `(J, H, IsPositiveDefinite, first, bridge)` to **(anti-sym `J` + first
+> relation + matrix positivity)** — eliminating the Hodge-form choice
+> and the bridge identity as separate atoms. At genus 1, reduces further
+> to a SINGLE scalar inequality (lattice orientation). Validates the
+> chain on `T_L = ℂ ⧸ L` end-to-end: `HasJacobianHodgeChain (ℂ ⧸ L)`
+> from a single `0 < Im(star lam₁ · lam₂)` input on the explicit in-tree
+> basis.
+>
+> **Pure linear algebra (chips a–b, 279 LOC).**
+> * `Manifold/PeriodMatrixAntiHermitian.lean` (118 LOC) —
+>   `iPeriodMatrixForm_isHermitian`: for anti-symmetric integer `J`,
+>   `i • Πᵀ J Π̄` is Hermitian. Hermitian conjunct of the second
+>   relation is **automatic** from anti-symmetry alone, no bridge or
+>   Hodge form required.
+> * `Manifold/HodgeFormFromMatrix.lean` (161 LOC) — realise any
+>   Hermitian matrix `M` as a `HermitianOnHolomorphicOneForm X` via the
+>   sesquilinear sum `H om eta := ∑ i j, repr om i · M i j · star
+>   (repr eta j)`. Plus `toMatrix` recovery identity.
+>
+> **Bridge + PD become automatic (chips c–e, 313 LOC).**
+> * `Manifold/HodgeFormFromPeriodMatrix.lean` (88 LOC) —
+>   `canonicalHodgeFormFromAntiSymm`: canonical Hodge form built from
+>   `hodgeFormFromMatrix basis_ω (i • periodMatrixForm pm J) _`; bridge
+>   identity is **definitional** via `hodgeFormFromMatrix_toMatrix`.
+> * `Manifold/HodgeFormFromPeriodMatrixPD.lean` (144 LOC) — PD of the
+>   canonical Hodge form from matrix PD; key identity
+>   `H_can om om = star x ⬝ᵥ (M *ᵥ x)` with `x := star ∘ (basis_ω.repr om)`.
+> * `Manifold/CompleteHodgeRiemannFromAntiSymm.lean` (81 LOC) —
+>   bundled `CompleteHodgeRiemannHypothesis` from (anti-sym `J` + first
+>   relation + matrix PD).
+>
+> **Genus-1 reductions (chips f–k, 592 LOC).**
+> * `Manifold/CompleteHodgeRiemannFromStandardSymplectic.lean` (104 LOC)
+>   — drop `hJ` via `standardSymplectic_antisymm`; plus genus-1
+>   first-relation auto-discharge via existing chip 13.
+> * `Manifold/RiemannBilinearMatrixPosGenusOne.lean` (100 LOC) — matrix
+>   positivity at `g = 1` reduces to scalar diagonal positivity (via
+>   `Subsingleton (Fin g)` collapse + `Complex.mul_conj`).
+> * `Manifold/CompleteHodgeRiemannGenusOneDiagonal.lean` (70 LOC) —
+>   1-input CHRH at genus 1 from `∀ i, ((i • Πᵀ J Π̄) i i).im = 0 ∧ 0 < .re`.
+> * `Manifold/PeriodMatrixFormStandardSymplecticOne.lean` (128 LOC) —
+>   closed form at literal `Fin 2 / Fin 1`:
+>   `(periodMatrixForm pm (standardSymplectic 1)) 0 0
+>     = pm 0 0 · star (pm 1 0) - pm 1 0 · star (pm 0 0)`;
+>   multiplying by `i` yields the real number
+>   `(2 · Im(star (pm 0 0) · pm 1 0) : ℂ)`.
+> * `Manifold/PeriodMatrixFormStandardSymplecticOneSymbolic.lean` (107 LOC)
+>   — symbolic-`g` transport via `subst h_g` for `h_g : g = 1`.
+> * `Manifold/CompleteHodgeRiemannGenusOneOrientation.lean` (83 LOC) —
+>   single-input CHRH at `genus X = 1` from
+>   `0 < Im(star (PeriodPairing data γ_{k₀} (basis_ω i₀)) ·
+>            PeriodPairing data γ_{k₁} (basis_ω i₀))`.
+>
+> **T_L application (chips l–p, 416 LOC).**
+> * `Manifold/CompleteHodgeRiemannComplexTorus.lean` (140 LOC) —
+>   `CompleteHodgeRiemannHypothesis` on `T_L = ℂ ⧸ L` from
+>   `0 < (star lam₁ · lam₂).im`. Uses `complexPeriod_torusBasisLoop_dz`
+>   + `basis_g_dz_apply` + `Subsingleton (Fin (genus T_L))` to identify
+>   periods with `lam₁, lam₂` on the reindexed symplectic basis.
+> * `Manifold/HasJacobianHodgeChainComplexTorus.lean` (77 LOC) —
+>   `HasJacobianHodgeChain (ℂ ⧸ L)` from (`IsZBasisOfL` + orientation),
+>   composing `smoothHurewiczHypothesisTorus_holds_of_basis` +
+>   `SmoothHurewiczHypothesis.reindex` with the new CHRH chain.
+> * `Manifold/HasJacobianHodgeChainComplexTorusFromOrientation.lean`
+>   (62 LOC) — drop `IsZBasisOfL` via the in-tree unconditional
+>   `basisFin2OfL_isZBasisOfL`. Orientation is the only remaining input.
+> * `Manifold/HasJacobianHodgeChainComplexTorusSwap.lean` (80 LOC) —
+>   negative-orientation case via swap `(lam₁, lam₂) → (lam₂, lam₁)`;
+>   plus `isZBasisOfL_swap` symmetry lemma.
+> * `Manifold/HasJacobianHodgeChainComplexTorusFromNonzero.lean` (57 LOC)
+>   — by-cases reduction from `Im ≠ 0` (combines the positive and
+>   swap-negative cases).
+>
+> **Net.** `HasJacobianHodgeChain (ℂ ⧸ L)` reduces from a 5-named
+> hypothesis bundle on a general genus-1 manifold to **a single
+> nondegeneracy condition**
+> `Im(star (lam₁_complexTorus L) · (lam₂_complexTorus L)) ≠ 0` on the
+> in-tree basis. The remaining gap to fully unconditional is the
+> structural fact "ℝ-LI ⟹ Im ≠ 0" for ℂ-pairs (standard linear
+> algebra; deferred to a future focused chip — the in-tree
+> `basisFin2OfL_realLinearIndependent` provides the ℝ-LI premise).
+
 > **2026-05-20 late (period-lattice plumbing + classical-content scaffolding + item-14 advances; two parallel arcs in one branch, 35 feat/fix commits + merge, ce776c9, +3,778 Lean LOC across 34 new files). origin/main HEAD `ce776c9`. Repo now 1011 `.lean` files / 173,331 LOC. Build 9291 jobs clean. Item count unchanged: **14/24 STRICT-CLOSED** (no items flipped this session — work is *foundational plumbing + named classical hypotheses*, the items 5/11/12/13/17/18/21 cannot flip until the universal `[HasJacobianAnalyticStructure X]` instance lands).**
 >
 > **Arc A — Period-lattice plumbing + classical-content scaffolding (20 commits, ~2,200 LOC).**
