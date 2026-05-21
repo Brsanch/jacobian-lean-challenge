@@ -167,6 +167,21 @@ lemma contMDiff_bilinearChartInterp_fin2 (z₀₀ z₀₁ z₁₀ z₁₁ : ℂ)
       (fun x : Fin 2 → ℝ => bilinearChartInterp z₀₀ z₀₁ z₁₀ z₁₁ (x 0) (x 1)) :=
   (contDiff_of_uncurry_finTwo (contDiff_bilinearChartInterp z₀₀ z₀₁ z₁₀ z₁₁)).contMDiff
 
+/-! ## Toward chart-cell `Smooth2Simplex`
+
+The full lift to `Smooth2Simplex 𝓘(ℝ, ℂ) X` requires a scalar-tower
+bridge from the complex-model `[IsManifold 𝓘(ℂ, ℂ) ⊤ X]` to the
+real-model regime expected by `Smooth2Simplex` (whose parameter
+space is `Fin 2 → ℝ`, model `𝓘(ℝ, Fin 2 → ℝ)`). Mathlib has the
+`IsManifold.is_manifold_restrictScalars` style bridge but threading
+it for the four-point chart-cell composition is mechanical glue
+beyond this chip's scope. Tracked as the next item in the
+chart-cell lift arc.
+
+The smoothness + convex-containment ingredients above are model-
+agnostic enough to be plumbed when the scalar-tower bridge lands.
+-/
+
 end JacobianChallenge
 
 end
