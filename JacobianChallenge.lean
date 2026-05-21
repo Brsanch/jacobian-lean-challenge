@@ -1011,4 +1011,5 @@ import JacobianChallenge.Manifold.CotangentWedgeVanishing
 import JacobianChallenge.Manifold.RiemannBilinearPeriodForm
 import JacobianChallenge.Manifold.RiemannFirstBilinearRelationNamed
 import JacobianChallenge.Manifold.CompleteHodgeRiemannFromRiemannFirstRelation
+import JacobianChallenge.Manifold.RiemannFirstBilinearRelationGenusZero
 
