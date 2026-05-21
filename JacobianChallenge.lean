@@ -958,4 +958,5 @@ import JacobianChallenge.Manifold.HasJacobianHodgeChain
 import JacobianChallenge.Manifold.HasJacobianHodgeChainRiemannSphere
 import JacobianChallenge.Manifold.HasJacobianHodgeChainSubsingleton
 import JacobianChallenge.Manifold.HodgeInnerProductUnconditional
+import JacobianChallenge.Manifold.CompleteHodgeRiemannViaStandardForm
 
