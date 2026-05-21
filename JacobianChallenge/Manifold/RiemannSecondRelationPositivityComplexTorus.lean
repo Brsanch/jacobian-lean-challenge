@@ -25,9 +25,14 @@ on T_L — no named hypotheses remain.
 
 ## What this file ships
 
+* `riemannSecondRelationPositivity_complexTorus_of_oriented_basis` —
+  per-basis lemma: given a positively-oriented (`0 < Im(star lam₁ · lam₂)`)
+  ℤ-basis `(lam₁, lam₂)` of `L`, RSRP holds on the corresponding
+  symplectic basis. The substantive analytic content.
 * `exists_riemannSecondRelationPositivity_complexTorus` — `Nonempty`-
   style headline: there exist `lam₁, lam₂ ∈ L` such that RSRP holds
-  on the corresponding symplectic basis.
+  on the corresponding symplectic basis. Thin wrapper over the
+  per-basis lemma + `exists_positively_oriented_ZBasisOfL`.
 
 No `sorry`, no `axiom`. -/
 
@@ -43,26 +48,26 @@ namespace ComplexTorus
 variable (L : Submodule ℤ ℂ)
   [DiscreteTopology L] [IsZLattice ℝ L]
 
-/-- **`RiemannSecondRelationPositivity` UNCONDITIONAL on T_L.**
+/-- **`RiemannSecondRelationPositivity` from a positively-oriented
+ℤ-basis of `L`.**
 
-Pick a positively-oriented ℤ-basis `(lam₁, lam₂)` of `L` (chip 19s),
-set up the symplectic basis from it, identify the periods
-(`PeriodPairing data sb.cycleGens ⟨0,_⟩ (dz L) = lam₁` etc., via the
-chip 19l identification chain), then apply chip 23 with `k₀ = ⟨0,_⟩,
-k₁ = ⟨1,_⟩` and `h_orient = (0 < (star lam₁ * lam₂).im)`.
+Substantive per-basis content. Given `(lam₁, lam₂) ∈ L` with
+`0 < Im(star lam₁ · lam₂)`, set up the symplectic basis from it,
+identify the periods (`PeriodPairing data sb.cycleGens ⟨0,_⟩ (dz L) =
+lam₁` etc., via the chip 19l identification chain), then apply chip 23
+with `k₀ = ⟨0,_⟩, k₁ = ⟨1,_⟩` and `h_orient`.
 
-Returns the existence of `(lam₁, lam₂)` with the RSRP property holding
-against the reindexed symplectic basis at `genus (ℂ ⧸ L) = 1`. -/
-theorem exists_riemannSecondRelationPositivity_complexTorus :
-    ∃ (lam₁ lam₂ : ℂ) (hlam₁ : lam₁ ∈ L) (hlam₂ : lam₂ ∈ L),
-      RiemannSecondRelationPositivity
-        (PeriodPairingData.ofSmoothCycle (ℂ ⧸ L))
-        (basis_g_dz L)
-        (((symplecticBasis L lam₁ lam₂ hlam₁ hlam₂).reindex
-          (genus_eq_one L)).cycleGens) := by
-  obtain ⟨lam₁, lam₂, hlam₁, hlam₂, _hZ, h_orient⟩ :=
-    exists_positively_oriented_ZBasisOfL L
-  refine ⟨lam₁, lam₂, hlam₁, hlam₂, ?_⟩
+This per-basis form is what downstream `HasC3FullClassicalContent`
+T_L instance consumes (so the SCD and RSRP share a *specific*
+`(lam₁, lam₂)`). -/
+theorem riemannSecondRelationPositivity_complexTorus_of_oriented_basis
+    (lam₁ lam₂ : ℂ) (hlam₁ : lam₁ ∈ L) (hlam₂ : lam₂ ∈ L)
+    (h_orient : 0 < (star lam₁ * lam₂).im) :
+    RiemannSecondRelationPositivity
+      (PeriodPairingData.ofSmoothCycle (ℂ ⧸ L))
+      (basis_g_dz L)
+      (((symplecticBasis L lam₁ lam₂ hlam₁ hlam₂).reindex
+        (genus_eq_one L)).cycleGens) := by
   -- Setup mirroring `completeHodgeRiemannHypothesis_complexTorus`.
   have hg : JacobianChallenge.genus (ℂ ⧸ L) = 1 := genus_eq_one L
   have h2g : 0 < 2 * JacobianChallenge.genus (ℂ ⧸ L) := by rw [hg]; decide
@@ -141,6 +146,21 @@ theorem exists_riemannSecondRelationPositivity_complexTorus :
     rw [h_cg_1, h_basis, h_pp_1]
   rw [h_pm_0, h_pm_1]
   exact h_orient
+
+/-- **Existential `Nonempty`-style headline.** Combines the per-basis
+lemma with `exists_positively_oriented_ZBasisOfL`. -/
+theorem exists_riemannSecondRelationPositivity_complexTorus :
+    ∃ (lam₁ lam₂ : ℂ) (hlam₁ : lam₁ ∈ L) (hlam₂ : lam₂ ∈ L),
+      RiemannSecondRelationPositivity
+        (PeriodPairingData.ofSmoothCycle (ℂ ⧸ L))
+        (basis_g_dz L)
+        (((symplecticBasis L lam₁ lam₂ hlam₁ hlam₂).reindex
+          (genus_eq_one L)).cycleGens) := by
+  obtain ⟨lam₁, lam₂, hlam₁, hlam₂, _hZ, h_orient⟩ :=
+    exists_positively_oriented_ZBasisOfL L
+  exact ⟨lam₁, lam₂, hlam₁, hlam₂,
+    riemannSecondRelationPositivity_complexTorus_of_oriented_basis L
+      lam₁ lam₂ hlam₁ hlam₂ h_orient⟩
 
 end ComplexTorus
 

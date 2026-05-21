@@ -15,24 +15,32 @@ set_option linter.unusedSectionVars false
 Bundles the three named classical Props that gate the C3 wave's
 universality blocker into a single Prop typeclass:
 
-* `[HasSurfaceClassificationData X]` — topological surface
-  classification + smooth-Hurewicz.
-* RFBR on the canonical SCD's cycleGens and `standardSymplectic g`.
-* RSRP on the canonical SCD's cycleGens, against a specified
-  basis_ω.
+* an SCD witness `scd : SurfaceClassificationData X` — topological
+  surface classification + smooth-Hurewicz;
+* a chosen ℂ-basis `basis_ω` of `HolomorphicOneForm X`;
+* `RiemannFirstBilinearRelation scd.cycleGens (standardSymplectic g)`
+  — the first Riemann bilinear period relation (chip 9 named atom);
+* `RiemannSecondRelationPositivity data basis_ω scd.cycleGens` —
+  Hodge positivity on the period matrix (chip 18 named atom).
 
-Once instances of this umbrella class fire (unconditional on RS via
-chips 3/11/19), `HasJacobianAnalyticStructure X` follows via the
-chip 20 composite + global HJHC→HJAS bridge.
+The SCD is bundled *existentially* rather than via a separate
+`[HasSurfaceClassificationData X]` instance because the per-X
+discharges of the Riemann relations pick a *specific* SCD: at genus 1
+on `T_L`, chip 24 only fires on the positively-oriented symplectic
+basis (one of `(lam₁, lam₂)` vs `(lam₂, lam₁)` depending on
+orientation). Bundling the SCD in the existential lets each X-specific
+instance choose the SCD that matches its Riemann discharge.
 
-The umbrella class is the ergonomic entry point for downstream
-consumers that need "all three named atoms hold for X": they declare
-`[HasC3FullClassicalContent X]` and get HJAS through typeclass
-synthesis.
+Once an instance fires (unconditional on `RS` via chips 3/11/19, and
+on `T_L = ℂ ⧸ L` via chips 2/24/25 — see
+`HasC3FullClassicalContentComplexTorus.lean`),
+`HasJacobianAnalyticStructure X` follows via the bridge below.
 
 ## What this file ships
 
 * `HasC3FullClassicalContent X` — class.
+* `instHasSurfaceClassificationData_of_HasC3FullClassicalContent` —
+  HSCD derived from the umbrella.
 * `instHasJacobianAnalyticStructure_of_HasC3FullClassicalContent` —
   bridge to HJAS.
 * `instHasC3FullClassicalContent_RiemannSphere` — unconditional RS
@@ -53,53 +61,47 @@ variable {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
   [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
 
 /-- **`HasC3FullClassicalContent X`** — umbrella Prop class bundling
-the three named classical Props of the C3 wave.
+the three named classical Props of the C3 wave (SCD, RFBR, RSRP)
+plus a chosen ℂ-basis `basis_ω` of `HolomorphicOneForm X`, all
+sharing a single SCD witness.
 
-Includes:
-* `[HasSurfaceClassificationData X]` as a typeclass instance (its
-  presence is required for the SCD-derived fields below to even type-
-  check at the canonical extractor).
-* `riemannFirst` — RFBR on the canonical SCD's cycleGens.
-* A *chosen* `basis_ω` plus the RSRP positivity on it.
-
-Note: the basis_ω is bundled in so the class is X-only (no extra
-parameters). Downstream consumers extract it via `chosenBasis_ω`. -/
+The existential lets each X-specific instance pick the SCD that
+matches the X-specific Riemann discharges (e.g., positively-oriented
+symplectic basis on `T_L`). -/
 class HasC3FullClassicalContent (X : Type u) [TopologicalSpace X]
     [T2Space X] [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X]
     [IsManifold (𝓘(ℂ, ℂ)) ω X] : Prop where
-  /-- HSCD is required. -/
-  hasSCD : HasSurfaceClassificationData X
-  /-- RFBR holds on the canonical SCD's cycleGens against
-  `standardSymplectic`. -/
-  riemannFirst :
-    let scd := @canonicalSurfaceClassificationData X _ _ _ _ _ _ hasSCD
-    @RiemannFirstBilinearRelation X _ _ _
-      (PeriodPairingData.ofSmoothCycle X)
-      scd.symplecticBasis.cycleGens
-      (standardSymplectic (JacobianChallenge.genus X))
-  /-- The existence of some basis_ω for which RSRP holds on the
-  canonical SCD's cycleGens. -/
-  riemannSecondExists :
-    let scd := @canonicalSurfaceClassificationData X _ _ _ _ _ _ hasSCD
-    ∃ basis_ω : Basis (Fin (JacobianChallenge.genus X)) ℂ
-        (HolomorphicOneForm X),
+  /-- A shared SCD witness + basis_ω + both Riemann atoms on the
+  same cycleGens. -/
+  out :
+    ∃ (scd : SurfaceClassificationData X)
+        (basis_ω : Basis (Fin (JacobianChallenge.genus X)) ℂ
+          (HolomorphicOneForm X)),
+      @RiemannFirstBilinearRelation X _ _ _
+          (PeriodPairingData.ofSmoothCycle X)
+          scd.symplecticBasis.cycleGens
+          (standardSymplectic (JacobianChallenge.genus X)) ∧
       RiemannSecondRelationPositivity
-        (PeriodPairingData.ofSmoothCycle X) basis_ω
-        scd.symplecticBasis.cycleGens
+          (PeriodPairingData.ofSmoothCycle X)
+          basis_ω
+          scd.symplecticBasis.cycleGens
 
-attribute [instance] HasC3FullClassicalContent.hasSCD
+/-- **HSCD is derivable from the umbrella.** -/
+instance instHasSurfaceClassificationData_of_HasC3FullClassicalContent
+    [h : HasC3FullClassicalContent X] :
+    HasSurfaceClassificationData X where
+  out := ⟨h.out.choose⟩
 
 /-- **Bridge: `[HasC3FullClassicalContent X]` discharges
 `HasJacobianAnalyticStructure X`.**
 
-Composes through chip 4 + chip 18 to fire `HasJacobianHodgeChain X`,
-which the existing in-tree global instance lifts to HJAS. -/
+Extracts the bundled SCD + basis_ω + RFBR + RSRP via `Classical.choose`
+on `out`, then composes through chip 18's CHRH-from-RFR-RSRP +
+chip 4's HJHC-from-SCD + the global HJHC→HJAS bridge. -/
 instance instHasJacobianAnalyticStructure_of_HasC3FullClassicalContent
     [h : HasC3FullClassicalContent X] :
     HasJacobianAnalyticStructure X := by
-  obtain ⟨basis_ω, h_second⟩ := h.riemannSecondExists
-  let scd := canonicalSurfaceClassificationData X
-  have h_first := h.riemannFirst
+  obtain ⟨scd, basis_ω, h_first, h_second⟩ := h.out
   haveI : HasJacobianHodgeChain X :=
     HasJacobianHodgeChain.ofSurfaceClassificationData scd basis_ω
       (completeHodgeRiemannHypothesis_of_RiemannFirst_RiemannSecond
@@ -113,15 +115,15 @@ namespace RiemannSphere
 
 set_option maxHeartbeats 800000 in
 /-- **Unconditional `HasC3FullClassicalContent RiemannSphere`** via
-chips 3 + 11 + 19. -/
+chips 3 + 11 + 19. The SCD is the explicit genus-0 empty-basis
+witness; RFBR and RSRP are polymorphic in cycleGens at g=0. -/
 instance instHasC3FullClassicalContent_RiemannSphere :
     HasC3FullClassicalContent RiemannSphere where
-  hasSCD := instHasSurfaceClassificationData_RiemannSphere
-  riemannFirst :=
-    riemannFirstBilinearRelation_RiemannSphere _ _
-  riemannSecondExists :=
-    ⟨defaultHolomorphicOneFormBasis RiemannSphere,
-      riemannSecondRelationPositivity_RiemannSphere _ _ _⟩
+  out :=
+    ⟨surfaceClassificationData_RiemannSphere (Classical.arbitrary _),
+     defaultHolomorphicOneFormBasis RiemannSphere,
+     riemannFirstBilinearRelation_RiemannSphere _ _,
+     riemannSecondRelationPositivity_RiemannSphere _ _ _⟩
 
 end RiemannSphere
 
