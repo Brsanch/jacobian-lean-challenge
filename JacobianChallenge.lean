@@ -953,4 +953,5 @@ import JacobianChallenge.Manifold.PeriodSigmaRealLI
 import JacobianChallenge.Manifold.BilinearFromHodgeChain
 import JacobianChallenge.Manifold.SmoothHomologyDataPackageFromHodgeChain
 import JacobianChallenge.Manifold.HasJacobianAnalyticStructureFromHodgeChain
+import JacobianChallenge.Manifold.C3FullInputExtSympFromHodgeChain
 
