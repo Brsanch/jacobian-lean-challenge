@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.RiemannFirstBilinearRelationNamed
+import JacobianChallenge.Manifold.StandardSymplecticForm
 
 set_option linter.unusedSectionVars false
 
@@ -88,6 +89,20 @@ theorem riemannFirstBilinearRelation_of_genus_one
   rw [riemannBilinearPeriodForm_smul_left, riemannBilinearPeriodForm_smul_right]
   rw [riemannBilinearPeriodForm_self_eq_zero cycleGens hJ (α 0)]
   ring
+
+/-- **RFBR UNCONDITIONAL at `genus X = 1` for J := standardSymplectic 1.**
+
+Specialization of `riemannFirstBilinearRelation_of_genus_one` absorbing
+the `hJ` parameter via `standardSymplectic_antisymm`. -/
+theorem riemannFirstBilinearRelation_of_genus_one_standardSymplectic
+    (h_genus : JacobianChallenge.genus X = 1)
+    [FiniteDimensional ℂ (HolomorphicOneForm X)]
+    {data : PeriodPairingData X}
+    (cycleGens : Fin (2 * JacobianChallenge.genus X) → data.H1) :
+    RiemannFirstBilinearRelation cycleGens
+      (standardSymplectic (JacobianChallenge.genus X)) :=
+  riemannFirstBilinearRelation_of_genus_one h_genus cycleGens
+    (standardSymplectic_antisymm (JacobianChallenge.genus X))
 
 end JacobianChallenge
 
