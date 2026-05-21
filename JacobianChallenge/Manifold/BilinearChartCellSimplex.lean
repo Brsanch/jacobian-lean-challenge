@@ -71,6 +71,42 @@ lemma bilinearChartInterp_coeffs_nonneg
 lemma bilinearChartInterp_coeffs_sum (s t : ℝ) :
     (1 - s) * (1 - t) + (1 - s) * t + s * (1 - t) + s * t = 1 := by ring
 
+/-- On `[0, 1]²` with convex `φ.target` containing all four corner
+images, `bilinearChartInterp` lands in `φ.target`. -/
+lemma bilinearChartInterp_in_target_on_unit_square
+    {p₀₀ p₀₁ p₁₀ p₁₁ : X}
+    (φ : OpenPartialHomeomorph X ℂ) (hφ_convex : Convex ℝ φ.target)
+    (h00 : p₀₀ ∈ φ.source) (h01 : p₀₁ ∈ φ.source)
+    (h10 : p₁₀ ∈ φ.source) (h11 : p₁₁ ∈ φ.source)
+    {s t : ℝ} (hs : s ∈ Set.Icc (0 : ℝ) 1) (ht : t ∈ Set.Icc (0 : ℝ) 1) :
+    bilinearChartInterp (φ p₀₀) (φ p₀₁) (φ p₁₀) (φ p₁₁) s t ∈ φ.target := by
+  -- Package as a Finset sum over `Fin 4`, then apply `Convex.sum_mem`.
+  let w : Fin 4 → ℝ := ![(1 - s) * (1 - t), (1 - s) * t, s * (1 - t), s * t]
+  let z : Fin 4 → ℂ := ![φ p₀₀, φ p₀₁, φ p₁₀, φ p₁₁]
+  have h_nonneg : ∀ i ∈ Finset.univ, 0 ≤ w i := by
+    intro i _
+    obtain ⟨ha, hb, hc, hd⟩ := bilinearChartInterp_coeffs_nonneg hs ht
+    fin_cases i <;> simp [w] <;> assumption
+  have h_sum : ∑ i ∈ Finset.univ, w i = 1 := by
+    have : (∑ i : Fin 4, w i) = w 0 + w 1 + w 2 + w 3 := by
+      simp [Fin.sum_univ_four]
+    rw [show (∑ i ∈ Finset.univ, w i) = (∑ i : Fin 4, w i) from rfl, this]
+    show (1 - s) * (1 - t) + (1 - s) * t + s * (1 - t) + s * t = 1
+    ring
+  have h_mem : ∀ i ∈ Finset.univ, z i ∈ φ.target := by
+    intro i _
+    fin_cases i
+    · exact φ.map_source h00
+    · exact φ.map_source h01
+    · exact φ.map_source h10
+    · exact φ.map_source h11
+  have h := hφ_convex.sum_mem h_nonneg h_sum h_mem
+  -- Reduce the sum to the bilinear formula by Fin.sum_univ_four.
+  simp only [Fin.sum_univ_four] at h
+  show bilinearChartInterp (φ p₀₀) (φ p₀₁) (φ p₁₀) (φ p₁₁) s t ∈ φ.target
+  unfold bilinearChartInterp
+  convert h using 2 <;> simp [w, z]
+
 end JacobianChallenge
 
 end
