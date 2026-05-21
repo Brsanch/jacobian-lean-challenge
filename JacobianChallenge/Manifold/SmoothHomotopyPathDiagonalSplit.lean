@@ -256,8 +256,7 @@ lemma face0_lowerRightSimplex_eq (H : SmoothHomotopyPath γ₀ γ₁ h_src h_tgt
     rw [h0, h1]
     have h_sum : (1 - t.val) + t.val = 1 := by ring
     rw [h_sum]
-    rw [H.right_edge t.val]
-    exact γ₁.ambient_eq_on_unitInterval t
+    exact H.right_edge t
 
 /-- **face2 of `lowerRightSimplex H` equals `const γ₀.src`.** -/
 lemma face2_lowerRightSimplex_eq (H : SmoothHomotopyPath γ₀ γ₁ h_src h_tgt) :
@@ -349,8 +348,7 @@ lemma face1_upperLeftSimplex_eq (H : SmoothHomotopyPath γ₀ γ₁ h_src h_tgt)
     rw [h0, h1]
     have h_sum : (0 : ℝ) + t.val = t.val := by ring
     rw [h_sum]
-    rw [H.left_edge t.val]
-    exact γ₀.ambient_eq_on_unitInterval t
+    exact H.left_edge t
 
 /-- **face2 of `upperLeftSimplex H` equals `diagonalPath H`.** -/
 lemma face2_upperLeftSimplex_eq (H : SmoothHomotopyPath γ₀ γ₁ h_src h_tgt) :
