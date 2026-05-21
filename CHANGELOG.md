@@ -1,5 +1,150 @@
 # Changelog
 
+## 2026-05-21 — SCD + RFBR + RSRP arc: full universality-blocker factoring (22 commits, +1,940 LOC across 19 new files, +1 modified)
+
+State: **1,088 `.lean` files**, **184,233 LOC**. Build 9,369 jobs
+clean. Zero `sorry`, zero `axiom`. Item count unchanged at
+**14 / 24 STRICT-CLOSED** — the C3 universality blocker is now fully
+factored into three named classical Props bundled in
+`HasC3FullClassicalContent X`; no items flip without unconditional
+discharge of the three named atoms.
+Branch `feat/c3-surface-classification-data` (continues from chip 19
+arc base at `07f7057`).
+
+### Topological side: SurfaceClassificationData layer (chips 1-4, 4 new files, ~478 LOC)
+
+* `Manifold/SurfaceClassificationData.lean` (chip 1) — structure
+  bundling `basePoint + SmoothSymplecticBasis 𝓘(ℝ, ℂ) X basePoint
+  (genus X) + SmoothHurewiczHypothesis symplecticBasis`. Basis-
+  agnostic. Bridge to `SmoothHomologyDataPackage basis_ω` via
+  `toSmoothHomologyDataPackage` consuming the Hodge bilinear atom.
+  Unconditional RS instance + smoke test.
+* `Manifold/SurfaceClassificationDataComplexTorus.lean` (chip 2) —
+  T_L unconditional inhabitant using the in-tree
+  `symplecticBasisG L` + `smoothHurewiczHypothesisTorus_holds_of_basis`.
+* `Manifold/HasSurfaceClassificationData.lean` (chip 3) — Prop
+  typeclass `HasSurfaceClassificationData X` mirroring
+  `HasJacobianAnalyticStructure X`'s shape. Unconditional RS and T_L
+  instances.
+* `Manifold/HasJacobianHodgeChainFromSurfaceClassificationData.lean`
+  (chip 4) — bridge: SCD + basis + CHRH → HJHC, with the genus-0
+  vacuous-CHRH discharge as a convenience.
+
+### Hodge side: RFBR / RSRP layer (chips 5-19, 11 new files, ~1,150 LOC)
+
+* `Manifold/CotangentWedgeVanishing.lean` (chip 5 + chip 8) —
+  Pure ℂ-linear-algebra: `cotangent_wedge_pointwise_zero` proves the
+  alternating bilinear `v a * w b - v b * w a` vanishes on every
+  pair `v, w : ℂ →L[ℂ] ℂ` and `a, b : ℂ`. Plus the named
+  `cotangentAltPair` function (chip 8) with antisymmetry lemmas.
+* `Manifold/RiemannBilinearPeriodForm.lean` (chip 6 + chip 7) —
+  abstract bilinear period form `Q J cycleGens ω₀ ω₁` on
+  `HolomorphicOneForm X × HolomorphicOneForm X` (chip 6).
+  Bilinearity (`_add_left`, `_smul_left`, `_add_right`, `_smul_right`)
+  + antisymmetry under `Jᵀ = -J`. Bridge identity
+  `periodMatrix_form_eq_riemannBilinearPeriodForm`. Diagonal
+  vanishing `Q J ω ω = 0` via `linear_combination h/2` from
+  antisymmetry (chip 7).
+* `Manifold/RiemannFirstBilinearRelationNamed.lean` (chip 9) —
+  the named Prop `RiemannFirstBilinearRelation cycleGens J :=
+  ∀ ω₀ ω₁, Q J cycleGens ω₀ ω₁ = 0`, plus the
+  `strictUpperTriangular_zero_of_RiemannFirstBilinearRelation` /
+  `offDiagonal_zero_of_RiemannFirstBilinearRelation` discharges via
+  the chip 6 bridge.
+* `Manifold/CompleteHodgeRiemannFromRiemannFirstRelation.lean`
+  (chip 10) — CHRH from `RFBR + matrix-PD` composing chip 9 with
+  chip 20p's `_of_standardSymplectic_upperTriangular_matrixPos`.
+* `Manifold/RiemannFirstBilinearRelationGenusZero.lean` (chip 11)
+  — RFBR unconditional at `genus X = 0` (empty bilinear sum), plus
+  RS instance.
+* `Manifold/RiemannFirstBilinearRelationGenusOne.lean` (chip 12)
+  — RFBR at `genus X = 1` from `Jᵀ = -J` via 1-dim
+  `HolomorphicOneForm` + chip 7 diagonal vanishing
+  (`Module.finBasisOfFinrankEq` + `Basis.sum_repr` +
+  `Fin.sum_univ_one`).
+* `Manifold/CotangentWedgeAlternating.lean` (chip 13) —
+  `cotangentWedge α β : AlternatingMap ℂ ℂ ℂ (Fin 2)`, defined as
+  `0` (since second exterior power of 1-dim ℂ-space is zero); the
+  formula `α(v 0) · β(v 1) - α(v 1) · β(v 0)` identity established
+  via chip 5.
+* `Manifold/RiemannFirstBilinearRelationGenusTwo.lean` (chip 14)
+  — RFBR at `genus X = 2` from single scalar
+  `Q J cycleGens (α 0) (α 1) = 0`. Bilinear expansion via chips 6's
+  bilinearity + chip 7 diagonal + chip 6 antisymmetry.
+* `Manifold/HolomorphicOneFormWedge.lean` (chip 15) — pointwise
+  wedge of holomorphic 1-forms: `holomorphicOneFormWedge ω η : X →
+  AlternatingMap ℂ ℂ ℂ (Fin 2)` is identically `0` via chip 13.
+  Section-level lift of chip 5.
+* `Manifold/RiemannFirstBilinearRelationFromStrictUpperQ.lean`
+  (chip 16) — RFBR at general genus from
+  `g(g-1)/2` strict-upper Q-zero conditions. Helpers:
+  `_zero_left`, `_zero_right`, `_sum_smul_left`, `_sum_smul_right`
+  (via `Finset.induction_on`), and the full bilinear expansion
+  `_basis_expansion`. Main theorem
+  `riemannFirstBilinearRelation_of_strictUpperTriangular_Q_zero`
+  via `lt_trichotomy` (i < j: h_strict; i = j: chip 7; i > j: chip
+  6 antisym + h_strict on swap).
+* `Manifold/RiemannPeriodIdentityPerPair.lean` (chip 17) — per-pair
+  scalar `RiemannPeriodIdentity α₀ cycleGens J i j := Q J cycleGens
+  (α₀ i) (α₀ j) = 0`, with two-way bridges to RFBR.
+* `Manifold/RiemannSecondRelationPositivityNamed.lean` (chip 18) —
+  named Prop `RiemannSecondRelationPositivity data basis_ω
+  cycleGens` for the matrix-PD positivity on `i · pmatᵀ · J · pmat^*`.
+  Composed with chip 10 to give the
+  `completeHodgeRiemannHypothesis_of_RiemannFirst_RiemannSecond`
+  end-to-end CHRH composite.
+* `Manifold/RiemannSecondRelationPositivityGenusZero.lean` (chip 19)
+  — RSRP unconditional at `genus X = 0` (`x ≠ 0` false on
+  `Fin 0 → ℂ` subsingleton), plus RS instance.
+
+### Headline composites (chips 20-22, 3 new files, ~324 LOC)
+
+* `Manifold/HasJacobianAnalyticStructureFromHSCDRiemann.lean`
+  (chip 20) — the universal headline:
+  `[HasSurfaceClassificationData X] + RFBR + RSRP → HJHC → HJAS`.
+  `data := PeriodPairingData.ofSmoothCycle X` made explicit via
+  `@RiemannFirstBilinearRelation X _ _ _ ...` (chip 9 has data
+  implicit; Lean can't unify from cycleGens alone).
+* `Manifold/HasJacobianAnalyticStructureFromHSCDRiemannRiemannSphere.lean`
+  (chip 21) — smoke test on RS via the three named atoms:
+  chips 1 + 11 + 19 composed through chip 4 + chip 18 → HJAS RS.
+  Uses `set_option maxHeartbeats 800000` for the elaboration.
+  Reproduces the existing `instHasJacobianAnalyticStructure_
+  RiemannSphere` via an independent path.
+* `Manifold/HasC3FullClassicalContent.lean` (chip 22) — umbrella
+  Prop class bundling HSCD + RFBR + ∃ basis_ω, RSRP into a single
+  ergonomic typeclass `HasC3FullClassicalContent X`. The global
+  instance `instHasJacobianAnalyticStructure_of_HasC3FullClassicalContent`
+  bridges to HJAS. Unconditional RS instance.
+
+### Net impact
+
+This 22-chip arc does **not flip any of the 24 challenge items**.
+It is a *structural reduction* of the C3 universality blocker into
+exactly **three minimal named classical Props** bundled in a single
+typeclass `HasC3FullClassicalContent X`:
+
+1. `[HasSurfaceClassificationData X]` — topological surface
+   classification + smooth-Hurewicz (chips 1-3).
+2. `RiemannFirstBilinearRelation cycleGens (standardSymplectic g)` —
+   first Riemann bilinear relation; reduces via chip 16 to
+   `g(g-1)/2` per-pair scalar identities (chip 17).
+3. `RiemannSecondRelationPositivity data basis_ω cycleGens` —
+   matrix-PD positivity (chip 18).
+
+Once all three discharge unconditionally on any compact connected
+complex 1-manifold X, items 5/11/12/13/17/18/21 flip via the C3
+rewire of `JacobianChallenge.Jacobian X` to
+`CanonicalAnalyticJacobianAnonymous X`. Each atom is substantive
+classical content (Riemann period relations via Stokes on the
+fundamental polygon + Hodge bilinear positivity + topological
+surface classification of compact orientable 2-manifolds) — not at
+the mathlib pin `8e3c989...`.
+
+The structural reduction makes the open content per atom **explicit
+and per-pair atomic** (chip 17 RiemannPeriodIdentity per (i, j)), so
+future chips can discharge a single scalar at a time and compose.
+
 ## 2026-05-21 — Chip 19q-r + chip 20a-r: T_L unconditional Hodge–Riemann + general-genus structural reductions (23 commits, +2,015 LOC across 22 new files)
 
 State: **1,068 `.lean` files**, **179,290 LOC**. Build 9,349 jobs
