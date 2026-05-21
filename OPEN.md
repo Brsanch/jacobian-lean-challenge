@@ -32,7 +32,7 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
-> **2026-05-21 (item-14 classical-content arc: chain assembly + Dolbeault + chart-cell infra; 57 commits + merge be4146d via PR #1; +3,639 Lean LOC across 23 new files + 1 modified). origin/main HEAD `be4146d`. Repo now 1053 `.lean` files / 179,081 LOC. Build 9295 jobs clean. Item count unchanged: **14/24 STRICT-CLOSED** (no items flipped this batch — substantive infra toward item-14 reverse-leg closure on simply-connected X).**
+> **2026-05-21 (item-14 classical-content arc: chain assembly + Dolbeault + chart-cell infra; 57 commits + merge be4146d via PR #1; +3,639 Lean LOC across 23 new files + 1 modified). origin/main HEAD `be4146d`. Repo now 1053 `.lean` files / 179,081 LOC. Build 9316 jobs clean. Item count unchanged: **14/24 STRICT-CLOSED** (no items flipped this batch — substantive infra toward item-14 reverse-leg closure on simply-connected X).**
 >
 > **Arc — Item-14 reverse leg toward BSLB on simply-connected X (37+ chips this batch, ~3,300 LOC).**
 >
