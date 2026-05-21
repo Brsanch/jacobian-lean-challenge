@@ -7,6 +7,8 @@ import Mathlib.Geometry.Manifold.ChartedSpace
 import Mathlib.Geometry.Manifold.IsManifold.Basic
 import Mathlib.Analysis.Convex.Combination
 import Mathlib.Analysis.Complex.Basic
+import Mathlib.Analysis.Calculus.ContDiff.Basic
+import Mathlib.Analysis.Calculus.ContDiff.RCLike
 
 set_option linter.unusedSectionVars false
 
@@ -70,6 +72,32 @@ lemma bilinearChartInterp_coeffs_nonneg
 /-- The four bilinear coefficients sum to `1`. -/
 lemma bilinearChartInterp_coeffs_sum (s t : ℝ) :
     (1 - s) * (1 - t) + (1 - s) * t + s * (1 - t) + s * t = 1 := by ring
+
+/-- **Smoothness of `bilinearChartInterp` as `(s, t) : ℝ²`.**
+`bilinearChartInterp z₀₀ z₀₁ z₁₀ z₁₁` is `C^∞` jointly in `(s, t)`. -/
+lemma contDiff_bilinearChartInterp (z₀₀ z₀₁ z₁₀ z₁₁ : ℂ) :
+    ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (Function.uncurry (bilinearChartInterp z₀₀ z₀₁ z₁₀ z₁₁)) := by
+  -- `B(s, t) = polynomial(s, t) · constants`. All smooth.
+  unfold Function.uncurry bilinearChartInterp
+  have hs : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (fun p : ℝ × ℝ => p.1) := contDiff_fst
+  have ht : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (fun p : ℝ × ℝ => p.2) := contDiff_snd
+  have h1ms : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (fun p : ℝ × ℝ => 1 - p.1) := contDiff_const.sub hs
+  have h1mt : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (fun p : ℝ × ℝ => 1 - p.2) := contDiff_const.sub ht
+  have h00 : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (fun p : ℝ × ℝ => (1 - p.1) * (1 - p.2)) := h1ms.mul h1mt
+  have h01 : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (fun p : ℝ × ℝ => (1 - p.1) * p.2) := h1ms.mul ht
+  have h10 : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (fun p : ℝ × ℝ => p.1 * (1 - p.2)) := hs.mul h1mt
+  have h11 : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (fun p : ℝ × ℝ => p.1 * p.2) := hs.mul ht
+  exact (((h00.smul contDiff_const).add (h01.smul contDiff_const)).add
+    (h10.smul contDiff_const)).add (h11.smul contDiff_const)
 
 /-- On `[0, 1]²` with convex `φ.target` containing all four corner
 images, `bilinearChartInterp` lands in `φ.target`. -/
