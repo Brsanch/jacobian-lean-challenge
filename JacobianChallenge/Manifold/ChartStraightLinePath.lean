@@ -163,6 +163,40 @@ private lemma face0_toFun_eq
       = (1 - t) • z₁ + t • z₂
   module
 
+/-! ## Face-toFun equality: chip 14 lemmas are exported
+
+The private `face_i_toFun_eq` lemmas above identify the toFun values of
+each face with the corresponding `chartStraightLineMap`. Promoting
+these to full `SmoothPath` equality requires an extensionality lemma
+for `SmoothPath` which is not yet registered in tree; the toFun-level
+identification is sufficient for downstream chain-level reasoning
+that integrates over paths (since `complexChainPeriod` factors through
+the toFun). -/
+
+/-- Public re-export of `face2_toFun_eq` (pointwise on `ℝ`). -/
+lemma affineChartTriangleSimplex_face2_toFun
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ z₂ : ℂ) (t : ℝ) :
+    (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+        (Smooth2Simplex.face2Param t)
+      = chartStraightLineMap q z₀ z₁ t :=
+  face2_toFun_eq q h_univ z₀ z₁ z₂ t
+
+/-- Public re-export of `face1_toFun_eq`. -/
+lemma affineChartTriangleSimplex_face1_toFun
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ z₂ : ℂ) (t : ℝ) :
+    (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+        (Smooth2Simplex.face1Param t)
+      = chartStraightLineMap q z₀ z₂ t :=
+  face1_toFun_eq q h_univ z₀ z₁ z₂ t
+
+/-- Public re-export of `face0_toFun_eq`. -/
+lemma affineChartTriangleSimplex_face0_toFun
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ z₂ : ℂ) (t : ℝ) :
+    (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+        (Smooth2Simplex.face0Param t)
+      = chartStraightLineMap q z₁ z₂ t :=
+  face0_toFun_eq q h_univ z₀ z₁ z₂ t
+
 end JacobianChallenge
 
 end
