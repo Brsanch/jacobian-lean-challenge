@@ -98,6 +98,54 @@ lemma heightLocalℂ_continuous : Continuous heightLocalℂ := by
   have : (0 : ℝ) < 1 + ‖z‖^2 := by positivity
   exact this.ne'
 
+/-- **Tendsto-to-0 at infinity:** as `z → ∞` in `cocompact ℂ`,
+`1/(1+‖z‖²) → 0`. -/
+lemma heightLocalℂ_tendsto_zero_cocompact :
+    Filter.Tendsto heightLocalℂ (Filter.cocompact ℂ) (nhds (0 : ℝ)) := by
+  -- `‖z‖ → ∞` as `z → ∞`.
+  have h_norm : Filter.Tendsto (fun z : ℂ => ‖z‖) (Filter.cocompact ℂ)
+      Filter.atTop := tendsto_norm_cocompact_atTop
+  -- `‖z‖² → ∞` via `‖z‖ * ‖z‖`.
+  have h_sq : Filter.Tendsto (fun z : ℂ => ‖z‖^2) (Filter.cocompact ℂ)
+      Filter.atTop := by
+    have h_mul : Filter.Tendsto (fun z : ℂ => ‖z‖ * ‖z‖)
+        (Filter.cocompact ℂ) Filter.atTop :=
+      h_norm.atTop_mul_atTop₀ h_norm
+    exact h_mul.congr (fun z => by ring)
+  -- `1 + ‖z‖² → ∞`: const + atTop = atTop.
+  have h_denom : Filter.Tendsto (fun z : ℂ => 1 + ‖z‖^2)
+      (Filter.cocompact ℂ) Filter.atTop :=
+    Filter.tendsto_atTop_add_const_left _ 1 h_sq
+  -- `1/(1+‖z‖²) → 0` via `tendsto_inv_atTop_zero ∘ h_denom`.
+  have h_inv : Filter.Tendsto (fun z : ℂ => (1 + ‖z‖^2)⁻¹)
+      (Filter.cocompact ℂ) (nhds 0) :=
+    tendsto_inv_atTop_zero.comp h_denom
+  -- Identify `1 / x = x⁻¹`.
+  refine h_inv.congr ?_
+  intro z
+  unfold heightLocalℂ
+  exact (one_div _).symm
+
+/-- **Continuity of `heightRiemannSphere` on RS.**
+
+Uses `OnePoint.continuous_iff` with the chart-local continuity on `ℂ`
+plus the tendsto-to-0 at infinity. For the locally compact T₂ space
+`ℂ`, `coclosedCompact ℂ = cocompact ℂ`. -/
+lemma heightRiemannSphere_continuous :
+    Continuous heightRiemannSphere := by
+  rw [OnePoint.continuous_iff]
+  refine ⟨?_, ?_⟩
+  · -- Tendsto branch at infinity: `f ∞ = 0`.
+    rw [heightRiemannSphere_infty]
+    rw [Filter.coclosedCompact_eq_cocompact]
+    refine heightLocalℂ_tendsto_zero_cocompact.congr ?_
+    intro z
+    exact heightRiemannSphere_coe z
+  · -- Continuity branch on the `ℂ` part.
+    refine heightLocalℂ_continuous.congr ?_
+    intro z
+    exact (heightRiemannSphere_coe z).symm
+
 end RiemannSphere
 
 end JacobianChallenge
