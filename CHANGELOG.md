@@ -2,7 +2,7 @@
 
 ## 2026-05-21 — Item-14 classical-content arc: chain assembly + Dolbeault + chart-cell infra (57 commits + merge via PR #1, +3,639 LOC)
 
-Final state: build **9295 jobs**, **1053 `.lean` files**, **179,081
+Final state: build **9316 jobs**, **1053 `.lean` files**, **179,081
 LOC**. Zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
 STRICT-CLOSED** — substantive classical infrastructure toward item-14
 reverse-leg closure on simply-connected X. `origin/main` HEAD
