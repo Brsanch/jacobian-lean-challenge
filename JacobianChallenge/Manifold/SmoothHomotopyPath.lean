@@ -95,6 +95,41 @@ noncomputable def chartHomotopyMap
   simp
   exact OpenPartialHomeomorph.left_inv _ h_in
 
+/-- **Bottom edge** (`x 1 = 0`): the homotopy is constant at the
+common src. Both `γ₀.ambient 0` and `γ₁.ambient 0` equal the shared
+`src` value; their chart-target interpolation is the same chart point. -/
+lemma chartHomotopyMap_bottom_edge
+    (q : Y) (γ₀ γ₁ : SmoothPath (𝓘(ℝ, ℂ)) Y)
+    (h_src : γ₀.src = γ₁.src) (h_src_in : γ₀.src ∈ (chartAt ℂ q).source)
+    (h0₀_amb : γ₀.ambient 0 = γ₀.src) (h0₁_amb : γ₁.ambient 0 = γ₁.src)
+    (s : ℝ) :
+    chartHomotopyMap q γ₀ γ₁ ![s, 0] = γ₀.src := by
+  unfold chartHomotopyMap
+  show (chartAt ℂ q).symm
+      ((1 - (![s, 0] : Fin 2 → ℝ) 0)
+        • (chartAt ℂ q) (γ₀.ambient ((![s, 0] : Fin 2 → ℝ) 1))
+        + (![s, 0] : Fin 2 → ℝ) 0
+          • (chartAt ℂ q) (γ₁.ambient ((![s, 0] : Fin 2 → ℝ) 1)))
+    = γ₀.src
+  -- ![s, 0] 0 = s, ![s, 0] 1 = 0. γ₀.ambient 0 = γ₀.src, γ₁.ambient 0 = γ₁.src = γ₀.src.
+  have h_amb_eq : γ₀.ambient ((![s, 0] : Fin 2 → ℝ) 1) = γ₀.src := by
+    show γ₀.ambient 0 = γ₀.src
+    exact h0₀_amb
+  have h_amb_eq' : γ₁.ambient ((![s, 0] : Fin 2 → ℝ) 1) = γ₀.src := by
+    show γ₁.ambient 0 = γ₀.src
+    rw [h0₁_amb, ← h_src]
+  rw [h_amb_eq, h_amb_eq']
+  -- Now: chart.symm ((1 - s) • chart γ₀.src + s • chart γ₀.src) = γ₀.src.
+  have h_idx : (![s, 0] : Fin 2 → ℝ) 0 = s := rfl
+  rw [h_idx]
+  -- The interpolation is constant: (1-s) • c + s • c = c.
+  have h_combo : ((1 - s) : ℝ) • (chartAt ℂ q) γ₀.src
+                  + (s : ℝ) • (chartAt ℂ q) γ₀.src
+                = (chartAt ℂ q) γ₀.src := by
+    module
+  rw [h_combo]
+  exact OpenPartialHomeomorph.left_inv _ h_src_in
+
 end JacobianChallenge
 
 end
