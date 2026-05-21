@@ -1,5 +1,139 @@
 # Changelog
 
+## 2026-05-21 — Item-14 classical-content arc: chain assembly + Dolbeault + chart-cell infra (57 commits + merge via PR #1, +3,639 LOC)
+
+Final state: build **9295 jobs**, **1053 `.lean` files**, **179,081
+LOC**. Zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
+STRICT-CLOSED** — substantive classical infrastructure toward item-14
+reverse-leg closure on simply-connected X. `origin/main` HEAD
+`be4146d` (merge of `feat/item14-classical-content` via PR #1).
+
+### Arc — Item-14 reverse leg toward BSLB on simply-connected X (~37 chips, ~3,300 LOC across 23 new files)
+
+**Dolbeault foundational (chips 2-8, prior session within branch).**
+
+* `Manifold/DBarOperator.lean` — chart-side `dbarChart f z₀` on `ℂ → ℂ`,
+  linearity (`_add`/`_neg`/`_const`/`_zero`/`_const_mul`), holomorphic
+  ⇒ `dbarChart = 0` via mathlib's `HasDerivAt.complexToReal_fderiv`,
+  CR-converse `differentiableAt_complex_of_dbarChart_eq_zero` via
+  `differentiableAt_complex_iff_differentiableAt_real`.
+* `Manifold/DBarManifold.lean` — manifold-side `dbar f x` via
+  `extChartAt 𝓘(ℂ,ℂ) x` + linearity + `_const_mul`
+  + `dbar_eq_zero_of_chartPullback_differentiableAt`.
+* `Manifold/DBarManifoldMDiff.lean` — bridge to `MDifferentiableAt
+  𝓘(ℂ,ℂ) 𝓘(ℂ,ℂ)`: `mdifferentiableAt_target_complex_iff_chartPullback_differentiableAt`,
+  manifold-side CR converse, and the full biconditional
+  `mdifferentiableAt_iff_dbar_eq_zero`.
+* `Manifold/DBarChartChainRule.lean` — Wirtinger chain rule
+  `dbarChart (f ∘ g) z₀ = conj g'(z₀) · dbarChart f (g z₀)` for
+  holomorphic inner `g`, giving chart-independence of ∂̄-vanishing on
+  a complex 1-manifold under nonzero transition derivative.
+
+**Architectural reductions.**
+
+* `Manifold/SmoothPathChartSubdivision.lean` — `SmoothPath.lebesgueSubdivision`
+  for an arbitrary open cover, plus `_of_chartCover` specialization
+  using `[HasConvexTargetChartCover X]`.
+* `Manifold/SubdivisionTelescopingToLoopFromBSLB.lean` —
+  `SubdivisionTelescopingToLoop_named X ⇐ ∀ p₀, BSLB X p₀`. Reduces
+  the in-tree TelescopingTo-Loop hypothesis to universal BSLB.
+* `Manifold/SubdivisionTelescopingToLoopSubsingleton.lean` —
+  typeclass-generalized trivial discharge under
+  `[Subsingleton (HolomorphicOneForm X)]`.
+
+**Chart-cell `Smooth2Simplex` constructor.** Bridges
+`[IsManifold 𝓘(ℂ,ℂ) ω X]` to the ℝ-model expected by `Smooth2Simplex`
+via the in-tree `complexManifoldRealification` instance.
+
+* `Manifold/BilinearChartCellSimplex.lean` — bilinear chart-cell:
+  `bilinearChartInterp` definition + smoothness on ℝ² via `ContDiff`
+  + convex containment `bilinearChartInterp_in_target_on_unit_square`
+  via `Convex.sum_mem` + `Fin.sum_univ_four` + Fin 2 reindexing +
+  `bilinearChartCellSimplex_univ : Smooth2Simplex 𝓘(ℝ,ℂ) X` (full-
+  target chart case).
+* `Manifold/AffineChartTriangleSimplex.lean` — affine 3-corner
+  variant matching `Smooth2Simplex`'s Δ²-convention. `affineChartTriangle`
+  + smoothness + 3-point convex containment via `Convex.sum_mem` +
+  `Fin.sum_univ_three` + `affineChartTriangleSimplex_univ : Smooth2Simplex
+  𝓘(ℝ,ℂ) X` + vertex-toFun simp lemmas (`_v0`/`_v1`/`_v2`).
+
+**Chart-straight-line `SmoothPath` + boundary identification.**
+
+* `Manifold/ChartStraightLinePath.lean` — `chartStraightLinePath_univ`
+  via `chart.symm((1-t) • z₀ + t • z₁)` + smoothness +
+  `_src`/`_tgt` simp lemmas. **`smoothPath_ext_of_toPath_apply`**
+  extensionality lemma (SmoothPath has no `@[ext]` in-tree). Full
+  SmoothPath identification of the three triangle faces:
+  `face0/1/2_eq_chartStraightLinePath_univ` via the toFun-level
+  identifications + the new ext lemma. `chartStraightLinePath_univ_reverse`:
+  `(path z₀ z₁).reverse = path z₁ z₀` (proven via `module` on the
+  linear-interpolation identity). Explicit `Smooth2Simplex.boundary`
+  of the chart-triangle as a 3-path `SmoothChain`:
+  `affineChartTriangleSimplex_univ_boundary`.
+
+**Chain cancellation.**
+
+* `Manifold/AdjacentTriangleCancellation.lean` —
+  `chartStraightLinePath_pair_eq_reverseSum` (forward+reverse pair as
+  a SmoothCycle) + `chartStraightLinePath_pair_smoothCycle_mem_stokesBoundaries`
+  (using in-tree `single_smoothPath_plus_reverse_mem_stokesBoundaries`).
+  `two_chart_triangle_boundary_eq` (explicit two-triangle boundary
+  expansion) + `outerChain` definition (4-edge non-shared chain) +
+  `two_chart_triangle_boundary_decomp`. **`outerChain_mem_smoothCycle`**
+  (boundary in `X →₀ ℤ` vanishes by endpoint cancellation) and
+  **`outerChain_mem_stokesBoundaries`** — substantive Stokes-style
+  cancellation conclusion proven from first principles via
+  `boundary₂Cycle (single σ₁ + single σ₂) - sharedPair = outerChain`
+  + AddSubgroup closure under subtraction.
+
+**Fan triangulation.**
+
+* `Manifold/FanTriangulation.lean` —
+  `affineChartTriangleSimplex_boundary_as_loop_plus_spokes` (single
+  triangle's boundary = polygonal-edge + spoke-pair). List-recursive
+  defs: `fanChain` (the 2-chain over consecutive pairs of `zs`),
+  `polygonalChain` (the SmoothChain of polygonal edges),
+  `spokeResidue` (head→last residue spokes).
+  **`boundary₂_fanChain`** — full inductive boundary identity
+  `boundary₂ (fanChain z_c zs) = polygonalChain zs + spokeResidue z_c zs`,
+  proven by List induction with nested cases on the tail and
+  `List.getLast` alignment. **`spokeResidue_eq_zero_of_closed`** —
+  spoke residue vanishes when `zs.getLast = zs.head`.
+  **`polygonalChain_eq_boundary_of_closed`** and
+  **`polygonalChain_smoothCycle_mem_stokesBoundaries_of_closed`** —
+  any closed polygonal loop traced by chart-straight-line paths in a
+  single full-target chart is the explicit boundary of a fan
+  2-chain, hence lies in `stokesBoundaries`. *Headline chip of the
+  arc.*
+
+**`SmoothHomotopyPath` toolkit.**
+
+* `Manifold/SmoothHomotopyPath.lean` — structure
+  `SmoothHomotopyPath γ₀ γ₁ h_src h_tgt` (analog of
+  `SmoothHomotopyBasedLoop` for paths sharing endpoints) with four
+  edge identities. `chartHomotopyMap q γ₀ γ₁ x := chart.symm((1 - x 0)
+  • chart(γ₀.amb (x 1)) + x 0 • chart(γ₁.amb (x 1)))`. All four edge
+  lemmas: `chartHomotopyMap_left_edge`, `_right_edge` (via
+  `OpenPartialHomeomorph.left_inv`), `_bottom_edge`, `_top_edge`
+  (constant at the shared src/tgt; interpolation cancellation
+  discharged by `module`). Smoothness lemma
+  **`contMDiff_chartHomotopyMap_univ`** under full-target chart +
+  global containment of both paths.
+
+### Net contribution
+
+No items in `Basic.lean`'s open list flip from this batch, but the
+chain-assembly skeleton for `BasedSmoothLoopsBoundHypothesis X p₀` on
+simply-connected X is **substantially advanced**: chain cancellation
+works, polygonal-loop bounding works, all chart-cell building blocks
+exist. The remaining frontier (documented in `HANDOFF_ITEM14.md`):
+package the full `SmoothHomotopyPath` constructor from the toolkit;
+diagonal-split into two `Smooth2Simplex`es realizing
+`single γ₁ - single γ₀ ∈ stokesBoundaries`; concatenate across the
+chart-cover Lebesgue subdivision to bordism γ to a polygonal loop;
+combine with the closed-polygonal-loop ∈ stokesBoundaries chip to
+conclude BSLB.
+
 ## 2026-05-20 late — Period-lattice + classical-content scaffolding + item-14 advances (35 commits + merge, ~3,778 LOC)
 
 Final state: build **9291 jobs**, **1011 `.lean` files**, **173,331
