@@ -1010,4 +1010,5 @@ import JacobianChallenge.Manifold.HasJacobianHodgeChainFromSurfaceClassification
 import JacobianChallenge.Manifold.CotangentWedgeVanishing
 import JacobianChallenge.Manifold.RiemannBilinearPeriodForm
 import JacobianChallenge.Manifold.RiemannFirstBilinearRelationNamed
+import JacobianChallenge.Manifold.CompleteHodgeRiemannFromRiemannFirstRelation
 
