@@ -942,6 +942,7 @@ import JacobianChallenge.Manifold.HasBasedSmoothLoopsBound
 import JacobianChallenge.Manifold.HodgeInnerProductHypothesis
 import JacobianChallenge.Manifold.HodgeFormMatrix
 import JacobianChallenge.Manifold.PeriodMatrix
+import JacobianChallenge.Manifold.PeriodMatrixAntiHermitian
 import JacobianChallenge.Manifold.RiemannBilinearRelations
 import JacobianChallenge.Manifold.RiemannBilinearImpliesLI
 import JacobianChallenge.Manifold.StandardSymplecticForm
