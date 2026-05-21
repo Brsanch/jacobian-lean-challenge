@@ -1034,3 +1034,4 @@ import JacobianChallenge.Manifold.AnalyticCycleBasisHypothesis
 import JacobianChallenge.Manifold.MorseFunction
 import JacobianChallenge.Manifold.RiemannBilinearHypothesis
 import JacobianChallenge.Manifold.AbelTheoremHypothesis
+import JacobianChallenge.Manifold.MrdouglasnyOpenAxiomBridges
