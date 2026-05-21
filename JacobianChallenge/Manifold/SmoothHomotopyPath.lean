@@ -60,6 +60,23 @@ structure SmoothHomotopyPath
   /-- Top edge (`t = 1`) constant at the common tgt. -/
   top_edge : ∀ s : ℝ, toFun ![s, 1] = γ₀.tgt
 
+/-! ## Chart-target straight-line homotopy between two chart-contained paths
+
+When both paths live globally in a full-target chart's source and have
+the same endpoints, the chart-target straight-line interpolation gives
+a `SmoothHomotopyPath`. -/
+
+variable {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+  [IsManifold (𝓘(ℂ, ℂ)) ω Y]
+
+/-- The chart-target straight-line homotopy map: combines two paths
+both globally in `chart.source` by linear interpolation in `chart.target`. -/
+noncomputable def chartHomotopyMap
+    (q : Y) (γ₀ γ₁ : SmoothPath (𝓘(ℝ, ℂ)) Y) (x : Fin 2 → ℝ) : Y :=
+  (chartAt ℂ q).symm
+    ((1 - x 0) • (chartAt ℂ q) (γ₀.ambient (x 1))
+      + x 0 • (chartAt ℂ q) (γ₁.ambient (x 1)))
+
 end JacobianChallenge
 
 end
