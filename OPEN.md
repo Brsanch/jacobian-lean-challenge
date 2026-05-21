@@ -32,7 +32,13 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
-> **2026-05-21 (item-14 classical-content arc: chain assembly + Dolbeault + chart-cell infra; 57 commits + merge be4146d via PR #1; +3,639 Lean LOC across 23 new files + 1 modified). origin/main HEAD `be4146d`. Repo now 1053 `.lean` files / 179,081 LOC. Build 9316 jobs clean. Item count unchanged: **14/24 STRICT-CLOSED** (no items flipped this batch — substantive infra toward item-14 reverse-leg closure on simply-connected X).**
+> **2026-05-21 PR #2 (item-14 reverse leg: SmoothHomotopyPath diagonal-split + bordism; 4 commits + merge 4e3ed97; +478 Lean LOC across 1 new file). origin/main HEAD `4e3ed97`. Repo now 1054 `.lean` files / 179,559 LOC. Build 9316 jobs clean. Item count unchanged: **14/24 STRICT-CLOSED**.**
+>
+> **Arc — SmoothHomotopyPath bordism toolkit (~480 LOC, 1 new file `Manifold/SmoothHomotopyPathDiagonalSplit.lean`).** Diagonal-split of `SmoothHomotopyPath γ₀ γ₁` into two `Smooth2Simplex`es (`lowerRightSimplex` + `upperLeftSimplex`), with vertex-evaluation simp lemmas at all six corners (corners land at γ₀.src or γ₀.tgt depending on which `t` slot is `0` or `1` — not all at a common basepoint as in the loop case). `diagonalPath H : SmoothPath` from γ₀.src to γ₀.tgt via `t ↦ H(t, t)`. All six face identifications (face0/1/2 of LR and UL) with the corresponding canonical paths: `γ₀`, `γ₁`, `diagonalPath H`, `const γ₀.src`, `const γ₀.tgt`. Headline `boundary_lowerRight_plus_upperLeft`: `∂(σ_LR) + ∂(σ_UL) = single γ₁ - single γ₀ + single (const γ₀.src) + single (const γ₀.tgt)`. Final theorem `singleSub_smoothCycle_mem_stokesBoundaries`: for any `SmoothHomotopyPath γ₀ γ₁`, the SmoothCycle `single γ₁ - single γ₀ ∈ stokesBoundaries`.
+>
+> Architectural note: wiring `chartHomotopyMap` (in-tree from PR #1) into a concrete `SmoothHomotopyPath γ γ_line` for the chart-contained-path → chart-straight-line bordism hit a Classical.choose blocker (γ_line.ambient ≠ chartStraightLineMap definitionally outside unitInterval). Resolved by relaxing the `SmoothHomotopyPath` edges to unitInterval (a structural refactor) or by providing a separate ambient-witnessing structure — tracked for next PR.
+
+> **2026-05-21 PR #1 (item-14 classical-content arc: chain assembly + Dolbeault + chart-cell infra; 57 commits + merge be4146d via PR #1; +3,639 Lean LOC across 23 new files + 1 modified). origin/main HEAD `be4146d`. Repo now 1053 `.lean` files / 179,081 LOC. Build 9316 jobs clean. Item count unchanged: **14/24 STRICT-CLOSED** (no items flipped this batch — substantive infra toward item-14 reverse-leg closure on simply-connected X).**
 >
 > **Arc — Item-14 reverse leg toward BSLB on simply-connected X (37+ chips this batch, ~3,300 LOC).**
 >
