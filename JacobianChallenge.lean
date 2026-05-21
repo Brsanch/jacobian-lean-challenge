@@ -1031,3 +1031,4 @@ import JacobianChallenge.Manifold.HasC3FullClassicalContent
 import JacobianChallenge.Manifold.HasC3FullClassicalContentComplexTorus
 import JacobianChallenge.Manifold.HasC3FullClassicalContentFromHolomorphicEquivRS
 import JacobianChallenge.Manifold.AnalyticCycleBasisHypothesis
+import JacobianChallenge.Manifold.MorseFunction
