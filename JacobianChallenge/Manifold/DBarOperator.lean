@@ -101,7 +101,7 @@ def dbarChart (f : ℂ → ℂ) (z₀ : ℂ) : ℂ :=
 @[simp] lemma dbarChart_const (c : ℂ) (z₀ : ℂ) :
     dbarChart (fun _ : ℂ => c) z₀ = 0 := by
   unfold dbarChart
-  show 1/2 * ((fderiv ℝ (Function.const ℂ c) z₀) 1
+  change 1/2 * ((fderiv ℝ (Function.const ℂ c) z₀) 1
     + Complex.I * (fderiv ℝ (Function.const ℂ c) z₀) Complex.I) = 0
   rw [fderiv_const]
   simp
@@ -150,10 +150,10 @@ theorem dbarChart_eq_zero_of_hasDerivAt {f : ℂ → ℂ} {z₀ f' : ℂ}
   unfold dbarChart
   rw [h_fderiv]
   have h1 : (f' • (1 : ℂ →L[ℝ] ℂ)) 1 = f' := by
-    show f' * 1 = f'
+    change f' * 1 = f'
     ring
   have hI : (f' • (1 : ℂ →L[ℝ] ℂ)) Complex.I = f' * Complex.I := by
-    show f' * Complex.I = f' * Complex.I
+    change f' * Complex.I = f' * Complex.I
     rfl
   rw [h1, hI]
   -- Goal: (1/2) * (f' + I * (f' * I)) = 0
