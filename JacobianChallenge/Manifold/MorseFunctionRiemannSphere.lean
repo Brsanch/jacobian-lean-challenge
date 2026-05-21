@@ -328,6 +328,59 @@ lemma heightLocalℂ_S_fderiv_zero :
   exact heightLocalℂ_S_isMinOn_zero.isLocalMin (by
     exact Filter.univ_mem)
 
+/-! ## Critical-set converse: `fderiv ≠ 0` for `z ≠ 0` (chip 47)
+
+We compute `(fderiv heightLocalℂ z) z = -2‖z‖²/(1+‖z‖²)²` via the
+chain rule, and conclude `fderiv heightLocalℂ z ≠ 0` for `z ≠ 0`. -/
+
+/-- **`fderiv heightLocalℂ z ≠ 0` for `z ≠ 0`.**
+
+Closes the converse direction of the critical-set characterization on
+the chartN side. Uses chain rule via `HasFDerivAt`. -/
+lemma heightLocalℂ_fderiv_ne_zero {z : ℂ} (hz : z ≠ 0) :
+    fderiv ℝ heightLocalℂ z ≠ 0 := by
+  have h_pos : (0 : ℝ) < 1 + ‖z‖^2 := by positivity
+  have h_ne : (1 + ‖z‖^2 : ℝ) ≠ 0 := h_pos.ne'
+  have h_denom : HasFDerivAt (fun w : ℂ => 1 + ‖w‖^2) (2 • innerSL ℝ z) z :=
+    (hasStrictFDerivAt_norm_sq z).hasFDerivAt.const_add 1
+  have h_inv : HasDerivAt (fun y : ℝ => y⁻¹)
+      (-((1 + ‖z‖^2)^2)⁻¹) (1 + ‖z‖^2) := hasDerivAt_inv h_ne
+  have h_comp_raw := h_inv.comp_hasFDerivAt z h_denom
+  have h_comp : HasFDerivAt heightLocalℂ
+      ((-((1 + ‖z‖^2)^2)⁻¹) • (2 • innerSL ℝ z)) z := by
+    apply h_comp_raw.congr_of_eventuallyEq
+    filter_upwards [Filter.univ_mem] with w _
+    show heightLocalℂ w = ((fun y : ℝ => y⁻¹) ∘ fun w : ℂ => 1 + ‖w‖^2) w
+    show heightLocalℂ w = (1 + ‖w‖^2)⁻¹
+    unfold heightLocalℂ
+    rw [one_div]
+  intro h_eq
+  have h_apply_z : (fderiv ℝ heightLocalℂ z) z = 0 := by rw [h_eq]; rfl
+  rw [h_comp.fderiv] at h_apply_z
+  -- Simplify the application.
+  -- Reduce the smul/apply expression to scalar arithmetic.
+  have h_smul_apply :
+      ((-((1 + ‖z‖^2)^2)⁻¹) • (2 • innerSL ℝ z)) z
+        = -((1 + ‖z‖^2)^2)⁻¹ * (2 * ‖z‖^2) := by
+    simp only [ContinuousLinearMap.smul_apply, smul_eq_mul,
+      innerSL_apply_apply, real_inner_self_eq_norm_sq]
+    -- Now LHS is `-((1+‖z‖²)²)⁻¹ * (2 • inner ℝ z z)`.
+    show -((1 + ‖z‖^2)^2)⁻¹ * ((2 : ℕ) • (‖z‖^2 : ℝ))
+         = -((1 + ‖z‖^2)^2)⁻¹ * (2 * ‖z‖^2)
+    rw [show ((2 : ℕ) • (‖z‖^2 : ℝ) : ℝ) = 2 * ‖z‖^2 from by
+      rw [nsmul_eq_mul]; norm_cast]
+  rw [h_smul_apply] at h_apply_z
+  -- h_apply_z : `-((1+‖z‖²)²)⁻¹ * (2 * ‖z‖²) = 0`.
+  have h_norm_sq_pos : 0 < ‖z‖^2 := by
+    have : 0 < ‖z‖ := norm_pos_iff.mpr hz
+    positivity
+  have h_denom_sq_pos : 0 < (1 + ‖z‖^2)^2 := by positivity
+  have h_denom_inv_pos : 0 < ((1 + ‖z‖^2)^2)⁻¹ := inv_pos.mpr h_denom_sq_pos
+  have h_product_neg : -((1 + ‖z‖^2)^2)⁻¹ * (2 * ‖z‖^2) < 0 := by
+    have h_pos_prod : 0 < ((1 + ‖z‖^2)^2)⁻¹ * (2 * ‖z‖^2) := by positivity
+    linarith
+  linarith
+
 /-- **The two-point candidate critical set of `heightRiemannSphere`.**
 Classically `{0_RS, ∞}`. Used as the explicit `criticalSet` of the
 `MorseFunction RiemannSphere` instance below, in lieu of the default
