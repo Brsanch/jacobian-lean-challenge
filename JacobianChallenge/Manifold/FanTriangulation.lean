@@ -71,6 +71,48 @@ contributions `-single(z_c→z₀) + single(z_c→z₀) = 0`, leaving just
   unfold fanSpokesPair
   abel
 
+/-! ## Fan 2-chain from a list of polygonal vertices
+
+Given a center `z_c` and a list `zs : List ℂ` (consecutive pairs in
+`zs` are the polygonal edges), the **fan 2-chain** is the formal sum
+of triangles `(z_c, z_i, z_{i+1})` for each adjacent pair. -/
+
+/-- The fan 2-chain over consecutive pairs of `zs`. -/
+noncomputable def fanChain
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z_c : ℂ) :
+    List ℂ → Smooth2Chain (𝓘(ℝ, ℂ)) X
+  | [] => 0
+  | [_] => 0
+  | z_i :: z_j :: rest =>
+    Smooth2Chain.single (affineChartTriangleSimplex_univ q h_univ z_c z_i z_j)
+      + fanChain q h_univ z_c (z_j :: rest)
+
+/-- The polygonal-edge chain over consecutive pairs of `zs`. -/
+noncomputable def polygonalChain
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) :
+    List ℂ → SmoothChain (𝓘(ℝ, ℂ)) X
+  | [] => 0
+  | [_] => 0
+  | z_i :: z_j :: rest =>
+    SmoothChain.single (chartStraightLinePath_univ q h_univ z_i z_j)
+      + polygonalChain q h_univ (z_j :: rest)
+
+@[simp] lemma fanChain_nil
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z_c : ℂ) :
+    fanChain q h_univ z_c [] = 0 := rfl
+
+@[simp] lemma fanChain_singleton
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z_c z : ℂ) :
+    fanChain q h_univ z_c [z] = 0 := rfl
+
+@[simp] lemma polygonalChain_nil
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) :
+    polygonalChain q h_univ [] = 0 := rfl
+
+@[simp] lemma polygonalChain_singleton
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z : ℂ) :
+    polygonalChain q h_univ [z] = 0 := rfl
+
 end JacobianChallenge
 
 end
