@@ -124,6 +124,91 @@ theorem two_chart_triangle_boundary_decomp
   unfold outerChain
   abel
 
+/-- **`outerChain` is a SmoothCycle.** Its boundary in `X →₀ ℤ`
+vanishes by point-cancellation across the 4 edges. -/
+lemma outerChain_mem_smoothCycle
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (a b c d : ℂ) :
+    outerChain q h_univ a b c d ∈ SmoothCycle (𝓘(ℝ, ℂ)) X := by
+  rw [SmoothCycle.mem_iff]
+  -- The total boundary in `X →₀ ℤ` is sum of `(tgt - src)` over the 4 paths
+  -- with signs (-, +, +, -). Endpoints (chart.symm of a, b, c, d) cancel
+  -- pairwise.
+  unfold outerChain
+  -- Use boundary's additivity + boundary_single.
+  rw [show (-SmoothChain.single (chartStraightLinePath_univ q h_univ a c)
+            + SmoothChain.single (chartStraightLinePath_univ q h_univ a b)
+            + SmoothChain.single (chartStraightLinePath_univ q h_univ b d)
+            - SmoothChain.single (chartStraightLinePath_univ q h_univ c d))
+        = ((-SmoothChain.single (chartStraightLinePath_univ q h_univ a c))
+            + SmoothChain.single (chartStraightLinePath_univ q h_univ a b)
+            + SmoothChain.single (chartStraightLinePath_univ q h_univ b d))
+            + (-SmoothChain.single (chartStraightLinePath_univ q h_univ c d))
+          from by abel]
+  simp [SmoothChain.boundary_single, SmoothChain.boundarySingle,
+        chartStraightLinePath_univ_src, chartStraightLinePath_univ_tgt]
+
+/-- **`outerChain` lies in `stokesBoundaries`.** This is the substantive
+chain-cancellation conclusion: the outer 4-edge cycle of a two-triangle
+configuration is a stokes-boundary. -/
+theorem outerChain_mem_stokesBoundaries
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (a b c d : ℂ) :
+    (⟨outerChain q h_univ a b c d,
+        outerChain_mem_smoothCycle q h_univ a b c d⟩ : SmoothCycle (𝓘(ℝ, ℂ)) X)
+      ∈ stokesBoundaries (𝓘(ℝ, ℂ)) X := by
+  -- Strategy:
+  -- `∂σ₁ + ∂σ₂` is in stokesBoundaries (= image of boundary₂Cycle).
+  -- `single(b→c) + single(c→b)` is in stokesBoundaries.
+  -- outerChain = (∂σ₁ + ∂σ₂) - sharedPair, both in stokesBoundaries.
+  set σ₁ := affineChartTriangleSimplex_univ q h_univ a b c
+  set σ₂ := affineChartTriangleSimplex_univ q h_univ c b d
+  -- Build the 2-chain witnessing `∂σ₁ + ∂σ₂ ∈ stokesBoundaries`.
+  have h_sum_in : Smooth2Chain.boundary₂Cycle
+      (Smooth2Chain.single σ₁ + Smooth2Chain.single σ₂)
+        ∈ stokesBoundaries (𝓘(ℝ, ℂ)) X := by
+    refine (mem_stokesBoundaries_iff (I := 𝓘(ℝ, ℂ)) (X := X)).mpr ?_
+    exact ⟨Smooth2Chain.single σ₁ + Smooth2Chain.single σ₂, rfl⟩
+  -- Pair-cycle is in stokesBoundaries.
+  have h_pair_in :
+      (single_smoothPath_plus_reverse_smoothCycle (I := 𝓘(ℝ, ℂ)) (X := X)
+        (chartStraightLinePath_univ q h_univ b c))
+          ∈ stokesBoundaries (𝓘(ℝ, ℂ)) X :=
+    chartStraightLinePath_pair_smoothCycle_mem_stokesBoundaries q h_univ b c
+  -- Express outerChain-as-cycle as difference. Use chain-equality lifted to
+  -- cycle level via Subtype.ext.
+  have h_chain_eq :
+      (outerChain q h_univ a b c d : SmoothChain (𝓘(ℝ, ℂ)) X)
+        = ((Smooth2Chain.boundary₂Cycle
+              (Smooth2Chain.single σ₁ + Smooth2Chain.single σ₂))
+            : SmoothChain (𝓘(ℝ, ℂ)) X)
+          - ((single_smoothPath_plus_reverse_smoothCycle (I := 𝓘(ℝ, ℂ)) (X := X)
+                (chartStraightLinePath_univ q h_univ b c))
+              : SmoothChain (𝓘(ℝ, ℂ)) X) := by
+    -- ∂σ₁ + ∂σ₂ at chain level = boundary(σ₁) + boundary(σ₂).
+    have h_b : ((Smooth2Chain.boundary₂Cycle
+                  (Smooth2Chain.single σ₁ + Smooth2Chain.single σ₂))
+                : SmoothChain (𝓘(ℝ, ℂ)) X)
+          = Smooth2Simplex.boundary σ₁ + Smooth2Simplex.boundary σ₂ := by
+      simp [Smooth2Chain.boundary₂Cycle_coe, Smooth2Chain.boundary₂_single]
+    rw [h_b, single_smoothPath_plus_reverse_smoothCycle_coe]
+    have h_rev : (chartStraightLinePath_univ q h_univ b c).reverse
+                = chartStraightLinePath_univ q h_univ c b :=
+      chartStraightLinePath_univ_reverse q h_univ b c
+    rw [h_rev, two_chart_triangle_boundary_decomp]
+    abel
+  -- Lift to SmoothCycle level via Subtype.ext.
+  have h_cycle_eq :
+      (⟨outerChain q h_univ a b c d,
+          outerChain_mem_smoothCycle q h_univ a b c d⟩
+            : SmoothCycle (𝓘(ℝ, ℂ)) X)
+        = Smooth2Chain.boundary₂Cycle
+            (Smooth2Chain.single σ₁ + Smooth2Chain.single σ₂)
+          - single_smoothPath_plus_reverse_smoothCycle (I := 𝓘(ℝ, ℂ)) (X := X)
+              (chartStraightLinePath_univ q h_univ b c) := by
+    apply Subtype.ext
+    exact h_chain_eq
+  rw [h_cycle_eq]
+  exact (stokesBoundaries (𝓘(ℝ, ℂ)) X).sub_mem h_sum_in h_pair_in
+
 end JacobianChallenge
 
 end
