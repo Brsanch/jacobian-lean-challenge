@@ -92,6 +92,38 @@ theorem two_chart_triangle_boundary_eq
   rw [affineChartTriangleSimplex_univ_boundary,
       affineChartTriangleSimplex_univ_boundary]
 
+/-! ## Outer-edge chain of a two-triangle pair
+
+The "outer-edge chain" of σ₁ = (a, b, c), σ₂ = (c, b, d) is the 4-term
+chain visible from outside the shared edge b–c:
+
+  outerChain a b c d := -single(a→c) + single(a→b) + single(b→d) - single(c→d)
+
+By construction, the sum of the two triangles' boundaries decomposes as
+
+  ∂σ₁ + ∂σ₂ = outerChain + (single(b→c) + single(c→b)) -/
+
+/-- The outer-edge chain of a two-triangle configuration. -/
+noncomputable def outerChain
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (a b c d : ℂ) :
+    SmoothChain (𝓘(ℝ, ℂ)) X :=
+  -SmoothChain.single (chartStraightLinePath_univ q h_univ a c)
+    + SmoothChain.single (chartStraightLinePath_univ q h_univ a b)
+    + SmoothChain.single (chartStraightLinePath_univ q h_univ b d)
+    - SmoothChain.single (chartStraightLinePath_univ q h_univ c d)
+
+/-- **Two-triangle boundary as outer-chain + shared-edge pair.** -/
+theorem two_chart_triangle_boundary_decomp
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (a b c d : ℂ) :
+    Smooth2Simplex.boundary (affineChartTriangleSimplex_univ q h_univ a b c)
+      + Smooth2Simplex.boundary (affineChartTriangleSimplex_univ q h_univ c b d)
+    = outerChain q h_univ a b c d
+      + (SmoothChain.single (chartStraightLinePath_univ q h_univ b c)
+         + SmoothChain.single (chartStraightLinePath_univ q h_univ c b)) := by
+  rw [two_chart_triangle_boundary_eq]
+  unfold outerChain
+  abel
+
 end JacobianChallenge
 
 end
