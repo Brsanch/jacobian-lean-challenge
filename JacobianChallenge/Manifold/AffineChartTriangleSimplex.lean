@@ -160,6 +160,46 @@ noncomputable def affineChartTriangleSimplex_univ
       exact (contMDiffOn_univ).mp h_symm_on
     exact h_symm.comp h_inner
 
+/-! ## Sanity properties of the chart-triangle simplex -/
+
+/-- The chart-triangle simplex's `toFun` at the three Δ²-vertices
+recovers the three corner manifold points. -/
+@[simp] lemma affineChartTriangleSimplex_univ_toFun_v0
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ z₂ : ℂ) :
+    (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+        Smooth2Simplex.v0 = (chartAt ℂ q).symm z₀ := by
+  show (chartAt ℂ q).symm
+      (affineChartTriangle z₀ z₁ z₂
+        (Smooth2Simplex.v0 0) (Smooth2Simplex.v0 1))
+    = (chartAt ℂ q).symm z₀
+  congr 1
+  unfold affineChartTriangle Smooth2Simplex.v0
+  simp
+
+@[simp] lemma affineChartTriangleSimplex_univ_toFun_v1
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ z₂ : ℂ) :
+    (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+        Smooth2Simplex.v1 = (chartAt ℂ q).symm z₁ := by
+  show (chartAt ℂ q).symm
+      (affineChartTriangle z₀ z₁ z₂
+        (Smooth2Simplex.v1 0) (Smooth2Simplex.v1 1))
+    = (chartAt ℂ q).symm z₁
+  congr 1
+  unfold affineChartTriangle Smooth2Simplex.v1
+  simp
+
+@[simp] lemma affineChartTriangleSimplex_univ_toFun_v2
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ z₂ : ℂ) :
+    (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+        Smooth2Simplex.v2 = (chartAt ℂ q).symm z₂ := by
+  show (chartAt ℂ q).symm
+      (affineChartTriangle z₀ z₁ z₂
+        (Smooth2Simplex.v2 0) (Smooth2Simplex.v2 1))
+    = (chartAt ℂ q).symm z₂
+  congr 1
+  unfold affineChartTriangle Smooth2Simplex.v2
+  simp
+
 end JacobianChallenge
 
 end
