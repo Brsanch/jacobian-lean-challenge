@@ -101,6 +101,100 @@ lemma contMDiff_chartHomotopyMapDirect_univ
     exact (contMDiffOn_univ).mp h_symm_on
   exact h_symm.comp h_inner
 
+/-- **The full `SmoothHomotopyPath` constructor.** Given a smooth path
+`γ` globally chart-contained in a full-target chart `(chartAt ℂ q)`,
+build a `SmoothHomotopyPath γ γ_line` where γ_line is the chart-
+straight-line path between γ's endpoints. -/
+noncomputable def chartStraightLineHomotopy
+    (q : Y) (h_univ : (chartAt ℂ q).target = Set.univ)
+    (γ : SmoothPath (𝓘(ℝ, ℂ)) Y)
+    (h_in : ∀ t : ℝ, γ.ambient t ∈ (chartAt ℂ q).source)
+    (h_src_in : γ.src ∈ (chartAt ℂ q).source)
+    (h_tgt_in : γ.tgt ∈ (chartAt ℂ q).source)
+    (h0_amb : γ.ambient 0 = γ.src) (h1_amb : γ.ambient 1 = γ.tgt) :
+    SmoothHomotopyPath γ
+      (chartStraightLinePath_univ q h_univ ((chartAt ℂ q) γ.src)
+        ((chartAt ℂ q) γ.tgt))
+      (by exact (OpenPartialHomeomorph.left_inv _ h_src_in).symm)
+      (by exact (OpenPartialHomeomorph.left_inv _ h_tgt_in).symm) := by
+  refine
+    { toFun := chartHomotopyMapDirect q γ
+      smooth := contMDiff_chartHomotopyMapDirect_univ q h_univ γ h_in
+      left_edge := ?_
+      right_edge := ?_
+      bottom_edge := ?_
+      top_edge := ?_ }
+  · -- left_edge: at s=0, H = chart.symm(chart(γ.amb t.val)) = γ.amb t.val = γ.toPath t.
+    intro t
+    show chartHomotopyMapDirect q γ ![0, t.val] = γ.toPath t
+    unfold chartHomotopyMapDirect
+    have h_idx : (![0, t.val] : Fin 2 → ℝ) 0 = 0 := rfl
+    have h_idx2 : (![0, t.val] : Fin 2 → ℝ) 1 = t.val := rfl
+    rw [h_idx, h_idx2]
+    -- (1-0) • chart(γ.amb t.val) + 0 • (...) = chart(γ.amb t.val).
+    have h_collapse :
+        (1 - (0 : ℝ)) • (chartAt ℂ q) (γ.ambient t.val)
+          + (0 : ℝ) • ((1 - t.val) • (chartAt ℂ q) γ.src
+                        + t.val • (chartAt ℂ q) γ.tgt)
+        = (chartAt ℂ q) (γ.ambient t.val) := by module
+    rw [h_collapse]
+    -- chart.symm(chart(γ.amb t.val)) = γ.amb t.val.
+    rw [OpenPartialHomeomorph.left_inv _ (h_in t.val)]
+    -- γ.amb t.val = γ.toPath t.
+    exact γ.ambient_eq_on_unitInterval t
+  · -- right_edge: at s=1, H = chart.symm((1-t.val) • chart γ.src + t.val • chart γ.tgt)
+    --                    = chartStraightLineMap q (chart γ.src) (chart γ.tgt) t.val
+    --                    = γ_line.toPath t.
+    intro t
+    show chartHomotopyMapDirect q γ ![1, t.val]
+        = (chartStraightLinePath_univ q h_univ ((chartAt ℂ q) γ.src)
+            ((chartAt ℂ q) γ.tgt)).toPath t
+    unfold chartHomotopyMapDirect
+    have h_idx : (![1, t.val] : Fin 2 → ℝ) 0 = 1 := rfl
+    have h_idx2 : (![1, t.val] : Fin 2 → ℝ) 1 = t.val := rfl
+    rw [h_idx, h_idx2]
+    -- (1-1) • _ + 1 • (...) = (...).
+    have h_collapse :
+        (1 - (1 : ℝ)) • (chartAt ℂ q) (γ.ambient t.val)
+          + (1 : ℝ) • ((1 - t.val) • (chartAt ℂ q) γ.src
+                        + t.val • (chartAt ℂ q) γ.tgt)
+        = (1 - t.val) • (chartAt ℂ q) γ.src
+          + t.val • (chartAt ℂ q) γ.tgt := by module
+    rw [h_collapse]
+    -- Match against γ_line.toPath t = chartStraightLineMap q (chart γ.src) (chart γ.tgt) t.val
+    -- = chart.symm((1-t.val) • chart γ.src + t.val • chart γ.tgt).
+    rfl
+  · -- bottom_edge: at t=0, H = chart.symm((1-s) • chart(γ.amb 0) + s • ((1-0) • chart γ.src + 0 • chart γ.tgt))
+    --                       = chart.symm((1-s) • chart γ.src + s • chart γ.src)
+    --                       = chart.symm(chart γ.src) = γ.src.
+    intro s
+    show chartHomotopyMapDirect q γ ![s, 0] = γ.src
+    unfold chartHomotopyMapDirect
+    have h_idx : (![s, (0 : ℝ)] : Fin 2 → ℝ) 0 = s := rfl
+    have h_idx2 : (![s, (0 : ℝ)] : Fin 2 → ℝ) 1 = 0 := rfl
+    rw [h_idx, h_idx2, h0_amb]
+    have h_collapse :
+        (1 - s) • (chartAt ℂ q) γ.src
+          + s • ((1 - (0 : ℝ)) • (chartAt ℂ q) γ.src
+                  + (0 : ℝ) • (chartAt ℂ q) γ.tgt)
+        = (chartAt ℂ q) γ.src := by module
+    rw [h_collapse]
+    exact OpenPartialHomeomorph.left_inv _ h_src_in
+  · -- top_edge: at t=1, similarly = γ.tgt.
+    intro s
+    show chartHomotopyMapDirect q γ ![s, 1] = γ.tgt
+    unfold chartHomotopyMapDirect
+    have h_idx : (![s, (1 : ℝ)] : Fin 2 → ℝ) 0 = s := rfl
+    have h_idx2 : (![s, (1 : ℝ)] : Fin 2 → ℝ) 1 = 1 := rfl
+    rw [h_idx, h_idx2, h1_amb]
+    have h_collapse :
+        (1 - s) • (chartAt ℂ q) γ.tgt
+          + s • ((1 - (1 : ℝ)) • (chartAt ℂ q) γ.src
+                  + (1 : ℝ) • (chartAt ℂ q) γ.tgt)
+        = (chartAt ℂ q) γ.tgt := by module
+    rw [h_collapse]
+    exact OpenPartialHomeomorph.left_inv _ h_tgt_in
+
 end JacobianChallenge
 
 end
