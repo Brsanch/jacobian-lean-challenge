@@ -246,6 +246,35 @@ theorem polygonalChain_eq_boundary_of_closed
   rw [spokeResidue_eq_zero_of_closed q h_univ z_c z_0 rest h_closed]
   abel
 
+/-- **Closed polygonal chain is a `SmoothCycle`.** -/
+lemma polygonalChain_mem_smoothCycle_of_closed
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z_c : ℂ)
+    (z_0 : ℂ) (rest : List ℂ)
+    (h_closed : (z_0 :: rest).getLast (by simp) = z_0) :
+    polygonalChain q h_univ (z_0 :: rest) ∈ SmoothCycle (𝓘(ℝ, ℂ)) X := by
+  rw [polygonalChain_eq_boundary_of_closed q h_univ z_c z_0 rest h_closed]
+  exact Smooth2Chain.boundary₂_mem_smoothCycle _
+
+/-- **Closed polygonal chain (packaged as a SmoothCycle) lies in
+`stokesBoundaries`.** This is the headline corollary of the fan-
+triangulation arc. -/
+theorem polygonalChain_smoothCycle_mem_stokesBoundaries_of_closed
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z_c : ℂ)
+    (z_0 : ℂ) (rest : List ℂ)
+    (h_closed : (z_0 :: rest).getLast (by simp) = z_0) :
+    (⟨polygonalChain q h_univ (z_0 :: rest),
+        polygonalChain_mem_smoothCycle_of_closed q h_univ z_c z_0 rest h_closed⟩
+          : SmoothCycle (𝓘(ℝ, ℂ)) X)
+      ∈ stokesBoundaries (𝓘(ℝ, ℂ)) X := by
+  refine (mem_stokesBoundaries_iff (I := 𝓘(ℝ, ℂ)) (X := X)).mpr ?_
+  refine ⟨fanChain q h_univ z_c (z_0 :: rest), ?_⟩
+  apply Subtype.ext
+  show (Smooth2Chain.boundary₂Cycle (fanChain q h_univ z_c (z_0 :: rest))
+          : SmoothChain (𝓘(ℝ, ℂ)) X)
+      = polygonalChain q h_univ (z_0 :: rest)
+  rw [Smooth2Chain.boundary₂Cycle_coe]
+  exact (polygonalChain_eq_boundary_of_closed q h_univ z_c z_0 rest h_closed).symm
+
 end JacobianChallenge
 
 end
