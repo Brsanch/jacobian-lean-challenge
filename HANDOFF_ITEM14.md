@@ -25,7 +25,67 @@ working tree's branch state independent of the parallel session.
 /Volumes/4TB SD/.../jacobian-lean-challenge-item14  [feat/item14-classical-content]
 ```
 
-## 2026-05-20 session progress: Dolbeault chips 2–8 landed (local on branch)
+## 2026-05-21 session progress: chain-assembly arc landed
+
+Branch advanced ~28 more chips beyond the prior 2026-05-20 batch.
+All single-file builds clean, no axiom, no sorry. Branch remains
+local-only.
+
+### Key new infrastructure (in addition to chips 2–8)
+
+* **`SmoothPathChartSubdivision`** — Lebesgue subdivision of a smooth
+  path by an open cover / by a `[HasConvexTargetChartCover]` cover.
+* **`SubdivisionTelescopingToLoopFromBSLB`** — architectural reduction:
+  `SubdivisionTelescopingToLoop_named X ⇐ ∀ p₀, BSLB X p₀`.
+* **`SubdivisionTelescopingToLoopSubsingleton`** — typeclass-
+  generalized trivial discharge under `[Subsingleton (HolomorphicOneForm X)]`.
+* **`BilinearChartCellSimplex`** — bilinear chart-cell smoothness +
+  convex containment + `Smooth2Simplex` lift (via `complexManifoldRealification`).
+* **`AffineChartTriangleSimplex`** — affine 3-corner chart-triangle
+  `Smooth2Simplex 𝓘(ℝ, ℂ) X` (Δ²-convention); vertex-toFun simp lemmas.
+* **`ChartStraightLinePath`** — chart-straight-line `SmoothPath 𝓘(ℝ, ℂ) X`;
+  `smoothPath_ext_of_toPath_apply` extensionality lemma;
+  reverse-equals-swap-endpoints; full SmoothPath identification of the
+  three triangle faces; explicit `Smooth2Simplex.boundary` of the
+  chart-triangle as a chain of three `chartStraightLinePath_univ`s.
+* **`AdjacentTriangleCancellation`** — two-triangle decomposition into
+  outer chain + shared-pair; outer chain is a `SmoothCycle`; outer chain
+  lies in `stokesBoundaries` (substantive Stokes-style cancellation).
+* **`FanTriangulation`** — `fanChain`, `polygonalChain`, `spokeResidue`
+  List-recursive definitions; full inductive boundary identity
+  `boundary₂ fanChain = polygonalChain + spokeResidue`; closure
+  corollary `polygonalChain_eq_boundary_of_closed`.
+
+### Frontier (what remains open)
+
+The chain-assembly for a closed polygonal loop is **closed** — any
+closed polygonal loop in a full-target chart bounds a fan 2-chain
+explicitly. The remaining gap toward `BasedSmoothLoopsBoundHypothesis
+X p₀` on a simply-connected complex 1-manifold is:
+
+1. **Polygonal-approximation bordism**: from a smooth based loop γ on
+   X simply-connected, produce a sequence of (a) chart-cover-aware
+   subdivision of γ (Lebesgue, **in tree**), (b) chart-local
+   straight-line bordism between each subarc and the corresponding
+   chart-straight-line segment (`SmoothHomotopyChartLocal`, in tree
+   under chart-containment hypotheses), (c) concatenation to give a
+   smooth bordism between γ and a polygonal loop. **This is the next
+   substantive arc**, dispatching across chart boundaries via
+   bump-mollification.
+
+2. **Cross-chart bookkeeping**: chart-straight-line edges in different
+   charts are *different* smooth paths in X. For chain cancellation to
+   work across chart boundaries, we either subdivide finely enough
+   that consecutive cells share a chart, or add a chart-transition
+   bordism correction at chart-boundary edges. The fine-subdivision
+   route is cleaner.
+
+3. **Polygonal loop is closed**: the polygonal approximation of γ
+   automatically closes because γ is a loop and the subdivision
+   includes the basepoint endpoint with multiplicity 2. So the
+   `polygonalChain_eq_boundary_of_closed` corollary applies directly.
+
+## Prior session's commits on this branch
 
 Branch advanced 7 chips beyond `66f5199` (handoff baseline). All
 single-file `LEAN_NUM_THREADS=1 lake env lean …` clean, no axiom, no
