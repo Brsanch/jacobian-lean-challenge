@@ -1007,4 +1007,5 @@ import JacobianChallenge.Manifold.SurfaceClassificationData
 import JacobianChallenge.Manifold.SurfaceClassificationDataComplexTorus
 import JacobianChallenge.Manifold.HasSurfaceClassificationData
 import JacobianChallenge.Manifold.HasJacobianHodgeChainFromSurfaceClassificationData
+import JacobianChallenge.Manifold.CotangentWedgeVanishing
 
