@@ -1035,3 +1035,4 @@ import JacobianChallenge.Manifold.MorseFunction
 import JacobianChallenge.Manifold.RiemannBilinearHypothesis
 import JacobianChallenge.Manifold.AbelTheoremHypothesis
 import JacobianChallenge.Manifold.MrdouglasnyOpenAxiomBridges
+import JacobianChallenge.Manifold.MorseFunctionRiemannSphere
