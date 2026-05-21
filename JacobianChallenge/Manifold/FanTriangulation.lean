@@ -180,7 +180,6 @@ theorem boundary₂_fanChain
         abel
       | cons z_2 rest'' =>
         subst h'
-        -- Both residues unfold (their inputs are 2+ elements lists).
         show SmoothChain.single (chartStraightLinePath_univ q h_univ z_0 z_1)
             + fanSpokesPair q h_univ z_c z_0 z_1
             + (polygonalChain q h_univ (z_1 :: z_2 :: rest'')
@@ -209,6 +208,43 @@ theorem boundary₂_fanChain
               + SmoothChain.single (chartStraightLinePath_univ q h_univ z_c z_0))
         rw [h_last_eq]
         abel
+
+/-! ## Closed-loop corollary: polygonal-chain is the boundary of a 2-chain
+
+When the polygonal loop is closed (`zs.head = zs.getLast`), the spoke
+residue is zero, so the polygonal chain *is* the boundary of the fan
+2-chain. -/
+
+/-- For a closed 2+-element list (`zs.head = zs.getLast`), the spoke
+residue is zero. -/
+lemma spokeResidue_eq_zero_of_closed
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z_c : ℂ)
+    (z_0 : ℂ) (rest : List ℂ)
+    (h_closed : (z_0 :: rest).getLast (by simp) = z_0) :
+    spokeResidue q h_univ z_c (z_0 :: rest) = 0 := by
+  cases rest with
+  | nil => simp
+  | cons z_1 rest' =>
+    show -SmoothChain.single
+            (chartStraightLinePath_univ q h_univ z_c
+              ((z_0 :: z_1 :: rest').getLast (by simp)))
+          + SmoothChain.single (chartStraightLinePath_univ q h_univ z_c z_0)
+        = 0
+    rw [h_closed]
+    abel
+
+/-- **Closed polygonal-loop boundary identity.** For a closed list
+`zs` with `zs.head = zs.getLast`, the polygonal-edge chain *is* the
+boundary of the fan 2-chain. -/
+theorem polygonalChain_eq_boundary_of_closed
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z_c : ℂ)
+    (z_0 : ℂ) (rest : List ℂ)
+    (h_closed : (z_0 :: rest).getLast (by simp) = z_0) :
+    polygonalChain q h_univ (z_0 :: rest)
+      = Smooth2Chain.boundary₂ (fanChain q h_univ z_c (z_0 :: rest)) := by
+  rw [boundary₂_fanChain]
+  rw [spokeResidue_eq_zero_of_closed q h_univ z_c z_0 rest h_closed]
+  abel
 
 end JacobianChallenge
 
