@@ -86,6 +86,15 @@ lemma dbar_neg (f : X → ℂ) (x : X) :
   rw [h_distrib]
   exact dbarChart_neg _ _
 
+/-- **ℂ-scalar linearity of `dbar`.** `dbar (fun y => c * f y) x = c * dbar f x`. -/
+lemma dbar_const_mul (c : ℂ) (f : X → ℂ) (x : X) :
+    dbar (fun y : X => c * f y) x = c * dbar f x := by
+  unfold dbar
+  have h_distrib : (fun y : X => c * f y) ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm
+      = fun z : ℂ => c * (f ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm) z := rfl
+  rw [h_distrib]
+  exact dbarChart_const_mul _ _ _
+
 /-- **Holomorphic-in-chart ⇒ `∂̄f = 0` at that point.**
 
 If the chart-pullback `f ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm : ℂ → ℂ` is
