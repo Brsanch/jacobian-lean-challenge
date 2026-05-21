@@ -132,6 +132,39 @@ lemma dbarChart_neg (f : ℂ → ℂ) (z₀ : ℂ) :
   simp only [neg_apply]
   ring
 
+/-- **ℂ-scalar linearity.** For a constant `c : ℂ` and any function
+`f : ℂ → ℂ`, `dbarChart (fun z => c * f z) z₀ = c * dbarChart f z₀`. -/
+lemma dbarChart_const_mul (c : ℂ) (f : ℂ → ℂ) (z₀ : ℂ) :
+    dbarChart (fun z => c * f z) z₀ = c * dbarChart f z₀ := by
+  unfold dbarChart
+  -- `fderiv ℝ (fun z => c * f z) z₀ = c • fderiv ℝ f z₀`.
+  have h_fderiv : fderiv ℝ (fun z => c * f z) z₀
+        = c • fderiv ℝ f z₀ := by
+    by_cases hf : DifferentiableAt ℝ f z₀
+    · -- `c * f z = c • f z`; fderiv_const_smul gives the result.
+      have h_eq : (fun z => c * f z) = fun z => c • f z := by
+        funext z; rw [smul_eq_mul]
+      rw [h_eq]
+      exact (fderiv_const_smul (𝕜 := ℝ) hf c)
+    · -- If `f` isn't ℝ-differentiable, both sides are zero
+      -- (modulo the c = 0 case which is also zero).
+      by_cases hc : c = 0
+      · subst hc
+        simp [fderiv_zero_of_not_differentiableAt hf]
+      · have h_not : ¬ DifferentiableAt ℝ (fun z => c * f z) z₀ := by
+          intro h_cf
+          apply hf
+          have h_eq : f = fun z => c⁻¹ * (c * f z) := by
+            funext z; field_simp
+          rw [h_eq]
+          exact h_cf.const_mul c⁻¹
+        rw [fderiv_zero_of_not_differentiableAt hf,
+            fderiv_zero_of_not_differentiableAt h_not]
+        simp
+  rw [h_fderiv]
+  simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
+  ring
+
 /-! ## Holomorphic functions have zero `∂̄`
 
 Routes through mathlib's `HasDerivAt.complexToReal_fderiv`, which packages a
