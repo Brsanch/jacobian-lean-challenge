@@ -177,6 +177,62 @@ noncomputable def upperLeftSimplex (H : SmoothHomotopyPath γ₀ γ₁ h_src h_t
   rw [this]
   exact H.top_edge 0
 
+/-! ## Diagonal path -/
+
+/-- The diagonal-path 1-simplex `t ↦ H(t, t)`, as a smooth path from
+`γ₀.src` to `γ₀.tgt`. -/
+noncomputable def diagonalPath (H : SmoothHomotopyPath γ₀ γ₁ h_src h_tgt) :
+    SmoothPath (𝓘(ℝ, ℂ)) Y where
+  src := γ₀.src
+  tgt := γ₀.tgt
+  toPath := {
+    toContinuousMap :=
+      { toFun := fun t : unitInterval => H.toFun ![t.val, t.val]
+        continuous_toFun := by
+          have h_smooth : ContMDiff 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) ∞
+              (fun t : ℝ => H.toFun ![t, t]) := by
+            have h_diag : ContMDiff 𝓘(ℝ, ℝ) 𝓘(ℝ, Fin 2 → ℝ) ∞
+                (fun t : ℝ => (![t, t] : Fin 2 → ℝ)) := by
+              rw [contMDiff_pi_space]
+              intro i
+              fin_cases i
+              · have h_eq : (fun t : ℝ => (![t, t] : Fin 2 → ℝ) 0)
+                          = fun t : ℝ => t := by funext; rfl
+                show ContMDiff _ _ ∞ (fun t : ℝ => (![t, t] : Fin 2 → ℝ) 0)
+                rw [h_eq]; exact contMDiff_id
+              · have h_eq : (fun t : ℝ => (![t, t] : Fin 2 → ℝ) 1)
+                          = fun t : ℝ => t := by funext; rfl
+                show ContMDiff _ _ ∞ (fun t : ℝ => (![t, t] : Fin 2 → ℝ) 1)
+                rw [h_eq]; exact contMDiff_id
+            exact H.smooth.comp h_diag
+          exact h_smooth.continuous.comp continuous_subtype_val }
+    source' := by
+      show H.toFun ![(0 : unitInterval).val, (0 : unitInterval).val] = γ₀.src
+      change H.toFun ![(0 : ℝ), 0] = γ₀.src
+      exact H.bottom_edge 0
+    target' := by
+      show H.toFun ![(1 : unitInterval).val, (1 : unitInterval).val] = γ₀.tgt
+      change H.toFun ![(1 : ℝ), 1] = γ₀.tgt
+      exact H.top_edge 1
+  }
+  smooth := by
+    refine ⟨fun t : ℝ => H.toFun ![t, t], ?_, ?_⟩
+    · have h_diag : ContMDiff 𝓘(ℝ, ℝ) 𝓘(ℝ, Fin 2 → ℝ) ∞
+          (fun t : ℝ => (![t, t] : Fin 2 → ℝ)) := by
+        rw [contMDiff_pi_space]
+        intro i
+        fin_cases i
+        · have h_eq : (fun t : ℝ => (![t, t] : Fin 2 → ℝ) 0)
+                    = fun t : ℝ => t := by funext; rfl
+          show ContMDiff _ _ ∞ (fun t : ℝ => (![t, t] : Fin 2 → ℝ) 0)
+          rw [h_eq]; exact contMDiff_id
+        · have h_eq : (fun t : ℝ => (![t, t] : Fin 2 → ℝ) 1)
+                    = fun t : ℝ => t := by funext; rfl
+          show ContMDiff _ _ ∞ (fun t : ℝ => (![t, t] : Fin 2 → ℝ) 1)
+          rw [h_eq]; exact contMDiff_id
+      exact H.smooth.comp h_diag
+    · intro t; rfl
+
 end SmoothHomotopyPath
 
 end JacobianChallenge
