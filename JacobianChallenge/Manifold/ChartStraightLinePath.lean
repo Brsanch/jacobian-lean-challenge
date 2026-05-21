@@ -5,6 +5,7 @@ Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.AffineChartTriangleSimplex
 import JacobianChallenge.Manifold.SmoothChain
+import JacobianChallenge.Manifold.SmoothPathReverse
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 
 set_option linter.unusedSectionVars false
@@ -282,6 +283,56 @@ lemma face0_eq_chartStraightLinePath_univ
     exact affineChartTriangleSimplex_univ_toFun_v2 q h_univ z₀ z₁ z₂
   · intro t
     exact affineChartTriangleSimplex_face0_toFun q h_univ z₀ z₁ z₂ t.val
+
+/-! ## Reverse of a chart-straight-line path -/
+
+/-- **`(chartStraightLinePath q hu z₀ z₁).reverse = chartStraightLinePath q hu z₁ z₀`.**
+
+The reverse path traces the straight line backward, which is the same
+as the straight-line interpolation between `z₁` (start) and `z₀` (end). -/
+lemma chartStraightLinePath_univ_reverse
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ : ℂ) :
+    (chartStraightLinePath_univ q h_univ z₀ z₁).reverse
+      = chartStraightLinePath_univ q h_univ z₁ z₀ := by
+  refine smoothPath_ext_of_toPath_apply ?_ ?_ ?_
+  · -- src of reverse = tgt of original = chart.symm z₁ = src of reversed.
+    show (chartStraightLinePath_univ q h_univ z₀ z₁).tgt
+        = (chartAt ℂ q).symm z₁
+    rfl
+  · show (chartStraightLinePath_univ q h_univ z₀ z₁).src
+        = (chartAt ℂ q).symm z₀
+    rfl
+  · intro t
+    -- Reverse's toPath = symm of original. unitInterval.symm sends t to ⟨1-t.val, _⟩.
+    -- Both sides reduce to chart.symm(s·z₀ + (1-s)·z₁) where s = t.val.
+    show ((chartStraightLinePath_univ q h_univ z₀ z₁).reverse.toPath
+            : unitInterval → X) t
+        = ((chartStraightLinePath_univ q h_univ z₁ z₀).toPath
+            : unitInterval → X) t
+    -- Unfold reverse.toPath = original.toPath.symm
+    have h_lhs :
+        ((chartStraightLinePath_univ q h_univ z₀ z₁).reverse.toPath
+            : unitInterval → X) t
+        = chartStraightLineMap q z₀ z₁ (1 - t.val) := by
+      show ((chartStraightLinePath_univ q h_univ z₀ z₁).toPath.symm
+              : unitInterval → X) t
+          = chartStraightLineMap q z₀ z₁ (1 - t.val)
+      have : ((chartStraightLinePath_univ q h_univ z₀ z₁).toPath.symm
+                : unitInterval → X) t
+            = chartStraightLineMap q z₀ z₁ (unitInterval.symm t).val := rfl
+      rw [this]
+      rfl
+    have h_rhs :
+        ((chartStraightLinePath_univ q h_univ z₁ z₀).toPath
+            : unitInterval → X) t
+        = chartStraightLineMap q z₁ z₀ t.val := rfl
+    rw [h_lhs, h_rhs]
+    unfold chartStraightLineMap
+    congr 1
+    -- (1 - (1-s))·z₀ + (1-s)·z₁ = (1 - s)·z₁ + s·z₀
+    show (1 - (1 - t.val)) • z₀ + (1 - t.val) • z₁
+        = (1 - t.val) • z₁ + t.val • z₀
+    module
 
 /-! ## Boundary of the chart-triangle simplex as an explicit chain -/
 
