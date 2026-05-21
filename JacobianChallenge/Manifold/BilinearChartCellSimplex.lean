@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.Smooth2Simplex
+import JacobianChallenge.Manifold.ComplexManifoldRealification
 import Mathlib.Geometry.Manifold.ChartedSpace
 import Mathlib.Geometry.Manifold.IsManifold.Basic
 import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
@@ -167,20 +168,50 @@ lemma contMDiff_bilinearChartInterp_fin2 (z₀₀ z₀₁ z₁₀ z₁₁ : ℂ)
       (fun x : Fin 2 → ℝ => bilinearChartInterp z₀₀ z₀₁ z₁₀ z₁₁ (x 0) (x 1)) :=
   (contDiff_of_uncurry_finTwo (contDiff_bilinearChartInterp z₀₀ z₀₁ z₁₀ z₁₁)).contMDiff
 
-/-! ## Toward chart-cell `Smooth2Simplex`
+/-! ## Chart-cell `Smooth2Simplex` from a `chart.target = univ` chart
 
-The full lift to `Smooth2Simplex 𝓘(ℝ, ℂ) X` requires a scalar-tower
-bridge from the complex-model `[IsManifold 𝓘(ℂ, ℂ) ⊤ X]` to the
-real-model regime expected by `Smooth2Simplex` (whose parameter
-space is `Fin 2 → ℝ`, model `𝓘(ℝ, Fin 2 → ℝ)`). Mathlib has the
-`IsManifold.is_manifold_restrictScalars` style bridge but threading
-it for the four-point chart-cell composition is mechanical glue
-beyond this chip's scope. Tracked as the next item in the
-chart-cell lift arc.
+The scalar-tower bridge from `[IsManifold 𝓘(ℂ, ℂ) ω X]` to
+`[IsManifold 𝓘(ℝ, ℂ) ⊤ X]` is supplied by the in-tree
+`complexManifoldRealification` instance. With that automatic, the
+construction below combines:
 
-The smoothness + convex-containment ingredients above are model-
-agnostic enough to be plumbed when the scalar-tower bridge lands.
--/
+* `contMDiff_bilinearChartInterp_fin2` (smoothness of bilinear
+  interpolation as `(Fin 2 → ℝ) → ℂ`);
+* `contMDiffOn_chart_symm` for `chart.symm` on `chart.target`
+  (restricted to `univ` when `chart.target = univ`);
+* `ContMDiff.comp` to compose.
+
+The result is a `Smooth2Simplex 𝓘(ℝ, ℂ) X`. -/
+
+/-- **Bilinear chart-cell `Smooth2Simplex`** under
+`(chartAt ℂ q).target = univ`. The map
+`x ↦ (chartAt ℂ q).symm (bilinearChartInterp z₀₀ z₀₁ z₁₀ z₁₁ (x 0) (x 1))`
+is a `Smooth2Simplex 𝓘(ℝ, ℂ) X`. -/
+noncomputable def bilinearChartCellSimplex_univ
+    {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
+    [IsManifold (𝓘(ℂ, ℂ)) ω X]
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ)
+    (z₀₀ z₀₁ z₁₀ z₁₁ : ℂ) :
+    Smooth2Simplex (𝓘(ℝ, ℂ)) X where
+  toFun := fun x : Fin 2 → ℝ =>
+    (chartAt ℂ q).symm
+      (bilinearChartInterp z₀₀ z₀₁ z₁₀ z₁₁ (x 0) (x 1))
+  smooth := by
+    have h_inner :
+        ContMDiff (𝓘(ℝ, Fin 2 → ℝ)) (𝓘(ℝ, ℂ)) ∞
+          (fun x : Fin 2 → ℝ =>
+            bilinearChartInterp z₀₀ z₀₁ z₁₀ z₁₁ (x 0) (x 1)) :=
+      contMDiff_bilinearChartInterp_fin2 _ _ _ _
+    -- `chart.symm` is `ContMDiffOn` on `chart.target = univ`. Hence
+    -- `ContMDiff` everywhere — under the ℝ-model brought in by
+    -- `complexManifoldRealification`.
+    have h_symm_on : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (chartAt ℂ q).symm
+        (chartAt ℂ q).target :=
+      contMDiffOn_chart_symm
+    have h_symm : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (chartAt ℂ q).symm := by
+      rw [show (chartAt ℂ q).target = Set.univ from h_univ] at h_symm_on
+      exact (contMDiffOn_univ).mp h_symm_on
+    exact h_symm.comp h_inner
 
 end JacobianChallenge
 
