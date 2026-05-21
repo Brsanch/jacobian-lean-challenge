@@ -395,6 +395,82 @@ theorem boundary_lowerRight_plus_upperLeft
       face2_upperLeftSimplex_eq]
   abel
 
+/-! ## Bordism conclusion: `single γ₁ - single γ₀` is a stokesBoundary -/
+
+/-- `single γ₁ - single γ₀` is a `SmoothCycle`. Its `X →₀ ℤ` boundary
+vanishes because γ₀.src = γ₁.src and γ₀.tgt = γ₁.tgt. -/
+lemma single_sub_single_mem_smoothCycle
+    (h_src : γ₀.src = γ₁.src) (h_tgt : γ₀.tgt = γ₁.tgt) :
+    SmoothChain.single γ₁ - SmoothChain.single γ₀
+      ∈ SmoothCycle (𝓘(ℝ, ℂ)) Y := by
+  rw [SmoothCycle.mem_iff]
+  simp [SmoothChain.boundary_single, SmoothChain.boundarySingle, h_src, h_tgt]
+
+/-- **The bordism conclusion at the SmoothCycle level.** Given a
+`SmoothHomotopyPath γ₀ γ₁`, the SmoothCycle `single γ₁ - single γ₀`
+lies in `stokesBoundaries`. -/
+theorem singleSub_smoothCycle_mem_stokesBoundaries
+    (H : SmoothHomotopyPath γ₀ γ₁ h_src h_tgt) :
+    (⟨SmoothChain.single γ₁ - SmoothChain.single γ₀,
+        single_sub_single_mem_smoothCycle h_src h_tgt⟩
+          : SmoothCycle (𝓘(ℝ, ℂ)) Y)
+      ∈ stokesBoundaries (𝓘(ℝ, ℂ)) Y := by
+  -- The 2-chain witness: σ_LR + σ_UL produces single γ₁ - single γ₀
+  -- modulo the two constant residues; both constants are themselves
+  -- stokesBoundaries.
+  set chain : Smooth2Chain (𝓘(ℝ, ℂ)) Y :=
+    Smooth2Chain.single H.lowerRightSimplex
+      + Smooth2Chain.single H.upperLeftSimplex with h_chain_def
+  -- ∂₂Cycle chain ∈ stokesBoundaries (trivially).
+  have h_chain_in : Smooth2Chain.boundary₂Cycle chain
+      ∈ stokesBoundaries (𝓘(ℝ, ℂ)) Y :=
+    (mem_stokesBoundaries_iff (I := 𝓘(ℝ, ℂ)) (X := Y)).mpr ⟨chain, rfl⟩
+  -- Const-cycles at γ₀.src and γ₀.tgt are stokesBoundaries.
+  have h_const_src_in :
+      single_smoothPath_const_smoothCycle (I := 𝓘(ℝ, ℂ)) (X := Y) γ₀.src
+        ∈ stokesBoundaries (𝓘(ℝ, ℂ)) Y :=
+    single_smoothPath_const_smoothCycle_mem_stokesBoundaries γ₀.src
+  have h_const_tgt_in :
+      single_smoothPath_const_smoothCycle (I := 𝓘(ℝ, ℂ)) (X := Y) γ₀.tgt
+        ∈ stokesBoundaries (𝓘(ℝ, ℂ)) Y :=
+    single_smoothPath_const_smoothCycle_mem_stokesBoundaries γ₀.tgt
+  -- Chain equality at the SmoothChain level.
+  have h_chain_eq :
+      (Smooth2Chain.boundary₂Cycle chain : SmoothChain (𝓘(ℝ, ℂ)) Y)
+        = SmoothChain.single γ₁ - SmoothChain.single γ₀
+          + SmoothChain.single (SmoothPath.const (𝓘(ℝ, ℂ)) Y γ₀.src)
+          + SmoothChain.single (SmoothPath.const (𝓘(ℝ, ℂ)) Y γ₀.tgt) := by
+    rw [h_chain_def]
+    simp [Smooth2Chain.boundary₂Cycle_coe, Smooth2Chain.boundary₂_single]
+    exact boundary_lowerRight_plus_upperLeft H
+  -- Lift chain equality to SmoothCycle level.
+  have h_cycle_eq : Smooth2Chain.boundary₂Cycle chain
+      = ⟨SmoothChain.single γ₁ - SmoothChain.single γ₀,
+            single_sub_single_mem_smoothCycle h_src h_tgt⟩
+        + single_smoothPath_const_smoothCycle (I := 𝓘(ℝ, ℂ)) (X := Y) γ₀.src
+        + single_smoothPath_const_smoothCycle (I := 𝓘(ℝ, ℂ)) (X := Y) γ₀.tgt := by
+    apply Subtype.ext
+    simp only [SmoothCycle.coe_add, single_smoothPath_const_smoothCycle_coe]
+    show (Smooth2Chain.boundary₂Cycle chain : SmoothChain (𝓘(ℝ, ℂ)) Y)
+        = SmoothChain.single γ₁ - SmoothChain.single γ₀
+          + SmoothChain.single (SmoothPath.const (𝓘(ℝ, ℂ)) Y γ₀.src)
+          + SmoothChain.single (SmoothPath.const (𝓘(ℝ, ℂ)) Y γ₀.tgt)
+    exact h_chain_eq
+  -- Solve for the target cycle: it equals `boundary₂Cycle chain - const_src - const_tgt`.
+  have h_target_eq :
+      (⟨SmoothChain.single γ₁ - SmoothChain.single γ₀,
+          single_sub_single_mem_smoothCycle h_src h_tgt⟩ : SmoothCycle (𝓘(ℝ, ℂ)) Y)
+        = Smooth2Chain.boundary₂Cycle chain
+          - single_smoothPath_const_smoothCycle (I := 𝓘(ℝ, ℂ)) (X := Y) γ₀.src
+          - single_smoothPath_const_smoothCycle (I := 𝓘(ℝ, ℂ)) (X := Y) γ₀.tgt := by
+    rw [h_cycle_eq]
+    abel
+  rw [h_target_eq]
+  -- Closed under subtraction: stokesBoundaries is an AddSubgroup.
+  exact (stokesBoundaries (𝓘(ℝ, ℂ)) Y).sub_mem
+    ((stokesBoundaries (𝓘(ℝ, ℂ)) Y).sub_mem h_chain_in h_const_src_in)
+    h_const_tgt_in
+
 end SmoothHomotopyPath
 
 end JacobianChallenge
