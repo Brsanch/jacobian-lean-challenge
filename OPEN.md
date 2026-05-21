@@ -32,6 +32,44 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-21 (chip 19q-r + chip 20a-q — T_L unconditional Hodge-Riemann chain + general-genus structural reductions; 20 commits on `feat/c3-chip-19-iperiodform-hermitian` extending the chip 19 arc base, +~1,700 Lean LOC across 20 new files + manifest edits). Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; further *structural reduction* of the named classical content required by the items 5/11/12/13/17/18/21 chain).**
+>
+> **Headline (T_L = ℂ ⧸ L):**
+> * `HasJacobianHodgeChain (ℂ ⧸ L)` UNCONDITIONAL (chip 19q `ℝ-LI ⟹ Im ≠ 0` for ℂ-pairs + chip 19r composition). Registered as `instHasJacobianHodgeChain_complexTorus` typeclass instance.
+> * `CompleteHodgeRiemannHypothesis` on `T_L` UNCONDITIONAL (chip 19s positively-oriented `IsZBasisOfL` exists + chip 19t Nonempty composition).
+> * `RiemannBilinearFirstRelation` on `T_L` UNCONDITIONAL (chip 20k specialization of chip 13 to T_L's `genus = 1`).
+> * `RiemannBilinearRelations` + ℝ-LI of period vectors on `T_L` UNCONDITIONAL via the CHRH chain (chip 20l, alternative discharge to the in-tree `riemannBilinear_transport` route).
+> * Biconditional `LinearIndependent ℝ ![a, b] ↔ (star a · b).im ≠ 0` for ℂ-pairs (chip 19q-rev): general linear-algebra fact useful downstream.
+> * Smoke tests via `inferInstance` (chip 19u + chip 20i): the chip 19r instance + global bridge `HasJacobianHodgeChain X ⟹ HasJacobianAnalyticStructure X` fire automatically through to `CanonicalAnalyticJacobianAnonymous (ℂ ⧸ L)`'s seven structural instances.
+>
+> **Headline (universal genus 0):**
+> * `CompleteHodgeRiemannHypothesis` UNCONDITIONAL at `genus X = 0` on every compact connected complex 1-manifold (chip 20a) — composes `DiskChartCover.holomorphicOneFormFiniteDim_holds` + `holomorphicOneForm_subsingleton_of_genus_eq_zero` + `completeHodgeRiemannHypothesis_of_subsingleton`.
+> * `RiemannBilinearRelations` UNCONDITIONAL at `genus X = 0` (chip 20b): `J := 0` discharges the bundle, all matrices vacuous on `Fin 0 × Fin 0`.
+> * ℝ-LI of period vectors UNCONDITIONAL at `genus X = 0` (chip 20c): empty-index family, `linearIndependent_empty_type`.
+>
+> **Headline (general genus, first relation):**
+> * Diagonal entries of `pmatᵀ · J.cast · pmat` vanish automatically from anti-sym `J` at any genus (chip 20e). Generalises chip 13's genus-1 argument to per-diagonal-entry at arbitrary genus.
+> * First relation ⟺ off-diagonal vanishing at any genus (chip 20f).
+> * First relation ⟺ strict-upper-triangular vanishing at any genus (chip 20g). Folds the lower triangle into the upper via anti-symmetry of `N := pmatᵀ · J.cast · pmat`.
+> * First relation at `g = 2` reduces to a single scalar equation `N 0 1 = 0` (chip 20h).
+> * `CompleteHodgeRiemannHypothesis` from (anti-sym `J` + strict-upper-triangular zero + matrix PD) at general genus (chip 20n); specialization with `J := standardSymplectic` (chip 20p).
+> * ℝ-LI of period vectors from the minimal-inputs bundle (chip 20o).
+>
+> **Headline (general genus, second relation):**
+> * Hermitian conjunct of `RiemannBilinearSecondRelation` is automatic from anti-sym `J` (chip 19a, already in tree). Second relation thus reduces to *only* the positivity input (chip 20m).
+>
+> **Headline (refactor):**
+> * Extracted `pmat_transpose_J_pmat_antisymm` standalone (chip 20j): used inside chips 20e and 20g.
+>
+> **Headline (T_L explicit computation):**
+> * Period matrix entries on T_L: `(0,0) = lam₁`, `(1,0) = lam₂` (chip 20q).
+>
+> **Per-genus minimal-inputs summary (after chips 20e/f/g/n/p):**
+> * `g = 0`: CHRH unconditional (chip 20a). 0 first-relation entries, 0 PD content.
+> * `g = 1`: CHRH ⟸ scalar diagonal positivity (chip 19h, re-derived through chip 20p). 0 first-relation entries.
+> * `g = 2`: CHRH ⟸ (1 strict-upper entry + 2×2 Hermitian PD).
+> * `g ≥ 3`: CHRH ⟸ (`g(g − 1)/2` strict-upper entries + `g × g` Hermitian PD).
+
 > **2026-05-20 (chip 19 arc — Hodge–Riemann second-relation full reduction; 16 commits on `feat/c3-chip-19-iperiodform-hermitian`, +1,616 Lean LOC across 16 new files + 1 manifest edit). Repo now 1,041 `.lean` files / 175,732 LOC. Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; the chip 19 arc is a *structural reduction* of the named classical content required by the items 5/11/12/13/17/18/21 chain).**
 >
 > Structurally closes the Hodge–Riemann second-relation bundle. Reduces
