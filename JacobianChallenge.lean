@@ -1017,3 +1017,4 @@ import JacobianChallenge.Manifold.CotangentWedgeAlternating
 import JacobianChallenge.Manifold.RiemannFirstBilinearRelationGenusTwo
 import JacobianChallenge.Manifold.HolomorphicOneFormWedge
 import JacobianChallenge.Manifold.RiemannFirstBilinearRelationFromStrictUpperQ
+import JacobianChallenge.Manifold.RiemannPeriodIdentityPerPair
