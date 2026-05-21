@@ -195,6 +195,31 @@ noncomputable def chartStraightLineHomotopy
     rw [h_collapse]
     exact OpenPartialHomeomorph.left_inv _ h_tgt_in
 
+/-! ## Headline: chart-contained γ is smoothly bordant to its chart-straight-line -/
+
+/-- **Chart-local polygonal-approximation bordism.** For any smooth
+path `γ` globally chart-contained in a full-target chart, the
+SmoothCycle `single (chartStraightLinePath γ.src γ.tgt) - single γ`
+lies in `stokesBoundaries`. -/
+theorem chartStraightLine_singleSub_mem_stokesBoundaries
+    (q : Y) (h_univ : (chartAt ℂ q).target = Set.univ)
+    (γ : SmoothPath (𝓘(ℝ, ℂ)) Y)
+    (h_in : ∀ t : ℝ, γ.ambient t ∈ (chartAt ℂ q).source)
+    (h_src_in : γ.src ∈ (chartAt ℂ q).source)
+    (h_tgt_in : γ.tgt ∈ (chartAt ℂ q).source)
+    (h0_amb : γ.ambient 0 = γ.src) (h1_amb : γ.ambient 1 = γ.tgt) :
+    (⟨SmoothChain.single
+          (chartStraightLinePath_univ q h_univ ((chartAt ℂ q) γ.src)
+            ((chartAt ℂ q) γ.tgt))
+        - SmoothChain.single γ,
+        SmoothHomotopyPath.single_sub_single_mem_smoothCycle
+          (by exact (OpenPartialHomeomorph.left_inv _ h_src_in).symm)
+          (by exact (OpenPartialHomeomorph.left_inv _ h_tgt_in).symm)⟩
+        : SmoothCycle (𝓘(ℝ, ℂ)) Y)
+      ∈ stokesBoundaries (𝓘(ℝ, ℂ)) Y :=
+  SmoothHomotopyPath.singleSub_smoothCycle_mem_stokesBoundaries
+    (chartStraightLineHomotopy q h_univ γ h_in h_src_in h_tgt_in h0_amb h1_amb)
+
 end JacobianChallenge
 
 end
