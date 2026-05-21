@@ -134,6 +134,82 @@ noncomputable def spokeResidue
     (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z_c z : ℂ) :
     spokeResidue q h_univ z_c [z] = 0 := rfl
 
+/-! ## Inductive boundary identity for the fan chain -/
+
+/-- **Inductive identity**: the boundary of `fanChain z_c zs` (as a
+SmoothChain) equals `polygonalChain zs + spokeResidue z_c zs`. -/
+theorem boundary₂_fanChain
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z_c : ℂ)
+    (zs : List ℂ) :
+    Smooth2Chain.boundary₂ (fanChain q h_univ z_c zs)
+      = polygonalChain q h_univ zs + spokeResidue q h_univ z_c zs := by
+  induction zs with
+  | nil => simp [fanChain, polygonalChain]
+  | cons z_0 rest ih =>
+    cases h_rest : rest with
+    | nil => simp [fanChain, polygonalChain]
+    | cons z_1 rest' =>
+      subst h_rest
+      show Smooth2Chain.boundary₂
+            (Smooth2Chain.single
+              (affineChartTriangleSimplex_univ q h_univ z_c z_0 z_1)
+              + fanChain q h_univ z_c (z_1 :: rest'))
+          = polygonalChain q h_univ (z_0 :: z_1 :: rest')
+            + spokeResidue q h_univ z_c (z_0 :: z_1 :: rest')
+      rw [Smooth2Chain.boundary₂_add, Smooth2Chain.boundary₂_single]
+      rw [affineChartTriangleSimplex_boundary_as_loop_plus_spokes]
+      rw [ih]
+      have h_poly : polygonalChain q h_univ (z_0 :: z_1 :: rest')
+          = SmoothChain.single (chartStraightLinePath_univ q h_univ z_0 z_1)
+            + polygonalChain q h_univ (z_1 :: rest') := rfl
+      rw [h_poly]
+      -- Both spokeResidues unfold to the third pattern branch since their
+      -- input lists are 2+ elements.
+      cases h' : rest' with
+      | nil =>
+        unfold fanSpokesPair
+        simp only [polygonalChain_singleton, spokeResidue_singleton, add_zero]
+        show SmoothChain.single (chartStraightLinePath_univ q h_univ z_0 z_1)
+            + (-SmoothChain.single (chartStraightLinePath_univ q h_univ z_c z_1)
+              + SmoothChain.single (chartStraightLinePath_univ q h_univ z_c z_0))
+          = SmoothChain.single (chartStraightLinePath_univ q h_univ z_0 z_1)
+            + spokeResidue q h_univ z_c [z_0, z_1]
+        show _ = _ +
+            (-SmoothChain.single (chartStraightLinePath_univ q h_univ z_c z_1)
+              + SmoothChain.single (chartStraightLinePath_univ q h_univ z_c z_0))
+        abel
+      | cons z_2 rest'' =>
+        subst h'
+        -- Both residues unfold (their inputs are 2+ elements lists).
+        show SmoothChain.single (chartStraightLinePath_univ q h_univ z_0 z_1)
+            + fanSpokesPair q h_univ z_c z_0 z_1
+            + (polygonalChain q h_univ (z_1 :: z_2 :: rest'')
+              + spokeResidue q h_univ z_c (z_1 :: z_2 :: rest''))
+          = SmoothChain.single (chartStraightLinePath_univ q h_univ z_0 z_1)
+            + polygonalChain q h_univ (z_1 :: z_2 :: rest'')
+            + spokeResidue q h_univ z_c (z_0 :: z_1 :: z_2 :: rest'')
+        unfold fanSpokesPair
+        have h_last_eq : (z_0 :: z_1 :: z_2 :: rest'').getLast (by simp)
+                      = (z_1 :: z_2 :: rest'').getLast (by simp) := by
+          simp [List.getLast_cons]
+        show _ = _
+        show SmoothChain.single (chartStraightLinePath_univ q h_univ z_0 z_1)
+            + (-SmoothChain.single (chartStraightLinePath_univ q h_univ z_c z_1)
+              + SmoothChain.single (chartStraightLinePath_univ q h_univ z_c z_0))
+            + (polygonalChain q h_univ (z_1 :: z_2 :: rest'')
+              + (-SmoothChain.single
+                  (chartStraightLinePath_univ q h_univ z_c
+                    ((z_1 :: z_2 :: rest'').getLast (by simp)))
+                + SmoothChain.single (chartStraightLinePath_univ q h_univ z_c z_1)))
+          = SmoothChain.single (chartStraightLinePath_univ q h_univ z_0 z_1)
+            + polygonalChain q h_univ (z_1 :: z_2 :: rest'')
+            + (-SmoothChain.single
+                (chartStraightLinePath_univ q h_univ z_c
+                  ((z_0 :: z_1 :: z_2 :: rest'').getLast (by simp)))
+              + SmoothChain.single (chartStraightLinePath_univ q h_univ z_c z_0))
+        rw [h_last_eq]
+        abel
+
 end JacobianChallenge
 
 end
