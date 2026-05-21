@@ -3,8 +3,11 @@ Copyright (c) 2026 Bryan Sanchez. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
+import JacobianChallenge.Manifold.Smooth2Simplex
 import Mathlib.Geometry.Manifold.ChartedSpace
 import Mathlib.Geometry.Manifold.IsManifold.Basic
+import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+import Mathlib.Geometry.Manifold.ContMDiff.Atlas
 import Mathlib.Analysis.Convex.Combination
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Analysis.Calculus.ContDiff.Basic
@@ -44,7 +47,7 @@ No `sorry`, no `axiom`. -/
 
 noncomputable section
 
-open scoped Manifold Topology
+open scoped Manifold Topology ContDiff
 open Set
 
 namespace JacobianChallenge
@@ -156,6 +159,13 @@ private lemma contDiff_of_uncurry_finTwo {f : ℝ → ℝ → ℂ}
     · exact (ContinuousLinearMap.proj (R := ℝ) (φ := fun _ : Fin 2 => ℝ) 0).contDiff
     · exact (ContinuousLinearMap.proj (R := ℝ) (φ := fun _ : Fin 2 => ℝ) 1).contDiff
   exact hf.comp h_reindex
+
+/-- **Smoothness of `bilinearChartInterp` as `(Fin 2 → ℝ) → ℂ`** —
+the `Smooth2Simplex`-shape version. -/
+lemma contMDiff_bilinearChartInterp_fin2 (z₀₀ z₀₁ z₁₀ z₁₁ : ℂ) :
+    ContMDiff (𝓘(ℝ, Fin 2 → ℝ)) (𝓘(ℝ, ℂ)) ∞
+      (fun x : Fin 2 → ℝ => bilinearChartInterp z₀₀ z₀₁ z₁₀ z₁₁ (x 0) (x 1)) :=
+  (contDiff_of_uncurry_finTwo (contDiff_bilinearChartInterp z₀₀ z₀₁ z₁₀ z₁₁)).contMDiff
 
 end JacobianChallenge
 
