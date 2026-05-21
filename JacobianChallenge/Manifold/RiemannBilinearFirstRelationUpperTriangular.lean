@@ -74,21 +74,11 @@ theorem riemannBilinearFirstRelation_iff_strictUpperTriangular_zero_of_antisymm
   -- Step 1: bridge through chip 20f's off-diagonal characterisation.
   rw [riemannBilinearFirstRelation_iff_offDiagonal_zero_of_antisymm
         data α cycleGens hJ]
-  -- Step 2: derive anti-symmetry of `N := pmatᵀ · J · pmat`.
+  -- Step 2: derive anti-symmetry of `N := pmatᵀ · J · pmat` (chip 20j).
   set N := (periodMatrix data α cycleGens)ᵀ * J.map ((↑) : ℤ → ℂ)
             * periodMatrix data α cycleGens with hN_def
-  have hN_antisym : Nᵀ = -N := by
-    change ((periodMatrix data α cycleGens)ᵀ * J.map ((↑) : ℤ → ℂ)
-              * periodMatrix data α cycleGens)ᵀ
-          = -((periodMatrix data α cycleGens)ᵀ * J.map ((↑) : ℤ → ℂ)
-              * periodMatrix data α cycleGens)
-    rw [Matrix.transpose_mul, Matrix.transpose_mul,
-        Matrix.transpose_transpose]
-    rw [show (J.map ((↑) : ℤ → ℂ))ᵀ = (Jᵀ).map ((↑) : ℤ → ℂ) from rfl]
-    rw [hJ]
-    rw [show ((-J).map ((↑) : ℤ → ℂ)) = -J.map ((↑) : ℤ → ℂ) from by
-      ext k l; simp]
-    rw [Matrix.neg_mul, Matrix.mul_neg, Matrix.mul_assoc]
+  have hN_antisym : Nᵀ = -N :=
+    pmat_transpose_J_pmat_antisymm (periodMatrix data α cycleGens) hJ
   -- Step 3: build the biconditional `N i j = 0 (i ≠ j) ↔ N i j = 0 (i < j)`.
   constructor
   · intro h_offdiag i j hij
