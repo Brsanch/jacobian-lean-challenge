@@ -1,6 +1,32 @@
 # Changelog
 
-## 2026-05-21 — Item-14 classical-content arc: chain assembly + Dolbeault + chart-cell infra (57 commits + merge via PR #1, +3,639 LOC)
+## 2026-05-21 PR #2 — Item-14 reverse leg: SmoothHomotopyPath diagonal-split + bordism (4 commits + merge, +478 LOC)
+
+Final state: build **9316 jobs**, **1054 `.lean` files**, **179,559
+LOC**. Zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
+STRICT-CLOSED**. `origin/main` HEAD `4e3ed97` (merge of
+`feat/item14-reverse-leg-bordism` via PR #2).
+
+Single new file `Manifold/SmoothHomotopyPathDiagonalSplit.lean`,
+~480 LOC, containing the **SmoothHomotopyPath bordism arc**:
+diagonal-split into two `Smooth2Simplex`es (`lowerRightSimplex` +
+`upperLeftSimplex`) with vertex evaluations, `diagonalPath H`, all
+six face identifications, boundary sum theorem
+`boundary_lowerRight_plus_upperLeft`, and the headline
+`singleSub_smoothCycle_mem_stokesBoundaries` — for any
+`SmoothHomotopyPath γ₀ γ₁`, the SmoothCycle `single γ₁ - single γ₀`
+lies in `stokesBoundaries 𝓘(ℝ, ℂ) Y`.
+
+Architectural blocker hit on the chart-straight-line `SmoothHomotopyPath`
+constructor: `γ_line.ambient` (from `chartStraightLinePath_univ` via
+`Classical.choose`) isn't definitionally equal to `chartStraightLineMap`
+outside the unit interval, so the structure's universally-quantified
+edge identity `∀ t : ℝ, toFun ![1, t] = γ_line.ambient t` can only
+be proven on the unit interval. Resolved by either a unitInterval-
+restricted refactor of `SmoothHomotopyPath`'s edges or a separate
+ambient-witnessing structure — tracked for the next PR.
+
+## 2026-05-21 PR #1 — Item-14 classical-content arc: chain assembly + Dolbeault + chart-cell infra (57 commits + merge via PR #1, +3,639 LOC)
 
 Final state: build **9316 jobs**, **1053 `.lean` files**, **179,081
 LOC**. Zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
