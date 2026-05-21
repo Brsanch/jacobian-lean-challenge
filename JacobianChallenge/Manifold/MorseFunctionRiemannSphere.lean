@@ -381,6 +381,31 @@ lemma heightLocalℂ_fderiv_ne_zero {z : ℂ} (hz : z ≠ 0) :
     linarith
   linarith
 
+/-- **Identity:** `heightLocalℂ z + heightLocalℂ_S z = 1` for all `z : ℂ`. -/
+lemma heightLocalℂ_add_heightLocalℂ_S (z : ℂ) :
+    heightLocalℂ z + heightLocalℂ_S z = 1 := by
+  unfold heightLocalℂ heightLocalℂ_S
+  have h_pos : (0 : ℝ) < 1 + ‖z‖^2 := by positivity
+  field_simp
+
+/-- **`heightLocalℂ_S = 1 - heightLocalℂ`** as functions on ℂ. -/
+lemma heightLocalℂ_S_eq_one_sub :
+    heightLocalℂ_S = fun z : ℂ => 1 - heightLocalℂ z := by
+  funext z
+  linarith [heightLocalℂ_add_heightLocalℂ_S z]
+
+/-- **`fderiv heightLocalℂ_S w ≠ 0` for `w ≠ 0`.**
+
+Via `heightLocalℂ_S = 1 - heightLocalℂ` and chip 47. -/
+lemma heightLocalℂ_S_fderiv_ne_zero {w : ℂ} (hw : w ≠ 0) :
+    fderiv ℝ heightLocalℂ_S w ≠ 0 := by
+  rw [heightLocalℂ_S_eq_one_sub, fderiv_const_sub]
+  intro h_neg_eq
+  have h_eq : fderiv ℝ heightLocalℂ w = 0 := by
+    have := congrArg Neg.neg h_neg_eq
+    simpa using this
+  exact heightLocalℂ_fderiv_ne_zero hw h_eq
+
 /-- **The two-point candidate critical set of `heightRiemannSphere`.**
 Classically `{0_RS, ∞}`. Used as the explicit `criticalSet` of the
 `MorseFunction RiemannSphere` instance below, in lieu of the default
