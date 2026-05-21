@@ -77,6 +77,31 @@ lemma heightRiemannSphere_zero :
     heightRiemannSphere ((0 : ℂ) : RiemannSphere) = 1 := by
   simp [heightRiemannSphere_coe]
 
+/-- **Upper bound:** `h(x) ≤ 1` for all `x : RS`. -/
+lemma heightRiemannSphere_le_one (x : RiemannSphere) :
+    heightRiemannSphere x ≤ 1 := by
+  induction x using OnePoint.rec with
+  | infty => simp
+  | coe z =>
+    rw [heightRiemannSphere_coe]
+    have h_denom_pos : (0 : ℝ) < 1 + ‖z‖^2 := by positivity
+    rw [div_le_one h_denom_pos]
+    linarith [sq_nonneg ‖z‖]
+
+/-- **`(0 : ℂ) : RS` is a global maximum of `heightRiemannSphere`.** -/
+lemma heightRiemannSphere_isMaxOn_zero :
+    IsMaxOn heightRiemannSphere Set.univ ((0 : ℂ) : RiemannSphere) := by
+  intro x _
+  rw [heightRiemannSphere_zero]
+  exact heightRiemannSphere_le_one x
+
+/-- **`∞ : RS` is a global minimum of `heightRiemannSphere`.** -/
+lemma heightRiemannSphere_isMinOn_infty :
+    IsMinOn heightRiemannSphere Set.univ ((∞ : RiemannSphere)) := by
+  intro x _
+  rw [heightRiemannSphere_infty]
+  exact heightRiemannSphere_nonneg x
+
 /-- The height function on the `chartN` chart: `h(some z) = 1/(1+‖z‖²)`. -/
 lemma heightRiemannSphere_chartN_local (z : ℂ) :
     heightRiemannSphere (chartN.symm z) = 1 / (1 + ‖z‖^2) := by
