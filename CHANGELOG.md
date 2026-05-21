@@ -1,5 +1,147 @@
 # Changelog
 
+## 2026-05-21 — Chip 19q-r + chip 20a-r: T_L unconditional Hodge–Riemann + general-genus structural reductions (23 commits, +2,015 LOC across 22 new files)
+
+State: **1,068 `.lean` files**, **179,290 LOC**. Build 9,349 jobs
+clean. Zero `sorry`, zero `axiom`. Item count unchanged at
+**14 / 24 STRICT-CLOSED** — extends the chip 19 arc with concrete
+T_L applications and general-genus structural reductions; no items
+flip (the same `[HasJacobianAnalyticStructure X]` universality
+blocker remains). Branch
+`feat/c3-chip-19-iperiodform-hermitian` (continues from chip 19 arc
+base at `308b4c1`).
+
+### Linear-algebra bridge (chip 19q + 19q-rev, 199 LOC across 1 file)
+
+* `Manifold/ComplexPairImStarMulFromLinearIndependent.lean` —
+  the biconditional `LinearIndependent ℝ ![a, b] ↔ (star a · b).im ≠ 0`
+  for any complex pair `(a, b) ∈ ℂ²`. Forward direction
+  (`im_star_mul_ne_zero_of_linearIndependent_pair`) via case-split on
+  `(a.re, a.im) ≠ (0,0)` + explicit LD-relation construction;
+  reverse direction
+  (`linearIndependent_pair_of_im_star_mul_ne_zero`) via the
+  determinant-elimination identity
+  `a.im · h_re − a.re · h_im = −t · (Im(star a · b))`.
+
+### T_L unconditional Hodge chain (chips 19r/s/t/u, 372 LOC across 4 files)
+
+* `Manifold/HasJacobianHodgeChainComplexTorusUnconditional.lean` —
+  `HasJacobianHodgeChain (ℂ ⧸ L)` UNCONDITIONAL via composition of
+  chip 19q with `basisFin2OfL_realLinearIndependent` and chip 19p's
+  by-cases. Registered as `instHasJacobianHodgeChain_complexTorus`,
+  firing the global typeclass bridge to
+  `HasJacobianAnalyticStructure (ℂ ⧸ L)`.
+* `Manifold/ComplexTorusOrientedBasis.lean` —
+  `exists_positively_oriented_ZBasisOfL`: every discrete full-rank
+  ℤ-lattice `L ≤ ℂ` has a ℤ-basis `(lam₁, lam₂)` with
+  `0 < (star lam₁ · lam₂).im`. Composes the chip 19q biconditional
+  with `isZBasisOfL_swap` for the sign by-cases.
+* `Manifold/CompleteHodgeRiemannComplexTorusUnconditional.lean` —
+  `exists_completeHodgeRiemannHypothesis_complexTorus`: Nonempty-form
+  CHRH on T_L with `basis_g_dz` and an adaptively-chosen positively-
+  oriented symplectic basis. No orientation hypothesis required.
+* `Manifold/HasJacobianHodgeChainComplexTorusSmokeTest.lean` —
+  end-to-end smoke tests verifying `inferInstance` resolves
+  `HasJacobianHodgeChain (ℂ ⧸ L)`, `HasJacobianAnalyticStructure
+  (ℂ ⧸ L)`, and the seven downstream
+  `CanonicalAnalyticJacobianAnonymous (ℂ ⧸ L)` structural instances
+  (CompactSpace, ChartedSpace, IsManifold, LieAddGroup).
+
+### Universal genus-0 vacuous discharges (chips 20a/b/c/i, 308 LOC across 4 files)
+
+* `Manifold/CompleteHodgeRiemannGenusZero.lean` — CHRH UNCONDITIONAL
+  at `genus X = 0` on every compact connected complex 1-manifold,
+  via `DiskChartCover.holomorphicOneFormFiniteDim_holds` +
+  `holomorphicOneForm_subsingleton_of_genus_eq_zero` +
+  `completeHodgeRiemannHypothesis_of_subsingleton`.
+* `Manifold/RiemannBilinearRelationsGenusZero.lean` — `RBR` at
+  `genus X = 0` with `J := 0`; first relation trivial, second
+  relation Hermitian + positivity vacuous on `Fin 0 → ℂ`.
+* `Manifold/RealLIPeriodVectorGenusZero.lean` — ℝ-LI of period
+  vectors at `genus X = 0` direct via `linearIndependent_empty_type`,
+  with an alternative chip-20a-derived proof for self-consistency.
+* `Manifold/CompleteHodgeRiemannGenusZeroRiemannSphereSmokeTest.lean`
+  — RS validation of chip 20a/b/c via the in-tree
+  `RiemannSphere.genus_RiemannSphere_eq_zero`.
+
+### General-genus structural reductions of the first relation (chips 20e/f/g/h + refactor 20j, 401 LOC across 4 files)
+
+* `Manifold/PeriodMatrixDiagonalAntisymm.lean` —
+  `pmat_transpose_J_pmat_antisymm` (chip 20j refactor: anti-symmetry
+  of `N := pmatᵀ · J.cast · pmat` from `Jᵀ = -J`) +
+  `pmat_transpose_J_pmat_diag_eq_zero_of_antisymm` (chip 20e: the
+  diagonal of `N` vanishes at any genus from anti-sym `J`).
+* `Manifold/RiemannBilinearFirstRelationOffDiagonal.lean` — chip
+  20f: first relation ⟺ off-diagonal vanishing.
+* `Manifold/RiemannBilinearFirstRelationUpperTriangular.lean` —
+  chip 20g: first relation ⟺ strict-upper-triangular vanishing
+  (folds the lower triangle into the upper via anti-symmetry of
+  `N`).
+* `Manifold/RiemannBilinearFirstRelationGenusTwo.lean` — chip 20h:
+  at `g = 2`, first relation reduces to the single scalar equation
+  `N 0 1 = 0`.
+
+### Second-relation Hermitian conjunct automatic (chip 20m, 76 LOC across 1 file)
+
+* `Manifold/RiemannBilinearSecondRelationFromAntisymm.lean` —
+  `riemannBilinearSecondRelation_of_positivity_of_antisymm`:
+  Hermitian conjunct automatic from anti-sym `J` (via chip 19a),
+  so second relation reduces to *only* the positivity input.
+
+### General-genus minimal-inputs CHRH composites (chips 20n/o/p, 232 LOC across 3 files)
+
+* `Manifold/CompleteHodgeRiemannFromUpperTriangular.lean` — chip
+  20n: CHRH ⟸ (anti-sym `J` + strict-upper-triangular zero +
+  matrix PD) at general genus.
+* `Manifold/RealLIPeriodVectorFromUpperTriangular.lean` — chip
+  20o: ℝ-LI of period vectors from the same minimal-inputs bundle.
+* `Manifold/CompleteHodgeRiemannFromUpperTriangularStandard.lean` —
+  chip 20p: same bundle with `J := standardSymplectic` absorbed via
+  `standardSymplectic_antisymm`.
+
+### T_L application + genus-2 specialization + period matrix (chips 20k/l/q/r, 285 LOC across 4 files)
+
+* `Manifold/RiemannBilinearFirstRelationComplexTorus.lean` — chip
+  20k: first relation on T_L UNCONDITIONAL via chip 13 +
+  `genus_eq_one` + `standardSymplectic_antisymm`.
+* `Manifold/RiemannBilinearRelationsComplexTorusUnconditional.lean`
+  — chip 20l: RBR (`∃ J, first ∧ second`) + ℝ-LI of period vectors
+  on T_L UNCONDITIONAL via the chip 19t CHRH chain.
+* `Manifold/PeriodMatrixComplexTorus.lean` — chip 20q: explicit
+  period matrix entries on T_L: `(0,0) = lam₁`, `(1,0) = lam₂`.
+* `Manifold/CompleteHodgeRiemannGenusTwo.lean` — chip 20r: CHRH at
+  `g = 2` from a single first-relation scalar zero + 2 × 2 matrix
+  PD, via chip 20h + chip 20p composition.
+
+### Per-genus minimal-inputs summary
+
+| genus | first-relation atoms | matrix-PD content |
+|---|---|---|
+| 0 | 0 (vacuous, chip 20a) | 0 (vacuous, chip 20a) |
+| 1 | 0 (auto from anti-sym, chip 13) | 1 scalar diagonal positivity (chip 19h) |
+| 2 | 1 strict-upper entry `N 0 1 = 0` (chip 20h) | 2 × 2 Hermitian PD (chip 20r) |
+| g | `g(g − 1)/2` strict-upper entries (chip 20g/p) | `g × g` Hermitian PD (chip 20p) |
+
+### Net impact
+
+The chip 19q-r + 20a-r session does **not flip any of the 24
+challenge items**. It is a *structural reduction* of the named
+classical content in two complementary directions:
+
+* **T_L unconditional**: the full chip 19/20 Riemann-bilinear chain
+  (HJHC + CHRH + RBR + ℝ-LI of period vectors + first relation) on
+  T_L is now unconditional from no orientation hypothesis, just the
+  lattice-membership data. Validated via `inferInstance` smoke tests
+  that the typeclass synthesis chain fires through to
+  `CanonicalAnalyticJacobianAnonymous (ℂ ⧸ L)`'s seven structural
+  instances.
+* **General genus**: chips 20e/f/g/n/p reduce the open classical
+  content at every genus to a sharp per-entry count of "ω_i ∧ ω_j
+  integration + Stokes" identities (strict-upper triangular of
+  `N := pmatᵀ · J · pmat`) plus the Hodge inner product positivity
+  on a `g × g` Hermitian matrix. The remaining open content is now
+  sharply factored — no other structural atom remains.
+
 ## 2026-05-20 — Chip 19 arc: Hodge–Riemann second-relation full reduction (16 commits, +1,616 LOC across 16 new files)
 
 State: **1,041 `.lean` files**, **175,732 LOC**. Zero `sorry`, zero
