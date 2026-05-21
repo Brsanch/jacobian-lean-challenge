@@ -247,6 +247,41 @@ theorem periodMatrix_form_eq_riemannBilinearPeriodForm
   -- Swap the iteration order: ∑ l ∑ k = ∑ k ∑ l.
   rw [Finset.sum_comm]
 
+/-- **Diagonal vanishing of `Q` from antisymmetric `J`.**
+
+Immediate from `riemannBilinearPeriodForm_antisymm`: setting
+`ω₀ = ω₁ = ω` gives `Q J ω ω = - Q J ω ω`, so `2 · Q J ω ω = 0` in `ℂ`,
+hence `Q J ω ω = 0`. This is the algebraic specialisation of the
+diagonal of `pmatᵀ · J · pmat` for any single holomorphic 1-form. -/
+theorem riemannBilinearPeriodForm_self_eq_zero
+    {data : PeriodPairingData X}
+    (cycleGens : Fin (2 * JacobianChallenge.genus X) → data.H1)
+    {J : Matrix (Fin (2 * JacobianChallenge.genus X))
+          (Fin (2 * JacobianChallenge.genus X)) ℤ}
+    (hJ : Jᵀ = -J)
+    (oneForm : HolomorphicOneForm X) :
+    riemannBilinearPeriodForm cycleGens J oneForm oneForm = 0 := by
+  have h := riemannBilinearPeriodForm_antisymm cycleGens hJ oneForm oneForm
+  -- h : Q J ω ω = - Q J ω ω. In ℂ (a field of characteristic 0), this
+  -- forces Q J ω ω = 0.
+  linear_combination h / 2
+
+/-- **Diagonal vanishing of `Q` — algebraic form (twice the form is zero).**
+
+Sometimes more directly usable than `_self_eq_zero` when chained with
+other manipulations: `Q J ω ω + Q J ω ω = 0`. -/
+theorem riemannBilinearPeriodForm_self_add_self_eq_zero
+    {data : PeriodPairingData X}
+    (cycleGens : Fin (2 * JacobianChallenge.genus X) → data.H1)
+    {J : Matrix (Fin (2 * JacobianChallenge.genus X))
+          (Fin (2 * JacobianChallenge.genus X)) ℤ}
+    (hJ : Jᵀ = -J)
+    (oneForm : HolomorphicOneForm X) :
+    riemannBilinearPeriodForm cycleGens J oneForm oneForm
+      + riemannBilinearPeriodForm cycleGens J oneForm oneForm = 0 := by
+  rw [riemannBilinearPeriodForm_self_eq_zero cycleGens hJ oneForm]
+  ring
+
 end JacobianChallenge
 
 end
