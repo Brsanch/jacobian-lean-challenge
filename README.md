@@ -13,11 +13,33 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-20 late):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
-Build clean at **9291 jobs** (zero `sorry`, zero `axiom`). Repo:
-**173,331 LOC across 1011 `.lean` files**.
+**Current state (2026-05-21):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
+Build clean at **9295 jobs** (zero `sorry`, zero `axiom`). Repo:
+**179,081 LOC across 1053 `.lean` files**.
 
 Major recent landings (all on `main`):
+
+* **Item-14 classical-content arc: chain assembly + Dolbeault + chart-
+  cell infra** (2026-05-21, 57 commits + merge `be4146d`, +3,639 LOC
+  across 23 new files via PR #1). *No items flipped*, but substantive
+  classical infrastructure landed toward item-14 reverse-leg closure on
+  simply-connected X. Chain-assembly chip is **closed for closed
+  polygonal loops in a single full-target chart** (any such loop is
+  the explicit boundary of a fan 2-chain → lies in `stokesBoundaries`),
+  via List-induction on `fanChain`/`polygonalChain`/`spokeResidue`.
+  Two-triangle outer-chain cancellation proven (`outerChain_mem_stokesBoundaries`).
+  Full chart-cell `Smooth2Simplex` constructor + chart-straight-line
+  `SmoothPath` + extensionality + face-equality + reverse identity.
+  Dolbeault chips 2-8: `dbarChart` + manifold-side `dbar` with full
+  biconditional `MDifferentiableAt ↔ dbar = 0`, ℂ-linearity, chain-
+  rule with holomorphic inner. `SmoothHomotopyPath` toolkit (structure
+  + chart-target straight-line interp + all four edge lemmas +
+  smoothness) — building blocks for the polygonal-approximation bordism
+  (final step toward `BasedSmoothLoopsBoundHypothesis X p₀` on simply-
+  connected X). Architectural reductions: Lebesgue subdivision of a
+  smooth path by chart cover; `SubdivisionTelescopingToLoop_named X`
+  reduced to universal BSLB and to `[Subsingleton (HolomorphicOneForm
+  X)]`. See `HANDOFF_ITEM14.md` for the remaining frontier.
 
 * **Period-lattice plumbing + classical-content scaffolding + item-14
   advances** (2026-05-20 late, two arcs, 35 commits + merge,
