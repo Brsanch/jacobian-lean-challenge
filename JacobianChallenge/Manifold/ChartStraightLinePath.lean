@@ -283,6 +283,23 @@ lemma face0_eq_chartStraightLinePath_univ
   · intro t
     exact affineChartTriangleSimplex_face0_toFun q h_univ z₀ z₁ z₂ t.val
 
+/-! ## Boundary of the chart-triangle simplex as an explicit chain -/
+
+/-- **The boundary of `affineChartTriangleSimplex_univ q hu z₀ z₁ z₂`** as
+an explicit `SmoothChain` of three chart-straight-line paths with
+alternating signs: `single(z₁→z₂) - single(z₀→z₂) + single(z₀→z₁)`. -/
+theorem affineChartTriangleSimplex_univ_boundary
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ z₂ : ℂ) :
+    Smooth2Simplex.boundary
+        (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂)
+      = SmoothChain.single (chartStraightLinePath_univ q h_univ z₁ z₂)
+        - SmoothChain.single (chartStraightLinePath_univ q h_univ z₀ z₂)
+        + SmoothChain.single (chartStraightLinePath_univ q h_univ z₀ z₁) := by
+  unfold Smooth2Simplex.boundary
+  rw [face0_eq_chartStraightLinePath_univ,
+      face1_eq_chartStraightLinePath_univ,
+      face2_eq_chartStraightLinePath_univ]
+
 end JacobianChallenge
 
 end
