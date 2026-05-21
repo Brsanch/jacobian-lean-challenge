@@ -221,6 +221,68 @@ lemma smoothPath_ext_of_toPath_apply
   congr 1
   exact Path.ext (funext h_toPath)
 
+/-! ## Full SmoothPath identification of triangle faces
+
+Using the ext lemma, we identify each face of `affineChartTriangleSimplex_univ`
+as the corresponding `chartStraightLinePath_univ`. -/
+
+/-- Face-2 (v₀ → v₁) equals `chartStraightLinePath_univ q hu z₀ z₁`. -/
+lemma face2_eq_chartStraightLinePath_univ
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ z₂ : ℂ) :
+    Smooth2Simplex.face2
+        (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂)
+      = chartStraightLinePath_univ q h_univ z₀ z₁ := by
+  refine smoothPath_ext_of_toPath_apply ?_ ?_ ?_
+  · -- src
+    show (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+            Smooth2Simplex.v0
+        = (chartAt ℂ q).symm z₀
+    exact affineChartTriangleSimplex_univ_toFun_v0 q h_univ z₀ z₁ z₂
+  · -- tgt
+    show (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+            Smooth2Simplex.v1
+        = (chartAt ℂ q).symm z₁
+    exact affineChartTriangleSimplex_univ_toFun_v1 q h_univ z₀ z₁ z₂
+  · -- toPath
+    intro t
+    exact affineChartTriangleSimplex_face2_toFun q h_univ z₀ z₁ z₂ t.val
+
+/-- Face-1 (v₀ → v₂) equals `chartStraightLinePath_univ q hu z₀ z₂`. -/
+lemma face1_eq_chartStraightLinePath_univ
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ z₂ : ℂ) :
+    Smooth2Simplex.face1
+        (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂)
+      = chartStraightLinePath_univ q h_univ z₀ z₂ := by
+  refine smoothPath_ext_of_toPath_apply ?_ ?_ ?_
+  · show (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+            Smooth2Simplex.v0
+        = (chartAt ℂ q).symm z₀
+    exact affineChartTriangleSimplex_univ_toFun_v0 q h_univ z₀ z₁ z₂
+  · show (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+            Smooth2Simplex.v2
+        = (chartAt ℂ q).symm z₂
+    exact affineChartTriangleSimplex_univ_toFun_v2 q h_univ z₀ z₁ z₂
+  · intro t
+    exact affineChartTriangleSimplex_face1_toFun q h_univ z₀ z₁ z₂ t.val
+
+/-- Face-0 (v₁ → v₂) equals `chartStraightLinePath_univ q hu z₁ z₂`. -/
+lemma face0_eq_chartStraightLinePath_univ
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z₀ z₁ z₂ : ℂ) :
+    Smooth2Simplex.face0
+        (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂)
+      = chartStraightLinePath_univ q h_univ z₁ z₂ := by
+  refine smoothPath_ext_of_toPath_apply ?_ ?_ ?_
+  · show (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+            Smooth2Simplex.v1
+        = (chartAt ℂ q).symm z₁
+    exact affineChartTriangleSimplex_univ_toFun_v1 q h_univ z₀ z₁ z₂
+  · show (affineChartTriangleSimplex_univ q h_univ z₀ z₁ z₂).toFun
+            Smooth2Simplex.v2
+        = (chartAt ℂ q).symm z₂
+    exact affineChartTriangleSimplex_univ_toFun_v2 q h_univ z₀ z₁ z₂
+  · intro t
+    exact affineChartTriangleSimplex_face0_toFun q h_univ z₀ z₁ z₂ t.val
+
 end JacobianChallenge
 
 end
