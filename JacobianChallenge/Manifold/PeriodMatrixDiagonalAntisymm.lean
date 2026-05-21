@@ -32,8 +32,10 @@ the surface and Stokes).
 
 ## What this file ships
 
+* `pmat_transpose_J_pmat_antisymm` — the underlying anti-symmetry of
+  `N := pmatᵀ · J.cast · pmat` (chip 20j).
 * `pmat_transpose_J_pmat_diag_eq_zero_of_antisymm` — the per-entry diagonal
-  vanishing.
+  vanishing (chip 20e).
 
 No `sorry`, no `axiom`. -/
 
@@ -43,6 +45,25 @@ open scoped Manifold ContDiff
 open Matrix
 
 namespace JacobianChallenge
+
+/-- **Anti-symmetry of `pmatᵀ · J.cast · pmat`** for anti-symmetric
+`J` (chip 20j). Pulled out as a standalone lemma; used inside the
+diagonal-vanishing argument below and also in chip 20g
+(strict-upper-triangular reduction). -/
+theorem pmat_transpose_J_pmat_antisymm
+    {g : ℕ}
+    (pmat : Matrix (Fin (2 * g)) (Fin g) ℂ)
+    {J : Matrix (Fin (2 * g)) (Fin (2 * g)) ℤ}
+    (hJ : Jᵀ = -J) :
+    (pmatᵀ * J.map ((↑) : ℤ → ℂ) * pmat)ᵀ
+      = -(pmatᵀ * J.map ((↑) : ℤ → ℂ) * pmat) := by
+  rw [Matrix.transpose_mul, Matrix.transpose_mul,
+      Matrix.transpose_transpose]
+  rw [show (J.map ((↑) : ℤ → ℂ))ᵀ = (Jᵀ).map ((↑) : ℤ → ℂ) from rfl]
+  rw [hJ]
+  rw [show ((-J).map ((↑) : ℤ → ℂ)) = -J.map ((↑) : ℤ → ℂ) from by
+    ext k l; simp]
+  rw [Matrix.neg_mul, Matrix.mul_neg, Matrix.mul_assoc]
 
 /-- **Diagonal entries of `pmatᵀ · J.cast · pmat` vanish for
 anti-symmetric `J`.** Per-entry version of the genus-1 chip 13:
@@ -56,16 +77,8 @@ theorem pmat_transpose_J_pmat_diag_eq_zero_of_antisymm
     (pmatᵀ * J.map ((↑) : ℤ → ℂ) * pmat) i i = 0 := by
   set N := pmatᵀ * J.map ((↑) : ℤ → ℂ) * pmat with hN_def
   -- Anti-symmetry: `Nᵀ = -N` from anti-symmetry of `J`.
-  have hN_antisym : Nᵀ = -N := by
-    change ((pmatᵀ * J.map ((↑) : ℤ → ℂ) * pmat)ᵀ)
-        = -(pmatᵀ * J.map ((↑) : ℤ → ℂ) * pmat)
-    rw [Matrix.transpose_mul, Matrix.transpose_mul,
-        Matrix.transpose_transpose]
-    rw [show (J.map ((↑) : ℤ → ℂ))ᵀ = (Jᵀ).map ((↑) : ℤ → ℂ) from rfl]
-    rw [hJ]
-    rw [show ((-J).map ((↑) : ℤ → ℂ)) = -J.map ((↑) : ℤ → ℂ) from by
-      ext k l; simp]
-    rw [Matrix.neg_mul, Matrix.mul_neg, Matrix.mul_assoc]
+  have hN_antisym : Nᵀ = -N :=
+    pmat_transpose_J_pmat_antisymm pmat hJ
   -- `N i i = (Nᵀ) i i = (-N) i i = -(N i i)`.
   have h_diag : N i i = -N i i := by
     have := congr_fun (congr_fun hN_antisym i) i
