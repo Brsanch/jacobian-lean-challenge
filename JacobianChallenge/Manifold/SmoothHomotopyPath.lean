@@ -130,6 +130,59 @@ lemma chartHomotopyMap_bottom_edge
   rw [h_combo]
   exact OpenPartialHomeomorph.left_inv _ h_src_in
 
+/-- **Smoothness of `chartHomotopyMap`** under the chart-containment
+hypotheses on both paths and the chart-target convexity / full-target
+property keeping the interpolation inside `chart.target`.
+
+When `chart.target = univ`, the chart-target straight-line stays in
+chart.target trivially, and `chart.symm` is smooth globally, so the
+homotopy map is `C^∞` everywhere. -/
+lemma contMDiff_chartHomotopyMap_univ
+    (q : Y) (h_univ : (chartAt ℂ q).target = Set.univ)
+    (γ₀ γ₁ : SmoothPath (𝓘(ℝ, ℂ)) Y)
+    (h_in₀ : ∀ t : ℝ, γ₀.ambient t ∈ (chartAt ℂ q).source)
+    (h_in₁ : ∀ t : ℝ, γ₁.ambient t ∈ (chartAt ℂ q).source) :
+    ContMDiff (𝓘(ℝ, Fin 2 → ℝ)) (𝓘(ℝ, ℂ)) ∞
+      (chartHomotopyMap q γ₀ γ₁) := by
+  -- The inner straight-line `(s, t) ↦ (1-s)•ψγ₀(t) + s•ψγ₁(t)` is smooth.
+  have hproj0 : ContMDiff 𝓘(ℝ, Fin 2 → ℝ) 𝓘(ℝ, ℝ) ∞
+      (fun x : Fin 2 → ℝ => x 0) :=
+    ((ContinuousLinearMap.proj 0 : (Fin 2 → ℝ) →L[ℝ] ℝ).contDiff).contMDiff
+  have hproj1 : ContMDiff 𝓘(ℝ, Fin 2 → ℝ) 𝓘(ℝ, ℝ) ∞
+      (fun x : Fin 2 → ℝ => x 1) :=
+    ((ContinuousLinearMap.proj 1 : (Fin 2 → ℝ) →L[ℝ] ℝ).contDiff).contMDiff
+  have h1ms : ContMDiff 𝓘(ℝ, Fin 2 → ℝ) 𝓘(ℝ, ℝ) ∞
+      (fun x : Fin 2 → ℝ => 1 - x 0) := contMDiff_const.sub hproj0
+  -- chart ∘ γᵢ.ambient is smooth on the cylinder where γᵢ.ambient ∈ chart.source.
+  have h_chart_on : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (chartAt ℂ q)
+      (chartAt ℂ q).source := contMDiffOn_chart
+  have h_chart_γ₀ : ContMDiff 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) ∞
+      (fun t : ℝ => (chartAt ℂ q) (γ₀.ambient t)) :=
+    h_chart_on.comp_contMDiff γ₀.ambient_contMDiff h_in₀
+  have h_chart_γ₁ : ContMDiff 𝓘(ℝ, ℝ) 𝓘(ℝ, ℂ) ∞
+      (fun t : ℝ => (chartAt ℂ q) (γ₁.ambient t)) :=
+    h_chart_on.comp_contMDiff γ₁.ambient_contMDiff h_in₁
+  -- Compose with x ↦ x 1 to get `(Fin 2 → ℝ) → ℂ` smooth.
+  have h_chart_γ₀_x : ContMDiff 𝓘(ℝ, Fin 2 → ℝ) 𝓘(ℝ, ℂ) ∞
+      (fun x : Fin 2 → ℝ => (chartAt ℂ q) (γ₀.ambient (x 1))) :=
+    h_chart_γ₀.comp hproj1
+  have h_chart_γ₁_x : ContMDiff 𝓘(ℝ, Fin 2 → ℝ) 𝓘(ℝ, ℂ) ∞
+      (fun x : Fin 2 → ℝ => (chartAt ℂ q) (γ₁.ambient (x 1))) :=
+    h_chart_γ₁.comp hproj1
+  -- Inner straight-line: (1 - x 0) • h_γ₀_x + (x 0) • h_γ₁_x.
+  have h_inner : ContMDiff 𝓘(ℝ, Fin 2 → ℝ) 𝓘(ℝ, ℂ) ∞
+      (fun x : Fin 2 → ℝ => (1 - x 0) • (chartAt ℂ q) (γ₀.ambient (x 1))
+                              + x 0 • (chartAt ℂ q) (γ₁.ambient (x 1))) :=
+    (h1ms.smul h_chart_γ₀_x).add (hproj0.smul h_chart_γ₁_x)
+  -- chart.symm smooth globally (chart.target = univ).
+  have h_symm_on : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (chartAt ℂ q).symm
+      (chartAt ℂ q).target := contMDiffOn_chart_symm
+  have h_symm : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (chartAt ℂ q).symm := by
+    rw [show (chartAt ℂ q).target = Set.univ from h_univ] at h_symm_on
+    exact (contMDiffOn_univ).mp h_symm_on
+  -- Compose.
+  exact h_symm.comp h_inner
+
 /-- **Top edge** (`x 1 = 1`): the homotopy is constant at the
 common tgt. -/
 lemma chartHomotopyMap_top_edge
