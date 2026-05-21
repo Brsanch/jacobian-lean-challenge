@@ -306,6 +306,28 @@ lemma heightLocalℂ_fderiv_zero :
   exact heightLocalℂ_isMaxOn_zero.isLocalMax (by
     exact Filter.univ_mem)
 
+/-- `heightLocalℂ_S w ≥ 0` for all `w : ℂ`. -/
+lemma heightLocalℂ_S_nonneg (w : ℂ) : 0 ≤ heightLocalℂ_S w := by
+  unfold heightLocalℂ_S
+  apply div_nonneg (sq_nonneg _)
+  positivity
+
+/-- `(0 : ℂ)` is a global minimum of `heightLocalℂ_S`. -/
+lemma heightLocalℂ_S_isMinOn_zero :
+    IsMinOn heightLocalℂ_S Set.univ (0 : ℂ) := by
+  intro w _
+  rw [heightLocalℂ_S_zero]
+  exact heightLocalℂ_S_nonneg w
+
+/-- **`fderiv heightLocalℂ_S 0 = 0`** via Fermat (IsLocalMin).
+
+Symmetric chartS-side counterpart to `heightLocalℂ_fderiv_zero`. -/
+lemma heightLocalℂ_S_fderiv_zero :
+    fderiv ℝ heightLocalℂ_S 0 = 0 := by
+  apply IsLocalMin.fderiv_eq_zero
+  exact heightLocalℂ_S_isMinOn_zero.isLocalMin (by
+    exact Filter.univ_mem)
+
 /-- **The two-point candidate critical set of `heightRiemannSphere`.**
 Classically `{0_RS, ∞}`. Used as the explicit `criticalSet` of the
 `MorseFunction RiemannSphere` instance below, in lieu of the default
