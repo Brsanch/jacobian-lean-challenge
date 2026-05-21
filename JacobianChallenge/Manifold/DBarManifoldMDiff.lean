@@ -30,32 +30,78 @@ namespace JacobianChallenge
 
 variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 
+/-- The chart-pullback identification underlying the bridge:
+`writtenInExtChartAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) x f = f ∘ (extChartAt _ x).symm`. -/
+lemma writtenInExtChartAt_target_complex_eq_chartPullback (f : X → ℂ) (x : X) :
+    writtenInExtChartAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) x f
+      = f ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm := by
+  unfold writtenInExtChartAt
+  ext z
+  simp [Function.comp]
+
+/-- The chart-pullback ℂ-differentiability characterization underlying
+`MDifferentiableAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x` (target a `ChartedSpace ℂ ℂ`):
+the model-with-corners range is all of `ℂ`, so within-range reduces to
+plain `DifferentiableAt`. -/
+lemma mdifferentiableAt_target_complex_iff_chartPullback_differentiableAt
+    {f : X → ℂ} {x : X} :
+    MDifferentiableAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x ↔
+      ContinuousAt f x ∧
+      DifferentiableAt ℂ (f ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm)
+        ((extChartAt 𝓘(ℂ, ℂ) x) x) := by
+  rw [mdifferentiableAt_iff,
+      writtenInExtChartAt_target_complex_eq_chartPullback,
+      show Set.range (𝓘(ℂ, ℂ) : ModelWithCorners ℂ ℂ ℂ) = Set.univ from
+        ModelWithCorners.range_eq_univ _,
+      differentiableWithinAt_univ]
+
 /-- Manifold-side: a function ℂ-differentiable in the manifold sense at
 `x` has vanishing `∂̄` there. -/
 theorem dbar_eq_zero_of_mdifferentiableAt {f : X → ℂ} {x : X}
     (hf : MDifferentiableAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x) :
-    dbar f x = 0 := by
-  -- Extract chart-side ℂ-differentiability.
-  have h_diff : DifferentiableWithinAt ℂ
-      (writtenInExtChartAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) x f) (Set.range 𝓘(ℂ, ℂ))
-      ((extChartAt 𝓘(ℂ, ℂ) x) x) :=
-    hf.differentiableWithinAt_writtenInExtChartAt
-  -- `range 𝓘(ℂ, ℂ) = univ`, so DifferentiableWithinAt = DifferentiableAt.
-  have h_range : Set.range (𝓘(ℂ, ℂ) : ModelWithCorners ℂ ℂ ℂ) = Set.univ := by
-    rw [ModelWithCorners.range_eq_univ]
-  rw [h_range, differentiableWithinAt_univ] at h_diff
-  -- `writtenInExtChartAt` equals `f ∘ (extChartAt _ x).symm` modulo
-  -- composing with the identity target chart.
-  -- writtenInExtChartAt I I' x f = extChartAt I' (f x) ∘ f ∘ (extChartAt I x).symm
-  -- For target `ℂ` with `𝓘(ℂ, ℂ)`, `extChartAt _ y = PartialEquiv.refl ℂ` ≡ id.
-  have h_written :
-      writtenInExtChartAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) x f
-        = f ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm := by
-    unfold writtenInExtChartAt
-    ext z
-    simp [Function.comp]
-  rw [h_written] at h_diff
-  exact dbar_eq_zero_of_chartPullback_differentiableAt h_diff
+    dbar f x = 0 :=
+  dbar_eq_zero_of_chartPullback_differentiableAt
+    ((mdifferentiableAt_target_complex_iff_chartPullback_differentiableAt).mp hf).2
+
+/-! ## Manifold-side CR converse
+
+If `f : X → ℂ` is real-MDifferentiableAt and `dbar f x = 0`, then `f` is
+ℂ-MDifferentiableAt. Routes through the chart-side CR converse
+(`differentiableAt_complex_of_dbarChart_eq_zero`) applied to the
+chart pullback. -/
+
+/-- **Manifold-side CR converse.** Under `[ChartedSpace ℂ X]`, if the
+chart pullback `f ∘ (extChartAt _ x).symm` is real-differentiable at the
+chart image of `x`, `f` is continuous at `x`, and the manifold-side
+`dbar f x = 0`, then `f` is manifold-`MDifferentiableAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ)`
+at `x`. -/
+theorem mdifferentiableAt_of_chartPullback_differentiableAt_real_and_dbar_eq_zero
+    {f : X → ℂ} {x : X}
+    (hcont : ContinuousAt f x)
+    (hreal : DifferentiableAt ℝ (f ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm)
+              ((extChartAt 𝓘(ℂ, ℂ) x) x))
+    (hdbar : dbar f x = 0) :
+    MDifferentiableAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x := by
+  have hℂ : DifferentiableAt ℂ (f ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm)
+              ((extChartAt 𝓘(ℂ, ℂ) x) x) := by
+    apply differentiableAt_complex_of_dbarChart_eq_zero hreal
+    -- `dbar f x = 0` is `dbarChart (f ∘ chart.symm) (chart x) = 0` by defn.
+    exact hdbar
+  exact mdifferentiableAt_target_complex_iff_chartPullback_differentiableAt.mpr
+    ⟨hcont, hℂ⟩
+
+/-- **Manifold-side biconditional**: under continuity + chart-side real
+differentiability, manifold-`MDifferentiableAt` with target `𝓘(ℂ, ℂ)` is
+equivalent to vanishing `dbar`. -/
+theorem mdifferentiableAt_iff_dbar_eq_zero
+    {f : X → ℂ} {x : X}
+    (hcont : ContinuousAt f x)
+    (hreal : DifferentiableAt ℝ (f ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm)
+              ((extChartAt 𝓘(ℂ, ℂ) x) x)) :
+    MDifferentiableAt 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f x ↔ dbar f x = 0 :=
+  ⟨dbar_eq_zero_of_mdifferentiableAt,
+   mdifferentiableAt_of_chartPullback_differentiableAt_real_and_dbar_eq_zero
+     hcont hreal⟩
 
 end JacobianChallenge
 
