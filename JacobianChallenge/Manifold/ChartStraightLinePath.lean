@@ -197,6 +197,30 @@ lemma affineChartTriangleSimplex_face0_toFun
       = chartStraightLineMap q z₁ z₂ t :=
   face0_toFun_eq q h_univ z₀ z₁ z₂ t
 
+/-! ## SmoothPath equality lemma
+
+The repository's `SmoothPath` structure has no `[ext]` lemma. We provide
+one here, keyed on `src`/`tgt` equality + pointwise `toPath`-coercion
+equality, sufficient for downstream identification of chart-triangle
+faces as chart-straight-line paths. -/
+
+/-- **Extensionality for `SmoothPath`.** Two smooth paths with equal
+endpoints and equal underlying continuous maps are equal. -/
+lemma smoothPath_ext_of_toPath_apply
+    {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    [IsManifold (𝓘(ℝ, ℂ)) ⊤ Y]
+    {γ₁ γ₂ : SmoothPath (𝓘(ℝ, ℂ)) Y}
+    (h_src : γ₁.src = γ₂.src) (h_tgt : γ₁.tgt = γ₂.tgt)
+    (h_toPath : ∀ t : unitInterval,
+      (γ₁.toPath : unitInterval → Y) t = (γ₂.toPath : unitInterval → Y) t) :
+    γ₁ = γ₂ := by
+  rcases γ₁ with ⟨s₁, t₁, p₁, sm₁⟩
+  rcases γ₂ with ⟨s₂, t₂, p₂, sm₂⟩
+  obtain rfl : s₁ = s₂ := h_src
+  obtain rfl : t₁ = t₂ := h_tgt
+  congr 1
+  exact Path.ext (funext h_toPath)
+
 end JacobianChallenge
 
 end
