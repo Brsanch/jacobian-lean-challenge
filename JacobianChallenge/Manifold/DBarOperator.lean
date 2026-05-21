@@ -167,6 +167,60 @@ theorem dbarChart_eq_zero_of_differentiableAt {f : ℂ → ℂ} {z₀ : ℂ}
     (hf : DifferentiableAt ℂ f z₀) : dbarChart f z₀ = 0 :=
   dbarChart_eq_zero_of_hasDerivAt hf.hasDerivAt
 
+/-! ## Cauchy-Riemann converse: `∂̄f = 0` ⇒ holomorphic
+
+If `f` is real-differentiable at `z₀` and the chart-side `∂̄f(z₀)` vanishes,
+then `f` is ℂ-differentiable at `z₀`. Routes through mathlib's
+`differentiableAt_complex_iff_differentiableAt_real`, which characterizes
+ℂ-differentiability as ℝ-differentiability plus the Cauchy-Riemann
+condition `fderiv ℝ f z₀ I = I • fderiv ℝ f z₀ 1`.
+
+The condition `dbarChart f z₀ = 0`, i.e.
+`(1/2) (fderiv ℝ f z₀ 1 + I · fderiv ℝ f z₀ I) = 0`, is equivalent to
+`fderiv ℝ f z₀ I = I · fderiv ℝ f z₀ 1`. -/
+
+/-- **CR-equation algebraic equivalence:** `dbarChart f z₀ = 0` ↔
+`fderiv ℝ f z₀ Complex.I = Complex.I • fderiv ℝ f z₀ 1`. (Stated as the
+forward direction needed for the CR converse.) -/
+private lemma fderiv_I_eq_I_smul_fderiv_one_of_dbarChart_eq_zero
+    {f : ℂ → ℂ} {z₀ : ℂ} (h : dbarChart f z₀ = 0) :
+    fderiv ℝ f z₀ Complex.I = Complex.I • fderiv ℝ f z₀ 1 := by
+  unfold dbarChart at h
+  set T := fderiv ℝ f z₀
+  -- From `(1/2) * (T 1 + I * T I) = 0` deduce `T 1 + I * T I = 0`.
+  have h2 : T 1 + Complex.I * T Complex.I = 0 := by
+    have h0 : (1/2 : ℂ) * (T 1 + Complex.I * T Complex.I) = 0 := h
+    have h_two : (2 : ℂ) * ((1/2 : ℂ) * (T 1 + Complex.I * T Complex.I))
+        = T 1 + Complex.I * T Complex.I := by ring
+    calc T 1 + Complex.I * T Complex.I
+        = (2 : ℂ) * ((1/2 : ℂ) * (T 1 + Complex.I * T Complex.I)) := h_two.symm
+      _ = (2 : ℂ) * 0 := by rw [h0]
+      _ = 0 := by ring
+  -- Multiply h2 by I: I*T 1 + I*I*T I = 0, i.e. I*T 1 - T I = 0.
+  have hI_sq : Complex.I * Complex.I = -1 := Complex.I_mul_I
+  have h3 : Complex.I * T 1 - T Complex.I = 0 := by
+    have hmul : Complex.I * (T 1 + Complex.I * T Complex.I) = 0 := by
+      rw [h2]; ring
+    have hexp : Complex.I * (T 1 + Complex.I * T Complex.I)
+        = Complex.I * T 1 + (Complex.I * Complex.I) * T Complex.I := by ring
+    rw [hexp, hI_sq] at hmul
+    -- hmul: I * T 1 + (-1) * T I = 0
+    linear_combination hmul
+  -- Conclude T I = I * T 1.
+  show T Complex.I = Complex.I • T 1
+  rw [show (Complex.I • T 1 : ℂ) = Complex.I * T 1 from smul_eq_mul _ _]
+  linear_combination -h3
+
+/-- **CR converse: real-differentiable + `∂̄f = 0` ⇒ holomorphic.**
+
+If `f : ℂ → ℂ` is `DifferentiableAt ℝ` at `z₀` and `dbarChart f z₀ = 0`,
+then `f` is `DifferentiableAt ℂ` at `z₀`. -/
+theorem differentiableAt_complex_of_dbarChart_eq_zero {f : ℂ → ℂ} {z₀ : ℂ}
+    (hreal : DifferentiableAt ℝ f z₀) (hdbar : dbarChart f z₀ = 0) :
+    DifferentiableAt ℂ f z₀ := by
+  rw [differentiableAt_complex_iff_differentiableAt_real]
+  exact ⟨hreal, fderiv_I_eq_I_smul_fderiv_one_of_dbarChart_eq_zero hdbar⟩
+
 end JacobianChallenge
 
 end
