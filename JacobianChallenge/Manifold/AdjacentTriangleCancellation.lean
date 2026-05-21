@@ -62,6 +62,36 @@ lemma chartStraightLinePath_pair_smoothCycle_mem_stokesBoundaries
   single_smoothPath_plus_reverse_mem_stokesBoundaries
     (chartStraightLinePath_univ q h_univ z₀ z₁)
 
+/-! ## Two-triangle boundary as outer-edge chain + stokes-pair
+
+For σ₁ = `affineChartTriangleSimplex_univ q hu a b c` (corners a, b, c)
+and σ₂ = `affineChartTriangleSimplex_univ q hu c b d` (corners c, b, d
+— note: σ₂ uses the b-c edge in reverse orientation: face2(σ₂) traces
+c→b not b→c), the sum
+
+  `∂σ₁ + ∂σ₂`
+
+equals the outer-edge chain plus `single (path b→c) + single (path c→b)`.
+The latter is a stokes-boundary cycle, so modulo stokes it equals the
+outer-edge chain alone. -/
+
+/-- **Explicit two-triangle boundary expansion** (no orientation
+choice — both triangles use the same `face0 - face1 + face2` formula). -/
+theorem two_chart_triangle_boundary_eq
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (a b c d : ℂ) :
+    Smooth2Simplex.boundary (affineChartTriangleSimplex_univ q h_univ a b c)
+      + Smooth2Simplex.boundary (affineChartTriangleSimplex_univ q h_univ c b d)
+    = -- σ₁ boundary: single(b→c) - single(a→c) + single(a→b)
+      SmoothChain.single (chartStraightLinePath_univ q h_univ b c)
+      - SmoothChain.single (chartStraightLinePath_univ q h_univ a c)
+      + SmoothChain.single (chartStraightLinePath_univ q h_univ a b)
+      + (-- σ₂ boundary: single(b→d) - single(c→d) + single(c→b)
+        SmoothChain.single (chartStraightLinePath_univ q h_univ b d)
+        - SmoothChain.single (chartStraightLinePath_univ q h_univ c d)
+        + SmoothChain.single (chartStraightLinePath_univ q h_univ c b)) := by
+  rw [affineChartTriangleSimplex_univ_boundary,
+      affineChartTriangleSimplex_univ_boundary]
+
 end JacobianChallenge
 
 end
