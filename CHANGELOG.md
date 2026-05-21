@@ -1,5 +1,67 @@
 # Changelog
 
+## 2026-05-21 PR #3 — Item-14 reverse leg: chart-local polygonal-approximation bordism (3 commits + merge, +230 LOC)
+
+Final state: build **9316 jobs**, **1055 `.lean` files**, **179,789
+LOC**. Zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
+STRICT-CLOSED**. `origin/main` HEAD `5934aad` (merge of
+`feat/item14-bordism-constructor` via PR #3).
+
+Three commits:
+
+* **refactor**: `SmoothHomotopyPath.left_edge` / `right_edge` restricted
+  to `unitInterval` (was `∀ t : ℝ`). Identifies against `γ_i.toPath`
+  rather than `γ_i.ambient`. Sidesteps `Classical.choose`-opacity of
+  `γ_line.ambient` outside the unit interval that would otherwise
+  block any constructor pairing `chartHomotopyMap` with
+  `chartStraightLinePath_univ`. Cascades through `face0_lowerRight_eq`
+  and `face1_upperLeft_eq` in `SmoothHomotopyPathDiagonalSplit.lean`
+  — both simplified to direct edge applications (no longer need the
+  `ambient_eq_on_unitInterval` bridge step).
+
+* **feat**: `Manifold/SmoothHomotopyPathChartStraightLine.lean` —
+  `chartHomotopyMapDirect q γ x` inlines the chart-straight-line
+  formula directly:
+
+      H(s, t) := chart.symm(
+        (1 - s) • chart(γ.amb t)
+          + s • ((1 - t) • chart(γ.src) + t • chart(γ.tgt)))
+
+  This avoids `γ_line.ambient` entirely. Global smoothness
+  `contMDiff_chartHomotopyMapDirect_univ` follows from `chart ∘ γ.amb`
+  smoothness (γ.amb globally in chart.source by hypothesis) +
+  in-chart-target linear interpolation smoothness + `chart.symm`
+  global smoothness (chart.target = univ).
+
+* **feat**: `chartStraightLineHomotopy` constructor + headline
+  `chartStraightLine_singleSub_mem_stokesBoundaries`:
+
+      For γ globally chart-contained in a full-target chart,
+        single (chartStraightLinePath γ.src γ.tgt) - single γ
+      ∈ stokesBoundaries 𝓘(ℝ, ℂ) Y.
+
+  Constructor: package `chartHomotopyMapDirect` + smoothness + all
+  four edge identities into a `SmoothHomotopyPath γ γ_line`. Edge
+  identities discharged by `module` collapses of the linear-
+  interpolation formulas + `OpenPartialHomeomorph.left_inv` for the
+  chart-symm-of-chart identifications. Apply
+  `SmoothHomotopyPath.singleSub_smoothCycle_mem_stokesBoundaries`
+  from PR #2.
+
+### Net contribution
+
+**The chart-local polygonal-approximation bordism is closed.** Any
+smooth subarc of γ that lies entirely in a single full-target chart
+is smoothly bordant to its chart-straight-line approximation between
+the same endpoints, with explicit 2-chain witness.
+
+The chain-assembly toward `BasedSmoothLoopsBoundHypothesis X p₀` on
+chart-cover-equipped simply-connected X now decomposes into:
+* chart-cover Lebesgue subdivision of γ → chart-contained subarcs ✓ (PR #1)
+* per-subarc bordism to chart-straight-line ✓ (this PR)
+* closed polygonal-chain ∈ stokesBoundaries ✓ (PR #1)
+* concatenate sub-bordisms + match outer edges — mechanical, next PR.
+
 ## 2026-05-21 PR #2 — Item-14 reverse leg: SmoothHomotopyPath diagonal-split + bordism (4 commits + merge, +478 LOC)
 
 Final state: build **9316 jobs**, **1054 `.lean` files**, **179,559
