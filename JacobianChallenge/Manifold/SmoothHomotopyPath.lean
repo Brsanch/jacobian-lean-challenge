@@ -77,6 +77,24 @@ noncomputable def chartHomotopyMap
     ((1 - x 0) • (chartAt ℂ q) (γ₀.ambient (x 1))
       + x 0 • (chartAt ℂ q) (γ₁.ambient (x 1)))
 
+/-- **Bottom edge** (`x 0 = 0`): the homotopy traces `γ₀`'s ambient. -/
+@[simp] lemma chartHomotopyMap_left_edge
+    (q : Y) (γ₀ γ₁ : SmoothPath (𝓘(ℝ, ℂ)) Y) (t : ℝ)
+    (h_in : γ₀.ambient t ∈ (chartAt ℂ q).source) :
+    chartHomotopyMap q γ₀ γ₁ ![0, t] = γ₀.ambient t := by
+  unfold chartHomotopyMap
+  simp
+  exact OpenPartialHomeomorph.left_inv _ h_in
+
+/-- **Right edge** (`x 0 = 1`): the homotopy traces `γ₁`'s ambient. -/
+@[simp] lemma chartHomotopyMap_right_edge
+    (q : Y) (γ₀ γ₁ : SmoothPath (𝓘(ℝ, ℂ)) Y) (t : ℝ)
+    (h_in : γ₁.ambient t ∈ (chartAt ℂ q).source) :
+    chartHomotopyMap q γ₀ γ₁ ![1, t] = γ₁.ambient t := by
+  unfold chartHomotopyMap
+  simp
+  exact OpenPartialHomeomorph.left_inv _ h_in
+
 end JacobianChallenge
 
 end
