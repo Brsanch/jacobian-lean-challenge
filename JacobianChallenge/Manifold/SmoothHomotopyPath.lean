@@ -130,6 +130,37 @@ lemma chartHomotopyMap_bottom_edge
   rw [h_combo]
   exact OpenPartialHomeomorph.left_inv _ h_src_in
 
+/-- **Top edge** (`x 1 = 1`): the homotopy is constant at the
+common tgt. -/
+lemma chartHomotopyMap_top_edge
+    (q : Y) (γ₀ γ₁ : SmoothPath (𝓘(ℝ, ℂ)) Y)
+    (h_tgt : γ₀.tgt = γ₁.tgt) (h_tgt_in : γ₀.tgt ∈ (chartAt ℂ q).source)
+    (h1₀_amb : γ₀.ambient 1 = γ₀.tgt) (h1₁_amb : γ₁.ambient 1 = γ₁.tgt)
+    (s : ℝ) :
+    chartHomotopyMap q γ₀ γ₁ ![s, 1] = γ₀.tgt := by
+  unfold chartHomotopyMap
+  show (chartAt ℂ q).symm
+      ((1 - (![s, 1] : Fin 2 → ℝ) 0)
+        • (chartAt ℂ q) (γ₀.ambient ((![s, 1] : Fin 2 → ℝ) 1))
+        + (![s, 1] : Fin 2 → ℝ) 0
+          • (chartAt ℂ q) (γ₁.ambient ((![s, 1] : Fin 2 → ℝ) 1)))
+    = γ₀.tgt
+  have h_amb_eq : γ₀.ambient ((![s, 1] : Fin 2 → ℝ) 1) = γ₀.tgt := by
+    show γ₀.ambient 1 = γ₀.tgt
+    exact h1₀_amb
+  have h_amb_eq' : γ₁.ambient ((![s, 1] : Fin 2 → ℝ) 1) = γ₀.tgt := by
+    show γ₁.ambient 1 = γ₀.tgt
+    rw [h1₁_amb, ← h_tgt]
+  rw [h_amb_eq, h_amb_eq']
+  have h_idx : (![s, 1] : Fin 2 → ℝ) 0 = s := rfl
+  rw [h_idx]
+  have h_combo : ((1 - s) : ℝ) • (chartAt ℂ q) γ₀.tgt
+                  + (s : ℝ) • (chartAt ℂ q) γ₀.tgt
+                = (chartAt ℂ q) γ₀.tgt := by
+    module
+  rw [h_combo]
+  exact OpenPartialHomeomorph.left_inv _ h_tgt_in
+
 end JacobianChallenge
 
 end
