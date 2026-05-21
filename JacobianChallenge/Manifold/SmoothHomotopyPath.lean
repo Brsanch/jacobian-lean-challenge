@@ -43,7 +43,14 @@ namespace JacobianChallenge
 variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
   [IsManifold (𝓘(ℝ, ℂ)) ⊤ X]
 
-/-- **A smooth homotopy between two paths with the same endpoints.** -/
+/-- **A smooth homotopy between two paths with the same endpoints.**
+
+The left/right edges are restricted to `unitInterval` and identified
+against `γ_i.toPath` (not `γ_i.ambient`). This avoids the
+`Classical.choose`-opacity issue that would arise if we required the
+identity for all `t : ℝ`: the path `γ_i.ambient` is `Classical.choose`
+of the smooth witness and is only fixed by the structure on
+`unitInterval`. -/
 structure SmoothHomotopyPath
     (γ₀ γ₁ : SmoothPath (𝓘(ℝ, ℂ)) X)
     (_h_src : γ₀.src = γ₁.src) (_h_tgt : γ₀.tgt = γ₁.tgt) where
@@ -51,10 +58,10 @@ structure SmoothHomotopyPath
   toFun : (Fin 2 → ℝ) → X
   /-- Smoothness witness. -/
   smooth : ContMDiff (𝓘(ℝ, Fin 2 → ℝ)) (𝓘(ℝ, ℂ)) ∞ toFun
-  /-- Left edge (`s = 0`) equals `γ₀`'s ambient. -/
-  left_edge : ∀ t : ℝ, toFun ![0, t] = γ₀.ambient t
-  /-- Right edge (`s = 1`) equals `γ₁`'s ambient. -/
-  right_edge : ∀ t : ℝ, toFun ![1, t] = γ₁.ambient t
+  /-- Left edge (`s = 0`, on the unit interval) traces `γ₀.toPath`. -/
+  left_edge : ∀ t : unitInterval, toFun ![0, t.val] = γ₀.toPath t
+  /-- Right edge (`s = 1`, on the unit interval) traces `γ₁.toPath`. -/
+  right_edge : ∀ t : unitInterval, toFun ![1, t.val] = γ₁.toPath t
   /-- Bottom edge (`t = 0`) constant at the common src. -/
   bottom_edge : ∀ s : ℝ, toFun ![s, 0] = γ₀.src
   /-- Top edge (`t = 1`) constant at the common tgt. -/
