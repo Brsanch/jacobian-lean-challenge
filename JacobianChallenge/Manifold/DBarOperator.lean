@@ -132,18 +132,40 @@ lemma dbarChart_neg (f : ℂ → ℂ) (z₀ : ℂ) :
   simp only [neg_apply]
   ring
 
-/-! ## Holomorphic functions have zero `∂̄` (deferred)
+/-! ## Holomorphic functions have zero `∂̄`
 
-The `dbarChart f z₀ = 0` characterization for ℂ-differentiable `f` is a
-follow-up chip — it requires routing through `HasFDerivAt.restrictScalars
-ℝ`, which needs an `IsScalarTower ℝ ℂ ℂ` instance that does not synth
-in this import context (despite the high-priority `IsScalarTower.right`
-instance in `Mathlib.Algebra.Algebra.Defs`). A separate follow-up chip
-will resolve the import/synthesis issue.
+Routes through mathlib's `HasDerivAt.complexToReal_fderiv`, which packages a
+ℂ-derivative `HasDerivAt f f' z₀` as the ℝ-Fréchet derivative
+`fderiv ℝ f z₀ = f' • (1 : ℂ →L[ℝ] ℂ)` (i.e. multiplication by `f'`).
+Evaluating at `1` gives `f'`, at `i` gives `f' * i`; substituting into
+the `dbarChart` formula gives `(1/2)·(f' + i·(f'·i)) = (1/2)·(f' - f') = 0`. -/
 
-The basic definition + linearity + constant-zero lemmas in this file
-suffice for the foundational arc; the holomorphic characterization is
-mechanical glue on top. -/
+/-- **Holomorphic ⇒ `∂̄ = 0`.** If `f : ℂ → ℂ` is ℂ-differentiable at `z₀`
+with derivative `f'`, then the chart-side `∂̄`-operator vanishes there. -/
+theorem dbarChart_eq_zero_of_hasDerivAt {f : ℂ → ℂ} {z₀ f' : ℂ}
+    (hf : HasDerivAt f f' z₀) : dbarChart f z₀ = 0 := by
+  have h_fd : HasFDerivAt f (f' • (1 : ℂ →L[ℝ] ℂ)) z₀ :=
+    hf.complexToReal_fderiv
+  have h_fderiv : fderiv ℝ f z₀ = f' • (1 : ℂ →L[ℝ] ℂ) := h_fd.fderiv
+  unfold dbarChart
+  rw [h_fderiv]
+  have h1 : (f' • (1 : ℂ →L[ℝ] ℂ)) 1 = f' := by
+    show f' * 1 = f'
+    ring
+  have hI : (f' • (1 : ℂ →L[ℝ] ℂ)) Complex.I = f' * Complex.I := by
+    show f' * Complex.I = f' * Complex.I
+    rfl
+  rw [h1, hI]
+  -- Goal: (1/2) * (f' + I * (f' * I)) = 0
+  have hI2 : Complex.I * Complex.I = -1 := Complex.I_mul_I
+  ring_nf
+  rw [show Complex.I^2 = Complex.I * Complex.I from sq Complex.I, hI2]
+  ring
+
+/-- **Holomorphic ⇒ `∂̄ = 0`**, stated with `DifferentiableAt ℂ`. -/
+theorem dbarChart_eq_zero_of_differentiableAt {f : ℂ → ℂ} {z₀ : ℂ}
+    (hf : DifferentiableAt ℂ f z₀) : dbarChart f z₀ = 0 :=
+  dbarChart_eq_zero_of_hasDerivAt hf.hasDerivAt
 
 end JacobianChallenge
 
