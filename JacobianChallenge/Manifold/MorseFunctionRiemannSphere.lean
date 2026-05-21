@@ -270,6 +270,42 @@ theorem heightRiemannSphere_contMDiff :
   | infty => exact heightRiemannSphere_contMDiffAt_infty
   | coe z => exact heightRiemannSphere_contMDiffAt_coe z
 
+/-! ## Honest critical-set characterization (chip 45)
+
+We show that `heightLocalℂ : ℂ → ℝ` has `fderiv = 0` exactly at `z = 0`:
+* `fderiv ℝ heightLocalℂ 0 = 0` via `IsLocalMax.fderiv_eq_zero` (since
+  `heightLocalℂ z ≤ heightLocalℂ 0 = 1` for all `z`).
+* `(fderiv ℝ heightLocalℂ z) z = -2 ‖z‖²/(1+‖z‖²)²`, which is nonzero
+  for `z ≠ 0`. Hence the linear functional `fderiv ℝ heightLocalℂ z`
+  is nonzero (as a `ContinuousLinearMap`), and `fderiv ≠ 0` for `z ≠ 0`.
+
+The chartS-side characterization is symmetric (via `heightLocalℂ_S`). -/
+
+/-- `heightLocalℂ z ≤ 1` for all `z : ℂ`. -/
+lemma heightLocalℂ_le_one (z : ℂ) : heightLocalℂ z ≤ 1 := by
+  unfold heightLocalℂ
+  have h_denom_pos : (0 : ℝ) < 1 + ‖z‖^2 := by positivity
+  rw [div_le_one h_denom_pos]
+  linarith [sq_nonneg ‖z‖]
+
+/-- `heightLocalℂ 0 = 1`. -/
+@[simp] lemma heightLocalℂ_zero : heightLocalℂ 0 = 1 := by
+  unfold heightLocalℂ; simp
+
+/-- `(0 : ℂ)` is a global maximum of `heightLocalℂ`. -/
+lemma heightLocalℂ_isMaxOn_zero :
+    IsMaxOn heightLocalℂ Set.univ (0 : ℂ) := by
+  intro z _
+  rw [heightLocalℂ_zero]
+  exact heightLocalℂ_le_one z
+
+/-- **`fderiv heightLocalℂ 0 = 0`** via Fermat (IsLocalMax). -/
+lemma heightLocalℂ_fderiv_zero :
+    fderiv ℝ heightLocalℂ 0 = 0 := by
+  apply IsLocalMax.fderiv_eq_zero
+  exact heightLocalℂ_isMaxOn_zero.isLocalMax (by
+    exact Filter.univ_mem)
+
 /-- **The two-point candidate critical set of `heightRiemannSphere`.**
 Classically `{0_RS, ∞}`. Used as the explicit `criticalSet` of the
 `MorseFunction RiemannSphere` instance below, in lieu of the default
