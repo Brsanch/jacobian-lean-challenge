@@ -25,6 +25,53 @@ working tree's branch state independent of the parallel session.
 /Volumes/4TB SD/.../jacobian-lean-challenge-item14  [feat/item14-classical-content]
 ```
 
+## 2026-05-20 session progress: Dolbeault chips 2–8 landed (local on branch)
+
+Branch advanced 7 chips beyond `66f5199` (handoff baseline). All
+single-file `LEAN_NUM_THREADS=1 lake env lean …` clean, no axiom, no
+sorry. Branch is local-only — not pushed.
+
+```
+a4264bf feat(item-14): dbar ℂ-linearity in function argument (Dolbeault chip 8)
+b8eb5af feat(item-14): dbar chain rule for holomorphic inner (Dolbeault chip 7)
+df171c0 feat(item-14): manifold-side dbar biconditional (Dolbeault chip 6)
+881a216 feat(item-14): CR converse — dbarChart=0 ⇒ holomorphic (Dolbeault chip 5)
+db191f9 feat(item-14): MDifferentiableAt ⇒ dbar = 0 (Dolbeault chip 4)
+a9a3383 feat(item-14): manifold dbar operator (Dolbeault chip 3)
+1490361 feat(item-14): dbarChart_eq_zero_of_hasDerivAt (Dolbeault chip 2)
+```
+
+**What landed.** The chart-side and manifold-level `dbar` operator with
+full biconditional `MDifferentiableAt ↔ dbar = 0`, ℂ-linearity, additivity,
+plus the **Wirtinger chain rule** `dbarChart (f ∘ g) z₀ = conj g' *
+dbarChart f (g z₀)` when `g` is holomorphic. The latter (chip 7) gives
+chart-independence of `dbar = 0` at the chart level: for any holomorphic
+transition with nonzero derivative, the vanishing of ∂̄ is preserved.
+
+**What's open and ranked.**
+
+1. **Manifold-level chart-independence of `dbar = 0`** under
+   `[IsManifold 𝓘(ℂ, ℂ) ω X]`. Need: chart transitions on a complex
+   1-manifold have nonzero derivative everywhere on their source.
+   This is the inverse-function-theorem application
+   `id = ψ ∘ φ⁻¹ ∘ φ`. Routing through `contDiffGroupoid ω` membership
+   gives `ContDiffOn ℂ ω` for both directions, hence `hasDerivAt` with
+   non-zero `g'`. Apply chip 7 to conclude. Self-contained next chip.
+2. **(0,1)-form bundle.** Define the antiholomorphic-cotangent
+   bundle on a complex 1-manifold and `dbar` as a map from smooth
+   ℂ-valued functions to smooth (0,1)-forms. Significant Lean
+   infrastructure.
+3. **L²-Hodge setup → H¹(X, O) = 0 at genus 0.** The deep classical
+   step. Forster §16 / Griffiths-Harris §0.6. Multi-session arc, each
+   step itself a classical theorem (Fredholm theory, Dolbeault
+   isomorphism, …).
+4. **hSP via the cutoff + ∂̄-solve recipe** (step 12 of the prior
+   roadmap, now closer-in once L²-Hodge is staged).
+
+The honest assessment from the prior handoff stands: closing item 14
+strictly in tree is multi-session classical work. Each chip is one
+piece of that arc.
+
 ## Prior session's commits on this branch
 
 Twelve commits ahead of `origin/main`, interleaved with two from the
