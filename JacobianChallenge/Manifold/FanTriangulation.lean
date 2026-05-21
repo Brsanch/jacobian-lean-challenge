@@ -113,6 +113,27 @@ noncomputable def polygonalChain
     (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z : ℂ) :
     polygonalChain q h_univ [z] = 0 := rfl
 
+/-! ## Spoke residue for a list -/
+
+/-- The spoke residue: `single(z_c→head) - single(z_c→last)`, or `0` on empty list. -/
+noncomputable def spokeResidue
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z_c : ℂ) :
+    List ℂ → SmoothChain (𝓘(ℝ, ℂ)) X
+  | [] => 0
+  | [_] => 0
+  | z_0 :: rest =>
+    -SmoothChain.single
+        (chartStraightLinePath_univ q h_univ z_c ((z_0 :: rest).getLast (by simp)))
+      + SmoothChain.single (chartStraightLinePath_univ q h_univ z_c z_0)
+
+@[simp] lemma spokeResidue_nil
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z_c : ℂ) :
+    spokeResidue q h_univ z_c [] = 0 := rfl
+
+@[simp] lemma spokeResidue_singleton
+    (q : X) (h_univ : (chartAt ℂ q).target = Set.univ) (z_c z : ℂ) :
+    spokeResidue q h_univ z_c [z] = 0 := rfl
+
 end JacobianChallenge
 
 end
