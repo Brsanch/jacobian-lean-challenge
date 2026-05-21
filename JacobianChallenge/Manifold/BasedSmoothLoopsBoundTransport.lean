@@ -62,7 +62,7 @@ open scoped Manifold ContDiff
 
 namespace JacobianChallenge
 
-universe u
+universe u v
 
 /-- **BSLB transports across a biholomorphism.**
 
@@ -73,7 +73,7 @@ also lies in `stokesBoundaries`. -/
 theorem basedSmoothLoopsBoundHypothesis_pushforward_biholomorphism
     {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
     [IsManifold (𝓘(ℂ, ℂ)) ω X]
-    {Y : Type u} [TopologicalSpace Y] [ChartedSpace ℂ Y]
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y]
     [IsManifold (𝓘(ℂ, ℂ)) ω Y]
     (φ : HolomorphicEquiv X Y) (p₀ : X)
     (h_bslb : BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) X p₀) :
