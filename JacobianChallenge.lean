@@ -1036,3 +1036,4 @@ import JacobianChallenge.Manifold.RiemannBilinearHypothesis
 import JacobianChallenge.Manifold.AbelTheoremHypothesis
 import JacobianChallenge.Manifold.MrdouglasnyOpenAxiomBridges
 import JacobianChallenge.Manifold.MorseFunctionRiemannSphere
+import JacobianChallenge.Manifold.ULiftChartedSpaceTransfer
