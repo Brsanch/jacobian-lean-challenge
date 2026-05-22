@@ -1,12 +1,24 @@
 # Changelog
 
-## 2026-05-22 (continuation+1) — Hodge-Riemann bridge reduction arc (29 feat commits + 2 docs commits on `feat/c3-surface-classification-data`)
+## 2026-05-22 (continuation+1) — Hodge-Riemann bridge reduction arc (34 feat commits + 2 docs commits on `feat/c3-surface-classification-data`)
 
-State: **1,190 `.lean` files**, **193,564 LOC** (+2,733 LOC across 29
-new files + 3 manifest/docs edits). Full-graph build: **9,439 jobs**.
+State: **1,194 `.lean` files**, **193,915 LOC** (+3,084 LOC across 33
+new files + 3 manifest/docs edits). Full-graph build: **9,443 jobs**.
 Zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
 STRICT-CLOSED**. Pushed to `origin/feat/c3-surface-classification-data`
-(HEAD `479c853`).
+(HEAD `615114b`).
+
+Additional chips beyond the base 29-chip arc (5 chips, +351 LOC):
+* `HasJacobianClassicalContent.of_genus_two` — at `genus X = 2`, the
+  g²-scalars discharge reduces to 4 explicit scalar identities (1
+  strict-upper Q + 3 upper-tri Petersson) + SCD.
+* `hodgeRiemannBridgeHypothesis_iff_sesquilinearUpperTriangular` —
+  biconditional packaging strengthening the prior `_of_` direction.
+* `HasJacobianClassicalContent.of_subsingleton_and_BSLB` — extends
+  the unconditional RS HJCC to any X with `[Subsingleton ω] + BSLB`
+  via `SurfaceClassificationData.ofGenusZero` + vacuous g²-scalars.
+* Multi-route smoke tests on RS validating both the direct
+  `inferInstance` path and the Subsingleton-ω + BSLB route.
 
 The C3 wave's universal classical content at general genus on every
 compact connected complex 1-manifold *factors structurally* into:
