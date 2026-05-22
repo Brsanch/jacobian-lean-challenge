@@ -1,5 +1,111 @@
 # Changelog
 
+## 2026-05-21 post-PR-#4 continuation — FTC-arc foundation, ℂ→ℝ diamond bypass, and holomorphic parametric integral atom (11 chips, ~907 LOC)
+
+Final state: build **9326 jobs**, **1066 `.lean` files**, **180,807
+LOC**. Zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
+STRICT-CLOSED**. `origin/main` HEAD `fe55640`.
+
+After PR #4, the session continued through several `/compact` rounds,
+landing **eleven foundation chips directly on `main`** (no PR-grouped
+review). Three sub-arcs:
+
+### Sub-arc A — FTC integrand-smoothness foundation (chips 1-3, ~290 LOC)
+
+* `Manifold/BumpedSegmentParamSmooth.lean` (`078c921`) — joint `C^∞`
+  of `(z, t) ↦ bumpedSegment z₀ z t` and `chartCoordVelocity z₀ z t`
+  on `ℂ × ℝ`.
+* `Manifold/ChartLocalIntegrandSmooth.lean` (`8d4ef29`) — joint
+  `ContDiffOn ℝ ∞` of the abstract chart-coord integrand product
+  on `S × Set.univ` (convex `S` + `z₀ ∈ S` + `ContDiffOn ℝ ∞ f`).
+* `Manifold/ChartLocalIntegrandRealImag.lean` (`c1a20c9`) — Re/Im
+  part smoothness via `Complex.reCLM`/`Complex.imCLM` composition.
+
+### Sub-arc B — Hand-rolled ℂ→ℝ scalar-restriction bridge (chips 4-9, ~430 LOC)
+
+The mathlib `IsScalarTower ℝ ℂ ℂ` diamond between
+`Complex.SMul.instSMulRealComplex` and `Algebra.id ℂ`-derived SMul
+blocks `ContDiffOn.restrict_scalars ℝ` (and friends) for `ℂ → ℂ`
+functions in `HolomorphicOneFormChartCoeffOnTarget`-imported contexts.
+Bypassed via three layered hand-rolled bridges:
+
+* `Manifold/HasFDerivAtRestrictScalarsComplex.lean` (`2712965`) — base
+  case at `HasFDerivAt` level via the base-field-agnostic `IsLittleO`
+  form: extract `=o[𝓝 x]` via `.isLittleO`, apply
+  `ContinuousLinearMap.restrictScalars ℝ` (which only needs
+  `LinearMap.CompatibleSMul ℂ ℂ ℝ ℂ`, NOT `IsScalarTower`),
+  reconstruct via `.of_isLittleO`. Variants for `HasFDerivWithinAt`,
+  `DifferentiableAt`, `DifferentiableWithinAt`, `DifferentiableOn`,
+  `Differentiable`.
+* `Manifold/FDerivRestrictScalarsComplexIdentity.lean` (`f6a07ed`) —
+  `fderiv ℝ f x = (fderiv ℂ f x).restrictScalars ℝ` (and within-set
+  variant under `UniqueDiffWithinAt ℝ`).
+* `Manifold/LocalCoeffDifferentiableOnReal.lean` (`0c09753`) —
+  `HolomorphicOneForm.localCoeff_differentiableOn_real`: concrete
+  `DifferentiableOn ℝ (localCoeff om y) (chartAt ℂ y).target`.
+* `Manifold/RestrictScalarsContinuityComplex.lean` (`aab8f8d`) —
+  hand-rolled function-level continuity of
+  `(·.restrictScalars ℝ) : (ℂ →L[ℂ] ℂ) → (ℂ →L[ℝ] ℂ)` via
+  `opNorm_le_bound` (1-Lipschitz on differences). Bypasses mathlib's
+  `continuous_restrictScalars` which also hits the diamond.
+* `Manifold/ContDiffOnRealOneComplex.lean` (`aab8f8d`) — abstract
+  `ContDiffOn.complex_top_to_real_one` (`ContDiffOn ℂ ⊤ f S` on open
+  `S` → `ContDiffOn ℝ 1 f S` for `f : ℂ → ℂ`) plus
+  `HolomorphicOneForm.localCoeff_contDiffOn_real_one`. Uses
+  `contDiffOn_succ_iff_fderivWithin` at `n = 0`; composed from chips
+  4 / 5 / 7.
+
+**Diamond-bypass status:** `DifferentiableOn ℝ` and `ContDiffOn ℝ 1`
+for `localCoeff` are now in tree. Full `ContDiffOn ℝ ω` is still open
+— iterating the bridge to second-derivative codomain `ℂ → (ℂ →L[ℂ] ℂ)`
+needs `CompatibleSMul ℂ (ℂ →L[ℂ] ℂ) ℝ ℂ` which doesn't synthesize
+automatically.
+
+### Sub-arc C — Holomorphic parametric integral atom (chips 10-11, ~220 LOC)
+
+After confirming via re-reading `PathPrimitiveLocalSmoothFTCNamed.lean`
+that `ChartLocalPrimitiveSmoothExt` requires `ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω`
+(= `ContDiffOn ℂ ω`, holomorphic), the ℂ→ℝ bridge work was **partially
+tangential** — the actual blocker is the **holomorphic parametric
+integral**. Pivot:
+
+* `Manifold/AnalyticOnIntervalIntegralParam.lean` (`dda33b4`) —
+  `analyticOn_intervalIntegral_param`: for `f : ℂ → ℝ → ℂ` with
+  per-point ℂ-derivative + local ε-ball domination on `f'`, the
+  parameter map `z ↦ ∫ t in a..b, f z t` is `AnalyticOn ℂ` on
+  open `S`. Wraps mathlib
+  `intervalIntegral.hasDerivAt_integral_of_dominated_loc_of_deriv_le`
+  at `𝕜 = ℂ` with `DifferentiableOn.analyticOn` (Goursat).
+* `Manifold/ChartLocalIntegrandAnalyticInZ.lean` (`5738903`) —
+  `analyticAt_chartLocalIntegrand_in_z`: for analytic `f` on convex
+  open `S ∋ z₀`, the chart-coord integrand
+  `fun z' => f (bumpedSegment z₀ z' t) * chartCoordVelocity z₀ z' t`
+  is `AnalyticAt ℂ` at every `z ∈ S` for each `t`. Plus helper
+  lemmas `analyticAt_bumpedSegment_in_z` and
+  `analyticAt_chartCoordVelocity_in_z` (both ℂ-linear/affine in z).
+
+### Item-14 frontier after this session
+
+Closed in tree on RS and ℂ via in-tree discharges of the 4 minimal
+named hypotheses. For general genus-0 simply-connected `X`, the 4
+named hypotheses remain open:
+
+1. `hSP` (forward leg, RR-class) — no active chip arc.
+2. `h_bslb` (reverse leg, smooth-Hurewicz at genus 0) — chain-assembly
+   arc (PRs #1-#4) is at the architectural-choice point: either
+   restructure `Smooth2Simplex` to use `ContMDiffOn [0,1]²`, define a
+   finer SmoothPath structure exposing `ContDiffBump`-extended
+   ambient, or strong-hypothesis pattern.
+3. `h_smooth_b` (reverse leg, analytic pathPrimitive) — **path clear
+   through sub-arc C**: combine chip 11's per-`t` analyticity with
+   chip 10's parametric AnalyticOn, then chart-pulled identity
+   (still TBD) + chart transport → `ChartLocalPrimitiveSmoothExt`.
+4. `h_ftc_b` (reverse leg, FTC) — analogous arc once `h_smooth_b`
+   tooling is in place.
+
+3 named hypothesis discharges away from full general-X item-14
+closure, plus the architectural choice for h_bslb.
+
 ## 2026-05-21 PR #4 — Item-14 reverse leg: `SmoothPath.subpath` primitive (1 commit + merge, +111 LOC)
 
 Final state: build **9316 jobs**, **1056 `.lean` files**, **179,900
