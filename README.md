@@ -13,12 +13,36 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-21):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
+**Current state (2026-05-22):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
 Zero `sorry`, zero `axiom`. Repo:
-**179,290 LOC across 1,068 `.lean` files**. Build 9,349 jobs clean.
+**190,371 LOC across 1,152 `.lean` files**. Build 9,400 jobs clean.
 
 Major recent landings:
 
+* **L²-positivity arc COMPLETE for `HolomorphicOneForm` + ℂ→ℝ
+  ContDiff diamond closed + arc S started** (2026-05-22, 13 commits,
+  +1,726 LOC across 16 new files, branch
+  `feat/c3-surface-classification-data`). Ships the partition-of-unity
+  Petersson L²-square norm
+  `globalPettersonL2Sq om f` and the headline
+  `globalPettersonL2Sq_pos_of_ne_zero` — for every nonzero holomorphic
+  1-form `om` on any compact connected complex 1-manifold and every
+  smooth partition of unity `f` subordinate to the chart-source cover,
+  `0 < globalPettersonL2Sq om f`. Composes 11 chips A → E.4 (chart-
+  local L²-square seminorm, finiteness, real-valued projection,
+  finite chart cover, smooth PoU, weighted seminorm, global PoU sum,
+  non-vanishing existence at chart-image, non-vanishing ball,
+  positive seminorm on ball, generalised non-vanishing localCoeff,
+  finsum assembly via `LocallyFinite.finite_nonempty_of_compact`).
+  Plus the memory-flagged `IsManifold (𝓘(ℝ, ℂ)) ∞ X` instance from
+  `[IsManifold (𝓘(ℂ, ℂ)) ω X]`, dispatching the ℂ→ℝ ContDiff diamond
+  via `set_option backward.isDefEq.respectTransparency false` (the
+  trick mathlib uses for `StarModule.complexToReal`). Plus arc S
+  start (chip S.1) — ℂ-valued chart-local Hermitian sesquilinear
+  pairing via Bochner integration, with Hermitian symmetry. Plus the
+  shared C3↔Item-14 atom `UniformizationGenus0Hypothesis X` (Topology/
+  …), with unconditional RS instance and a substantive
+  `of_RiemannRochGenusZero` discharge.
 * **Chip 19q-r + chip 20a-r: T_L unconditional Hodge–Riemann +
   general-genus structural reductions** (2026-05-21, 23 commits,
   +2,015 LOC across 22 new files, branch
