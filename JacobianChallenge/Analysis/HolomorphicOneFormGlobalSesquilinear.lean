@@ -100,6 +100,25 @@ theorem globalPettersonHermitian_hermitian
   exact ((starRingEnd ℂ).toAddMonoidHom.map_finsum_of_injective h_inj
     (fun y => chartLocalSesquilinear eta om y (fun x => f.toFun y x))).symm
 
+/-- **Diagonal of `globalPettersonHermitian` is real-valued.**
+Follows from Hermitian symmetry (`H(om, om) = conj(H(om, om))` ⇒
+imaginary part vanishes). -/
+theorem globalPettersonHermitian_diagonal_im
+    (om : HolomorphicOneForm X)
+    (f : SmoothPartitionOfUnity X 𝓘(ℝ, ℂ) X (Set.univ : Set X)) :
+    (globalPettersonHermitian om om f).im = 0 := by
+  -- H(om, om) = conj(H(om, om)) so im = -im, hence im = 0.
+  have h_eq : globalPettersonHermitian om om f
+      = (starRingEnd ℂ) (globalPettersonHermitian om om f) :=
+    globalPettersonHermitian_hermitian om om f
+  -- Take imaginary parts: c.im = (conj c).im = -c.im ⇒ 2·c.im = 0 ⇒ c.im = 0.
+  have h_im_eq : (globalPettersonHermitian om om f).im
+      = ((starRingEnd ℂ) (globalPettersonHermitian om om f)).im := by
+    rw [← h_eq]
+  rw [Complex.conj_im] at h_im_eq
+  -- h_im_eq : (globalPettersonHermitian om om f).im = -(...).im
+  linarith
+
 end HolomorphicOneForm
 
 end
