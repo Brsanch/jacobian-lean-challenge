@@ -1,8 +1,8 @@
 # Changelog
 
-## 2026-05-22 — L²-positivity arc COMPLETE + ℂ→ℝ ContDiff diamond closed + arc S start (13 commits, +1,726 LOC across 16 new files, +1 modified)
+## 2026-05-22 — L²-positivity arc COMPLETE + ℂ→ℝ ContDiff diamond closed + arc S (chips S.1–S.7') (19 feat commits + 1 docs commit, +2,190 LOC across 17 new files, +1 modified)
 
-State: **1,152 `.lean` files**, **190,371 LOC**. Build 9,400 jobs
+State: **1,153 `.lean` files**, **190,671 LOC**. Build 9,401 jobs
 clean. Zero `sorry`, zero `axiom`. Item count unchanged at
 **14 / 24 STRICT-CLOSED**. Branch `feat/c3-surface-classification-data`
 (continues from `09f51e2`).
@@ -97,15 +97,54 @@ trick mathlib uses for `StarModule.complexToReal` at
 `LinearAlgebra/Complex/Module.lean:204`. Memory note updated with
 the resolution.
 
-### Arc S start — surface-integration assembly (1 commit, ~125 LOC)
+### Arc S — Petersson Hermitian form (chips S.1 through S.7', 7 commits, ~459 LOC)
 
-* `Analysis/HolomorphicOneFormChartLocalSesquilinear.lean` (chip
-  S.1) — ℂ-valued chart-local Hermitian sesquilinear pairing
+* `Analysis/HolomorphicOneFormChartLocalSesquilinear.lean` (chips S.1, S.4, S.5) —
+  ℂ-valued chart-local Hermitian sesquilinear pairing
   `chartLocalSesquilinear om eta y χ` via Bochner integration of
   `χ(chart.symm z) · localCoeff om y z · conj(localCoeff eta y z)`.
-  Zero-on-zero (both arguments) + Hermitian symmetry
-  `H(om, eta) = conj(H(eta, om))` via `integral_conj` + pointwise
-  integrand conjugation identity.
+  Ships:
+  * Definition + zero-on-zero (both arguments) + Hermitian symmetry
+    `H(om, eta) = conj(H(eta, om))` via `integral_conj` + pointwise
+    integrand conjugation identity (S.1).
+  * `chartLocalSesquilinear_diagonal_im` — `(H(om, om, y, χ)).im = 0`
+    (S.4) via Hermitian-symmetry-on-the-diagonal.
+  * `chartLocalSesquilinear_diagonal_eq_ofReal` — identification with
+    the real-cast of a real Bochner integral
+    `H(om, om, y, χ) = ↑(∫ z, χ · normSq lc)` via pointwise
+    `Complex.mul_conj` + `integral_complex_ofReal` (S.5).
+  * `chartLocalSesquilinear_diagonal_re_nonneg` — for `χ ≥ 0`,
+    `0 ≤ H(om, om, y, χ).re` via the `_eq_ofReal` + `integral_nonneg`
+    (S.5).
+
+* `Analysis/HolomorphicOneFormGlobalSesquilinear.lean` (chips S.2, S.3,
+  S.6, S.7') — global Petersson Hermitian form via PoU sum:
+  * `globalPettersonHermitian om eta f := ∑ᶠ y, chartLocalSesquilinear
+    om eta y (f.toFun y)`, zero-on-zero (both arguments), Hermitian
+    symmetry via `AddMonoidHom.map_finsum_of_injective` on
+    `starRingEnd ℂ` (S.2).
+  * `globalPettersonHermitian_diagonal_im` — global diagonal-real
+    (S.3) via Hermitian-symmetry-on-the-diagonal.
+  * Private `globalPettersonHermitian_finsupp_term` — support of
+    `y ↦ chartLocalSesquilinear om om y (f.toFun y)` is `Set.Finite`
+    via `LocallyFinite.finite_nonempty_of_compact` (same machinery as
+    chip E.4).
+  * `globalPettersonHermitian_diagonal_re_eq_finsum` —
+    `(globalPettersonHermitian om om f).re = ∑ᶠ y, (chartLocalSesquilinear
+    om om y (f.toFun y)).re` via `Complex.reCLM.toAddMonoidHom.map_finsum`
+    + the finsupp extractor (S.7').
+  * `globalPettersonHermitian_diagonal_re_nonneg` — global diagonal-nonneg
+    `0 ≤ (globalPettersonHermitian om om f).re` via the new
+    `_diagonal_re_eq_finsum` + chart-local nonneg (S.5) +
+    `SmoothPartitionOfUnity.nonneg` + `finsum_nonneg` (S.6).
+
+**Net**: the Petersson Hermitian form is **positive semi-definite at the
+diagonal** (real and nonneg) on every nonneg partition function (in
+particular, on any `SmoothPartitionOfUnity`). Strict positivity for
+nonzero forms (chip S.7/S.8 territory) requires Bochner-integrability
+infrastructure for the chart-local integrand — proving `IntegrableOn`
+for the partition-supported integrand on the open chart target — which
+is not in scope this session.
 
 ### Architectural state after this session
 
