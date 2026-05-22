@@ -48,8 +48,33 @@ Both reduce to mathlib `Real.smoothTransition.contDiff`,
 `ContDiffOn.comp` with a `Set.MapsTo` from convexity. Self-contained
 and unconditional.
 
-Subsequent chips in the same FTC arc:
-* Specialize the abstract `f` to `localCoeff om y` via a bridge
+### ⚠️ Diamond gotcha for the `localCoeff` real-smoothness bridge
+
+The natural next chip would specialize `contDiffOn_chartLocalIntegrand_param`'s
+abstract `f` to `localCoeff om y` by bridging
+`ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω (localCoeff om y) (chartAt ℂ y).target` to
+`ContDiffOn ℝ ∞`. In a session continuation, this was attempted and
+hit a **mathlib instance diamond** at `IsScalarTower ℝ ℂ ℂ` —
+specifically a conflict between `Complex.SMul.instSMulRealComplex` and
+the `Algebra.id ℂ`-derived SMul on `ℂ`-self. A `letI` workaround via
+`smul_assoc`/`ring` does not robustly survive once the file imports
+`JacobianChallenge.Manifold.HolomorphicOneFormChartCoeffOnTarget`
+(which brings in the conflicting instance).
+
+Possible next-session approaches:
+1. **Direct mathlib PR**: file an issue / patch to mathlib that adds
+   a more priority-aware `IsScalarTower ℝ ℂ ℂ` instance keyed on the
+   `Algebra.id`-SMul.
+2. **Indirect bridge via `Complex.equivRealProdLm`**: cast
+   `localCoeff` through the linear equivalence `ℂ ≃ₗ[ℝ] ℝ × ℝ` and
+   prove `ContDiffOn ℝ ∞` on the ℝ² side, then transport back via
+   the equiv's smoothness.
+3. **Direct from-AnalyticOn route**: build a custom
+   `AnalyticOn ℂ → ContDiffOn ℝ ∞` for `ℂ → ℂ` using the
+   power-series representation directly (bypassing `restrict_scalars`).
+
+Subsequent chips in the same FTC arc (after the bridge lands):
+* Specialize the abstract `f` to `localCoeff om y` via the bridge
   from `ContMDiffOn 𝓘(ℂ) ω f` to `ContDiffOn ℝ ∞ f`
   (`localCoeff_contMDiffOn` already in tree).
 * Express `chartLocalPrimitive` in chart coords as an interval
