@@ -32,6 +32,25 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-22 (L²-positivity arc COMPLETE for `HolomorphicOneForm` + ℂ→ℝ ContDiff diamond closed + arc S start; 13 commits on `feat/c3-surface-classification-data`, +1,726 Lean LOC across 16 new files + 1 manifest edit. Repo now 1,152 `.lean` files / 190,371 LOC. Build 9,400 jobs clean, zero `sorry`, zero `axiom`. Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; the L²-positivity layer for `RiemannSecondRelationPositivity` becomes structurally complete at the analytic level, and a memory-flagged sharp edge is dispatched as an in-tree typeclass instance).**
+>
+> **Headline (Option A — shared C3↔Item-14 atom):**
+> * `UniformizationGenus0Hypothesis X` class — the genus-0 corner of uniformization `genus X = 0 → Nonempty (HolomorphicEquiv X RiemannSphere)`. Strictly weaker than `FactUniformizationToRiemannSphere X`. Unconditional RS instance via `HolomorphicEquiv.refl`, bridge instance from `Fact…`, and substantive `UniformizationGenus0Hypothesis.of_RiemannRochGenusZero`: the shared atom follows from `RiemannRochGenusZero X` alone via the three in-tree unconditional atoms.
+>
+> **Headline (L²-positivity arc COMPLETE):**
+> * Headline `globalPettersonL2Sq_pos_of_ne_zero` — for every nonzero `om : HolomorphicOneForm X` on a compact connected complex 1-manifold and every smooth partition of unity `f` subordinate to the chart-source cover, `0 < globalPettersonL2Sq om f`.
+> * Composes 11 sub-chips: A (`chartLocalL2Sq` ℝ≥0∞-valued seminorm), B (finiteness on compact subset of chart target), C (real-valued `toReal` projection), D₀ (finite chart-source cover), D₁ (subordinate smooth PoU — *unconditional* after diamond closure), D₂ (weighted seminorm), D₃ (global PoU sum), E.1 (`localCoeff` at chart-image of base point ⇒ nonzero existence), E.2 (continuity ⇒ open non-vanishing ball), E.3 (positive L² seminorm on non-vanishing ball), E.1.5 (`localCoeff` at chart-image of *arbitrary* point of chart-source via cotangent-bundle coord-change injectivity), E.4 (finsum assembly via `LocallyFinite.finite_nonempty_of_compact`).
+>
+> **Headline (memory-flagged ℂ→ℝ ContDiff diamond CLOSED):**
+> * `Analysis/RealModelManifoldFromComplex.lean` — instance `instIsManifoldRealComplexOfComplexAnalytic` produces `IsManifold (𝓘(ℝ, ℂ)) ∞ X` from `[ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]`. Single-line workaround at file scope: `set_option backward.isDefEq.respectTransparency false`. Same trick mathlib uses for `StarModule.complexToReal`. Resolves the named open atom flagged in `memory/feedback_jacobian_complex_real_diamond.md`.
+>
+> **Headline (arc S start — surface-integration assembly):**
+> * `Analysis/HolomorphicOneFormChartLocalSesquilinear.lean` (chip S.1) — ℂ-valued chart-local Hermitian sesquilinear pairing via Bochner integration. Hermitian symmetry via `integral_conj` + pointwise integrand conjugation. First chip of arc S, which targets RFBR + RSRP simultaneous closure via surface-Stokes assembly (downstream).
+>
+> **What this enables, what it doesn't:**
+> * *Enables*: substantive analytic content of RSRP at general genus ≥ 2 — `∫ |f|² > 0` for nonzero ω — now in tree as a partition-of-unity-derived statement. ℂ→ℝ diamond gone.
+> * *Doesn't enable yet*: identification of `globalPettersonL2Sq om f` with the diagonal of the period-matrix Hermitian form `i • Πᵀ J Π̄`. Requires Stokes on a fundamental polygon (arc S downstream). RFBR and RSRP share this missing layer.
+
 > **2026-05-21 (chip 19q-r + chip 20a-r — T_L unconditional Hodge-Riemann chain + general-genus structural reductions; 23 commits on `feat/c3-chip-19-iperiodform-hermitian` extending the chip 19 arc base, +2,015 Lean LOC across 22 new files + 1 docs file + manifest edits. Repo now 1,068 `.lean` files / 179,290 LOC. Build 9,349 jobs clean, zero `sorry`, zero `axiom`). Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; further *structural reduction* of the named classical content required by the items 5/11/12/13/17/18/21 chain).**
 >
 > **Headline (T_L = ℂ ⧸ L):**

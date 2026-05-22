@@ -1,5 +1,124 @@
 # Changelog
 
+## 2026-05-22 — L²-positivity arc COMPLETE + ℂ→ℝ ContDiff diamond closed + arc S start (13 commits, +1,726 LOC across 16 new files, +1 modified)
+
+State: **1,152 `.lean` files**, **190,371 LOC**. Build 9,400 jobs
+clean. Zero `sorry`, zero `axiom`. Item count unchanged at
+**14 / 24 STRICT-CLOSED**. Branch `feat/c3-surface-classification-data`
+(continues from `09f51e2`).
+
+### Option A — shared C3↔Item-14 atom (2 commits, ~180 LOC)
+
+* `Topology/UniformizationGenus0Hypothesis.lean` — class wrapping
+  the genus-0 corner of uniformization `genus X = 0 → Nonempty
+  (HolomorphicEquiv X RiemannSphere)`. Strictly weaker than the
+  in-tree disjunctive `FactUniformizationToRiemannSphere X`.
+  Unconditional RS instance + bridge instance from `Fact…`.
+* `Topology/UniformizationGenus0HypothesisFromRR.lean` — substantive
+  discharge `UniformizationGenus0Hypothesis.of_RiemannRochGenusZero`:
+  the shared atom follows from `RiemannRochGenusZero X` alone via the
+  three in-tree unconditional atoms
+  (`ramificationSumEqualsDegree_holds_unconditional`,
+  `surjective_of_NonConstant_Analytic_Manifold_holds`,
+  `bijectiveAnalyticIsBiholomorphism_holds`).
+
+### L²-positivity arc (11 commits, ~1,260 LOC across 11 new Analysis/ files)
+
+Composes a complete partition-of-unity-based Petersson L²-square norm
+on `HolomorphicOneForm X` and proves strict positivity for nonzero
+forms.
+
+* `Analysis/HolomorphicOneFormChartLocalL2Sq.lean` (chip A) —
+  chart-local L²-square seminorm as an `ℝ≥0∞` lintegral; zero/
+  empty/mono.
+* `Analysis/HolomorphicOneFormChartLocalL2SqFinite.lean` (chip B) —
+  finiteness on a compact subset of the chart target via
+  `IsCompact.exists_bound_of_continuousOn` + constant-bound on
+  the lintegrand.
+* `Analysis/HolomorphicOneFormChartLocalL2SqReal.lean` (chip C) —
+  real-valued projection via `ENNReal.toReal` + ofReal-toReal
+  round-trip on compact-in-target.
+* `Analysis/FiniteChartCover.lean` (chip D₀) — every compact
+  `ChartedSpace ℂ X` admits a finite cover by chart sources, via
+  `IsCompact.elim_finite_subcover`.
+* `Analysis/SmoothPartitionSubordinateChartCover.lean` (chip D₁) —
+  smooth partition of unity subordinate to the chart-source cover
+  (mathlib `exists_isSubordinate_chartAt_source` specialised). Made
+  unconditional once the ℂ→ℝ diamond is closed (see below).
+* `Analysis/HolomorphicOneFormChartLocalL2SqWeighted.lean` (chip
+  D₂) — weighted form `chartLocalL2SqWeighted om y χ`.
+* `Analysis/HolomorphicOneFormGlobalL2Sq.lean` (chip D₃) — global
+  Petersson L²-square via `∑ᶠ y, chartLocalL2SqWeighted om y (f.toFun y)`.
+* `Analysis/HolomorphicOneFormLocalCoeffAtBase.lean` (chip E.1) —
+  `localCoeff_at_chartAt_self` + existence of nonzero-localCoeff
+  chart for a nonzero form.
+* `Analysis/HolomorphicOneFormLocalCoeffNonVanishingBall.lean`
+  (chip E.2) — upgrade chip E.1 existence to an open ball via
+  `ContinuousAt.eventually_ne` + `Metric.eventually_nhds_iff_ball`.
+* `Analysis/HolomorphicOneFormChartLocalL2SqPositiveBall.lean`
+  (chip E.3) — `chartLocalL2Sq_pos_of_ball_nonvanishing` — strict
+  positivity of the chart-local L² seminorm on a non-vanishing ball
+  via continuity-derived uniform lower bound on a smaller sub-ball.
+* `Analysis/HolomorphicOneFormLocalCoeffAtPoint.lean` (chip E.1.5) —
+  extends chip E.1 from `x = y` to any `x ∈ chart-source y`. Three
+  lemmas: coord-change injectivity for the cotangent bundle (via
+  `coordChange_comp` + `coordChange_self`); `localCoeff` unfolding
+  at chart-image of `x`; headline
+  `localCoeff_at_chart_image_ne_zero_of_eval_ne_zero`.
+* `Analysis/HolomorphicOneFormGlobalL2SqPositive.lean` (chip E.4) —
+  **HEADLINE** `globalPettersonL2Sq_pos_of_ne_zero`. For every nonzero
+  `om : HolomorphicOneForm X` and every smooth partition of unity
+  `f : SmoothPartitionOfUnity X 𝓘(ℝ, ℂ) X Set.univ` subordinate to
+  the chart-source cover, `0 < globalPettersonL2Sq om f`. Proof
+  composes E.1.5 + continuity for joint lower bound + chip E.3 +
+  `single_le_finsum` (via `LocallyFinite.finite_nonempty_of_compact`
+  for the active-index finite support on compact X).
+
+### ℂ→ℝ ContDiff diamond closed (1 commit, ~100 LOC)
+
+`Analysis/RealModelManifoldFromComplex.lean` — closes the
+**memory-flagged sharp edge**
+(`memory/feedback_jacobian_complex_real_diamond.md`):
+
+* `contDiffOn_real_top_of_contDiffOn_complex_omega` — bridge
+  `ContDiffOn ℂ ω f s → ContDiffOn ℝ ∞ f s` for `f : ℂ → ℂ`.
+* `instIsManifoldRealComplexOfComplexAnalytic` (instance) — for any
+  `[ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]`,
+  `IsManifold (𝓘(ℝ, ℂ)) ∞ X` holds. Built via
+  `isManifold_of_contDiffOn` applied to chart transitions extracted
+  from `HasGroupoid.compatible`.
+
+The breakthrough: a single line at file scope —
+`set_option backward.isDefEq.respectTransparency false` — relaxes
+Lean's instance-resolution defeq check enough to break the
+`IsScalarTower ℝ ℂ ℂ` diamond between
+`Complex.SMul.instSMulRealComplex` and `Algebra.id ℂ`-SMul. Same
+trick mathlib uses for `StarModule.complexToReal` at
+`LinearAlgebra/Complex/Module.lean:204`. Memory note updated with
+the resolution.
+
+### Arc S start — surface-integration assembly (1 commit, ~125 LOC)
+
+* `Analysis/HolomorphicOneFormChartLocalSesquilinear.lean` (chip
+  S.1) — ℂ-valued chart-local Hermitian sesquilinear pairing
+  `chartLocalSesquilinear om eta y χ` via Bochner integration of
+  `χ(chart.symm z) · localCoeff om y z · conj(localCoeff eta y z)`.
+  Zero-on-zero (both arguments) + Hermitian symmetry
+  `H(om, eta) = conj(H(eta, om))` via `integral_conj` + pointwise
+  integrand conjugation identity.
+
+### Architectural state after this session
+
+The L²-positivity layer for `RiemannSecondRelationPositivity` is now
+substantively complete at the analytic level. To close RSRP at
+general genus, the remaining classical content is the identification
+of `globalPettersonL2Sq om f` with the diagonal of the period-matrix
+Hermitian form `i • Πᵀ J Π̄` — a Stokes-on-fundamental-polygon
+argument requiring surface integration of 2-forms on a compact
+Riemann surface. Arc S (started with chip S.1) targets this
+identification. RFBR and RSRP share the missing surface-integration
+content; arc S would close both simultaneously.
+
 ## 2026-05-21 — SCD + RFBR + RSRP arc: full universality-blocker factoring (22 commits, +1,940 LOC across 19 new files, +1 modified)
 
 State: **1,088 `.lean` files**, **184,233 LOC**. Build 9,369 jobs
