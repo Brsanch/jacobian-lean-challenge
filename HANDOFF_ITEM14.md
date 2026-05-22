@@ -25,6 +25,45 @@ working tree's branch state independent of the parallel session.
 /Volumes/4TB SD/.../jacobian-lean-challenge-item14  [feat/item14-classical-content]
 ```
 
+## 2026-05-21 session — additional FTC-arc foundation chips on `origin/main`
+
+After the 4-PR landing below, two more foundational chips landed
+directly on `main` (`origin/main` HEAD `7cac7e8`) — integrand-side
+joint-smoothness lemmas needed by the future parameter-integral
+upgrade of `chartLocalPrimitive` continuity → smoothness:
+
+* **`JacobianChallenge/Manifold/BumpedSegmentParamSmooth.lean`**
+  (commit `078c921`) — joint `C^∞` of
+  `(z, t) ↦ bumpedSegment z₀ z t` and
+  `(z, t) ↦ chartCoordVelocity z₀ z t` on `ℂ × ℝ`.
+* **`JacobianChallenge/Manifold/ChartLocalIntegrandSmooth.lean`**
+  (commit `8d4ef29`) — joint `ContDiffOn ℝ ∞` of the abstract
+  chart-coord integrand
+  `(z, t) ↦ f(bumpedSegment z₀ z t) * chartCoordVelocity z₀ z t` on
+  `S × Set.univ` under `ContDiffOn ℝ ∞ f S` + `Convex ℝ S` +
+  `z₀ ∈ S`.
+
+Both reduce to mathlib `Real.smoothTransition.contDiff`,
+`ContDiff.iterate_deriv`, `ContDiff.smul`/`ContDiff.mul`, and
+`ContDiffOn.comp` with a `Set.MapsTo` from convexity. Self-contained
+and unconditional.
+
+Subsequent chips in the same FTC arc:
+* Specialize the abstract `f` to `localCoeff om y` via a bridge
+  from `ContMDiffOn 𝓘(ℂ) ω f` to `ContDiffOn ℝ ∞ f`
+  (`localCoeff_contMDiffOn` already in tree).
+* Express `chartLocalPrimitive` in chart coords as an interval
+  integral with this integrand on `[0, 1]`.
+* Apply mathlib's parameter-integral smoothness theorem
+  (`ContDiffOn.intervalIntegral` or similar) to upgrade to
+  `ChartLocalPrimitiveSmoothExt`.
+* The matching FTC sub-arc upgrades to `ChartLocalPrimitiveFTC`.
+
+Together those discharge two of the **4 minimal named hypotheses**
+of `genus_eq_zero_iff_homeo_from_4_minimal_inputs`, leaving only
+`hSP` (`ExistsSimplePoleGermAtSomePoint`, forward leg, RR-class) and
+`h_bslb` (`SimplyConnected → BSLB`, reverse leg, smooth-Hurewicz).
+
 ## 2026-05-21 session COMPLETE — 4 PRs landed on `origin/main`
 
 **Final `origin/main` HEAD: `b48070b`** (post PR #4 merge). Repo at
