@@ -25,6 +25,67 @@ working tree's branch state independent of the parallel session.
 /Volumes/4TB SD/.../jacobian-lean-challenge-item14  [feat/item14-classical-content]
 ```
 
+## 2026-05-21 session — holomorphic parametric integral atom (sub-arc C) landed
+
+Two chips at the END of the session, after the big-picture pivot:
+
+* **`Manifold/AnalyticOnIntervalIntegralParam.lean`** (commit `dda33b4`,
+  origin/main HEAD `c5b6b4c`) — `analyticOn_intervalIntegral_param`:
+  for `f : ℂ → ℝ → ℂ` with per-point ℂ-derivative `HasDerivAt (fun z' => f z' t)
+  (f' z t) z` at every `z ∈ S` (ae `t`), plus local ε-ball domination
+  on `f'`, the parameter map `z ↦ ∫ t in a..b, f z t` is `AnalyticOn ℂ`
+  on open `S`. **Wraps mathlib's complex parametric Fréchet derivative
+  theorem** (`intervalIntegral.hasDerivAt_integral_of_dominated_loc_of_deriv_le`
+  at `𝕜 = ℂ`) with **Goursat** (`DifferentiableOn.analyticOn` on open ℂ-set,
+  from `Mathlib/Analysis/Complex/CauchyIntegral.lean`). **Bypasses the
+  ℂ→ℝ diamond entirely** — the parametric integral is taken at the
+  ℂ-level, no scalar restriction needed.
+* **`Manifold/ChartLocalIntegrandAnalyticInZ.lean`** (commit `5738903`,
+  origin/main HEAD `fe55640`) — `analyticAt_chartLocalIntegrand_in_z`:
+  for `AnalyticOn ℂ f S` on convex open `S ∋ z₀`, the chart-coord
+  integrand
+  `fun z' => f (bumpedSegment z₀ z' t) * chartCoordVelocity z₀ z' t`
+  is `AnalyticAt ℂ` at every `z ∈ S` for each `t`. Composition of:
+  * `analyticAt_bumpedSegment_in_z` — affine-in-z (via `Complex.real_smul`);
+  * `analyticAt_chartCoordVelocity_in_z` — affine-in-z;
+  * `bumpedSegment_mem_of_convex` — image ⊆ `S` by convexity, so
+    `f.analyticAt` applies at the inner-function value.
+
+### Big-picture pivot
+
+The earlier ℂ→ℝ diamond-bypass work (chips 4-9 below) was prompted by
+the (correct) need to discharge `ChartLocalPrimitiveSmoothExt`, but
+**this analytic level requires `ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω`** (i.e.,
+holomorphic), NOT real-smoothness. Sub-arc C is the direct path. Sub-arc
+B (chips 4-9) remains useful as foundational infrastructure but is
+**tangential to closing `h_smooth_b`**.
+
+### Remaining chips toward `ChartLocalPrimitiveSmoothExt`
+
+1. Combine chips 10+11 → concrete `AnalyticOn ℂ (chart-coord chartLocalPrimitive)`
+   on `(chartAt ℂ y).target`. Requires supplying the local-bound for
+   the derivative `∂g/∂z` — bounds follow from
+   `localCoeff_continuousOn` + `localCoeff_differentiableOn` +
+   compact `[0, 1]`, but stating it carefully takes one chip.
+2. **Chart-pulled identity**: prove
+   `chartLocalPrimitive φ y om x = ∫ t in 0..1, localCoeff om y (bumpedSegment (φ y) (φ x) t) * chartCoordVelocity (φ y) (φ x) t ∂volume`
+   for `x ∈ φ.source`. Substantive — expand `complexChainPeriod` for
+   `single (linearInChartSegment φ y x)` using chain rule + chart
+   pullback of `realComponent om`/`imagComponent om`.
+3. **Transport to manifold side**: `chartLocalPrimitive` viewed as
+   `X → ℂ` is `ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω` on `φ.source` iff the
+   chart-coord version is `ContDiffOn ℂ ω` on `φ.target` (modulo
+   `analyticOn_to_contDiffOn` / `AnalyticOn.contDiffOn`). This is
+   `ChartLocalPrimitiveSmoothExt` discharged.
+4. **`ChartLocalPrimitiveFTC` arc** — analogous, but with the per-point
+   mfderiv identity. Uses chip 10's `HasDerivAt`-output directly to
+   identify the derivative with `localCoeff om y (φ x) * 1 = (om.eval x)`-pullback.
+
+After all four steps, `h_smooth_b` and `h_ftc_b` of the 4 minimal
+named hypotheses are both discharged for general `X`. Combined with
+`hSP` (RR-class) and `h_bslb` (smooth-Hurewicz), item 14 closes for
+any compact connected complex 1-manifold.
+
 ## 2026-05-21 session — additional FTC-arc foundation chips on `origin/main`
 
 After the 4-PR landing below, two more foundational chips landed
