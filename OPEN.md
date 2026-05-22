@@ -32,7 +32,7 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
-> **2026-05-22 (continuation+1 — Hodge-Riemann bridge reduction arc; 24 feat commits on `feat/c3-surface-classification-data` extending the arc-S/CHRH-genus-0 base. Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; the C3 wave's universal classical content at general genus on every compact connected complex 1-manifold *reduces* to a clean named-atom layout — see headlines).**
+> **2026-05-22 (continuation+1 — Hodge-Riemann bridge reduction arc; 29 feat commits + 2 docs commits on `feat/c3-surface-classification-data` extending the arc-S/CHRH-genus-0 base, +2,733 LOC across 29 new files + 3 manifest/docs edits. Repo now 1,190 `.lean` files / 193,564 LOC. Full-graph build 9,439 jobs clean, zero `sorry`, zero `axiom`. origin/feat HEAD `479c853`. Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; the C3 wave's universal classical content at general genus on every compact connected complex 1-manifold *reduces* to a clean named-atom layout — see headlines).**
 >
 > **Headline (Hodge-Riemann bridge identity reduction at general genus):**
 > * `Manifold/HodgeRiemannBridgeUpperTriangular.lean` — the matrix bridge identity for `J = standardSymplectic g` reduces to `g(g+1)/2` upper-triangular entries via Hermitian symmetry of both sides (LHS via `iPeriodMatrixForm_isHermitian` + `standardSymplectic_antisymm`; RHS via `toMatrix_conjTranspose`).

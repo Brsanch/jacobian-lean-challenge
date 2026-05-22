@@ -15,10 +15,15 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 **Current state (2026-05-22):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
 Zero `sorry`, zero `axiom`. Repo:
-**190,860 LOC across 1,161 `.lean` files**.
+**193,564 LOC across 1,190 `.lean` files**. Full-graph build: **9,439 jobs**.
 
 Major recent landings:
 
+* **Hodge–Riemann bridge reduction arc — bridge identity factored into `g(g+1)/2` scalar pairing identities; C3 wave's universal classical content at general genus reduced to `(SCD + g² scalar identities)`** (2026-05-22 continuation+1, 29 feat commits + 2 docs commits, +2,733 LOC across 29 new files + 3 manifest/docs edits, branch `feat/c3-surface-classification-data`, HEAD `479c853`, pushed). At general genus on every compact connected complex 1-manifold:
+  - the matrix bridge identity for `J = standardSymplectic g` reduces to `g(g+1)/2` upper-triangular entries via Hermitian symmetry of both sides;
+  - via the new period sesquilinear form `Q_sq cycleGens J ω₀ ω₁ := ∑ k l, J_{k,l} · P(γ_k, ω₀) · star(P(γ_l, ω₁))` (with full sesquilinearity + anti-Hermitian symmetry properties), the bridge identity is equivalent to a finite family of scalar pairing identities `I · Q_sq(basis_ω i, basis_ω j) = H(basis_ω i, basis_ω j)` for `i ≤ j`;
+  - at genus 1 it collapses to a single scalar equation (the fundamental Riemann area identity `H(ω₀, ω₀) = 2 · Im(star pm[k₀,i₀] · pm[k₁,i₀])`);
+  - the C3 wave's universal classical content at general genus reduces to `(SCD + g(g − 1)/2 strict-upper Q vanishing + g(g + 1)/2 upper-tri Petersson sesquilinear pairings)`. End-to-end constructors shipped for `HasC3FullClassicalContent`, `HasJacobianAnalyticStructure`, and `HasJacobianHodgeChain` at the three input layouts (general genus / genus 0 / genus 1), plus a new `HasJacobianClassicalContent X` typeclass with unconditional RS instance, bridge to HJAS, and `inferInstance` smoke tests. No items flip — items 5/11/12/13/17/18/21 still require the universal HJAS instance whose remaining content is now the `g(g+1)/2` open sesquilinear pairing identities + SCD.
 * **Chip S.8 unconditional + `HodgeInnerProductHypothesis`
   unconditional + Riemann second relation + Complete Hodge–Riemann
   at genus 0** (2026-05-22 continuation, 8 feat commits, +1,246
