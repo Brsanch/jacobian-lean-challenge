@@ -119,6 +119,71 @@ theorem globalPettersonHermitian_diagonal_im
   -- h_im_eq : (globalPettersonHermitian om om f).im = -(...).im
   linarith
 
+/-! ## Global diagonal nonneg
+
+Lifts the chart-local `chartLocalSesquilinear_diagonal_re_nonneg`
+(chip S.5) to the global Petersson Hermitian form, via the
+`SmoothPartitionOfUnity.nonneg` field + finite-support extraction. -/
+
+/-- The set of partition-active indices is finite on compact X. -/
+private lemma globalPettersonHermitian_finsupp_term
+    (om : HolomorphicOneForm X)
+    (f : SmoothPartitionOfUnity X 𝓘(ℝ, ℂ) X (Set.univ : Set X)) :
+    Set.Finite (Function.support
+      (fun y : X => chartLocalSesquilinear om om y (fun x => f.toFun y x))) := by
+  -- Support of the term function ⊆ {y | support (f.toFun y) ≠ ∅}.
+  have h_lf : LocallyFinite (fun y : X => Function.support (fun x => (f y) x)) :=
+    f.locallyFinite
+  have h_finite_active :
+      {y : X | (Function.support (fun x => (f y) x)).Nonempty}.Finite :=
+    h_lf.finite_nonempty_of_compact
+  refine h_finite_active.subset ?_
+  intro y hy
+  by_contra h_empty
+  apply hy
+  -- h_empty : y ∉ {y | support(f y) is Nonempty} ⇒ support(f y) = ∅ ⇒ f y ≡ 0.
+  have h_not_nonempty : ¬ (Function.support (fun x => (f y) x)).Nonempty := h_empty
+  have h_support_empty : Function.support (fun x => (f y) x) = ∅ := by
+    rw [Set.not_nonempty_iff_eq_empty] at h_not_nonempty
+    exact h_not_nonempty
+  have h_fy_zero : (fun x => (f y) x) = fun _ => 0 := by
+    rw [Function.support_eq_empty_iff] at h_support_empty
+    exact h_support_empty
+  -- f.toFun y ≡ 0 ⇒ chartLocalSesquilinear om om y (f.toFun y) = 0.
+  show chartLocalSesquilinear om om y (fun x => (f y) x) = 0
+  unfold chartLocalSesquilinear
+  have h_zero : ∀ z : ℂ,
+      ((fun x => (f y) x) ((chartAt ℂ y).symm z) : ℂ)
+        * localCoeff om y z * (starRingEnd ℂ) (localCoeff om y z) = 0 := by
+    intro z
+    rw [h_fy_zero]
+    simp
+  simp [h_zero]
+
+/-- **Global diagonal nonneg.**
+
+For any smooth partition of unity `f`, the real part of the global
+Petersson Hermitian form's diagonal is nonneg. -/
+theorem globalPettersonHermitian_diagonal_re_nonneg
+    (om : HolomorphicOneForm X)
+    (f : SmoothPartitionOfUnity X 𝓘(ℝ, ℂ) X (Set.univ : Set X)) :
+    0 ≤ (globalPettersonHermitian om om f).re := by
+  unfold globalPettersonHermitian
+  -- Pull .re inside the finsum via map_finsum on Complex.reCLM (AddMonoidHom).
+  rw [show ((∑ᶠ y : X, chartLocalSesquilinear om om y (fun x => f.toFun y x)).re)
+        = ∑ᶠ y : X, (chartLocalSesquilinear om om y (fun x => f.toFun y x)).re from ?_]
+  · -- Each term .re ≥ 0 by chart-local nonneg + f.nonneg.
+    refine finsum_nonneg ?_
+    intro y
+    refine chartLocalSesquilinear_diagonal_re_nonneg om y ?_
+    intro x
+    exact f.nonneg y x
+  · -- map_finsum for Complex.reCLM.toAddMonoidHom + finite support.
+    have h_finsupp := globalPettersonHermitian_finsupp_term om f
+    exact (Complex.reCLM.toLinearMap.toAddMonoidHom.map_finsum
+      (f := fun y : X => chartLocalSesquilinear om om y (fun x => f.toFun y x))
+      h_finsupp)
+
 end HolomorphicOneForm
 
 end
