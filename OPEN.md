@@ -32,6 +32,36 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-22 (continuation+1 — Hodge-Riemann bridge reduction arc; 24 feat commits on `feat/c3-surface-classification-data` extending the arc-S/CHRH-genus-0 base. Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; the C3 wave's universal classical content at general genus on every compact connected complex 1-manifold *reduces* to a clean named-atom layout — see headlines).**
+>
+> **Headline (Hodge-Riemann bridge identity reduction at general genus):**
+> * `Manifold/HodgeRiemannBridgeUpperTriangular.lean` — the matrix bridge identity for `J = standardSymplectic g` reduces to `g(g+1)/2` upper-triangular entries via Hermitian symmetry of both sides (LHS via `iPeriodMatrixForm_isHermitian` + `standardSymplectic_antisymm`; RHS via `toMatrix_conjTranspose`).
+> * `Manifold/PeriodSesquilinearForm.lean` — the **period sesquilinear form** `Q_sq J cycleGens data ω₀ ω₁ := ∑ k l, J_{k,l} · P(γ_k, ω₀) · star(P(γ_l, ω₁))`. Pointwise identity `Q_sq (basis_ω i) (basis_ω j) = (periodMatrixForm pm J)_{i, j}` for the canonical period matrix. Bridge identity ⟺ pairing identity on basis pairs: `Bridge ⟺ ∀ i j, I · Q_sq(basis_ω i, basis_ω j) = H(basis_ω i, basis_ω j)`.
+> * `Manifold/PeriodSesquilinearFormProperties.lean` — full sesquilinearity (ℂ-linear left, conjugate-linear right, zero-on-zero), plus anti-Hermitian symmetry `Q_sq ω₀ ω₁ = -star(Q_sq ω₁ ω₀)` for anti-symmetric `J`. Lifts to anti-Hermitian.
+> * `Manifold/PeriodSesquilinearFormDiagonal.lean` — the diagonal `Q_sq ω ω` is purely imaginary for anti-symmetric `J`; `(I · diagonal).re ≥ 0`, `(I · diagonal).im = 0`.
+> * `Manifold/HodgeRiemannBridgeSesquilinearUpperTriangular.lean` — composition: bridge identity ⟸ `g(g+1)/2` upper-triangular sesquilinear pairing identities `I · Q_sq(basis_ω i, basis_ω j) = H(basis_ω i, basis_ω j)` for `i ≤ j`.
+> * `Manifold/HodgeRiemannBridgeGenusOneScalar.lean` + `HodgeRiemannBridgeGenusOneSesquilinear.lean` — at `genus X = 1`, the bridge identity collapses to **one scalar equation** `H(ω₀, ω₀) = (2 · Im(star pm[k₀,i₀] · pm[k₁,i₀]) : ℂ)` or equivalently the single sesquilinear pairing identity.
+>
+> **Headline (RSRP via Petersson form, structural reductions):**
+> * `Manifold/RiemannSecondRelationPositivityFromBridge.lean` — RSRP from `(HodgeRiemannBridgeHypothesis + H positive-definite)`, taking any Hermitian-form witness. Specialised to the canonical Petersson form `globalPettersonHermitianForm X` (positive-definite unconditionally this session): only the bridge identity remains an input.
+> * `Manifold/RiemannSecondRelationPositivityFromSesquilinearUpperTriangular.lean` — RSRP from `g(g+1)/2` upper-triangular Petersson pairing identities.
+> * `Manifold/RiemannSecondRelationPositivityGenusOnePettersonScalar.lean` — RSRP at `genus X = 1` from a single scalar identity (the fundamental Riemann area identity).
+>
+> **Headline (C3 umbrella / HJAS / HJHC end-to-end constructors):**
+> * `Manifold/HasC3FullClassicalContentFromBridge.lean` + `_GenusOneScalar.lean` + `_FromSesquilinearUpperTriangular.lean` + `_FromUpperTriangularScalars.lean` — constructors taking `(SCD, basis_ω, h_first, h_bridge / h_pair / h_upper)` to discharge the C3 umbrella class. The full `_FromUpperTriangularScalars` version exposes the umbrella's named content as `(SCD + g² scalar identities)`.
+> * `Manifold/HasJacobianAnalyticStructureFromBridge*.lean` / `..._GenusOne*.lean` / `..._UpperTriangularScalars.lean` / `..._GenusZero/One_FromScalars.lean` — end-to-end HJAS constructors at the same input layouts (general genus, genus 0, genus 1).
+> * `Manifold/HasJacobianHodgeChainFromUpperTriangularScalars.lean` / `_Genus0/1_FromScalars.lean` — parallel HJHC constructors.
+>
+> **Headline (smoke tests on RiemannSphere):**
+> * `Manifold/HasJacobianAnalyticStructureFromScalarsRSValidation.lean` and `HasJacobianHodgeChainFromScalarsRSValidation.lean` — regression-guard `theorem`s validating that the g²-scalars route fires on `RiemannSphere` (genus 0, empty index, vacuous identities).
+>
+> **Net.** The C3 wave's universal classical content at general genus on every compact connected complex 1-manifold *factors structurally* into:
+> * `SurfaceClassificationData X` (topology + smooth Hurewicz, the SCD atom);
+> * `g(g − 1)/2` strict-upper-triangular Q vanishing identities (Stokes / first-relation atom);
+> * `g(g + 1)/2` upper-triangular Petersson sesquilinear pairing identities (Stokes / wedge / cup-product / second-relation atom).
+>
+> Petersson-form positive-definiteness is unconditional (prior session). The Hodge-Riemann bridge identity at general genus ≥ 1 remains the deep open analytic content, now expressed as a finite family of `g(g+1)/2` scalar pairing identities. At genus 1 it collapses to a single scalar equation (the fundamental Riemann area identity).
+
 > **2026-05-22 (continuation — arc S chip S.8 unconditional + HodgeInnerProductHypothesis unconditional + Riemann second relation + CompleteHodgeRiemannHypothesis at genus 0; 8 feat commits on `feat/c3-surface-classification-data`, +1,246 Lean LOC across 9 new files. Repo now 1,161 `.lean` files / 190,860 LOC. Zero `sorry`, zero `axiom`. Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; the L²-positivity → Hodge-inner-product → Hodge-Riemann chain becomes unconditional at genus 0 with `HodgeInnerProductHypothesis X` unconditional at all genera; the bridge identity at genus ≥ 1 remains open classical content).**
 >
 > **Headline (chip S.8 — strict positivity of Petersson Hermitian diagonal):**
