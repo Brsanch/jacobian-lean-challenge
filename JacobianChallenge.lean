@@ -5,6 +5,8 @@ import JacobianChallenge.Analysis.CompactManifoldMeasureFromCharts
 import JacobianChallenge.Analysis.H1OnManifold
 import JacobianChallenge.Analysis.L2InnerOnManifold
 import JacobianChallenge.Analysis.HolomorphicOneFormChartLocalL2Sq
+import JacobianChallenge.Analysis.HolomorphicOneFormChartLocalL2SqFinite
+import JacobianChallenge.Analysis.HolomorphicOneFormChartLocalL2SqReal
 import JacobianChallenge.Analysis.PolynomialLiouville
 import JacobianChallenge.Basic
 import JacobianChallenge.Divisor
