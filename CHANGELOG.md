@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-05-22 (continuation+1) — Hodge-Riemann bridge reduction arc (26 feat commits + 1 docs commit on `feat/c3-surface-classification-data`)
+
+State: zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
+STRICT-CLOSED**. Pushed to `origin/feat/c3-surface-classification-data`
+(HEAD `999ebf8`).
+
+The C3 wave's universal classical content at general genus on every
+compact connected complex 1-manifold *factors structurally* into:
+
+* `SurfaceClassificationData X` (topology + smooth Hurewicz atom);
+* `g(g − 1)/2` strict-upper-triangular Q vanishing identities (Stokes
+  / first-relation atom);
+* `g(g + 1)/2` upper-triangular Petersson sesquilinear pairing
+  identities (Stokes / wedge / cup-product / second-relation atom).
+
+Petersson-form positive-definiteness is unconditional (prior session).
+The Hodge-Riemann bridge identity at general genus ≥ 1 remains the
+deep open analytic content, now expressed as a finite family of
+`g(g + 1)/2` scalar pairing identities. At genus 1 it collapses to a
+single scalar equation (the fundamental Riemann area identity).
+
+See `OPEN.md` for the full chip-by-chip breakdown.
+
+---
+
 ## 2026-05-22 (continuation) — chip S.8 unconditional + `HodgeInnerProductHypothesis` unconditional + Riemann second relation at genus 0 (8 feat commits, +1,246 LOC across 9 new files)
 
 State: **1,161 `.lean` files**, **190,860 LOC**. Zero `sorry`, zero
