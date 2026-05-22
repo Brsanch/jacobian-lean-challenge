@@ -6,6 +6,7 @@ Authors: Bryan Sanchez
 import JacobianChallenge.Manifold.AbelGeneralXHypotheses
 import JacobianChallenge.Manifold.JacobiInversionFactored
 import JacobianChallenge.Manifold.CanonicalAnalyticJacobianSubsingleton
+import JacobianChallenge.Manifold.AbelGeneralXFromPrincipalGenerators
 
 set_option linter.unusedSectionVars false
 
@@ -53,22 +54,34 @@ variable {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X]
   [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ⊤ X]
   [IsManifold 𝓘(ℂ, ℂ) ω X]
 
-/-- **Phase E discharged at subsingleton ω.** When `[Subsingleton
-(HolomorphicOneForm X)]`, the analytic Jacobian is subsingleton, so
-`B.abelJacobiDiv0Hom D` is trivially `0` for all D. -/
-theorem abelGeneralXHypothesis_of_subsingleton_omega
+/-- **The Phase-E geometric atom (Frontier-2's `PrincipalDivisor
+AJChainBoundaryHypothesis X`, definitionally
+`PrincipalDivisorAJVanishingHypothesis X`) discharged at subsingleton
+ω.** At subsingleton ω the analytic Jacobian is subsingleton, so
+`B.abelJacobiDivHom (principalDivisorMap f) = 0` trivially. -/
+theorem principalDivisorAJVanishingHypothesis_of_subsingleton_omega
     [Subsingleton (HolomorphicOneForm X)] :
-    AbelGeneralXHypothesis X := by
-  intro α h_symp B D _
-  -- AnalyticJacobianSymp _ α h_symp is subsingleton at genus 0.
-  -- Subsingleton ω + DiskChartCover finite-dim ⇒ genus = 0 ⇒ Fin g → ℂ subsingleton
-  -- ⇒ JacobianOfLattice subsingleton.
+    PrincipalDivisorAJVanishingHypothesis X := by
+  intro α h_symp B _
   haveI : Subsingleton (Fin (JacobianChallenge.genus X) → ℂ) :=
     subsingleton_finGenusToComplex_of_subsingleton_omega
   haveI : Subsingleton (AnalyticJacobianSymp
       (PeriodPairingData.ofSmoothCycle X) α h_symp) :=
     subsingleton_jacobianOfLattice_of_subsingleton_ambient _
   exact Subsingleton.elim _ _
+
+/-- **Phase E discharged at subsingleton ω.** When `[Subsingleton
+(HolomorphicOneForm X)]`, the analytic Jacobian is subsingleton, so
+`B.abelJacobiDiv0Hom D` is trivially `0` for all D.
+
+Factored through `principalDivisorAJVanishingHypothesis_of_subsingleton_omega`
+(the Frontier-2 geometric atom at subsingleton ω) composed with
+Frontier-1's principal-generator-only-to-full-Div⁰ lift. -/
+theorem abelGeneralXHypothesis_of_subsingleton_omega
+    [Subsingleton (HolomorphicOneForm X)] :
+    AbelGeneralXHypothesis X :=
+  abelGeneralXHypothesis_of_principalDivisorAJVanishing X
+    (principalDivisorAJVanishingHypothesis_of_subsingleton_omega)
 
 /-- **Phase F injectivity discharged at subsingleton Pic⁰.** When
 `[Subsingleton (Pic0 X)]`, any function out of `Pic⁰ X` is trivially
