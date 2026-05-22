@@ -15,7 +15,7 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 **Current state (2026-05-22):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
 Zero `sorry`, zero `axiom`. Repo:
-**193,915 LOC across 1,194 `.lean` files**. Full-graph build: **9,443 jobs**.
+**194,315 LOC across 1,198 `.lean` files**. Full-graph build: **9,447 jobs**.
 
 Major recent landings:
 

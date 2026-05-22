@@ -1,12 +1,25 @@
 # Changelog
 
-## 2026-05-22 (continuation+1) — Hodge-Riemann bridge reduction arc (34 feat commits + 2 docs commits on `feat/c3-surface-classification-data`)
+## 2026-05-22 (continuation+1) — Hodge-Riemann bridge reduction arc (39 feat commits + 2 docs commits on `feat/c3-surface-classification-data`)
 
-State: **1,194 `.lean` files**, **193,915 LOC** (+3,084 LOC across 33
-new files + 3 manifest/docs edits). Full-graph build: **9,443 jobs**.
+State: **1,198 `.lean` files**, **194,315 LOC** (+3,484 LOC across 37
+new files + 3 manifest/docs edits). Full-graph build: **9,447 jobs**.
 Zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
 STRICT-CLOSED**. Pushed to `origin/feat/c3-surface-classification-data`
-(HEAD `615114b`).
+(HEAD `5c0fb99`).
+
+**Genus-2 explicit closed forms (4 new chips):**
+* `periodMatrixForm_standardSymplectic_two_apply` — closed form for
+  the generic (i, j) entry at literal Fin 4 / Fin 2.
+* `iPeriodMatrixForm_standardSymplectic_two_diagonal_re / _im` — the
+  diagonal entries of `i • M` at g = 2 are real, equal to
+  `2 · (Im(star pm_{0,i} · pm_{2,i}) + Im(star pm_{1,i} · pm_{3,i}))`.
+* `iPeriodMatrixForm_standardSymplectic_two_eq_of_three_scalars` — at
+  literal Fin 4 / Fin 2, the 2 × 2 matrix bridge follows from 3 upper-
+  triangle scalar identities plus Hermitian symmetry of H_mat.
+* `hodgeRiemannBridgeHypothesis_of_genus_two_three_scalars` — lifted
+  abstract bridge at `genus X = 2` from 3 scalar identities (via
+  case-split on `i.val, j.val ∈ {0, 1}` plus Hermitian symmetry).
 
 Additional chips beyond the base 29-chip arc (5 chips, +351 LOC):
 * `HasJacobianClassicalContent.of_genus_two` — at `genus X = 2`, the
