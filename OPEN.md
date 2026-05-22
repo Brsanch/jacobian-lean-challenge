@@ -32,7 +32,7 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
-> **2026-05-22 (L²-positivity arc COMPLETE for `HolomorphicOneForm` + ℂ→ℝ ContDiff diamond closed + arc S start; 13 commits on `feat/c3-surface-classification-data`, +1,726 Lean LOC across 16 new files + 1 manifest edit. Repo now 1,152 `.lean` files / 190,371 LOC. Build 9,400 jobs clean, zero `sorry`, zero `axiom`. Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; the L²-positivity layer for `RiemannSecondRelationPositivity` becomes structurally complete at the analytic level, and a memory-flagged sharp edge is dispatched as an in-tree typeclass instance).**
+> **2026-05-22 (L²-positivity arc COMPLETE for `HolomorphicOneForm` + ℂ→ℝ ContDiff diamond closed + arc S start through S.7'; 19 feat commits + 1 docs commit on `feat/c3-surface-classification-data`, +2,190 Lean LOC across 17 new files + 1 manifest edit. Repo now 1,153 `.lean` files / 190,671 LOC. Build 9,401 jobs clean, zero `sorry`, zero `axiom`. Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; the L²-positivity layer for `RiemannSecondRelationPositivity` becomes structurally complete at the analytic level, a memory-flagged sharp edge is dispatched as an in-tree typeclass instance, and the ℂ-valued Petersson Hermitian form is established as positive semi-definite at the diagonal).**
 >
 > **Headline (Option A — shared C3↔Item-14 atom):**
 > * `UniformizationGenus0Hypothesis X` class — the genus-0 corner of uniformization `genus X = 0 → Nonempty (HolomorphicEquiv X RiemannSphere)`. Strictly weaker than `FactUniformizationToRiemannSphere X`. Unconditional RS instance via `HolomorphicEquiv.refl`, bridge instance from `Fact…`, and substantive `UniformizationGenus0Hypothesis.of_RiemannRochGenusZero`: the shared atom follows from `RiemannRochGenusZero X` alone via the three in-tree unconditional atoms.
@@ -44,8 +44,10 @@ spec. Three statuses, with one tag for partial progress:
 > **Headline (memory-flagged ℂ→ℝ ContDiff diamond CLOSED):**
 > * `Analysis/RealModelManifoldFromComplex.lean` — instance `instIsManifoldRealComplexOfComplexAnalytic` produces `IsManifold (𝓘(ℝ, ℂ)) ∞ X` from `[ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]`. Single-line workaround at file scope: `set_option backward.isDefEq.respectTransparency false`. Same trick mathlib uses for `StarModule.complexToReal`. Resolves the named open atom flagged in `memory/feedback_jacobian_complex_real_diamond.md`.
 >
-> **Headline (arc S start — surface-integration assembly):**
-> * `Analysis/HolomorphicOneFormChartLocalSesquilinear.lean` (chip S.1) — ℂ-valued chart-local Hermitian sesquilinear pairing via Bochner integration. Hermitian symmetry via `integral_conj` + pointwise integrand conjugation. First chip of arc S, which targets RFBR + RSRP simultaneous closure via surface-Stokes assembly (downstream).
+> **Headline (arc S — Petersson Hermitian form, chips S.1 through S.7'):**
+> * `Analysis/HolomorphicOneFormChartLocalSesquilinear.lean` (chips S.1, S.4, S.5) — ℂ-valued chart-local Hermitian sesquilinear pairing via Bochner integration. Hermitian symmetry `H(om, eta) = conj(H(eta, om))` (S.1); chart-local diagonal-real `H(om, om).im = 0` (S.4); chart-local diagonal-as-real-integral `H(om, om) = ↑(∫ z, χ · normSq lc)` and diagonal-nonneg `0 ≤ H(om, om).re` for `χ ≥ 0` (S.5).
+> * `Analysis/HolomorphicOneFormGlobalSesquilinear.lean` (chips S.2, S.3, S.6, S.7') — global Petersson Hermitian form via PoU sum (S.2): zero-on-zero + Hermitian symmetry; global diagonal-real (S.3); global diagonal-nonneg via per-chart nonneg (S.6); public `_diagonal_re_eq_finsum` for `.re` distribution over the locally-finite-support finsum (S.7').
+> * **Net**: the Petersson Hermitian form is **positive semi-definite at the diagonal** (real and nonneg). Strict positivity at diagonal for nonzero forms (chip S.8 territory) requires Bochner-integrability infrastructure for the chart-local integrand (proving `IntegrableOn` for the partition-supported integrand on the open chart target), not in scope this session.
 >
 > **What this enables, what it doesn't:**
 > * *Enables*: substantive analytic content of RSRP at general genus ≥ 2 — `∫ |f|² > 0` for nonzero ω — now in tree as a partition-of-unity-derived statement. ℂ→ℝ diamond gone.
