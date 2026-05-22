@@ -1,10 +1,12 @@
 # Changelog
 
-## 2026-05-22 (continuation+1) — Hodge-Riemann bridge reduction arc (26 feat commits + 1 docs commit on `feat/c3-surface-classification-data`)
+## 2026-05-22 (continuation+1) — Hodge-Riemann bridge reduction arc (29 feat commits + 2 docs commits on `feat/c3-surface-classification-data`)
 
-State: zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
+State: **1,190 `.lean` files**, **193,564 LOC** (+2,733 LOC across 29
+new files + 3 manifest/docs edits). Full-graph build: **9,439 jobs**.
+Zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
 STRICT-CLOSED**. Pushed to `origin/feat/c3-surface-classification-data`
-(HEAD `999ebf8`).
+(HEAD `479c853`).
 
 The C3 wave's universal classical content at general genus on every
 compact connected complex 1-manifold *factors structurally* into:
