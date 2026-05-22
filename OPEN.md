@@ -32,6 +32,8 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-21 post-PR-#4 continuation (FTC-arc foundation, ℂ→ℝ diamond bypass to `ContDiffOn ℝ 1`, holomorphic parametric integral atom; 11 chips landed directly on `main`; +907 Lean LOC across 11 new files). origin/main HEAD `fe55640`. Repo now 1066 `.lean` files / 180,807 LOC. Build 9326 jobs clean. Item count unchanged: **14/24 STRICT-CLOSED**. See CHANGELOG.md for sub-arc breakdown (A: integrand smoothness; B: ℂ→ℝ diamond bypass; C: holomorphic parametric integral). Big-picture pivot: the actual `h_smooth_b` blocker is `ContMDiffOn ω` (= holomorphic), not real-smoothness — sub-arc C is the direct path; sub-arc B is useful foundational infra but tangential.**
+>
 > **2026-05-21 PR #4 (item-14 reverse leg: `SmoothPath.subpath` primitive; 1 commit + merge b48070b; +111 Lean LOC across 1 new file). origin/main HEAD `b48070b`. Repo now 1056 `.lean` files / 179,900 LOC. Build 9316 jobs clean. Item count unchanged: **14/24 STRICT-CLOSED**.**
 >
 > **Arc — chart-cover Lebesgue-subdivision primitive (1 chip, ~111 LOC).** `SmoothPath.subpath γ a b ha hab hb : SmoothPath IM X` extracts the sub-arc on `[a, b] ⊆ [0, 1]` as a `SmoothPath` via the affine reparam `t ↦ γ.ambient(a + t·(b-a))`. Ships definition, endpoint simp lemmas, ambient smoothness. This is the foundational primitive for **chart-cover-aware subdivision of γ**: applying `lebesgueSubdivision_of_chartCover` (PR #1) gives a partition `t : ℕ → unitInterval`, and the subpath operation extracts each piece as a SmoothPath qualifying for the chart-local polygonal-approximation bordism (PR #3).
