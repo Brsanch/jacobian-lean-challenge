@@ -151,7 +151,7 @@ theorem integrate_push {f : X → Y}
     rw [Set.uIoc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at hx_uIoc
     have ht : x ∈ Ioo (0 : ℝ) 1 :=
       ⟨hx_uIoc.1, lt_of_le_of_ne hx_uIoc.2 hx⟩
-    show applyCotangent (om
+    change applyCotangent (om
             ((JacobianChallenge.SmoothPath.push f (hf_smooth hf) γ).ambient x))
            ((JacobianChallenge.SmoothPath.push f (hf_smooth hf) γ).velocity x)
       = applyCotangent
