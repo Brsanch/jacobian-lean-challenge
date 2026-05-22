@@ -160,6 +160,22 @@ private lemma globalPettersonHermitian_finsupp_term
     simp
   simp [h_zero]
 
+/-- **Global diagonal .re distributes as finsum of chart-local .re.**
+
+Public form of the AddMonoidHom-map-finsum step used in the nonneg
+proof below. The real part of the global Petersson Hermitian form's
+diagonal equals the locally-finite sum of chart-local real parts. -/
+theorem globalPettersonHermitian_diagonal_re_eq_finsum
+    (om : HolomorphicOneForm X)
+    (f : SmoothPartitionOfUnity X 𝓘(ℝ, ℂ) X (Set.univ : Set X)) :
+    (globalPettersonHermitian om om f).re
+      = ∑ᶠ y : X, (chartLocalSesquilinear om om y (fun x => f.toFun y x)).re := by
+  unfold globalPettersonHermitian
+  have h_finsupp := globalPettersonHermitian_finsupp_term om f
+  exact Complex.reCLM.toLinearMap.toAddMonoidHom.map_finsum
+    (f := fun y : X => chartLocalSesquilinear om om y (fun x => f.toFun y x))
+    h_finsupp
+
 /-- **Global diagonal nonneg.**
 
 For any smooth partition of unity `f`, the real part of the global
@@ -168,21 +184,13 @@ theorem globalPettersonHermitian_diagonal_re_nonneg
     (om : HolomorphicOneForm X)
     (f : SmoothPartitionOfUnity X 𝓘(ℝ, ℂ) X (Set.univ : Set X)) :
     0 ≤ (globalPettersonHermitian om om f).re := by
-  unfold globalPettersonHermitian
-  -- Pull .re inside the finsum via map_finsum on Complex.reCLM (AddMonoidHom).
-  rw [show ((∑ᶠ y : X, chartLocalSesquilinear om om y (fun x => f.toFun y x)).re)
-        = ∑ᶠ y : X, (chartLocalSesquilinear om om y (fun x => f.toFun y x)).re from ?_]
-  · -- Each term .re ≥ 0 by chart-local nonneg + f.nonneg.
-    refine finsum_nonneg ?_
-    intro y
-    refine chartLocalSesquilinear_diagonal_re_nonneg om y ?_
-    intro x
-    exact f.nonneg y x
-  · -- map_finsum for Complex.reCLM.toAddMonoidHom + finite support.
-    have h_finsupp := globalPettersonHermitian_finsupp_term om f
-    exact (Complex.reCLM.toLinearMap.toAddMonoidHom.map_finsum
-      (f := fun y : X => chartLocalSesquilinear om om y (fun x => f.toFun y x))
-      h_finsupp)
+  rw [globalPettersonHermitian_diagonal_re_eq_finsum]
+  -- Each term .re ≥ 0 by chart-local nonneg + f.nonneg.
+  refine finsum_nonneg ?_
+  intro y
+  refine chartLocalSesquilinear_diagonal_re_nonneg om y ?_
+  intro x
+  exact f.nonneg y x
 
 end HolomorphicOneForm
 
