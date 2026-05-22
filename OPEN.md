@@ -32,6 +32,26 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
+> **2026-05-22 (continuation — arc S chip S.8 unconditional + HodgeInnerProductHypothesis unconditional + Riemann second relation + CompleteHodgeRiemannHypothesis at genus 0; 8 feat commits on `feat/c3-surface-classification-data`, +1,246 Lean LOC across 9 new files. Repo now 1,161 `.lean` files / 190,860 LOC. Zero `sorry`, zero `axiom`. Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; the L²-positivity → Hodge-inner-product → Hodge-Riemann chain becomes unconditional at genus 0 with `HodgeInnerProductHypothesis X` unconditional at all genera; the bridge identity at genus ≥ 1 remains open classical content).**
+>
+> **Headline (chip S.8 — strict positivity of Petersson Hermitian diagonal):**
+> * `Analysis/HolomorphicOneFormChartLocalSesquilinearL2SqBridge.lean` — bridge `(chartLocalSesquilinear om om y χ).re = (chartLocalL2SqWeighted om y χ).toReal` for `χ ≥ 0` continuous; via `Complex.mul_conj` + `integral_complex_ofReal` + `integral_eq_lintegral_of_nonneg_ae`.
+> * `Analysis/HolomorphicOneFormChartLocalL2SqWeightedFinite.lean` — finiteness `chartLocalL2SqWeighted om y (f.toFun y) < ⊤` for subordinate PoU on compact `X`; via `IntegrableOn.union` on `K := chartAt y '' tsupport (f y)` (compact, image of `tsupport` ⊆ chart-source under continuous chart).
+> * `Analysis/HolomorphicOneFormGlobalSesquilinearPositive.lean` (conditional) + `Analysis/HolomorphicOneFormGlobalSesquilinearPositiveUnconditional.lean` — `0 < (globalPettersonHermitian om om f).re` for every nonzero `om` and subordinate PoU `f`, **unconditional**. Combined with prior S.3 + S.6, the global Petersson Hermitian form is positive-definite at the diagonal.
+>
+> **Headline (HodgeInnerProductHypothesis unconditional — Hodge inner product structure):**
+> * `Analysis/HolomorphicOneFormChartLocalSesquilinearLinearity.lean` — chart-local linearity in the left argument: ℂ-linearity unconditional via `integral_const_mul`; additivity given integrability; integrability under PoU subordinacy.
+> * `Analysis/HolomorphicOneFormGlobalSesquilinearLinearity.lean` — lift to global via `mul_finsum` + `finsum_add_distrib`.
+> * `Analysis/HodgeInnerProductDischarge.lean` — packages `globalPettersonHermitian` (for a `Classical.choose`-picked subordinate PoU) as a `HermitianOnHolomorphicOneForm X` structure, proves `IsPositiveDefinite` via S.3 + S.6 + S.8, and ships **`hodgeInnerProductHypothesis_holds : HodgeInnerProductHypothesis X`** — UNCONDITIONAL on every compact connected complex 1-manifold.
+>
+> **Headline (Riemann second relation + Complete Hodge–Riemann at genus 0):**
+> * `Manifold/HodgeRiemannBridgeGenusZero.lean` — `HodgeRiemannBridgeHypothesis` discharged unconditionally at `genus X = 0` (both sides of the matrix identity collapse to 0×0); composes with `RiemannBilinearSecondRelation_of_HodgeBridge` and this session's `hodgeInnerProductHypothesis_holds` to give **`riemannBilinearSecondRelation_of_genus_zero_unconditional`** — unconditional on every compact connected complex 1-manifold of genus 0.
+> * `Manifold/CompleteHodgeRiemannGenusZeroViaPettersonForm.lean` — `riemannBilinearFirstRelation_of_genus_zero` (new named theorem) + `completeHodgeRiemannHypothesis_of_genus_zero_via_pettersonForm` (non-vacuous alternative route through the actual positive-definite Petersson form, parallel to the existing vacuous Subsingleton-ω route).
+>
+> **Net session contribution.** Closed unconditionally on every compact connected complex 1-manifold: `HodgeInnerProductHypothesis X` (all genera). Closed unconditionally at genus 0: `RiemannBilinearSecondRelation`, `RiemannBilinearFirstRelation`, `CompleteHodgeRiemannHypothesis`. The L²-positivity-side analytic ingredient of `RiemannSecondRelationPositivity` is no longer a named hypothesis — it's an in-tree theorem at every genus for the Hodge inner product structure and at genus 0 for the period-matrix matrix identity.
+>
+> **Outstanding for general genus ≥ 1.** Three classical atoms remain open: `SmoothSymplecticBasis` (handle decomposition / surface classification), `SmoothHurewiczHypothesis` (abelianization of π₁ on a genus-g surface), `HodgeRiemannBridgeHypothesis` (wedge product + Stokes + cup-product). None at the mathlib pin.
+
 > **2026-05-22 (L²-positivity arc COMPLETE for `HolomorphicOneForm` + ℂ→ℝ ContDiff diamond closed + arc S start through S.7'; 19 feat commits + 1 docs commit on `feat/c3-surface-classification-data`, +2,190 Lean LOC across 17 new files + 1 manifest edit. Repo now 1,153 `.lean` files / 190,671 LOC. Build 9,401 jobs clean, zero `sorry`, zero `axiom`. Item count unchanged: **14/24 STRICT-CLOSED** (no items flip; the L²-positivity layer for `RiemannSecondRelationPositivity` becomes structurally complete at the analytic level, a memory-flagged sharp edge is dispatched as an in-tree typeclass instance, and the ℂ-valued Petersson Hermitian form is established as positive semi-definite at the diagonal).**
 >
 > **Headline (Option A — shared C3↔Item-14 atom):**
