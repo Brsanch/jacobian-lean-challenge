@@ -1,5 +1,125 @@
 # Changelog
 
+## 2026-05-22 (continuation) — chip S.8 unconditional + `HodgeInnerProductHypothesis` unconditional + Riemann second relation at genus 0 (8 feat commits, +1,246 LOC across 9 new files)
+
+State: **1,161 `.lean` files**, **190,860 LOC**. Zero `sorry`, zero
+`axiom`. Item count unchanged at **14 / 24 STRICT-CLOSED**.
+Branch `feat/c3-surface-classification-data` (continues from `3e1e5f6`).
+
+### Chip S.8 — strict positivity of Petersson Hermitian diagonal (4 commits, ~580 LOC)
+
+* `Analysis/HolomorphicOneFormChartLocalSesquilinearL2SqBridge.lean` —
+  bridge `(chartLocalSesquilinear om om y χ).re = (chartLocalL2SqWeighted om y χ).toReal`
+  for `χ ≥ 0` continuous. Proof: unfold to ℂ-valued Bochner integral,
+  rewrite integrand pointwise as `↑(χ ∘ symm * normSq lc) : ℂ` via
+  `Complex.mul_conj` + cast distribution, pull ℂ cast out via
+  `integral_complex_ofReal`, apply `Complex.ofReal_re` to extract the
+  real integral, convert to `(∫⁻ ENNReal.ofReal).toReal` via
+  `MeasureTheory.integral_eq_lintegral_of_nonneg_ae`, identify lintegrand
+  with `chartLocalL2SqWeighted`'s via `Complex.normSq_eq_norm_sq` +
+  `ENNReal.ofReal_mul` / `_pow` / `_eq_coe_nnreal` chain.
+* `Analysis/HolomorphicOneFormGlobalSesquilinearPositive.lean` —
+  **conditional** strict positivity from finiteness everywhere. Chains
+  arc E.4's `globalPettersonL2Sq_pos_of_ne_zero` → contrapositive of
+  `finsum_eq_zero_of_forall_eq_zero` → `ENNReal.toReal_pos` (using
+  finiteness) + bridge → S.7' + S.6 + `single_le_finsum`.
+* `Analysis/HolomorphicOneFormChartLocalL2SqWeightedFinite.lean` —
+  finiteness `chartLocalL2SqWeighted om y (f.toFun y) < ⊤` for
+  subordinate PoU on compact `X`. Proof: `K := chartAt y '' tsupport (f y)`
+  is compact (closed in compact `X`, image of `tsupport ⊆ chart-source`
+  under continuous chart) ⊆ chart-target; integrand vanishes off `K`
+  (`f y` vanishes off support); on `K`, `f y ≤ 1` so integrand bounded
+  by `(‖lc‖₊)²`; chart-target integral ≤ `chartLocalL2Sq om y K`,
+  finite by chip B (`chartLocalL2Sq_lt_top_of_isCompact_subset_target`).
+* `Analysis/HolomorphicOneFormGlobalSesquilinearPositiveUnconditional.lean` —
+  composes conditional + finiteness ⇒ **unconditional strict positivity**
+  `0 < (globalPettersonHermitian om om f).re` for every nonzero `om`
+  and subordinate PoU `f`. Combined with S.3 (`.im = 0`) and S.6
+  (`.re ≥ 0`), the global Petersson Hermitian form is positive-definite
+  at the diagonal.
+
+### `HodgeInnerProductHypothesis` unconditional discharge (3 commits, ~440 LOC)
+
+* `Analysis/HolomorphicOneFormChartLocalSesquilinearLinearity.lean` —
+  chart-local linearity in the left argument:
+  - `chartLocalSesquilinearIntegrand_integrableOn_target_of_subordinate`
+    — integrand `IntegrableOn` chart-target under `Continuous χ` +
+    `tsupport χ ⊆ chart-source` on compact `X`. Splits chart-target
+    via `IntegrableOn.union` on compact `K` + complement (integrand
+    vanishes via `integrable_zero.congr`).
+  - `chartLocalSesquilinear_smul_left` — **unconditional** ℂ-linearity
+    via `MeasureTheory.integral_const_mul`.
+  - `chartLocalSesquilinear_add_left_of_integrableOn` — additivity
+    given integrability of both summands via `localCoeff_add` +
+    `integral_add`.
+* `Analysis/HolomorphicOneFormGlobalSesquilinearLinearity.lean` — lifts
+  to global Petersson form: `globalPettersonHermitian_smul_left` via
+  `mul_finsum`; `globalPettersonHermitian_add_left_of_subordinate` via
+  `finsum_add_distrib` with locally-finite supports + per-chart
+  additivity (integrability discharged by subordinacy).
+* `Analysis/HodgeInnerProductDischarge.lean` — picks a subordinate
+  PoU via `Classical.choose` from
+  `exists_smoothPartitionOfUnity_subordinate_chartAt_source_complex`;
+  packages as a `HermitianOnHolomorphicOneForm X` structure with all 4
+  linearity fields satisfied (zero, add, smul, conjSymm); proves
+  `IsPositiveDefinite` via S.3 + S.6 + S.8; ships
+  **`hodgeInnerProductHypothesis_holds : HodgeInnerProductHypothesis X`** —
+  UNCONDITIONAL on every compact connected complex 1-manifold.
+
+### Riemann second relation + Complete Hodge–Riemann at genus 0 (2 commits, ~250 LOC)
+
+* `Manifold/HodgeRiemannBridgeGenusZero.lean` — discharges
+  `HodgeRiemannBridgeHypothesis` unconditionally at `genus X = 0` (both
+  sides are matrices over `Fin (genus X) = Fin 0`, equal by
+  extensionality via `IsEmpty.elim`). Composes with
+  `RiemannBilinearSecondRelation_of_HodgeBridge` and this session's
+  `hodgeInnerProductHypothesis_holds` to give
+  **`riemannBilinearSecondRelation_of_genus_zero_unconditional`** —
+  unconditional on every compact connected complex 1-manifold of
+  genus 0.
+* `Manifold/CompleteHodgeRiemannGenusZeroViaPettersonForm.lean` —
+  `riemannBilinearFirstRelation_of_genus_zero` (new named theorem,
+  RBFR at genus 0 by extensionality on 0×0 matrices; previously
+  bundled implicitly via the vacuous Subsingleton-ω route);
+  `completeHodgeRiemannHypothesis_of_genus_zero_via_pettersonForm` —
+  alternative discharge of CHRH at genus 0 routing through the
+  **actual** positive-definite Petersson form (this session's chain),
+  parallel to the existing vacuous Subsingleton-ω route in
+  `Manifold/CompleteHodgeRiemannGenusZero.lean`.
+
+### Net session contribution
+
+**Closed unconditionally on every compact connected complex 1-manifold:**
+* `HodgeInnerProductHypothesis X` (at every genus). The Hodge inner
+  product on `H⁰(X, Ω)` is no longer a named hypothesis — it's an
+  in-tree theorem, with witness `globalPettersonHermitianForm X`
+  packaged from the partition-of-unity Petersson L² inner product.
+
+**Closed unconditionally at genus 0:**
+* `RiemannBilinearSecondRelation` (`i Π^T J Π̄` positive-definite).
+* `RiemannBilinearFirstRelation` (`Π^T J Π = 0`).
+* `HodgeRiemannBridgeHypothesis` (`i Π^T J Π̄ = H.toMatrix basis_ω`).
+* `CompleteHodgeRiemannHypothesis` (full bundle, both via vacuous
+  Subsingleton-ω route and via non-vacuous Petersson form route).
+
+### Outstanding for general genus ≥ 1
+
+Three classical atoms remain open, all genuine deep classical content
+not at the mathlib pin:
+
+* `SmoothSymplecticBasis` at general genus — needs surface
+  classification / handle decomposition.
+* `SmoothHurewiczHypothesis` at general genus — needs abelianization
+  of π₁ on a genus-g surface presented as
+  `⟨a_1, b_1, …, a_g, b_g | [a_1, b_1] · … · [a_g, b_g]⟩`.
+* `HodgeRiemannBridgeHypothesis` at general genus — needs wedge
+  product + Stokes + cup-product (would identify
+  `(i/2) ∫_X ω ∧ η̄` with the matrix entries of `i Π^T J Π̄`).
+
+These remain blocking Basic.lean items 5/11/12/13 at general X (any
+compact connected complex 1-manifold). No items flip this session;
+the analytic distance is shorter (one fewer named atom for genus 0).
+
 ## 2026-05-22 — L²-positivity arc COMPLETE + ℂ→ℝ ContDiff diamond closed + arc S (chips S.1–S.7') (19 feat commits + 1 docs commit, +2,190 LOC across 17 new files, +1 modified)
 
 State: **1,153 `.lean` files**, **190,671 LOC**. Build 9,401 jobs

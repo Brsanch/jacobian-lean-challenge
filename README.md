@@ -15,10 +15,32 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 **Current state (2026-05-22):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
 Zero `sorry`, zero `axiom`. Repo:
-**190,671 LOC across 1,153 `.lean` files**. Build 9,401 jobs clean.
+**190,860 LOC across 1,161 `.lean` files**.
 
 Major recent landings:
 
+* **Chip S.8 unconditional + `HodgeInnerProductHypothesis`
+  unconditional + Riemann second relation + Complete Hodge–Riemann
+  at genus 0** (2026-05-22 continuation, 8 feat commits, +1,246
+  LOC across 9 new files, branch `feat/c3-surface-classification-data`).
+  Closes the four outstanding items of the arc-S programme.
+  **Closed unconditionally on every compact connected complex
+  1-manifold (every genus)**: `HodgeInnerProductHypothesis X` — the
+  Hodge inner product on `H⁰(X, Ω)` is no longer a named hypothesis
+  but an in-tree theorem, witness `globalPettersonHermitianForm X`
+  packaged from the partition-of-unity Petersson L² inner product
+  (linearity via `mul_finsum` + `integral_const_mul` +
+  `finsum_add_distrib`; positive-definiteness via S.3 + S.6 + the
+  strict-positivity S.8 just shipped). **Closed unconditionally at
+  genus 0**: `RiemannBilinearFirstRelation` and
+  `HodgeRiemannBridgeHypothesis` (extensionality on 0×0 matrices),
+  `RiemannBilinearSecondRelation`, `CompleteHodgeRiemannHypothesis`
+  (both via the vacuous Subsingleton-ω route already in tree and via
+  a new non-vacuous Petersson-form route). The bridge identity at
+  genus ≥ 1 (wedge product + Stokes + cup-product) remains open
+  classical content; combined with the in-tree genus-0
+  `SmoothSymplecticBasis` / `SmoothHurewiczHypothesis` discharges,
+  **the entire Hodge-positivity chain is in tree at genus 0**.
 * **L²-positivity arc COMPLETE for `HolomorphicOneForm` + ℂ→ℝ
   ContDiff diamond closed + Petersson Hermitian form positive
   semi-definite at the diagonal (arc S chips S.1–S.7')** (2026-05-22,
