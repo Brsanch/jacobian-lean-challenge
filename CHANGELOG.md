@@ -1,12 +1,12 @@
 # Changelog
 
-## 2026-05-22 (continuation+1) — Hodge-Riemann bridge reduction arc (39 feat commits + 2 docs commits on `feat/c3-surface-classification-data`)
+## 2026-05-22 (continuation+1) — Hodge-Riemann bridge reduction arc (49 feat commits + 2 docs commits on `feat/c3-surface-classification-data`)
 
-State: **1,198 `.lean` files**, **194,315 LOC** (+3,484 LOC across 37
-new files + 3 manifest/docs edits). Full-graph build: **9,447 jobs**.
+State: **1,207 `.lean` files**, **195,111 LOC** (+4,280 LOC across 47
+new files + 3 manifest/docs edits). Full-graph build: **9,456 jobs**.
 Zero `sorry`, zero `axiom`. Item count unchanged at **14 / 24
 STRICT-CLOSED**. Pushed to `origin/feat/c3-surface-classification-data`
-(HEAD `5c0fb99`).
+(HEAD `3ecd8bc`).
 
 **Genus-2 explicit closed forms (4 new chips):**
 * `periodMatrixForm_standardSymplectic_two_apply` — closed form for
