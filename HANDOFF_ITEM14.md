@@ -53,25 +53,40 @@ and unconditional.
 The natural next chip would specialize `contDiffOn_chartLocalIntegrand_param`'s
 abstract `f` to `localCoeff om y` by bridging
 `ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω (localCoeff om y) (chartAt ℂ y).target` to
-`ContDiffOn ℝ ∞`. In a session continuation, this was attempted and
-hit a **mathlib instance diamond** at `IsScalarTower ℝ ℂ ℂ` —
-specifically a conflict between `Complex.SMul.instSMulRealComplex` and
-the `Algebra.id ℂ`-derived SMul on `ℂ`-self. A `letI` workaround via
-`smul_assoc`/`ring` does not robustly survive once the file imports
-`JacobianChallenge.Manifold.HolomorphicOneFormChartCoeffOnTarget`
-(which brings in the conflicting instance).
+`ContDiffOn ℝ ∞`. Attempted across two sessions on 2026-05-21 and hit
+a **mathlib instance diamond** at `IsScalarTower ℝ ℂ ℂ`.
+
+**Exact diamond (verified via `set_option trace.Meta.synthInstance true`
+in probe2):** the goal type expected by `restrict_scalars` is
+`@IsScalarTower ℝ ℂ ℂ Complex.instRCLike.toSMul (Algebra.id ℂ).toSMul Complex.instRCLike.toSMul`,
+but `Complex.instIsScalarTowerOfReal` produces an instance keyed on
+`Complex.SMul.instSMulRealComplex`. These SMul instances should be
+defeq, but Lean's `tryResolve` does not unify them, and the diamond
+cannot be patched via a `letI : IsScalarTower ℝ ℂ ℂ := ⟨...⟩` because
+the supplied instance has the same "wrong" SMul indices. Verified
+across 14+ probe variants (AnalyticOnNhd.restrictScalars,
+Complex.equivRealProdCLM round-trip, explicit `@`-application,
+`fun_prop`, manual SMul-typed letI) — all fail uniformly with this
+mathlib pin. The same diamond blocks `HasFDerivAt.restrictScalars`,
+`AnalyticOn.restrictScalars`, etc. since they share the variable
+signature.
 
 Possible next-session approaches:
-1. **Direct mathlib PR**: file an issue / patch to mathlib that adds
-   a more priority-aware `IsScalarTower ℝ ℂ ℂ` instance keyed on the
-   `Algebra.id`-SMul.
-2. **Indirect bridge via `Complex.equivRealProdLm`**: cast
-   `localCoeff` through the linear equivalence `ℂ ≃ₗ[ℝ] ℝ × ℝ` and
-   prove `ContDiffOn ℝ ∞` on the ℝ² side, then transport back via
-   the equiv's smoothness.
-3. **Direct from-AnalyticOn route**: build a custom
-   `AnalyticOn ℂ → ContDiffOn ℝ ∞` for `ℂ → ℂ` using the
-   power-series representation directly (bypassing `restrict_scalars`).
+1. **Mathlib PR**: file an issue / patch to mathlib that exposes a
+   priority-tagged `IsScalarTower ℝ ℂ ℂ` instance keyed on the
+   `Algebra.id`-SMul, or alternatively makes the SMul indices
+   reducibly-defeq in the existing instances.
+2. **Hand-rolled iterated-derivative bridge**: prove
+   `ContDiffOn ℝ ∞ f S` directly by recursion on the iterated Fréchet
+   derivative. For `f : ℂ → ℂ` holomorphic on `S`, build
+   `iteratedFDerivWithin ℝ n f S z` from `iteratedFDerivWithin ℂ n f S z`
+   via `ContinuousMultilinearMap.restrictScalars` at each level. This
+   sidesteps `IsScalarTower` synth by working at the explicit
+   multilinear-map level (~200-400 LOC, but self-contained).
+3. **Compose-through-equiv approach**: for `e := Complex.equivRealProdCLM`,
+   define `g := e ∘ f ∘ e.symm : ℝ² → ℝ²` and prove `g`'s real-smoothness
+   directly from the explicit Cauchy-Riemann structure (∂g₁/∂x = ∂g₂/∂y,
+   ∂g₁/∂y = -∂g₂/∂x). Transport back to `f` via the equiv. (~300-500 LOC.)
 
 Subsequent chips in the same FTC arc (after the bridge lands):
 * Specialize the abstract `f` to `localCoeff om y` via the bridge
