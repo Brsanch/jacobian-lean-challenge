@@ -139,6 +139,92 @@ theorem chartLocalSesquilinear_diagonal_im
   rw [Complex.conj_im] at h_im_eq
   linarith
 
+/-- **Chart-local diagonal equals real-cast of real integral.**
+
+For `om om` and any `χ : X → ℝ`, the chart-local Hermitian sesquilinear
+form's diagonal equals the real-cast of a *real-valued* Bochner integral:
+
+```
+chartLocalSesquilinear om om y χ
+  = ↑(∫ z in (chartAt ℂ y).target,
+        χ ((chartAt ℂ y).symm z) * Complex.normSq (localCoeff om y z)
+        ∂(volume : Measure ℂ))
+```
+
+This is the per-chart identification connecting the ℂ-valued Hermitian
+form to a real integral. Useful for downstream positivity reasoning
+and for the connection to the L²-square seminorm. -/
+theorem chartLocalSesquilinear_diagonal_eq_ofReal
+    (om : HolomorphicOneForm X) (y : X) (χ : X → ℝ) :
+    chartLocalSesquilinear om om y χ
+      = ((∫ z in (chartAt ℂ y).target,
+            χ ((chartAt ℂ y).symm z) * Complex.normSq (localCoeff om y z)
+            ∂(volume : Measure ℂ)) : ℂ) := by
+  unfold chartLocalSesquilinear
+  -- Show pointwise integrand identity.
+  have h_pt : ∀ z : ℂ,
+      ((χ ((chartAt ℂ y).symm z) : ℂ) * localCoeff om y z
+        * (starRingEnd ℂ) (localCoeff om y z))
+      = ((χ ((chartAt ℂ y).symm z) * Complex.normSq (localCoeff om y z) : ℝ) : ℂ) := by
+    intro z
+    -- localCoeff · conj localCoeff = (normSq localCoeff : ℂ)
+    have h_mul_conj : localCoeff om y z * (starRingEnd ℂ) (localCoeff om y z)
+        = ((Complex.normSq (localCoeff om y z) : ℝ) : ℂ) := by
+      show localCoeff om y z * starRingEnd ℂ (localCoeff om y z)
+        = ((Complex.normSq (localCoeff om y z) : ℝ) : ℂ)
+      rw [Complex.mul_conj]
+    rw [mul_assoc, h_mul_conj]
+    push_cast
+    ring
+  rw [show (fun z : ℂ =>
+        (χ ((chartAt ℂ y).symm z) : ℂ) * localCoeff om y z
+          * (starRingEnd ℂ) (localCoeff om y z))
+      = (fun z : ℂ =>
+        ((χ ((chartAt ℂ y).symm z) * Complex.normSq (localCoeff om y z) : ℝ) : ℂ))
+      from funext h_pt]
+  -- After distributing the cast on the RHS via push_cast on both sides,
+  -- the equality reduces to rfl (the goal becomes identical on both sides).
+  push_cast
+  rfl
+
+/-- **Chart-local diagonal nonneg for nonneg weight.**
+
+When `χ ≥ 0` pointwise, the chart-local Hermitian sesquilinear form's
+diagonal has nonneg real part. Composes `_diagonal_eq_ofReal` (the
+identification with a real-cast integral) with the standard
+`integral_nonneg` for nonneg real integrands. -/
+theorem chartLocalSesquilinear_diagonal_re_nonneg
+    (om : HolomorphicOneForm X) (y : X) {χ : X → ℝ}
+    (hχ : ∀ x, 0 ≤ χ x) :
+    0 ≤ (chartLocalSesquilinear om om y χ).re := by
+  rw [chartLocalSesquilinear_diagonal_eq_ofReal]
+  -- Re-bundle the distributed casts back into one outer cast.
+  have h_bundle : (∫ z in (chartAt ℂ y).target,
+        ((χ ((chartAt ℂ y).symm z) : ℂ) * (Complex.normSq (localCoeff om y z) : ℂ))
+        ∂(volume : Measure ℂ))
+      = ((∫ z in (chartAt ℂ y).target,
+            χ ((chartAt ℂ y).symm z) * Complex.normSq (localCoeff om y z)
+            ∂(volume : Measure ℂ) : ℝ) : ℂ) := by
+    -- Step 1: rewrite the integrand into a single ofReal cast.
+    have h_pt : ∀ z : ℂ,
+        ((χ ((chartAt ℂ y).symm z) : ℂ) * (Complex.normSq (localCoeff om y z) : ℂ))
+        = ((χ ((chartAt ℂ y).symm z) * Complex.normSq (localCoeff om y z) : ℝ) : ℂ) := by
+      intro z; push_cast; ring
+    rw [show (fun z : ℂ =>
+            (χ ((chartAt ℂ y).symm z) : ℂ) * (Complex.normSq (localCoeff om y z) : ℂ))
+          = (fun z : ℂ =>
+              ((χ ((chartAt ℂ y).symm z) * Complex.normSq (localCoeff om y z) : ℝ) : ℂ))
+          from funext h_pt]
+    -- Step 2: apply integral_complex_ofReal.
+    exact integral_complex_ofReal
+  show 0 ≤ ((∫ z in (chartAt ℂ y).target,
+              ((χ ((chartAt ℂ y).symm z) : ℂ) * (Complex.normSq (localCoeff om y z) : ℂ))
+              ∂(volume : Measure ℂ))).re
+  rw [h_bundle, Complex.ofReal_re]
+  refine MeasureTheory.integral_nonneg ?_
+  intro z
+  exact mul_nonneg (hχ _) (Complex.normSq_nonneg _)
+
 end HolomorphicOneForm
 
 end
