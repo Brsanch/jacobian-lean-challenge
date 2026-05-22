@@ -123,6 +123,22 @@ theorem chartLocalSesquilinear_hermitian
   -- Step 3: integral_conj on the resulting form (setIntegral = integral against restricted measure).
   exact integral_conj
 
+/-- **Chart-local diagonal is real-valued.** Per-chart-y analog of
+`globalPettersonHermitian_diagonal_im`. Follows from Hermitian
+symmetry: `H(om, om, y, χ) = conj(H(om, om, y, χ))` ⇒ `im = -im` ⇒
+`im = 0`. -/
+theorem chartLocalSesquilinear_diagonal_im
+    (om : HolomorphicOneForm X) (y : X) (χ : X → ℝ) :
+    (chartLocalSesquilinear om om y χ).im = 0 := by
+  have h_eq : chartLocalSesquilinear om om y χ
+      = (starRingEnd ℂ) (chartLocalSesquilinear om om y χ) :=
+    chartLocalSesquilinear_hermitian om om y χ
+  have h_im_eq : (chartLocalSesquilinear om om y χ).im
+      = ((starRingEnd ℂ) (chartLocalSesquilinear om om y χ)).im := by
+    rw [← h_eq]
+  rw [Complex.conj_im] at h_im_eq
+  linarith
+
 end HolomorphicOneForm
 
 end
