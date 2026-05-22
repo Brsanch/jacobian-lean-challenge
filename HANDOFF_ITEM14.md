@@ -71,18 +71,35 @@ mathlib pin. The same diamond blocks `HasFDerivAt.restrictScalars`,
 `AnalyticOn.restrictScalars`, etc. since they share the variable
 signature.
 
-Possible next-session approaches:
+### Bridge partial — `HasFDerivAt`/`DifferentiableOn` level landed
+
+`HasFDerivAtRestrictScalarsComplex.lean` (commit `2712965`) ships a
+**hand-rolled** ℂ → ℝ bridge at the `HasFDerivAt` /
+`DifferentiableOn` level that bypasses the diamond. Key trick: extract
+the `=o[𝓝 x]`-form via `HasFDerivAt.isLittleO` (which is
+base-field-agnostic), then reconstruct ℝ-side `HasFDerivAt` via
+`HasFDerivAt.of_isLittleO` after applying
+`ContinuousLinearMap.restrictScalars ℝ` (which only requires
+`LinearMap.CompatibleSMul ℂ ℂ ℝ ℂ`, NOT `IsScalarTower ℝ ℂ ℂ`).
+
+Available bridge API:
+* `HasFDerivAt.restrictScalarsComplex`
+* `HasFDerivWithinAt.restrictScalarsComplex`
+* `DifferentiableAt.restrictScalarsComplex`
+* `DifferentiableWithinAt.restrictScalarsComplex`
+* `DifferentiableOn.restrictScalarsComplex`
+* `Differentiable.restrictScalarsComplex`
+
+**Still missing for full `ContDiffOn ℂ → ContDiffOn ℝ`**:
+* `fderivWithin ℝ f s x = (fderivWithin ℂ f s x).restrictScalars ℝ`
+  identity (under unique-diff hypotheses).
+* Iteration on `n` for `ContDiffOn ℝ n` via the recursive characterization
+  `ContDiffOn ℝ (n+1) f S ↔ DifferentiableOn ℝ f S ∧ ContDiffOn ℝ n (fderivWithin ℝ f S) S`.
+
+Remaining alternatives:
 1. **Mathlib PR**: file an issue / patch to mathlib that exposes a
    priority-tagged `IsScalarTower ℝ ℂ ℂ` instance keyed on the
-   `Algebra.id`-SMul, or alternatively makes the SMul indices
-   reducibly-defeq in the existing instances.
-2. **Hand-rolled iterated-derivative bridge**: prove
-   `ContDiffOn ℝ ∞ f S` directly by recursion on the iterated Fréchet
-   derivative. For `f : ℂ → ℂ` holomorphic on `S`, build
-   `iteratedFDerivWithin ℝ n f S z` from `iteratedFDerivWithin ℂ n f S z`
-   via `ContinuousMultilinearMap.restrictScalars` at each level. This
-   sidesteps `IsScalarTower` synth by working at the explicit
-   multilinear-map level (~200-400 LOC, but self-contained).
+   `Algebra.id`-SMul.
 3. **Compose-through-equiv approach**: for `e := Complex.equivRealProdCLM`,
    define `g := e ∘ f ∘ e.symm : ℝ² → ℝ²` and prove `g`'s real-smoothness
    directly from the explicit Cauchy-Riemann structure (∂g₁/∂x = ∂g₂/∂y,
