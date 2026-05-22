@@ -182,6 +182,7 @@ import JacobianChallenge.Manifold.ComplexChainPeriodFormLinear
 import JacobianChallenge.Manifold.ChartLocalPrimitive
 import JacobianChallenge.Manifold.ChartLocalPrimitiveSmoothness
 import JacobianChallenge.Manifold.BumpedSegmentParamSmooth
+import JacobianChallenge.Manifold.ChartLocalIntegrandSmooth
 import JacobianChallenge.Manifold.LoopPeriodConstant
 import JacobianChallenge.Manifold.PathPrimitiveBasisFTC
 import JacobianChallenge.Manifold.PathPrimitiveChartLocalBridge
