@@ -88,6 +88,14 @@ theorem subsingleton_pic0_iff_of_holomorphicEquiv (e : HolomorphicEquiv X Y) :
     Subsingleton (Pic0 X) ↔ Subsingleton (Pic0 Y) :=
   Equiv.subsingleton_congr (pic0_holomorphicEquivCongr e).toEquiv
 
+/-- Explicit action on quotient classes: image of `[D]` is `[comap0Equiv D]`. -/
+theorem pic0_holomorphicEquivCongr_apply_mk
+    (e : HolomorphicEquiv X Y) (D : Div0 X) :
+    pic0_holomorphicEquivCongr e
+        (QuotientAddGroup.mk (s := (PrincDiv X).addSubgroupOf (Div0 X)) D)
+      = QuotientAddGroup.mk (s := (PrincDiv Y).addSubgroupOf (Div0 Y))
+          (Div.comap0Equiv e.toHomeomorph D) := rfl
+
 end JacobianChallenge
 
 end
