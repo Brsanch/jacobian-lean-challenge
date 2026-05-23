@@ -7,6 +7,10 @@ import JacobianChallenge.Manifold.SubsingletonHolomorphicOneFormInstanceFromBiho
 import JacobianChallenge.Manifold.HJChainFromUniformizationGenus0SubsingletonSmoke
 import JacobianChallenge.Manifold.HasBasedSmoothLoopsBoundFromBiholomorphismRS
 import JacobianChallenge.Manifold.Pic0SubsingletonInstanceFromAnalyticEquivSubsingletonOmega
+import JacobianChallenge.Manifold.HJCCInstanceFromSubsingletonUniformization
+import JacobianChallenge.Manifold.HasJacobianHodgeChainFromHJCC
+import JacobianChallenge.Manifold.HasC3FullClassicalContentFromHJCC
+import JacobianChallenge.Manifold.HasSurfaceClassificationData
 
 set_option linter.unusedSectionVars false
 set_option maxHeartbeats 1200000
@@ -47,6 +51,10 @@ example : HasPic0AnalyticEquiv X := inferInstance
 example : HasJacobianAnalyticStructure X := inferInstance
 example : Subsingleton (Pic0 X) := inferInstance
 example : HasBasedSmoothLoopsBound X := inferInstance
+example : HasJacobianClassicalContent X := inferInstance
+example : HasJacobianHodgeChain X := inferInstance
+example : HasC3FullClassicalContent X := inferInstance
+example : HasSurfaceClassificationData X := inferInstance
 
 end JacobianChallenge
 
