@@ -96,6 +96,15 @@ theorem pic0_holomorphicEquivCongr_apply_mk
       = QuotientAddGroup.mk (s := (PrincDiv Y).addSubgroupOf (Div0 Y))
           (Div.comap0Equiv e.toHomeomorph D) := rfl
 
+/-- **Refl**: at `HolomorphicEquiv.refl`, the Pic0 AddEquiv is the
+identity. -/
+theorem pic0_holomorphicEquivCongr_refl :
+    pic0_holomorphicEquivCongr (HolomorphicEquiv.refl : HolomorphicEquiv X X)
+      = AddEquiv.refl (Pic0 X) := by
+  ext a
+  induction a using QuotientAddGroup.induction_on with
+  | H D => rfl
+
 end JacobianChallenge
 
 end
