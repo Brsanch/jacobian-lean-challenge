@@ -123,6 +123,86 @@ noncomputable def comapEquiv (φ : X ≃ₜ Y) : Div X ≃+ Div Y where
 @[simp] lemma comapEquiv_symm_apply (φ : X ≃ₜ Y) (D : Div Y) (x : X) :
     ((comapEquiv φ).symm D) x = D (φ x) := rfl
 
+/-! ### Degree preservation under `comap`
+
+For homeomorphic compact Hausdorff spaces, the divisor pullback preserves
+the degree. -/
+
+variable [T2Space X] [T2Space Y] [CompactSpace X] [CompactSpace Y]
+
+open Classical in
+/-- The supportFinset of `comap φ D` is the φ-preimage of `D.supportFinset`. -/
+lemma supportFinset_comap (φ : X ≃ₜ Y) (D : Div Y) :
+    (comap φ D).supportFinset = D.supportFinset.image φ.symm := by
+  ext x
+  rw [mem_supportFinset, Finset.mem_image]
+  constructor
+  · intro hx
+    refine ⟨φ x, ?_, ?_⟩
+    · rw [mem_supportFinset]
+      simpa using hx
+    · exact φ.symm_apply_apply x
+  · rintro ⟨y, hy, hyx⟩
+    rw [mem_supportFinset] at hy
+    have heq : x = φ.symm y := hyx.symm
+    subst heq
+    show (comap φ D) (φ.symm y) ≠ 0
+    rw [comap_apply, φ.apply_symm_apply]
+    exact hy
+
+open Classical in
+/-- **Degree preservation under `comap`.** For a homeomorphism `φ : X ≃ₜ Y`
+between compact Hausdorff spaces, the divisor pullback by `φ` preserves
+the integer degree. -/
+@[simp] lemma degree_comap (φ : X ≃ₜ Y) (D : Div Y) :
+    Div.degree (comap φ D) = Div.degree D := by
+  unfold Div.degree
+  rw [supportFinset_comap]
+  rw [Finset.sum_image
+        (fun y₁ _ y₂ _ h => φ.symm.injective h)]
+  refine Finset.sum_congr rfl ?_
+  intro y _
+  show (comap φ D) (φ.symm y) = D y
+  rw [comap_apply, φ.apply_symm_apply]
+
+/-- `comap φ` sends `Div0 Y` into `Div0 X`. -/
+lemma comap_mem_Div0 (φ : X ≃ₜ Y) {D : Div Y} (hD : D ∈ Div0 Y) :
+    comap φ D ∈ Div0 X := by
+  have hD' : Div.degree D = 0 := hD
+  show Div.degree (comap φ D) = 0
+  rw [degree_comap]
+  exact hD'
+
+/-- **`Div.comap` restricted to degree-zero divisors.** -/
+noncomputable def comap0 (φ : X ≃ₜ Y) : Div0 Y →+ Div0 X :=
+  ((comap φ).restrict (Div0 Y)).codRestrict (Div0 X) <| by
+    rintro ⟨D, hD⟩
+    exact comap_mem_Div0 φ hD
+
+@[simp] lemma comap0_coe (φ : X ≃ₜ Y) (D : Div0 Y) :
+    ((comap0 φ D : Div0 X) : Div X) = comap φ (D : Div Y) := rfl
+
+/-- **`Div.comap0Equiv`** — degree-zero divisor groups of homeomorphic
+spaces are canonically isomorphic. -/
+noncomputable def comap0Equiv (φ : X ≃ₜ Y) : Div0 X ≃+ Div0 Y where
+  toFun := comap0 φ.symm
+  invFun := comap0 φ
+  left_inv := by
+    rintro ⟨D, hD⟩
+    apply Subtype.ext
+    show comap φ (comap φ.symm D) = D
+    ext x
+    show D (φ.symm (φ x)) = D x
+    rw [Homeomorph.symm_apply_apply]
+  right_inv := by
+    rintro ⟨D, hD⟩
+    apply Subtype.ext
+    show comap φ.symm (comap φ D) = D
+    ext y
+    show D (φ (φ.symm y)) = D y
+    rw [Homeomorph.apply_symm_apply]
+  map_add' D₁ D₂ := (comap0 φ.symm).map_add D₁ D₂
+
 end Div
 
 end JacobianChallenge
