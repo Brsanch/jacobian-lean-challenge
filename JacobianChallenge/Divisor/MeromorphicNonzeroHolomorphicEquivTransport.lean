@@ -112,6 +112,19 @@ theorem Div.comap_principalDivisorMap_mem_PrincDiv
   rw [← principalDivisorMap_compHolomorphicEquiv e f]
   exact principalDivisorMap_mem_PrincDiv (f.compHolomorphicEquiv e)
 
+/-- **`Div.comap e.toHomeomorph` sends `PrincDiv Y` into `PrincDiv X`.** -/
+theorem Div.comap_PrincDiv_le
+    (e : HolomorphicEquiv X Y) :
+    (PrincDiv Y).map (Div.comap e.toHomeomorph) ≤ PrincDiv X := by
+  rw [AddSubgroup.map_le_iff_le_comap]
+  unfold PrincDiv PrincDivHonestCandidate
+  rw [AddSubgroup.closure_le]
+  rintro D ⟨f, rfl⟩
+  -- Goal: principalDivisorMap f ∈ AddSubgroup.comap (Div.comap e.toHomeomorph)
+  --   (PrincDiv X).
+  show Div.comap e.toHomeomorph (principalDivisorMap f) ∈ PrincDiv X
+  exact Div.comap_principalDivisorMap_mem_PrincDiv e f
+
 end JacobianChallenge
 
 end
