@@ -30,6 +30,7 @@ import JacobianChallenge.Divisor.FiberPullbackWitnessIrrelevance
 import JacobianChallenge.Divisor.FiberSum
 import JacobianChallenge.Divisor.FiberSumWeighted
 import JacobianChallenge.Divisor.FiberSumWeightedComp
+import JacobianChallenge.Divisor.HomeomorphTransport
 import JacobianChallenge.Divisor.MeromorphicNonzeroGerm
 import JacobianChallenge.Divisor.OrderFunSign
 import JacobianChallenge.Divisor.PrincipalDivisor
