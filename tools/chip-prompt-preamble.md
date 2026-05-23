@@ -17,6 +17,67 @@ Independent `/tmp/agent-X-jacobian` clones are only needed when dispatching
 *parallel* sub-agents whose changes would otherwise entangle the parent
 checkout. For serial work, edit `main`-tracking branches directly.
 
+## Anti-bloat gates (PROJECT-CRITICAL — added 2026-05-23 after audit showed the
+repo ballooned from a ~130k LOC budget toward 200k+ via paraphrase chips)
+
+Before writing ANY new code, the chip must pass ALL of the following gates. If
+it fails any, REJECT the chip and report `✗ REJECTED` with the failing gate.
+
+1. **Paraphrase gate.** A chip that takes an existing theorem `T_old (h₁ ... hₙ)` and
+   ships `T_new (h₁ ... hₖ)` for `k < n` by auto-discharging the dropped
+   hypotheses via a NEW named hypothesis (typeclass, structural Prop, etc.)
+   is **a paraphrase, not progress**. The net sorry-pile is unchanged: each
+   hypothesis named is a deferred classical theorem with a different
+   docstring. REJECT unless the chip also discharges at least one named
+   hypothesis on a non-trivial X (i.e. NOT under `Subsingleton ω` and NOT
+   on a specific X you also ship the instance for in the same session).
+
+2. **Parallel-route gate.** If there already exists a route to the same
+   conclusion in tree (e.g. `Item14ForRiemannSphereVia2InputChip.lean` already
+   closes item 14 on RS), a new chip that produces a *parallel* route via
+   different intermediate machinery is **net negative** — it adds
+   maintenance surface, instance-search collisions, and zero new
+   closure. REJECT unless the new route closes something the existing
+   route does NOT close (and document precisely what).
+
+3. **Named-hypothesis gate.** A chip that introduces a new `class` /
+   `structure` / `def Prop` whose discharge is "left as an exercise"
+   (i.e. an instance is shipped only for `RiemannSphere` and `ℂ ⧸ L`, or
+   only under `Subsingleton ω`) is a renamed sorry. REJECT unless either:
+   (a) the new name discharges an EXISTING named hypothesis on arbitrary
+   X by classical proof, or (b) the chip's same-session companion discharges
+   the new name on arbitrary X.
+
+4. **Per-X instance gate.** Concrete `RiemannSphere` / `ℂ ⧸ L` instance
+   chips are fine for end-to-end smoke tests, but each one is +50-150 LOC
+   that doesn't move the general-X frontier. CAP: at most ONE per-X
+   instance chip per session, and only if explicitly needed for a
+   downstream theorem you're proving the same session.
+
+5. **Minimum substantive content.** A chip's `proven:` field in the final
+   report should be a SUBSTANTIVE CLASSICAL STATEMENT (in plain math), not
+   a Lean-level rephrasing. Examples of substantive:
+   "Every holomorphic 1-form on a compact connected complex 1-manifold with
+   `H¹(X, 𝒪) = 0` is exact" / "Riemann-Roch dim bound on the Riemann
+   sphere". Examples of NOT substantive: "Combines chip C and chip D into
+   typeclass instance" / "Bridges named hypothesis A to named hypothesis
+   B" / "Item 14 reduced from 3 inputs to 2 inputs". REJECT the latter.
+
+6. **mathlib-first gate.** Before writing ANY new infrastructure, grep
+   mathlib for the closest existing lemma (`grep -rn "$concept" .lake/packages/mathlib/`).
+   The repo has been re-inventing manifold theory; this stops. If a
+   mathlib lemma is within ~50 LOC of glue away, use it. If not, document
+   the gap in the chip's `proven:` field as "uses mathlib X, bridges to
+   our Y" and keep the new infrastructure to <300 LOC.
+
+7. **Item-14-progress gate.** If your chip is on item 14 (in any
+   formulation), it must either (a) remove a `sorry` from
+   `Basic.lean`, (b) discharge a classical hypothesis on arbitrary X
+   (NOT just RS/T_L/Subsingleton), or (c) prove a substantive lemma
+   from mathlib that is one of the named open hypotheses (`hSP`,
+   `h_bslb`, `FiniteDimensional ℂ (HolomorphicOneForm X)`). Anything
+   else is REJECT.
+
 ## Discipline rules (non-negotiable)
 
 - **NEVER push until locally verified green.** This is the merge-gate
