@@ -5,6 +5,8 @@ Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.SubsingletonHolomorphicOneFormInstanceFromBiholomorphism
 import JacobianChallenge.Manifold.HJChainFromUniformizationGenus0SubsingletonSmoke
+import JacobianChallenge.Manifold.HasBasedSmoothLoopsBoundFromBiholomorphismRS
+import JacobianChallenge.Manifold.Pic0SubsingletonInstanceFromAnalyticEquivSubsingletonOmega
 
 set_option linter.unusedSectionVars false
 set_option maxHeartbeats 1200000
@@ -43,6 +45,8 @@ example : FactUniformizationToRiemannSphere X := inferInstance
 example : UniformizationGenus0Hypothesis X := inferInstance
 example : HasPic0AnalyticEquiv X := inferInstance
 example : HasJacobianAnalyticStructure X := inferInstance
+example : Subsingleton (Pic0 X) := inferInstance
+example : HasBasedSmoothLoopsBound X := inferInstance
 
 end JacobianChallenge
 
