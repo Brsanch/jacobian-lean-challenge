@@ -57,6 +57,25 @@ example :
         (Fin (JacobianChallenge.genus X) → ℂ)) ω
       (JacobianChallenge.Jacobian X) _ inferInstance := inferInstance
 
+/-- **Item 13 — LieAddGroup ω (Jacobian X) under biholomorphism.**
+
+Composes:
+* `[Nonempty (HolomorphicEquiv X RS)]` ⟹ `Subsingleton (Pic0 X)`.
+* The genus-0-auto chips supply `ChartedSpace` + `IsManifold`.
+* `instLieAddGroup_Jacobian_of_subsingleton` finishes. -/
+noncomputable example :
+    @LieAddGroup ℂ _
+      (Fin (JacobianChallenge.genus X) → ℂ) _
+      (Fin (JacobianChallenge.genus X) → ℂ) _ _
+      (modelWithCornersSelf ℂ
+        (Fin (JacobianChallenge.genus X) → ℂ)) ω
+      (JacobianChallenge.Jacobian X) _ _ inferInstance :=
+  letI := instChartedSpace_Jacobian_of_subsingleton_omega (X := X)
+  letI := instIsManifold_Jacobian_of_subsingleton_omega (X := X)
+  haveI : Subsingleton (JacobianChallenge.Jacobian X) :=
+    inferInstanceAs (Subsingleton (Pic0 X))
+  instLieAddGroup_Jacobian_of_subsingleton (X := X)
+
 end JacobianChallenge
 
 end
