@@ -1,5 +1,117 @@
 # Changelog
 
+## 2026-05-23 — holomorphic parametric integral arc closure: `ChartLocalPrimitiveSmoothExt` at `chartAt ℂ y` UNCONDITIONAL (6 chips, +1,376 Lean LOC across 6 new files)
+
+State: build single-file clean for each chip, repo now **1,072 `.lean`
+files / 182,183 LOC** (vs. 1,066 / 180,807 baseline). Zero `sorry`,
+zero `axiom`. New chips not yet wired into the umbrella build
+(`lake build` still 9,326 jobs; per-file `LEAN_NUM_THREADS=1 lake env
+lean` clean). All 6 commits local on `main` (verified
+`git log origin/main..HEAD`). Item count in `Basic.lean` unchanged at
+**14 / 24 STRICT-CLOSED** — these chips factor item 14's analytic-side
+named hypothesis `h_smooth_b` to *unconditional* at the natural
+per-point chart cover, but item 14 itself requires the remaining
+classical inputs (`h_ftc_b`, `hSP`, `h_bslb`) to flip.
+
+### Headline
+
+`ChartLocalPrimitiveSmoothExt (chartAt ℂ y) … y … om` is now
+**unconditional** for every `y : X` and every `om : HolomorphicOneForm X`
+(modulo the convex chart-target hypothesis already in the
+definition). This discharges one of the four minimal named
+hypotheses of item 14's reverse leg via the holomorphic parametric
+integral route — bypassing the ℂ→ℝ scalar-restriction diamond
+entirely (the 2026-05-21 sub-arc B work was tangential).
+
+### Chip sequence
+
+* **Chip A — `Manifold/AnalyticOnChartLocalIntegrand.lean`** (`3e8da0a`,
+  +378 LOC). `analyticOn_chartLocalIntegrand_param`: for any
+  `AnalyticOn ℂ f S` on convex open `S ∋ z₀`,
+  `fun z ↦ ∫ t in 0..1, f(B(z₀, z, t)) · V(z₀, z, t)` is
+  `AnalyticOn ℂ` on `S`. Combines chips 10 + 11 with an explicit
+  `∂z`-derivative `chartLocalIntegrandDerivInZ`, compactness-based
+  uniform bound via `IsCompact.exists_isMaxOn`, and Goursat. Notable
+  Lean gotcha indexed at top of MEMORY.md: the derivative def is
+  marked `@[irreducible]` to dodge a `maxHeartbeats` blowup
+  (sum-of-products body of multiple `bumpedSegment`/`chartCoordVelocity`
+  calls triggers `whnf` cascades on every downstream `Continuous`
+  lemma, even at 2M heartbeats).
+
+* **Chip B1 — `Manifold/ComplexChainPeriodSinglePathIntegral.lean`**
+  (`b395089`, +183 LOC). Path-only generalization of
+  `ChartContainedClosedLoop.complexChainPeriod_single_eq_complex_integral`:
+  drops the loop hypothesis. For any smooth path γ and any
+  HolomorphicOneForm α, with the ℂ-valued integrand continuous on [0,1],
+  `complexChainPeriod (single γ) α = ∫ t in 0..1, (α.eval (γ.ambient t)) (γ.velocity t)`.
+  The loop hypothesis was unused in the original proof — this is the
+  substantive observation.
+
+* **Chip B2 — `Manifold/PointwiseChartEvalPath.lean`** (`cf5d1f7`,
+  +265 LOC). Path-only generalization of
+  `ChartContainedClosedLoop.pointwiseChartEvalIdentity_unconditional`:
+  for any smooth path γ, base point y with `γ.ambient t ∈ (chartAt y).source`,
+  `(α.eval (γ.ambient t)) (γ.velocity t) = α.localCoeff y ((chartAt y) (γ.ambient t)) · deriv ((chartAt y) ∘ γ.ambient) t`.
+  Mirrors the unconditional proof structure (T_yx/T_xy cocycle +
+  localCoeff chart-image unfold + deriv chartPath = T_xy v chain rule),
+  but with loop-data field accesses replaced by direct (γ, y, t, h_src)
+  hypotheses. Helper trio restated locally (originals are `private`).
+
+* **Chip B3 — `Manifold/ChartLocalPrimitiveChartIntegral.lean`**
+  (`5e0c4e4`, +251 LOC). Headline chip-B identity:
+  `chartLocalPrimitive (chartAt y) … y … om x = ∫ t in 0..1, om.localCoeff y (B((chartAt y) y, (chartAt y) x, t)) · chartCoordVelocity ((chartAt y) y, (chartAt y) x, t)`.
+  Combines chip B1 (structural bridge) + chip B2 (per-t identity) +
+  two structural identifications for `γ := linearInChartSegment φ y x`:
+  `(chartAt y) (γ.ambient t) = B(t)` on `Icc 0 1` via
+  `ambient_eq_on_unitInterval` + `left_inv`; and
+  `deriv ((chartAt y) ∘ γ.ambient) t = chartCoordVelocity t` on
+  `Ioo 0 1` via `EventuallyEq.deriv_eq`. Glued by
+  `intervalIntegral.integral_congr_ae` (the endpoint `{1}` is
+  measure zero in `Ioc 0 1`). Plus `hasDerivAt_bumpedSegment_in_t`
+  /  `deriv_bumpedSegment_eq_chartCoordVelocity` helper: the
+  time-derivative formula proved directly via ℝ-smul +
+  `HasDerivAt.smul_const`, avoiding the `Complex.ofRealCLM ∘ ·`
+  scomp-vs-cast unification gymnastics.
+
+* **Chip C — `Manifold/ChartLocalPrimitiveSmoothExtChartAt.lean`**
+  (`f42f7a6`, +152 LOC). **`ChartLocalPrimitiveSmoothExt` at
+  `chartAt ℂ y` UNCONDITIONAL**. Pipeline: `localCoeff_analyticOn`
+  → chip A → `AnalyticOn.contDiffOn` → `ContDiffOn.contMDiffOn`
+  → `contMDiffOn_chart` + `ContMDiffOn.comp` + chip B3 +
+  `chartLocalPrimitiveExtend_eq_chartLocalPrimitive` +
+  `ContMDiffOn.congr`. Scope: the chip's natural chart `chartAt ℂ y`
+  (which is what item 14's reverse leg uses when covering X by
+  per-point natural charts). A fully general φ ∈ atlas would need a
+  chart-transition argument relating `om.localCoeff y` across charts;
+  not needed here.
+
+* **Chip D1 — `Manifold/ChartLocalIntegrandDerivIntegral.lean`**
+  (`9d3c610`, +147 LOC). FTC atom for chip D:
+  `∫₀¹ chartLocalIntegrandDerivInZ f z₀ z t dt = f(z)` for `f`
+  analytic on convex open `S ∋ z₀, z`. Proof: the integrand-`z`
+  derivative is the time-derivative of `aux(t) := ((σ(t):ℝ):ℂ) · f(B(z₀, z, t))`
+  (product + chain rule + `HasDerivAt.smul_const` /
+  `HasDerivAt.ofReal_comp`); FTC over `[0, 1]` collapses to
+  `aux(1) − aux(0) = 1·f(z) − 0·f(z₀) = f(z)` using `σ(0)=0, σ(1)=1,
+  B(0)=z₀, B(1)=z`.
+
+### Remaining chip-D pieces (next session)
+
+* **D2** — `HasDerivAt g (f(z)) z` at every `z ∈ S`, combining chip
+  A's parametric Fréchet output with D1.
+* **D3** — `mfderiv` version on chart target via the standard
+  `HasDerivAt.hasMFDerivAt`-style lift.
+* **D4** — chain rule for `chartLocalPrimitive = g ∘ chartAt y` to
+  get `mfderiv chartLocalPrimitive x` in chart-coords.
+* **D5** — identify `mfderiv chartLocalPrimitive x = om.eval x` via
+  chip B2 + ℂ-linearity (both sides are CLMs ℂ → ℂ; agree on
+  `1 : ℂ`).
+
+Once D2–D5 land, `h_ftc_b` is also unconditional → **2 of the 4
+minimal item-14 inputs** done, leaving only `hSP` (RR-class
+existence of simple-pole germ) and `h_bslb` (smooth-Hurewicz
+`BasedSmoothLoopsBoundHypothesis`) as actual classical content.
+
 ## 2026-05-21 post-PR-#4 continuation — FTC-arc foundation, ℂ→ℝ diamond bypass, and holomorphic parametric integral atom (11 chips, ~907 LOC)
 
 Final state: build **9326 jobs**, **1066 `.lean` files**, **180,807
