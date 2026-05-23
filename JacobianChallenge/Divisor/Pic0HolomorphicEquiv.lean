@@ -81,6 +81,13 @@ noncomputable def pic0_holomorphicEquivCongr (e : HolomorphicEquiv X Y) :
     (Div.comap0Equiv e.toHomeomorph)
     (pic0_subgroup_image_eq e)
 
+/-! ### Functoriality: refl/symm/trans -/
+
+/-- `Subsingleton (Pic0 X)` is *equivalent* under biholomorphism. -/
+theorem subsingleton_pic0_iff_of_holomorphicEquiv (e : HolomorphicEquiv X Y) :
+    Subsingleton (Pic0 X) ↔ Subsingleton (Pic0 Y) :=
+  Equiv.subsingleton_congr (pic0_holomorphicEquivCongr e).toEquiv
+
 end JacobianChallenge
 
 end
