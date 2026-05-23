@@ -1,5 +1,90 @@
 # Item 14 classical-content handoff
 
+## 2026-05-23 session — holomorphic parametric integral arc closure (6 chips, +1,376 LOC, all local on `main`, not pushed)
+
+`git log origin/main..HEAD` shows 6 commits on `main` from this
+session, each verified single-file `LEAN_NUM_THREADS=1 lake env lean`
+clean. None yet wired into the umbrella `JacobianChallenge.lean`
+(`lake build` still 9,326 jobs). Repo went **1,066 → 1,072 `.lean`
+files** and **180,807 → 182,183 LOC**.
+
+**Headline:** `ChartLocalPrimitiveSmoothExt (chartAt ℂ y) … y … om`
+(= `ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω` of `chartLocalPrimitiveExtend …` on
+`(chartAt ℂ y).source`) is **unconditional** for every `y : X` and
+`om : HolomorphicOneForm X` (modulo the convex chart-target
+hypothesis already in the definition). This discharges one of the
+four minimal item-14 reverse-leg named hypotheses at the natural
+per-point chart cover. Earlier ℂ→ℝ scalar-restriction bridge work
+(2026-05-21 sub-arc B) is tangential — the holomorphic parametric
+integral route is the direct path.
+
+### Chip ledger
+
+| Chip | File | Commit | LOC | Headline |
+|---|---|---|---|---|
+| A | `Manifold/AnalyticOnChartLocalIntegrand.lean` | `3e8da0a` | 378 | `analyticOn_chartLocalIntegrand_param` |
+| B1 | `Manifold/ComplexChainPeriodSinglePathIntegral.lean` | `b395089` | 183 | Non-loop `complexChainPeriod_single_eq_complex_integral_of_path` |
+| B2 | `Manifold/PointwiseChartEvalPath.lean` | `cf5d1f7` | 265 | Non-loop `pointwiseChartEval_path` |
+| B3 | `Manifold/ChartLocalPrimitiveChartIntegral.lean` | `5e0c4e4` | 251 | `chartLocalPrimitive_eq_chartCoordIntegral` |
+| C | `Manifold/ChartLocalPrimitiveSmoothExtChartAt.lean` | `f42f7a6` | 152 | **`ChartLocalPrimitiveSmoothExt` at `chartAt ℂ y` UNCONDITIONAL** |
+| D1 | `Manifold/ChartLocalIntegrandDerivIntegral.lean` | `9d3c610` | 147 | `∫₀¹ ∂z[f(B)·V] dt = f(z)` (FTC atom for chip D) |
+
+### Notable Lean gotcha (indexed at top of MEMORY.md as feedback)
+
+Chip A's `chartLocalIntegrandDerivInZ` is marked `@[irreducible]` to
+dodge a `maxHeartbeats` blowup at column 0 of downstream
+`Continuous`/`ContinuousOn` lemma decls. A `noncomputable def` with
+body = sum-of-products of multiple non-trivial calls (≥3 muls + casts
++ repeated `bumpedSegment`/`chartCoordVelocity`) triggers `whnf`
+cascades on every `.comp_continuous` invocation, even at 2M
+heartbeats. The fix is `@[irreducible] noncomputable def` + a `_eq`
+lemma via `by unfold; rfl`. ~30 min to bisect via probe files.
+
+### Remaining chip-D pieces (next session)
+
+Chip D = `ChartLocalPrimitiveFTC` = `∀ x ∈ φ.source, om.eval x =
+mfderiv 𝓘(ℂ) 𝓘(ℂ) chartLocalPrimitiveExtend x`. After D1, the open
+sub-arcs are:
+
+* **D2** — `HasDerivAt g (f(z)) z` at every `z ∈ S` where `g(z) := ∫ t,
+  f(B(z₀,z,t))·V(z₀,z,t)` and `f = om.localCoeff y`. Combines chip A's
+  parametric Fréchet output (re-derived as a public lemma, or chip A
+  internally exposes `h_diffAt`) with D1's
+  `∫ ∂z-integrand = f(z)`.
+* **D3** — lift `HasDerivAt g (f(z))` to `mfderiv 𝓘(ℂ) 𝓘(ℂ) g z =
+  ContinuousLinearMap.smulRight 1 (f z)` (= "multiply by `f(z)`").
+  Direct via `HasDerivAt.hasMFDerivAt` or the `mfderiv_eq_fderiv`
+  bridge.
+* **D4** — chain rule:
+  `mfderiv (chartLocalPrimitive y om) x
+     = mfderiv (g ∘ chartAt y) x
+     = (mfderiv g ((chartAt y) x)) ∘ (mfderiv (chartAt y) x)`,
+  combined with chip B3's `chartLocalPrimitive = g ∘ chartAt y` on
+  `φ.source` (via `mfderiv_eq_mfderiv_of_eventuallyEq` / `ContMDiffOn.congr`
+  pattern).
+* **D5** — identify
+  `(mul-by-f((chartAt y) x)) ∘ mfderiv (chartAt y) x = om.eval x`
+  via chip B2's pointwise chart-pullback identity + ℂ-linearity
+  (both sides are CLMs `ℂ → ℂ`; agree on `1 : ℂ` reduces to chip B2
+  at the "tangent vector = mfderiv (chartAt y) x 1"). The base
+  algebra is the same as the existing
+  `pointwiseChartEvalIdentity_unconditional`.
+
+After D2–D5, **2 of the 4 minimal item-14 inputs** are unconditional
+(`h_smooth_b` + `h_ftc_b`). Remaining: `hSP` (RR-class existence of
+simple-pole germ at some point) and `h_bslb` (smooth-Hurewicz
+`BasedSmoothLoopsBoundHypothesis`) — both genuine classical content.
+
+### Wiring into the umbrella build (low-priority)
+
+The 6 new chip files are not yet imported from
+`JacobianChallenge.lean` (the umbrella module). Single-file `lake env
+lean` is clean for each; `lake build` will pick them up once the
+umbrella imports them. Defer this until chip D lands, to avoid
+re-building thousands of jobs per intermediate state.
+
+---
+
 ## Worktree setup (read first)
 
 This file lives in the dedicated worktree:

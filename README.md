@@ -13,11 +13,28 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-21):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
-Build clean at **9326 jobs** (zero `sorry`, zero `axiom`). Repo:
-**180,807 LOC across 1066 `.lean` files**.
+**Current state (2026-05-23):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
+Umbrella `lake build` clean at **9,326 jobs** (zero `sorry`, zero
+`axiom`). Repo: **182,183 LOC across 1,072 `.lean` files**. Per-file
+`LEAN_NUM_THREADS=1 lake env lean` clean on all 6 chips of the
+2026-05-23 holomorphic parametric integral arc (local on `main`, not
+pushed; not yet wired into the umbrella).
 
 Major recent landings (all on `main`):
+
+* **Holomorphic parametric integral arc** (2026-05-23, 6 chips,
+  +1,376 LOC). `ChartLocalPrimitiveSmoothExt (chartAt ℂ y) … y … om`
+  is **unconditional** for every `y : X` and `om : HolomorphicOneForm X`
+  (modulo the convex chart-target hypothesis already in the
+  definition). Chips: A (`AnalyticOn` of chart-coord parametric
+  integral via mathlib parametric Fréchet at 𝕜 = ℂ + Goursat) → B1+B2+B3
+  (chart-pulled identity for `chartLocalPrimitive` via non-loop
+  generalizations of `complexChainPeriod_single_eq_complex_integral`
+  and `pointwiseChartEvalIdentity_unconditional`) → C (manifold-side
+  transport via `ContMDiffOn.comp` with `contMDiffOn_chart` and
+  `ContMDiffOn.congr`). Plus D1 (`∫₀¹ ∂z-integrand dt = f(z)` FTC
+  atom) as the analytic input for the in-progress `ChartLocalPrimitiveFTC`
+  discharge.
 
 * **Item-14 classical-content arc: chain assembly + Dolbeault + chart-
   cell infra** (2026-05-21, 57 commits + merge `be4146d`, +3,639 LOC
