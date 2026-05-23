@@ -58,6 +58,27 @@ example : HasJacobianAnalyticStructure X := inferInstance
 example : HasJacobianClassicalContent X := inferInstance
 example : HasJacobianHodgeChain X := inferInstance
 example : HasC3FullClassicalContent X := inferInstance
+example : HasSurfaceClassificationData X := inferInstance
+example : Subsingleton (Pic0 X) := inferInstance
+example : HasBasedSmoothLoopsBound X := inferInstance
+
+/-- **Item 5 — CompactSpace (Jacobian X) — fires via inferInstance under
+the FactUniformization disjunctive class + Subsingleton ω.** -/
+example : CompactSpace (JacobianChallenge.Jacobian X) := inferInstance
+
+/-- **Item 11 — ChartedSpace.** -/
+example :
+    ChartedSpace (Fin (JacobianChallenge.genus X) → ℂ)
+      (JacobianChallenge.Jacobian X) := inferInstance
+
+/-- **Item 12 — IsManifold.** -/
+example :
+    @IsManifold ℂ _
+      (Fin (JacobianChallenge.genus X) → ℂ) _ _
+      (Fin (JacobianChallenge.genus X) → ℂ) _
+      (modelWithCornersSelf ℂ
+        (Fin (JacobianChallenge.genus X) → ℂ)) ω
+      (JacobianChallenge.Jacobian X) _ inferInstance := inferInstance
 
 end JacobianChallenge
 
