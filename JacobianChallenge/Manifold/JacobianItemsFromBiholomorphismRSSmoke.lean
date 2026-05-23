@@ -76,6 +76,45 @@ noncomputable example :
     inferInstanceAs (Subsingleton (Pic0 X))
   instLieAddGroup_Jacobian_of_subsingleton (X := X)
 
+/-! ## Items 17 / 21 — ContMDiff of pushforward / pullback into subsingleton Jacobian -/
+
+variable {Y : Type u} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
+  [ConnectedSpace Y] [ChartedSpace ℂ Y] [IsManifold (𝓘(ℂ, ℂ)) ω Y]
+  [Nonempty (HolomorphicEquiv Y RiemannSphere)]
+
+/-- **Item 17 (pushforward_contMDiff)** under biholomorphism-to-RS on
+both source and target: Jacobian X and Jacobian Y are subsingleton, so
+any AddMonoidHom between them is constant hence ContMDiff. -/
+example
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω f) :
+    ContMDiff (modelWithCornersSelf ℂ (Fin (JacobianChallenge.genus X) → ℂ))
+      (modelWithCornersSelf ℂ (Fin (JacobianChallenge.genus Y) → ℂ)) ω
+      (JacobianChallenge.Jacobian.pushforward hf) := by
+  letI := instChartedSpace_Jacobian_of_subsingleton_omega (X := X)
+  letI := instIsManifold_Jacobian_of_subsingleton_omega (X := X)
+  letI := instChartedSpace_Jacobian_of_subsingleton_omega (X := Y)
+  letI := instIsManifold_Jacobian_of_subsingleton_omega (X := Y)
+  haveI : Subsingleton (JacobianChallenge.Jacobian Y) :=
+    inferInstanceAs (Subsingleton (Pic0 Y))
+  exact contMDiff_of_subsingleton
+
+/-- **Item 21 (pullback_contMDiff)** under biholomorphism-to-RS on
+both source and target — variant requiring `[DecidableEq X]`. -/
+example [DecidableEq X]
+    (f : X → Y) (hf : ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ω f) :
+    ContMDiff (modelWithCornersSelf ℂ (Fin (JacobianChallenge.genus Y) → ℂ))
+      (modelWithCornersSelf ℂ (Fin (JacobianChallenge.genus X) → ℂ)) ω
+      (JacobianChallenge.Jacobian.pullbackHonest_of_rsum
+        (JacobianChallenge.ContMDiff.Owed.degree.ramificationSumEqualsDegree_holds_unconditional
+          X Y) f hf) := by
+  letI := instChartedSpace_Jacobian_of_subsingleton_omega (X := X)
+  letI := instIsManifold_Jacobian_of_subsingleton_omega (X := X)
+  letI := instChartedSpace_Jacobian_of_subsingleton_omega (X := Y)
+  letI := instIsManifold_Jacobian_of_subsingleton_omega (X := Y)
+  haveI : Subsingleton (JacobianChallenge.Jacobian X) :=
+    inferInstanceAs (Subsingleton (Pic0 X))
+  exact contMDiff_of_subsingleton
+
 end JacobianChallenge
 
 end
