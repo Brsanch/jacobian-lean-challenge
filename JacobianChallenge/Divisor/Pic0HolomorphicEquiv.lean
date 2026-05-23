@@ -114,6 +114,18 @@ theorem pic0_holomorphicEquivCongr_symm (e : HolomorphicEquiv X Y) :
   induction a using QuotientAddGroup.induction_on with
   | H D => rfl
 
+/-- **Trans**: composition of biholomorphisms induces composition of
+the Pic0 AddEquivs. -/
+theorem pic0_holomorphicEquivCongr_trans {Z : Type*}
+    [TopologicalSpace Z] [T2Space Z] [CompactSpace Z]
+    [ChartedSpace ℂ Z] [IsManifold (𝓘(ℂ, ℂ)) ω Z]
+    (e₁ : HolomorphicEquiv X Y) (e₂ : HolomorphicEquiv Y Z) :
+    (pic0_holomorphicEquivCongr e₁).trans (pic0_holomorphicEquivCongr e₂)
+      = pic0_holomorphicEquivCongr (HolomorphicEquiv.trans e₁ e₂) := by
+  ext a
+  induction a using QuotientAddGroup.induction_on with
+  | H D => rfl
+
 end JacobianChallenge
 
 end
