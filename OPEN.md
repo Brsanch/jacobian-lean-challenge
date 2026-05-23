@@ -32,7 +32,7 @@ spec. Three statuses, with one tag for partial progress:
 
 **Current scoreboard:**
 
-> **2026-05-22 (continuation+1 — Hodge-Riemann bridge reduction arc; 62 feat commits + 2 docs commits on `feat/c3-surface-classification-data` extending the arc-S/CHRH-genus-0 base, +4,839 LOC across 60 new files + 3 manifest/docs edits. Repo now 1,218 `.lean` files / 195,719 LOC. Full-graph build 9,469 jobs clean, zero `sorry`, zero `axiom`. origin/feat HEAD `2ed9a31`.
+> **2026-05-22 (continuation+1 — Hodge-Riemann bridge reduction arc; ~79 feat commits + ~8 docs commits on `feat/c3-surface-classification-data` extending the arc-S/CHRH-genus-0 base, ~+5,576 LOC across ~77 new files + 4 manifest/docs edits. Repo now 1,233 `.lean` files / 196,493 LOC. Full-graph build 9,485 jobs clean, zero `sorry`, zero `axiom`. origin/feat HEAD `eeac774`.
 
 Item-flipping chain at genus 0 + [HasPic0AnalyticEquiv X]: `subsingleton_pic0_of_hasPic0AnalyticEquiv_genus_zero` + `instSubsingleton_pic0_of_hasPic0AnalyticEquiv_subsingleton_omega` (the AddEquiv `Pic0 X ≃+ CanonicalAnalyticJacobian` + genus-0 subsingleton of `JacobianOfLattice` ⟹ `Subsingleton (Pic0 X)`). Plus the 4 smoke-test examples validating that under `[HasPic0AnalyticEquiv X] + [Subsingleton ω]`, items 5/11/12/13 instances on `Jacobian X` (`CompactSpace`, `ChartedSpace`, `IsManifold`, `LieAddGroup`) all fire via `inferInstance` through the in-tree `JacobianGenusZeroInstancesAuto` + `JacobianSubsingletonInstances` chain. **Items remain OPEN in `Basic.lean` because the items don't take the typeclass hypotheses; the conditional discharge IS available at any X meeting both hypotheses.**
 
