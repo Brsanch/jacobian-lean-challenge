@@ -48,9 +48,19 @@ theorem hasPic0AnalyticEquiv_of_holomorphicEquiv_RS
   haveI : Subsingleton (Pic0 X) := subsingleton_pic0_of_holomorphicEquiv φ
   exact hasPic0AnalyticEquiv_of_holomorphicEquiv_RS_subsingleton_pic0 φ
 
-/-- **HJAE X from `UniformizationGenus0Hypothesis X + Subsingleton ω`,
+/-- **HJAE X from `UniformizationGenus0Hypothesis X + genus = 0`,
 unconditional.** Composes uniformization (genus 0 ⟹ biholomorphic to
 RS) with the unconditional biholomorphism chip above. -/
+theorem hasPic0AnalyticEquiv_of_uniformizationGenus0_genus_zero
+    [UniformizationGenus0Hypothesis X]
+    (h_genus : JacobianChallenge.genus X = 0) :
+    HasPic0AnalyticEquiv X := by
+  obtain ⟨φ⟩ := UniformizationGenus0Hypothesis.out (X := X) h_genus
+  exact hasPic0AnalyticEquiv_of_holomorphicEquiv_RS φ
+
+/-- **HJAE X from `UniformizationGenus0Hypothesis X + Subsingleton ω`,
+unconditional.** Subsingleton ω ⟹ genus = 0 via the unconditional
+`DiskChartCover.holomorphicOneFormFiniteDim_holds`. -/
 theorem hasPic0AnalyticEquiv_of_uniformizationGenus0_subsingleton_omega
     [UniformizationGenus0Hypothesis X]
     [Subsingleton (HolomorphicOneForm X)] :
@@ -59,8 +69,15 @@ theorem hasPic0AnalyticEquiv_of_uniformizationGenus0_subsingleton_omega
     DiskChartCover.holomorphicOneFormFiniteDim_holds
   have h_genus : JacobianChallenge.genus X = 0 :=
     Module.finrank_zero_of_subsingleton
-  obtain ⟨φ⟩ := UniformizationGenus0Hypothesis.out (X := X) h_genus
-  exact hasPic0AnalyticEquiv_of_holomorphicEquiv_RS φ
+  exact hasPic0AnalyticEquiv_of_uniformizationGenus0_genus_zero h_genus
+
+/-- **Typeclass instance form**: `HasPic0AnalyticEquiv X` automatic
+under `[UniformizationGenus0Hypothesis X] + [Subsingleton ω]`. -/
+instance instHasPic0AnalyticEquiv_of_uniformizationGenus0_subsingleton_omega
+    [UniformizationGenus0Hypothesis X]
+    [Subsingleton (HolomorphicOneForm X)] :
+    HasPic0AnalyticEquiv X :=
+  hasPic0AnalyticEquiv_of_uniformizationGenus0_subsingleton_omega
 
 end JacobianChallenge
 
