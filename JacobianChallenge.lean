@@ -422,6 +422,7 @@ import JacobianChallenge.Manifold.ResidueTheoremAssembly
 import JacobianChallenge.Manifold.ResidueTheoremFromRsum
 import JacobianChallenge.Manifold.ResidueTheoremStokes
 import JacobianChallenge.Manifold.ResidueTheoremUnconditional
+import JacobianChallenge.Divisor.ResidueTheoremWiring
 import JacobianChallenge.Manifold.ResidueViaTopologicalDegree
 import JacobianChallenge.Manifold.RiemannSphere
 import JacobianChallenge.Manifold.RiemannSphereSimplePole
