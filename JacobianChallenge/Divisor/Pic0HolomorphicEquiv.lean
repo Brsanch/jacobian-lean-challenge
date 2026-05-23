@@ -105,6 +105,15 @@ theorem pic0_holomorphicEquivCongr_refl :
   induction a using QuotientAddGroup.induction_on with
   | H D => rfl
 
+/-- **Symm**: the inverse of `pic0_holomorphicEquivCongr e` is
+`pic0_holomorphicEquivCongr e.symm`. -/
+theorem pic0_holomorphicEquivCongr_symm (e : HolomorphicEquiv X Y) :
+    (pic0_holomorphicEquivCongr e).symm
+      = pic0_holomorphicEquivCongr (HolomorphicEquiv.symm e) := by
+  ext a
+  induction a using QuotientAddGroup.induction_on with
+  | H D => rfl
+
 end JacobianChallenge
 
 end
