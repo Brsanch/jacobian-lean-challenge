@@ -170,19 +170,13 @@ element of `Div0 X` is `0`, and `QuotientAddGroup.mk 0 = 0`. -/
   -- `QuotientAddGroup.mk 0 = 0` in any quotient group.
   exact QuotientAddGroup.mk_zero _
 
-/-- The Abel–Jacobi map is injective.
-
-The challenge signature in `Basic.lean` carries the hypothesis
-`0 < genus X`, but at the current pin that hypothesis is *not needed*:
-the placeholder `PrincDiv X = ⊥` makes the quotient `Pic0 X` faithful, so
-two divisors are equal in `Pic0 X` iff they are equal in `Div0 X`, and
-hence iff their underlying `Div X`-divisors are equal. The conclusion then
-reduces to `Div.single_eq_iff`.
-
-Under the honest `PrincDiv` (ZZ256+, 2026-05-11), this lemma reduces to the
-Abel–Jacobi theorem and the `0 < genus X` hypothesis becomes load-bearing.
-Phase 2 work; left `sorry` for Basic.lean item 16 to remain OPEN. -/
-lemma ofCurve_inj (P : X) : Function.Injective (ofCurve P) := sorry
+-- DELETED 2026-05-23: dead `sorry`-stub of `lemma ofCurve_inj (P : X) :`
+-- `Function.Injective (ofCurve P) := sorry`. Item 16 is closed via
+-- `Basic.lean:143` calling `JacobianChallenge.ofCurve_inj_holds` (in
+-- `Manifold/ChartDerivNeZeroImpliesNonCriticalDischarge.lean`), a separate
+-- decl with a complete unconditional proof. The local stub here had
+-- ZERO references in the repo and was masquerading as an unmet item 16
+-- whenever someone grepped `JacobianChallenge/` for `:= sorry`.
 
 end Jacobian
 
