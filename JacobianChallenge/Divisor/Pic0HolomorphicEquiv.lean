@@ -126,6 +126,11 @@ theorem pic0_holomorphicEquivCongr_trans {Z : Type*}
   induction a using QuotientAddGroup.induction_on with
   | H D => rfl
 
+/-- **Finiteness of Pic0 is a biholomorphism invariant.** -/
+theorem finite_pic0_iff_of_holomorphicEquiv (e : HolomorphicEquiv X Y) :
+    Finite (Pic0 X) ↔ Finite (Pic0 Y) :=
+  Equiv.finite_iff (pic0_holomorphicEquivCongr e).toEquiv
+
 end JacobianChallenge
 
 end
