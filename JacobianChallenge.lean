@@ -33,6 +33,7 @@ import JacobianChallenge.Divisor.FiberSumWeightedComp
 import JacobianChallenge.Divisor.HomeomorphTransport
 import JacobianChallenge.Divisor.MeromorphicNonzeroGerm
 import JacobianChallenge.Divisor.MeromorphicNonzeroHolomorphicEquivTransport
+import JacobianChallenge.Divisor.Pic0EquivComplexTorusFromBiholomorphism
 import JacobianChallenge.Divisor.Pic0HolomorphicEquiv
 import JacobianChallenge.Divisor.Pic0HolomorphicEquivSubsingleton
 import JacobianChallenge.Divisor.OrderFunSign
