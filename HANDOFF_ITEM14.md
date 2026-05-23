@@ -1,12 +1,77 @@
 # Item 14 classical-content handoff
 
-## 2026-05-23 session — holomorphic parametric integral arc closure (6 chips, +1,376 LOC, all local on `main`, not pushed)
+## 2026-05-23 session — chip-D arc CLOSED (4 new chips, +546 LOC, all local on `main`, not pushed)
 
-`git log origin/main..HEAD` shows 6 commits on `main` from this
-session, each verified single-file `LEAN_NUM_THREADS=1 lake env lean`
-clean. None yet wired into the umbrella `JacobianChallenge.lean`
-(`lake build` still 9,326 jobs). Repo went **1,066 → 1,072 `.lean`
-files** and **180,807 → 182,183 LOC**.
+Continuation of the same-day chip-D arc. Built on the 6 chips landed
+earlier in the session (chips A, B1, B2, B3, C, D1). Single-file
+`LEAN_NUM_THREADS=1 lake env lean` clean for each new chip (EXIT=0
+verified explicitly with `set -o pipefail`). None yet wired into the
+umbrella `JacobianChallenge.lean`.
+
+**Headline:** `ChartLocalPrimitiveFTC (chartAt ℂ y) … y … om`
+(= `∀ x ∈ (chartAt ℂ y).source, om.eval x = mfderiv 𝓘(ℂ) 𝓘(ℂ)
+(chartLocalPrimitiveExtend …) x`) is **unconditional** for every `y : X`
+and `om : HolomorphicOneForm X` (modulo the convex chart-target
+hypothesis already in the definition). Together with chip C
+(`ChartLocalPrimitiveSmoothExt`), **both** `h_smooth_b` and `h_ftc_b`
+of the 4 minimal item-14 reverse-leg named hypotheses are now
+discharged at the natural per-point chart cover for any compact
+connected complex 1-manifold.
+
+### New chip ledger (chips D2–D5)
+
+| Chip | File | Commit | LOC | Headline |
+|---|---|---|---|---|
+| D2 | `Manifold/ChartLocalIntegrandHasDerivAtParam.lean` | `05b3947` | 169 | `HasDerivAt g (f z) z` for chart-coord parametric integral |
+| D3 | `Manifold/ChartLocalIntegrandHasMFDerivAtParam.lean` | `6f058cf` | 70 | `mfderiv g z = toSpanSingleton ℂ (f z)` |
+| D4 | `Manifold/ChartLocalPrimitiveMfderivChainRule.lean` | `b8b0426` | 114 | Chain rule: `mfderiv chartLocalPrimitiveExtend x = (toSpanSingleton (localCoeff y (φ x))).comp (mfderiv (chartAt ℂ y) x)` |
+| D5 | `Manifold/ChartLocalPrimitiveFTCChartAt.lean` | `24d7acd` | 193 | Chart-cotangent pointwise identity + **`ChartLocalPrimitiveFTC` at `chartAt ℂ y` UNCONDITIONAL** |
+
+D2 wraps mathlib's `intervalIntegral.hasDerivAt_integral_of_dominated_loc_of_deriv_le`
+(parametric Fréchet at 𝕜 = ℂ) with chip A's per-z `HasDerivAt` of the
+integrand and joint-continuity / uniform-bound lemmas, then collapses
+the resulting integral to `f z` via D1.
+
+D3 bridges via `HasDerivAt.hasFDerivAt` → `HasFDerivAt.hasMFDerivAt`
+(at trivial manifold model) → `HasMFDerivAt.mfderiv`.
+
+D4 uses `Filter.EventuallyEq.mfderiv_eq` (transporting mfderiv across
+`chartLocalPrimitiveExtend = g ∘ φ` on the open nbhd `φ.source ∋ x`)
++ `mfderiv_comp` (manifold chain rule) + D3.
+
+D5 replicates chip B2's algebra applied **pointwise** (no smooth path):
+`localCoeff y (φ x) = (om.toFun x) (T_yx 1)` via
+`cotangentBundleCore_coordChange_apply`, `mfderiv (chartAt ℂ y) x = T_xy`
+via `mfderiv_chartAt_eq_tangentCoordChange`, then closes by ℂ-linearity
++ cocycle `T_yx ∘ T_xy = id` at `x`. Then composes D4 + the pointwise
+identity to discharge `ChartLocalPrimitiveFTC chartAt ℂ y`.
+
+### Remaining item-14 minimal hypotheses
+
+Of the 4 minimal named hypotheses of
+`genus_eq_zero_iff_homeo_from_4_minimal_inputs`:
+
+* ✅ `h_smooth_b` — `ChartLocalPrimitiveSmoothExt` at `chartAt ℂ y`
+  (chip C, 2026-05-23).
+* ✅ `h_ftc_b` — `ChartLocalPrimitiveFTC` at `chartAt ℂ y`
+  (chip D5, 2026-05-23, this session).
+* `hSP` — `ExistsSimplePoleGermAtSomePoint X`, RR-class content
+  (forward leg). Genuine classical content.
+* `h_bslb` — `BasedSmoothLoopsBoundHypothesis X p₀`, smooth-Hurewicz
+  on simply-connected `X` (reverse leg). Genuine classical content.
+
+The next-session frontier is the two remaining classical-content
+hypotheses (`hSP` and `h_bslb`). Architectural infrastructure for the
+chart-cover side of the reverse leg is now fully in tree.
+
+## 2026-05-23 session — holomorphic parametric integral arc opening (6 chips, +1,376 LOC, all local on `main`, not pushed)
+
+This is the earlier half of the same-day session. `git log
+origin/main..HEAD` showed 6 commits on `main` from this session,
+each verified single-file `LEAN_NUM_THREADS=1 lake env lean` clean.
+None yet wired into the umbrella `JacobianChallenge.lean` (`lake
+build` still 9,326 jobs). Repo went **1,066 → 1,072 `.lean` files**
+and **180,807 → 182,183 LOC**.
 
 **Headline:** `ChartLocalPrimitiveSmoothExt (chartAt ℂ y) … y … om`
 (= `ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω` of `chartLocalPrimitiveExtend …` on
@@ -40,7 +105,7 @@ cascades on every `.comp_continuous` invocation, even at 2M
 heartbeats. The fix is `@[irreducible] noncomputable def` + a `_eq`
 lemma via `by unfold; rfl`. ~30 min to bisect via probe files.
 
-### Remaining chip-D pieces (next session)
+### Remaining chip-D pieces (next session) — **CLOSED 2026-05-23, see top of file**
 
 Chip D = `ChartLocalPrimitiveFTC` = `∀ x ∈ φ.source, om.eval x =
 mfderiv 𝓘(ℂ) 𝓘(ℂ) chartLocalPrimitiveExtend x`. After D1, the open
