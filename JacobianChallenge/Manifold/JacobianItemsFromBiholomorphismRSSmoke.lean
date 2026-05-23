@@ -5,6 +5,7 @@ Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.JacobianItemsFromAnalyticEquivSubsingletonSmoke
 import JacobianChallenge.Manifold.HJChainFromBiholomorphismRSSmoke
+import JacobianChallenge.Manifold.PullbackLinearEquiv
 
 set_option linter.unusedSectionVars false
 set_option maxHeartbeats 1200000
@@ -75,6 +76,16 @@ noncomputable example :
   haveI : Subsingleton (JacobianChallenge.Jacobian X) :=
     inferInstanceAs (Subsingleton (Pic0 X))
   instLieAddGroup_Jacobian_of_subsingleton (X := X)
+
+/-! ## Item 14 — `genus_eq_zero_iff_homeo` under biholomorphism
+
+Existing in-tree `genus_eq_zero_iff_homeo_of_HolomorphicEquiv_RiemannSphere`
+closes item 14 conditionally on a biholomorphism. -/
+
+example :
+    JacobianChallenge.genus X = 0 ↔ Nonempty (X ≃ₜ StandardS2) :=
+  genus_eq_zero_iff_homeo_of_HolomorphicEquiv_RiemannSphere
+    (Classical.choice (inferInstance : Nonempty (HolomorphicEquiv X RiemannSphere)))
 
 /-! ## Item 15 — `ofCurve_contMDiff` under biholomorphism
 
