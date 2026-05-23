@@ -76,6 +76,22 @@ noncomputable example :
     inferInstanceAs (Subsingleton (Pic0 X))
   instLieAddGroup_Jacobian_of_subsingleton (X := X)
 
+/-! ## Item 15 — `ofCurve_contMDiff` under biholomorphism
+
+`ofCurve P : X → Jacobian X` into subsingleton target is constant
+hence ContMDiff. -/
+
+example (P : X) :
+    ContMDiff (𝓘(ℂ, ℂ))
+      (modelWithCornersSelf ℂ (Fin (JacobianChallenge.genus X) → ℂ)) ω
+      (JacobianChallenge.Jacobian.ofCurve P :
+        X → JacobianChallenge.Jacobian X) := by
+  letI := instChartedSpace_Jacobian_of_subsingleton_omega (X := X)
+  letI := instIsManifold_Jacobian_of_subsingleton_omega (X := X)
+  haveI : Subsingleton (JacobianChallenge.Jacobian X) :=
+    inferInstanceAs (Subsingleton (Pic0 X))
+  exact contMDiff_of_subsingleton
+
 /-! ## Items 17 / 21 — ContMDiff of pushforward / pullback into subsingleton Jacobian -/
 
 variable {Y : Type u} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y]
