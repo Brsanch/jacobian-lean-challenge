@@ -45,6 +45,7 @@ import JacobianChallenge.Manifold.PairingContinuityBeta
 import JacobianChallenge.Manifold.PairingContinuityBetaLocal
 import JacobianChallenge.Manifold.PartialZBar
 import JacobianChallenge.Manifold.PartialZBarChainRule
+import JacobianChallenge.Manifold.PartialZBarManifold
 import JacobianChallenge.Manifold.SheetCotPullbackPairingContinuity
 import JacobianChallenge.Manifold.FStarOmegaPairingContinuity
 import JacobianChallenge.Manifold.IntegrandContinuousAlongBetaUnconditional
