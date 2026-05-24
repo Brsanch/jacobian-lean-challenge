@@ -331,8 +331,181 @@ lemma mmeromorphicOrderAt_chart_inv_sub_const_sub_analytic_eq_neg_one
   rw [meromorphicOrderAt_congr (h_evEq.filter_mono nhdsWithin_le_nhds)]
   exact meromorphicOrderAt_inv_sub_const_sub_analytic_eq_neg_one c₀ h h_an
 
+/-! ### Non-pole points: chart-pullback `AnalyticAt` ⇒ `MMeromorphicAt`
+with non-negative order
+
+The "at `x ≠ p`" case in Forster §16.9 step 9: away from the pole, the
+chart pullback of `f = g₀ − u` is `ℂ`-differentiable on a neighborhood
+(since `X \ {p}` is open and `g₀`, `u` are both chart-holomorphic
+there), hence analytic, hence meromorphic with order `≥ 0`.
+
+We package this as a clean classical bridge: if `f`'s pullback at `x`
+is `AnalyticAt`, then `f` is `MMeromorphicAt` at `x` with
+`mmeromorphicOrderAt ≥ 0`. -/
+
+/-- **Chart-side analytic ⇒ manifold-side meromorphic.** -/
+lemma mmeromorphicAt_of_chartPullback_analyticAt
+    {I : ModelWithCorners ℂ ℂ ℂ}
+    {f : X → ℂ} {x : X}
+    (h_an : AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)) :
+    MMeromorphicAt I f x :=
+  h_an.meromorphicAt
+
+/-- **Chart-side analytic ⇒ non-negative manifold-side order.** -/
+lemma mmeromorphicOrderAt_nonneg_of_chartPullback_analyticAt
+    {I : ModelWithCorners ℂ ℂ ℂ}
+    {f : X → ℂ} {x : X}
+    (h_an : AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)) :
+    (0 : WithTop ℤ) ≤ mmeromorphicOrderAt I f x :=
+  h_an.meromorphicOrderAt_nonneg
+
 end MeromorphicFunctionField
 
 end JacobianChallenge
+
+/-! ## End-to-end consolidator: Forster §16.9 closing step
+
+The full Forster §16.9 cutoff + correction construction produces a
+function `f : X → ℂ` with the following structural data:
+
+* a distinguished point `p : X`,
+* a function `h : ℂ → ℂ` analytic at `c₀ := chartAt ℂ p p`
+  (the chart pullback of the genus-0 ∂̄-solution `u` near `p`),
+* the assertion that on `(chartAt ℂ p).source`, `f y = ((chartAt ℂ p) y
+  − c₀)⁻¹ − h ((chartAt ℂ p) y)` (the chart-local pole minus the
+  ∂̄-correction, where `χ ≡ 1` on the inner ball),
+* the assertion that at every other point `x ≠ p`, the chart pullback
+  `f ∘ (chartAt ℂ x).symm` is analytic at the chart image `(chartAt ℂ
+  x) x` (since `∂̄ f = 0` away from the pole and the chart pullback is
+  smooth).
+
+Under these hypotheses we package `f` into `ExistsSimplePoleGermAtSomePoint
+X` directly. The hypotheses isolate exactly the irreducible analytic
+content from the Forster construction; the bookkeeping (chart-pullback
+identities, MMer-membership of the result, germ wrapping) is mechanical.
+
+Subsequent chips will discharge the two analytic hypotheses
+(`localPole_eq_on_chart_source` and `analyticAt_off_pole`) from the
+ingredients of Forster §16.9: the bump `χ` and the ∂̄-solution `u`.
+This consolidator is what those chips will land into. -/
+
+namespace JacobianChallenge.MeromorphicFunctionField
+
+universe u
+
+variable (X : Type u) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+  [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]
+
+/-- **Forster §16.9 consolidator.** If `f : X → ℂ` has
+
+* its chart pullback at `p` analytic-`MMeromorphicAt` and equal to the
+  simple-pole `(z − c₀)⁻¹ − h(z)` on a punctured neighborhood of `c₀`,
+* its chart pullback at every other point `x ≠ p` analytic at the chart
+  image,
+
+then `f` is `MMeromorphicOn` univ — in particular it gives a global
+`MMer X` value, and its germ has `orderAt p = -1` and `orderAt x ≥ 0`
+for every `x ≠ p`. So `ExistsSimplePoleGermAtSomePoint X` follows.
+
+This is the unconditional **assembly lemma**: it takes the irreducible
+analytic content (chart-side simple pole at `p`; chart-side analytic
+off `p`) and ships the packaged hSP X conclusion. -/
+theorem existsSimplePoleGermAtSomePoint_of_chartPullback_data
+    (p : X) (f : X → ℂ) (h : ℂ → ℂ)
+    (h_an : AnalyticAt ℂ h ((chartAt ℂ p) p))
+    (h_chart_eq :
+      (f ∘ (chartAt ℂ p).symm)
+        =ᶠ[nhdsWithin ((chartAt ℂ p) p) {((chartAt ℂ p) p)}ᶜ]
+      (fun z : ℂ => (z - (chartAt ℂ p) p)⁻¹ - h z))
+    (h_off_pole : ∀ x : X, x ≠ p →
+      AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)) :
+    ExistsSimplePoleGermAtSomePoint X := by
+  -- Step 1: build `MMer X` from the per-point MMeromorphicAt witnesses.
+  -- (a) At p: `(z - c₀)⁻¹ - h z` is MeromorphicAt c₀; transport via congr.
+  have h_mer_chart_at_p :
+      MeromorphicAt (f ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p) := by
+    -- The shifted-pole-minus-analytic witness on ℂ:
+    set c₀ : ℂ := (chartAt ℂ p) p with hc₀
+    have h_pole : MeromorphicAt (fun z : ℂ => (z - c₀)⁻¹) c₀ :=
+      meromorphicAt_inv_sub_const c₀
+    have h_neg : MeromorphicAt (fun z : ℂ => -(h z)) c₀ :=
+      (h_an.neg).meromorphicAt
+    have h_sum_mer : MeromorphicAt (fun z : ℂ => (z - c₀)⁻¹ + (-(h z))) c₀ :=
+      h_pole.add h_neg
+    have h_witness :
+        MeromorphicAt (fun z : ℂ => (z - c₀)⁻¹ - h z) c₀ := by
+      have h_eq : (fun z : ℂ => (z - c₀)⁻¹ - h z)
+          = (fun z : ℂ => (z - c₀)⁻¹ + (-(h z))) := by
+        funext z; simp [sub_eq_add_neg]
+      rw [h_eq]; exact h_sum_mer
+    -- Apply congr from witness to `f ∘ chart.symm` using `h_chart_eq.symm`.
+    exact h_witness.congr h_chart_eq.symm
+  -- (b) MMeromorphicAt at every point.
+  have h_mmero : MMeromorphicOn 𝓘(ℂ, ℂ) f Set.univ := by
+    intro x _
+    show MeromorphicAt (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)
+    by_cases hxp : x = p
+    · -- x = p case: transport h_mer_chart_at_p.
+      subst hxp; exact h_mer_chart_at_p
+    · -- x ≠ p: chart pullback is analytic.
+      exact (h_off_pole x hxp).meromorphicAt
+  -- Step 2: order computation at p.
+  have h_order_p : mmeromorphicOrderAt 𝓘(ℂ, ℂ) f p
+      = ((-1 : ℤ) : WithTop ℤ) := by
+    show meromorphicOrderAt (f ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p)
+      = ((-1 : ℤ) : WithTop ℤ)
+    set c₀ : ℂ := (chartAt ℂ p) p with hc₀
+    rw [meromorphicOrderAt_congr h_chart_eq]
+    exact meromorphicOrderAt_inv_sub_const_sub_analytic_eq_neg_one c₀ h h_an
+  -- Step 3: order ≥ 0 at every x ≠ p.
+  have h_order_off : ∀ x : X, x ≠ p →
+      (0 : WithTop ℤ) ≤ mmeromorphicOrderAt 𝓘(ℂ, ℂ) f x := fun x hx =>
+    (h_off_pole x hx).meromorphicOrderAt_nonneg
+  -- Step 4: bundle into MMer + germ + membership.
+  refine ⟨p, MeromorphicFunctionGerm.mk ⟨f, h_mmero⟩, ?_, ?_⟩
+  · -- Membership in `linearSystemGermDeltaP p`.
+    rw [mem_linearSystemGermDeltaP]
+    refine ⟨?_, ?_⟩
+    · -- order at p ≥ -1: rewrite via `h_order_p`.
+      show ((-1 : ℤ) : WithTop ℤ)
+        ≤ (MeromorphicFunctionGerm.mk
+            (⟨f, h_mmero⟩ : MMer X)).orderAt p
+      show ((-1 : ℤ) : WithTop ℤ)
+        ≤ mmeromorphicOrderAt 𝓘(ℂ, ℂ) f p
+      rw [h_order_p]
+    · -- order ≥ 0 at every y ≠ p.
+      intro y hy
+      show (0 : WithTop ℤ)
+        ≤ (MeromorphicFunctionGerm.mk
+            (⟨f, h_mmero⟩ : MMer X)).orderAt y
+      show (0 : WithTop ℤ) ≤ mmeromorphicOrderAt 𝓘(ℂ, ℂ) f y
+      exact h_order_off y hy
+  · -- orderAt p = -1.
+    show (MeromorphicFunctionGerm.mk
+            (⟨f, h_mmero⟩ : MMer X)).orderAt p
+        = ((-1 : ℤ) : WithTop ℤ)
+    show mmeromorphicOrderAt 𝓘(ℂ, ℂ) f p = ((-1 : ℤ) : WithTop ℤ)
+    exact h_order_p
+
+/-- **Packaged form of the consolidator.** Returns
+`SimplePoleGermExtensionHypothesis X` (the named genus-conditional form
+defined in `SimplePoleConstructionFromChart.lean`). Useful for
+downstream consumers that prefer to thread `SimplePoleGermExtensionHypothesis`
+through the chain. -/
+theorem simplePoleGermExtensionHypothesis_of_chartPullback_data
+    (p : X) (f : X → ℂ) (h : ℂ → ℂ)
+    (h_an : AnalyticAt ℂ h ((chartAt ℂ p) p))
+    (h_chart_eq :
+      (f ∘ (chartAt ℂ p).symm)
+        =ᶠ[nhdsWithin ((chartAt ℂ p) p) {((chartAt ℂ p) p)}ᶜ]
+      (fun z : ℂ => (z - (chartAt ℂ p) p)⁻¹ - h z))
+    (h_off_pole : ∀ x : X, x ≠ p →
+      AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)) :
+    SimplePoleGermExtensionHypothesis X := by
+  intro _hg
+  exact existsSimplePoleGermAtSomePoint_of_chartPullback_data X p f h
+    h_an h_chart_eq h_off_pole
+
+end JacobianChallenge.MeromorphicFunctionField
 
 end
