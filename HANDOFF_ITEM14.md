@@ -1,15 +1,17 @@
 # Item 14 — handoff
 
-Last refreshed: 2026-05-24 (forward-leg **Chip 2c off-pole identity
-landed** in commit `70ef6ee` —
-`partialZBarManifold_g₀_eq_α_off_pole : y ≠ p → ∂̄(g₀) y = α y` is now
-unconditional, via the chart-transition discharge of `chartInv` and the
-Leibniz spec from Chip 1. Chip 2c WIP scaffolding + vanishing lemmas
-(commit `213ada1`) and Chip 2b CR-converse bridge (commit `7cb9f19`)
-are already in place. Two pieces remain to close Chip 2c entirely:
-(i) `α` smooth-real on X (chart-transition smoothness on the annulus —
-the on-source and off-tsupport pieces are done), and (ii) the final
-assembly via `DBarSolvabilityAtGenusZero` + consolidator.
+Last refreshed: 2026-05-24 (forward-leg **Chip 2c α smoothness landed
+under `ChartAtConstantOnSource p` hypothesis** in commit `24b11a4`.
+Off-pole identity from `70ef6ee`, chart-side `partialZBar` smoothness
+from `93b6676`, chart-const reduction from `97ecd57`, and
+`partialZBarManifold(bC) ContMDiffOn` from `0c69f75` are in tree.
+**Remaining for Chip 2c**: (ii) apply `DBarSolvabilityAtGenusZero` to
+α and discharge the consolidator's H1/H2. **Open issue for general X**:
+the `ChartAtConstantOnSource p` hypothesis holds for concrete X like
+RS at finite points, but H2 also needs chart-locality at points
+**off** `chart_p.source`, which fails at e.g. RS-∞ — see "Remaining
+(ii)" for the precise issue and the recommended mfderiv-based
+intrinsic ∂̄ refactor for general X.
 
 ## Where this branch is
 
@@ -263,33 +265,55 @@ using:
 
 ### Remaining (ii) — apply DBarSolvability + consolidator
 
-Once (i) is in hand:
+With `α_contMDiff_under_const` (commit `24b11a4`) in tree, this step
+applies `DBarSolvabilityAtGenusZero X` to `(α, α_contMDiff)` to get
+`u : X → ℂ` with `partialZBarManifold u y = α y` ∀y and `u` smooth-real.
+Then `f := g₀ - u`, off-pole identity (`70ef6ee`) gives
+`partialZBarManifold f y = 0` ∀ `y ≠ p`. Discharge consolidator
+hypotheses:
 
-* `DBarSolvabilityAtGenusZero X` applied to `(α, α_smooth)` produces
-  `u : X → ℂ` with `partialZBarManifold u y = α y` for all `y` and `u`
-  smooth-real globally.
-* `f := g₀ - u : X → ℂ`. By the off-pole identity (this commit), for
-  every `y ≠ p`: `partialZBarManifold f y = partialZBarManifold g₀ y −
-  partialZBarManifold u y = α y − α y = 0` (using
-  `partialZBarManifold_sub` from Chip 1 + the off-pole identity).
-* **Discharge H1** (`f ∘ chart_p.symm =ᶠ[nhdsWithin c₀ {c₀}ᶜ]
-  (z − c₀)⁻¹ − h(z)` with `h := u ∘ chart_p.symm`): on the punctured
-  inner ball (where χ ≡ 1), g₀ ∘ chart_p.symm = (z − c₀)⁻¹, and
-  h ∘ chart_p.symm = u ∘ chart_p.symm by definition; subtract.
-* **`h` analytic at `c₀`** (needed by consolidator's `h_an`): u's
-  chart-p pullback has `partialZBar = 0` on the inner ball (since `α = 0`
-  there from `α_eventuallyEq_zero_near_p`), so by Chip 2b's
-  `analyticAt_of_contDiffOn_of_partialZBar_eqOn_zero` (CR converse +
-  Cauchy regularity), h is `AnalyticAt ℂ` at `c₀`.
-* **Discharge H2** (∀ x ≠ p, AnalyticAt ℂ (f ∘ chart_x.symm) (chart_x x)):
-  f is `C^∞-ℝ` off `p` (g₀ smooth off p — needs proof — and u
-  smooth-real globally), and ∂̄f = 0 off p (this commit). Chip 2b's
-  bridge gives analyticity at chart_x x.
+* **H1** (`f ∘ chart_p.symm =ᶠ[nhdsWithin c₀ {c₀}ᶜ] (z − c₀)⁻¹ − h(z)`):
+  on the punctured inner ball (χ ≡ 1), `g₀ ∘ chart_p.symm = (z − c₀)⁻¹`,
+  and `u ∘ chart_p.symm = h(z)` by setting `h := u ∘ chart_p.symm`.
+
+* **`h_an` (h analytic at `c₀`)**: `α ≡ 0` in nbhd of `p`
+  (`α_eventuallyEq_zero_near_p`), so `∂̄u = 0` there in chart-y view.
+  Under `ChartAtConstantOnSource p` (which makes chart-y = chart-p
+  near p), this gives chart-p view `partialZBar (u ∘ chart_p.symm) = 0`
+  in a chart-p nbhd of c₀, hence analytic via Chip 2b's
+  `analyticAt_of_contDiffOn_of_partialZBar_eqOn_zero`.
+
+* **H2 — on `chart_p.source`**: for `x ∈ chart_p.source ∩ {x ≠ p}`,
+  under chart-const `chart_x = chart_p` so we want `f ∘ chart_p.symm`
+  analytic at `chart_p x`. Use Chip 2b CR-converse + smoothness of
+  `f = g₀ - u` on chart_p.source (both smooth — `u` globally,
+  `g₀` smooth on chart_p.source \ {p} via the same chart-pullback
+  argument as α) + `∂̄f = 0` off p in chart-p view.
+
+* **H2 — OPEN ISSUE for `x ∉ chart_p.source`**: For RS at `p = some z₀`
+  finite, the only such x is `∞`, where `chart_∞ = chartS ≠ chartN = chart_p`.
+  We need `f ∘ chartS.symm` analytic at `chartS ∞ = 0`. The chart-S
+  view of ∂̄u at ∞ matches partialZBarManifold u ∞ = α ∞ = 0 (∞ ∉
+  tsupport b), but ∂̄ at NEARBY chart-S points uses chartAt of those
+  points (= chartN for finite y), so the chart-S nbhd value of
+  `partialZBar (u ∘ chartS.symm)` isn't directly chart-y-given —
+  requires chart-transition arithmetic. Either:
+    - (a) Strengthen hypothesis to "`ChartAtConstantOnSource x` for
+      every chart's source x", which fails for RS at ∞ as shown.
+    - (b) For RS specifically, hand-discharge H2 at ∞ via the explicit
+      chartN/chartS transition `chartS ∘ chartN.symm = (z ↦ z⁻¹)`.
+    - (c) **Recommended**: refactor `partialZBarManifold` to an
+      mfderiv-based intrinsic ∂̄ (chart-independent), eliminating the
+      H2 issue entirely. This is the cleanest general-X path.
+
 * **One-line apply** `existsSimplePoleGermAtSomePoint_of_chartPullback_data X p f h h_an h_chart_eq h_off_pole`
-  to close `hSP X` from `DBarSolvabilityAtGenusZero X` at `genus X = 0`.
+  once H1+H2 are in hand.
 
-Estimated LOC for (i)+(ii) combined: ~400–600 LOC. (i) is the hardest;
-(ii) is mostly bookkeeping over what's already landed.
+Once landed, this discharges `hSP X` from `DBarSolvabilityAtGenusZero X`
+at `genus X = 0`, under either `ChartAtConstantOnSource p` + the
+single-chart-source assumption (`(chartAt ℂ p).source = univ`,
+implying X is single-chart, very restrictive) or via the mfderiv
+refactor.
 
 ## Earlier Chip 2c plan (for context, partially superseded)
 
