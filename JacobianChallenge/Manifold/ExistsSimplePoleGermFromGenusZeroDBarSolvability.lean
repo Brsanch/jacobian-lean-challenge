@@ -121,9 +121,9 @@ equation `partialZBarManifold u = α` is well-formed pointwise. -/
 def DBarSolvabilityAtGenusZero : Prop :=
   JacobianChallenge.genus X = 0 →
   ∀ α : X → ℂ,
-    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ α →
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ α →
     ∃ u : X → ℂ,
-      ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ u ∧
+      ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ u ∧
       ∀ x : X, partialZBarManifold u x = α x
 
 end JacobianChallenge.MeromorphicFunctionField
