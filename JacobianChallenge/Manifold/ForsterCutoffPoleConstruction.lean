@@ -647,6 +647,166 @@ lemma partialZBarManifold_bC_contMDiffOn_under_const
   -- Bridge via ContMDiffOn congruence.
   exact (h_g.congr h_eq_on) y hy
 
+/-! ## Smoothness of `α` on `X` (under `ChartAtConstantOnSource p`)
+
+The chart-y-based `partialZBarManifold(bC)` and `chartInv` don't have
+direct `ContMDiffMul`/`ContMDiffInv₀` instances for `𝓘(ℝ, ℂ)`, so we
+build `α`'s smoothness on `chart_p.source` via the chart-p chart
+pullback: lift the `ℂ → ℂ` function
+
+  `αHat z := partialZBar (bC ∘ chart_p.symm) z · (z − c₀)⁻¹`
+
+(which is `ContDiffAt ℝ ∞` at chart-p targets `≠ c₀`) through
+`chartAt ℂ p` via `ContDiffAt.comp_contMDiffAt`. -/
+
+/-- The chart-p representative `αHat : ℂ → ℂ` for `α`. -/
+private noncomputable def αHat (p : X) (b : SmoothBumpFunction 𝓘(ℝ, ℂ) p) (z : ℂ) : ℂ :=
+  partialZBar (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm) z * (z - (chartAt ℂ p) p)⁻¹
+
+/-- Under `ChartAtConstantOnSource p`, on `chart_p.source` we have
+`α y = αHat (chart_p y)`. -/
+private lemma α_eq_αHat_chart_under_const
+    (p : X) (b : SmoothBumpFunction 𝓘(ℝ, ℂ) p)
+    (h_const : ChartAtConstantOnSource p)
+    {y : X} (h_y_src : y ∈ (chartAt ℂ p).source) :
+    α p b y = αHat p b ((chartAt ℂ p) y) := by
+  show partialZBarManifold (bC p b) y * chartInv p y
+      = partialZBar (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm) ((chartAt ℂ p) y)
+        * ((chartAt ℂ p) y - (chartAt ℂ p) p)⁻¹
+  rw [partialZBarManifold_eq_chart_p_under_const p (bC p b) h_const h_y_src,
+      chartInv_of_mem_source p y h_y_src]
+  -- `(chartAt ℂ p).symm = (extChartAt 𝓘(ℝ, ℂ) p).symm` as functions
+  -- (both unfold to the chart's symm with the trivial `𝓘(ℝ, ℂ).symm = id`).
+  rfl
+
+/-- `αHat` is `ContDiffAt ℝ ∞` at any `z ∈ chart_p.target` with
+`z ≠ c₀`. -/
+private lemma αHat_contDiffAt_off_pole
+    (p : X) (b : SmoothBumpFunction 𝓘(ℝ, ℂ) p)
+    {z : ℂ} (h_z_target : z ∈ (extChartAt 𝓘(ℝ, ℂ) p).target)
+    (h_z_ne : z ≠ (chartAt ℂ p) p) :
+    ContDiffAt ℝ ∞ (αHat p b) z := by
+  -- First factor: chart-side partialZBar smoothness at z.
+  have h_pZ_on := partialZBar_bC_chart_p_symm_contDiffOn p b
+  have h_target_open : IsOpen (extChartAt 𝓘(ℝ, ℂ) p).target := isOpen_extChartAt_target p
+  have h_pZ_at : ContDiffAt ℝ ∞
+      (partialZBar (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm)) z :=
+    (h_pZ_on z h_z_target).contDiffAt (h_target_open.mem_nhds h_z_target)
+  -- Second factor: (· - c₀)⁻¹ smooth at z (≠ c₀).
+  have h_nonzero : z - (chartAt ℂ p) p ≠ 0 := sub_ne_zero.mpr h_z_ne
+  have h_sub : ContDiffAt ℝ ∞ (fun w : ℂ => w - (chartAt ℂ p) p) z :=
+    contDiffAt_id.sub contDiffAt_const
+  have h_inv : ContDiffAt ℝ ∞ (fun w : ℂ => (w - (chartAt ℂ p) p)⁻¹) z :=
+    h_sub.inv h_nonzero
+  -- Product.
+  show ContDiffAt ℝ ∞
+    (fun w : ℂ => partialZBar (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm) w
+                     * (w - (chartAt ℂ p) p)⁻¹) z
+  exact h_pZ_at.mul h_inv
+
+/-- `αHat` is `ContDiffAt ℝ ∞` at `c₀ := chart_p p`. (Near `c₀` we have
+`bC ∘ chart_p.symm ≡ 1`, so its `partialZBar` is `≡ 0`, hence `αHat
+≡ 0` in a nbhd of `c₀` — smooth at `c₀` by `congr_of_eventuallyEq`.) -/
+private lemma αHat_contDiffAt_at_pole
+    (p : X) (b : SmoothBumpFunction 𝓘(ℝ, ℂ) p) :
+    ContDiffAt ℝ ∞ (αHat p b) ((chartAt ℂ p) p) := by
+  -- bC ∘ chart_p.symm ≡ 1 on a nbhd of c₀ (since b ≡ 1 in a nbhd of p,
+  -- and chart_p.symm sends c₀ to p).
+  have h_target_open : IsOpen (extChartAt 𝓘(ℝ, ℂ) p).target := isOpen_extChartAt_target p
+  have h_c₀_in : (chartAt ℂ p) p ∈ (extChartAt 𝓘(ℝ, ℂ) p).target := by
+    have hp' : p ∈ (extChartAt 𝓘(ℝ, ℂ) p).source := by
+      rw [extChartAt_source]; exact mem_chart_source ℂ p
+    exact (extChartAt 𝓘(ℝ, ℂ) p).map_source hp'
+  -- Pullback of `b.eventuallyEq_one` through chart.symm.
+  have h_bC_eq_one : bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm
+      =ᶠ[𝓝 ((chartAt ℂ p) p)] (fun _ : ℂ => (1 : ℂ)) := by
+    -- chart.symm tends to p at chart-p p.
+    have h_tendsto := extChartAt_symm_tendsto (X := X) p
+    -- chart.symm is in `(chartAt ℂ p).symm`-domain etc., simplified by `𝓘(ℝ, ℂ).symm = id`.
+    have h_p_eq : (extChartAt 𝓘(ℝ, ℂ) p) p = (chartAt ℂ p) p := rfl
+    have h_bC_one : bC p b =ᶠ[𝓝 p] (fun _ : X => (1 : ℂ)) :=
+      bC_eventuallyEq_one_near_p p b
+    have h_chart_p_eq_extp : (extChartAt 𝓘(ℂ, ℂ) p).symm = (extChartAt 𝓘(ℝ, ℂ) p).symm := rfl
+    have h_tendsto_R : Filter.Tendsto (extChartAt 𝓘(ℝ, ℂ) p).symm
+        (𝓝 ((chartAt ℂ p) p)) (𝓝 p) := by
+      rw [← h_p_eq, ← h_chart_p_eq_extp]; exact h_tendsto
+    have h_evEq :
+        (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm)
+          =ᶠ[𝓝 ((chartAt ℂ p) p)]
+          ((fun _ : X => (1 : ℂ)) ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm) :=
+      h_bC_one.comp_tendsto h_tendsto_R
+    have h_const_comp : ((fun _ : X => (1 : ℂ)) ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm)
+        = (fun _ : ℂ => (1 : ℂ)) := rfl
+    rw [h_const_comp] at h_evEq
+    exact h_evEq
+  -- partialZBar (bC ∘ chart_p.symm) ≡ partialZBar 1 ≡ 0 nearby c₀.
+  have h_pZ_zero : partialZBar (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm)
+      =ᶠ[𝓝 ((chartAt ℂ p) p)] (fun _ : ℂ => (0 : ℂ)) := by
+    -- Construct a nbhd of c₀ on which bC ∘ chart_p.symm ≡ 1, on which partialZBar of 1 = 0.
+    obtain ⟨U, hU_nhds, hU_eq⟩ := Filter.eventuallyEq_iff_exists_mem.mp h_bC_eq_one
+    obtain ⟨V, hV_sub, hV_open, hc₀_in⟩ := mem_nhds_iff.mp hU_nhds
+    filter_upwards [hV_open.mem_nhds hc₀_in] with z hz
+    show partialZBar (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm) z = 0
+    -- bC ∘ chart_p.symm ≡ 1 on a nbhd of z (since z ∈ V ⊆ U ⊆ {w | bC..(w) = 1}, open).
+    apply partialZBar_eq_zero_of_eventuallyEq_const (c := 1)
+    filter_upwards [hV_open.mem_nhds hz] with z' hz'
+    exact hU_eq (hV_sub hz')
+  -- αHat = pZ · (...)⁻¹. Near c₀: pZ ≡ 0, so αHat ≡ 0 nearby.
+  have h_αHat_zero : αHat p b =ᶠ[𝓝 ((chartAt ℂ p) p)] (fun _ : ℂ => (0 : ℂ)) := by
+    filter_upwards [h_pZ_zero] with z hz
+    show partialZBar (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm) z * _ = 0
+    rw [hz]; ring
+  have h_zero_cd : ContDiffAt ℝ ∞ (fun _ : ℂ => (0 : ℂ)) ((chartAt ℂ p) p) :=
+    contDiffAt_const
+  exact h_zero_cd.congr_of_eventuallyEq h_αHat_zero
+
+/-- Under `ChartAtConstantOnSource p`, `α p b` is `ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞`
+on all of `X`. Pointwise case analysis: on `chart_p.source` use the
+chart-p pullback `αHat` (smooth on chart_p.target); off `tsupport b`
+the function vanishes in a nbhd. -/
+lemma α_contMDiff_under_const
+    (p : X) (b : SmoothBumpFunction 𝓘(ℝ, ℂ) p)
+    (h_const : ChartAtConstantOnSource p) :
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (α p b) := by
+  intro y
+  by_cases h_supp : y ∈ tsupport (b : X → ℝ)
+  · -- y ∈ tsupport b ⊆ chart_p.source.
+    have h_y_src : y ∈ (chartAt ℂ p).source :=
+      b.tsupport_subset_chartAt_source h_supp
+    -- αHat is ContDiffAt at chart_p y.
+    have h_y_in_target : (chartAt ℂ p) y ∈ (extChartAt 𝓘(ℝ, ℂ) p).target := by
+      have hx' : y ∈ (extChartAt 𝓘(ℝ, ℂ) p).source := by
+        rw [extChartAt_source]; exact h_y_src
+      exact (extChartAt 𝓘(ℝ, ℂ) p).map_source hx'
+    have h_αHat_at : ContDiffAt ℝ ∞ (αHat p b) ((chartAt ℂ p) y) := by
+      by_cases h_yp : y = p
+      · rw [h_yp]; exact αHat_contDiffAt_at_pole p b
+      · -- y ≠ p in chart_p.source: chart_p y ≠ chart_p p (chart injectivity).
+        have h_p_src : p ∈ (chartAt ℂ p).source := mem_chart_source ℂ p
+        have h_inj : (chartAt ℂ p) y ≠ (chartAt ℂ p) p := by
+          intro h_eq; exact h_yp ((chartAt ℂ p).injOn h_y_src h_p_src h_eq)
+        exact αHat_contDiffAt_off_pole p b h_y_in_target h_inj
+    -- chart_p is ContMDiffAt at y.
+    have h_chart_on : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞
+        (chartAt ℂ p) (chartAt ℂ p).source := contMDiffOn_chart
+    have h_src_open : IsOpen (chartAt ℂ p).source := (chartAt ℂ p).open_source
+    have h_chart_at : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (chartAt ℂ p) y :=
+      (h_chart_on y h_y_src).contMDiffAt (h_src_open.mem_nhds h_y_src)
+    -- Composition: αHat ∘ chart_p is ContMDiffAt at y.
+    have h_comp : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (αHat p b ∘ chartAt ℂ p) y :=
+      h_αHat_at.comp_contMDiffAt h_chart_at
+    -- α = αHat ∘ chart_p eventually at y (on a nbhd of y in chart_p.source).
+    have h_eq : α p b =ᶠ[𝓝 y] (αHat p b ∘ chartAt ℂ p) := by
+      filter_upwards [h_src_open.mem_nhds h_y_src] with y' hy'
+      exact α_eq_αHat_chart_under_const p b h_const hy'
+    exact h_comp.congr_of_eventuallyEq h_eq
+  · -- y ∉ tsupport b: α ≡ 0 nearby.
+    have h_nbhd : α p b =ᶠ[𝓝 y] (fun _ : X => (0 : ℂ)) :=
+      α_eventuallyEq_zero_off_tsupport p b h_supp
+    have h_zero : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (fun _ : X => (0 : ℂ)) y :=
+      contMDiff_const.contMDiffAt
+    exact h_zero.congr_of_eventuallyEq h_nbhd
+
 end JacobianChallenge.MeromorphicFunctionField
 
 end
