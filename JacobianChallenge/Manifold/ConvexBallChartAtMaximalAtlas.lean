@@ -152,17 +152,42 @@ lemma convexBallChartAt_mem_maximalAtlas (x : X) :
   exact restr_mem_maximalAtlas
     (contDiffGroupoid ω (𝓘(ℂ, ℂ))) h_chart_in_max h_open
 
+/-! ## Real-model variant of maximal-atlas membership
+
+The chartLocalPrimitive / linearInChartSegment chain in tree operates
+in the **real** model `(𝓘(ℝ, ℂ))` at regularity `⊤`, since `SmoothPath`
+and `Smooth2Simplex` are defined against the ℝ-model. The ℝ-`⊤`
+manifold structure on `X` is supplied by `complexManifoldRealification`.
+A future maximal-atlas refactor of the chartLocalPrimitive chain will
+take charts in `IsManifold.maximalAtlas (𝓘(ℝ, ℂ)) ⊤ X` (the ℝ-`⊤`
+maximal atlas). We supply the corresponding membership lemma for
+`convexBallChartAt`. -/
+
+/-- **The convex-target sub-chart lies in the ℝ-model `⊤`-regularity
+maximal atlas.** Same proof as the ω-complex version, applied to the
+realified manifold structure (`complexManifoldRealification`). -/
+lemma convexBallChartAt_mem_maximalAtlas_real (x : X) :
+    convexBallChartAt x ∈ IsManifold.maximalAtlas (𝓘(ℝ, ℂ)) ⊤ X := by
+  have h_open : IsOpen (chartBallSourcePreimage x) :=
+    chartBallSourcePreimage_isOpen x
+  have h_chart_in_max :
+      chartAt ℂ x ∈ IsManifold.maximalAtlas (𝓘(ℝ, ℂ)) ⊤ X :=
+    IsManifold.chart_mem_maximalAtlas x
+  exact restr_mem_maximalAtlas
+    (contDiffGroupoid ⊤ (𝓘(ℝ, ℂ))) h_chart_in_max h_open
+
 /-! ## Headline: structural typeclass-like access
 
-The five lemmas above package, for every `x : X`, a chart in the
-maximal atlas with:
+The lemmas above package, for every `x : X`, a chart in the maximal
+atlas with:
 
 * convex target (an open ball),
 * `x` in its source,
-* underlying function = `chartAt ℂ x`.
+* underlying function = `chartAt ℂ x`,
+* membership in both `(𝓘(ℂ, ℂ)) ω` and `(𝓘(ℝ, ℂ)) ⊤` maximal atlases.
 
 A future chip generalising `PathPrimitiveAdmissibleChartCover` from
-`atlas ℂ X` to `IsManifold.maximalAtlas (𝓘(ℂ, ℂ)) ω X` will consume
+`atlas ℂ X` to `IsManifold.maximalAtlas (𝓘(ℝ, ℂ)) ⊤ X` will consume
 `convexBallChartAt` to discharge the convex-target chart-cover
 admissibility on arbitrary `X` (no `[HasConvexChartAtTarget X]`
 typeclass needed). -/
