@@ -1,8 +1,8 @@
 # Item 14 — handoff
 
-Last refreshed: 2026-05-24 (after the chartLocalPrimitive maxAtlas
-cascade, 16 commits this session, branch
-`feat/item14-affineChartTriangleSimplex-ball`, not yet pushed).
+Last refreshed: 2026-05-24 (Alt-B étale-space arc, Chip 3 landed and
+pushed: branch `feat/item14-affineChartTriangleSimplex-ball` @ b278adb,
+new file `Manifold/EtalePrimitivesIsLocalHomeomorph.lean`).
 
 ## TL;DR
 
@@ -123,27 +123,66 @@ mathlib's `Mathlib.Topology.Homotopy.Lifting.monodromy_theorem` and
 `existsUnique_continuousMap_lifts`, which are purpose-built for this
 problem and not currently used in tree for anything.
 
-Concrete first chip for Alt B:
+## Alt-B progress (this session, 3 chips landed)
 
-1. **Define the étale space of primitives** Et(ω) := `{(x, c) : x ∈ X, c ∈ ℂ}`
-   with the topology where a neighborhood of `(x₀, c₀)` is
-   `{(x, c) : x ∈ (convexBallChartAt y).source, c = chartLocalPrimitiveMax y x − chartLocalPrimitiveMax y x₀ + c₀}`
-   for any y with x₀, x in the chart source. The projection
-   `p : Et(ω) → X, (x, c) ↦ x` is a local homeomorphism by the
-   cascade's chart-local primitive uniqueness.
+Chips 1-3 below are now in tree on
+`feat/item14-affineChartTriangleSimplex-ball`. Next chip (4) is the
+monodromy application.
 
-2. **Show `p` is a covering map** (or just a local homeomorphism with
-   the path-lifting needed for `existsUnique_continuousMap_lifts`).
-   The fiber over `x` is ℂ.
+* **Chip 1** (`Manifold/EtalePrimitives.lean`, e3d9672) — étale space
+  `EtalePrimitives om := { point : X, primValue : ℂ }`, basic-sheet
+  topology, `proj : EtalePrimitives om → X` with continuity.
+* **Chip 2** (`Manifold/ChartLocalPrimitiveOverlapLocallyConst.lean`,
+  d1acae3) — `chartLocalPrimitive_diff_locallyConstant_at_overlap`:
+  `F_y − F_{y'}` is locally constant on the chart-ball overlap. Proof
+  via `mfderiv_sub` + cascade FTC + chart-pullback +
+  `IsOpen.is_const_of_fderiv_eq_zero` on a Euclidean ball.
+* **Chip 3** (`Manifold/EtalePrimitivesIsLocalHomeomorph.lean`, b278adb)
+  — `isLocalHomeomorph_proj : IsLocalHomeomorph (proj om)`. For each
+  `(y, c_off)`, the basic sheet at `(y, source(y), c_off)` is the source
+  of an `OpenPartialHomeomorph` to `(convexBallChartAt y).source`,
+  with `proj` as forward and `chartSectionTotal om y c_off` as inverse.
+  Continuity of the inverse uses Chip 2 via
+  `tendsto_nhds_generateFrom_iff`.
+
+**Next chip (4): apply mathlib monodromy.**
+
+The remaining ingredient on simply-connected X is mathlib's
+`IsLocalHomeomorph.existsUnique_continuousMap_lifts` (in
+`Mathlib.Topology.Homotopy.Lifting`). It requires:
+- `IsLocalHomeomorph (proj om)` ✓ (Chip 3).
+- `SimplyConnectedSpace X` — assumption of the BSLB-discharge target.
+- `LocPathConnectedSpace X` — follows from `ChartedSpace ℂ X` since `ℂ`
+  is locally path-connected; check mathlib for the relevant instance,
+  may need a small bridge lemma.
+- `PathConnectedSpace X` — follows from `ConnectedSpace X` +
+  `LocPathConnectedSpace X`; mathlib has
+  `ConnectedSpace.pathConnectedSpace` or similar.
+- Lifting hypotheses: existence + uniqueness of path lifts. For our
+  étale space these are exactly the analytic-continuation properties
+  Chip 3 packages.
+
+Concrete first chip for Alt B (now Chip 4):
+
+1. ~~Define the étale space~~ — DONE in Chip 1.
+
+2. ~~Show `p` is a local homeomorphism~~ — DONE in Chip 3 as
+   `isLocalHomeomorph_proj`. (Whether it's also a covering map is
+   stronger than what `existsUnique_continuousMap_lifts` requires.)
 
 3. **Apply `existsUnique_continuousMap_lifts`** with `f := id : X → X`,
-   `a₀ := x₀`, `e₀ := (x₀, 0)`. Hypotheses (existence + uniqueness of
-   path lifts) come from chart-local-primitive analytic continuation
-   + simply-connectedness.
+   `a₀ := x₀`, `e₀ := ⟨x₀, 0⟩`. Provide the existence + uniqueness of
+   path lifts using `IsLocalHomeomorph.existsUnique_continuousMap_lifts`'s
+   hypotheses. The two hypotheses to verify are the same shape mathlib
+   uses for any étale-space monodromy argument.
 
-4. **Conclude**: a global section X → Et(ω). Its second component is
-   the global primitive F : X → ℂ. Smoothness from local sections
-   smoothness (cascade).
+4. **Conclude**: a continuous section `s : X → EtalePrimitives om` with
+   `proj ∘ s = id` and `s x₀ = ⟨x₀, 0⟩`. Its primValue component
+   `F := primValue ∘ s : X → ℂ` is the candidate global primitive.
+   Smoothness of `F` follows from
+   `continuousOn_chartSectionTotal` + uniqueness (`s` agrees locally
+   with `chartSectionTotal om y c_off` on each chart-ball source, by
+   uniqueness of path lifts through `proj`).
 
 5. **Compose with `s2ImpliesGenus0_of_loopPeriodVanishesOnSimplyConnected`**
    (this session, in `Topology/S2ImpliesGenus0FromLoopPeriodVanishesUnconditional.lean`)
@@ -212,6 +251,6 @@ git log --oneline feat/item14-affineChartTriangleSimplex-ball...origin/main
 The original checkout at `/Volumes/4TB SD/ClaudeCode/jacobian-lean-challenge`
 is used by a parallel session on a different branch. Don't `cd` into it.
 
-The branch is **not yet pushed**. Verify with `git log
-origin/feat/item14-affineChartTriangleSimplex-ball..HEAD` before
-claiming "pushed" anywhere.
+As of Chip 3 (b278adb), the branch IS pushed to origin. Always
+re-verify with `git log origin/feat/item14-affineChartTriangleSimplex-ball..HEAD`
+before claiming "pushed" or "not pushed" — state changes per session.
