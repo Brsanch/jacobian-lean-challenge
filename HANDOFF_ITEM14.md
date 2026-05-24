@@ -1,10 +1,15 @@
 # Item 14 — handoff
 
-Last refreshed: 2026-05-24 (forward-leg **Chip 2b landed** —
-chart-side CR-converse → Cauchy regularity bridge in
-`PartialZBarAnalyticConverse.lean`. Chip 2c (the bump + ∂̄-solution
-Forster §16.9 construction) remains pending, but now has its key
-"`smooth-real + ∂̄ = 0` on open ⇒ analytic" bridge ready to consume).
+Last refreshed: 2026-05-24 (forward-leg **Chip 2c off-pole identity
+landed** in commit `70ef6ee` —
+`partialZBarManifold_g₀_eq_α_off_pole : y ≠ p → ∂̄(g₀) y = α y` is now
+unconditional, via the chart-transition discharge of `chartInv` and the
+Leibniz spec from Chip 1. Chip 2c WIP scaffolding + vanishing lemmas
+(commit `213ada1`) and Chip 2b CR-converse bridge (commit `7cb9f19`)
+are already in place. Two pieces remain to close Chip 2c entirely:
+(i) `α` smooth-real on X (chart-transition smoothness on the annulus —
+the on-source and off-tsupport pieces are done), and (ii) the final
+assembly via `DBarSolvabilityAtGenusZero` + consolidator.
 
 ## Where this branch is
 
@@ -150,7 +155,103 @@ Plus the chart-free `partialZBar_*` arsenal already on main (`PartialZBar.lean`
   packaged genus-conditional form returning
   `SimplePoleGermExtensionHypothesis X`.
 
-## Chip 2c — concrete launch (next session)
+## Chip 2c — split status (2026-05-24)
+
+Chip 2c is large enough that it's split across multiple commits. The
+landed pieces:
+
+* **Commit `213ada1` (Chip 2c WIP):** definitions of `g₀`, `bC`,
+  `chartInv`, `α`; vanishing of `partialZBarManifold (bC p b)` and `α`
+  in a nbhd of `p` and off `tsupport b`; smoothness of `bC` globally.
+  (~265 LOC.)
+* **Commit `70ef6ee` (this commit's predecessor):** off-pole identity
+  `partialZBarManifold_g₀_eq_α_off_pole : y ≠ p → ∂̄g₀ y = α y`. Routes
+  through:
+    - manifold-side `partialZBarManifold` congruence under `=ᶠ[𝓝 x]`,
+    - chart-transition ℂ-differentiability of `chartInv` off the pole
+      (via `analyticAt_chart_transition_of_isManifold` in
+      `MeromorphicAt.lean` + chart injectivity),
+    - ℝ-differentiability of `bC`'s chart-y pullback (`ContMDiff` +
+      `contMDiffOn_extChartAt_symm` + vector-space `ContMDiffAt =
+      ContDiffAt`),
+    - Leibniz spec from Chip 1
+      (`partialZBarManifold_mul_of_chartPullback_differentiableAt_right`).
+  (~225 LOC, single file, sorry/axiom-free, full lake build green.)
+
+**Two pieces remain to close Chip 2c entirely:**
+
+### Remaining (i) — α smooth-real on X
+
+`α := partialZBarManifold (bC p b) y * chartInv p y` needs to be
+`ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ α` (the input regularity required by
+`DBarSolvabilityAtGenusZero`). The on-source-near-p and off-tsupport
+parts are already done as `α_eventuallyEq_zero_near_p` /
+`α_eventuallyEq_zero_off_tsupport` (eventually-eq zero gives smoothness
+on those open sets trivially). The **annulus** part —
+`{y ∈ chart_p.source | 0 < ‖chart_p y − c₀‖}` ∩ `tsupport b` — is where
+the work is.
+
+Strategy: on the annulus, use the chart-p chart-pullback formula. For
+`y` in the annulus, the chart-p target evaluation point
+`z := chart_p y ≠ c₀`. The chart-p representation of α is:
+
+  `α_p(z) := (z − c₀)⁻¹ · partialZBar (bC ∘ chart_p.symm) z`
+
+which is `C^∞-ℝ` on the punctured chart_p.target (both factors are
+`C^∞-ℝ` away from `c₀`, and the inversion is OK since `z − c₀ ≠ 0`).
+
+Bridging `α_p` (chart-p view) ↔ `α` (chart-y view) requires the
+chart-transition factor `conj(deriv (chart_p ∘ chart_y.symm))`, since
+`partialZBarManifold` uses chart at y rather than chart at p. The
+`partialZBar_comp_of_differentiableAt` chain rule
+(`PartialZBarChainRule.lean`) handles this — chart transitions of a
+`[IsManifold 𝓘(ℂ, ℂ) ω X]` are ℂ-holomorphic, so `deriv` is just the
+complex derivative, and `conj(deriv)` is `C^∞-ℝ` away from chart
+boundary.
+
+Concretely, prove:
+
+  `partialZBarManifold (bC p b) y = (∂̄(bC ∘ chart_p.symm))(chart_p y)
+                                       · conj(deriv (chart_p ∘ chart_y.symm)(chart_y y))`
+
+for `y ∈ chart_p.source`. Then α's chart-y view is
+
+  `α y = chartInv y · partialZBar(bC ∘ chart_p.symm)(chart_p y)
+            · conj(deriv (chart_p ∘ chart_y.symm)(chart_y y))`.
+
+Smoothness as a function of `y` factors through smooth chart maps.
+
+### Remaining (ii) — apply DBarSolvability + consolidator
+
+Once (i) is in hand:
+
+* `DBarSolvabilityAtGenusZero X` applied to `(α, α_smooth)` produces
+  `u : X → ℂ` with `partialZBarManifold u y = α y` for all `y` and `u`
+  smooth-real globally.
+* `f := g₀ - u : X → ℂ`. By the off-pole identity (this commit), for
+  every `y ≠ p`: `partialZBarManifold f y = partialZBarManifold g₀ y −
+  partialZBarManifold u y = α y − α y = 0` (using
+  `partialZBarManifold_sub` from Chip 1 + the off-pole identity).
+* **Discharge H1** (`f ∘ chart_p.symm =ᶠ[nhdsWithin c₀ {c₀}ᶜ]
+  (z − c₀)⁻¹ − h(z)` with `h := u ∘ chart_p.symm`): on the punctured
+  inner ball (where χ ≡ 1), g₀ ∘ chart_p.symm = (z − c₀)⁻¹, and
+  h ∘ chart_p.symm = u ∘ chart_p.symm by definition; subtract.
+* **`h` analytic at `c₀`** (needed by consolidator's `h_an`): u's
+  chart-p pullback has `partialZBar = 0` on the inner ball (since `α = 0`
+  there from `α_eventuallyEq_zero_near_p`), so by Chip 2b's
+  `analyticAt_of_contDiffOn_of_partialZBar_eqOn_zero` (CR converse +
+  Cauchy regularity), h is `AnalyticAt ℂ` at `c₀`.
+* **Discharge H2** (∀ x ≠ p, AnalyticAt ℂ (f ∘ chart_x.symm) (chart_x x)):
+  f is `C^∞-ℝ` off `p` (g₀ smooth off p — needs proof — and u
+  smooth-real globally), and ∂̄f = 0 off p (this commit). Chip 2b's
+  bridge gives analyticity at chart_x x.
+* **One-line apply** `existsSimplePoleGermAtSomePoint_of_chartPullback_data X p f h h_an h_chart_eq h_off_pole`
+  to close `hSP X` from `DBarSolvabilityAtGenusZero X` at `genus X = 0`.
+
+Estimated LOC for (i)+(ii) combined: ~400–600 LOC. (i) is the hardest;
+(ii) is mostly bookkeeping over what's already landed.
+
+## Earlier Chip 2c plan (for context, partially superseded)
 
 **Goal**: discharge **H1** and **H2** of the Chip-2 consolidator from
 the Forster §16.9 ingredients — bump function + ∂̄-solution from
