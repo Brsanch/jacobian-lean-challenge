@@ -1,17 +1,117 @@
 # Item 14 — handoff
 
-Last refreshed: 2026-05-24 (forward-leg **Chip 2c α smoothness landed
-under `ChartAtConstantOnSource p` hypothesis** in commit `24b11a4`.
-Off-pole identity from `70ef6ee`, chart-side `partialZBar` smoothness
-from `93b6676`, chart-const reduction from `97ecd57`, and
-`partialZBarManifold(bC) ContMDiffOn` from `0c69f75` are in tree.
-**Remaining for Chip 2c**: (ii) apply `DBarSolvabilityAtGenusZero` to
-α and discharge the consolidator's H1/H2. **Open issue for general X**:
-the `ChartAtConstantOnSource p` hypothesis holds for concrete X like
-RS at finite points, but H2 also needs chart-locality at points
-**off** `chart_p.source`, which fails at e.g. RS-∞ — see "Remaining
-(ii)" for the precise issue and the recommended mfderiv-based
-intrinsic ∂̄ refactor for general X.
+> **🛑 STOP — read this first (2026-05-24 session-end correction).**
+>
+> The forward-leg work on this branch took the **wrong route**. The
+> Forster §16.9 / `DBarSolvabilityAtGenusZero` / chart-const / α
+> smoothness chain (commits `70ef6ee`, `93b6676`, `97ecd57`,
+> `0c69f75`, `24b11a4`) is building toward Dolbeault discharge — a
+> multi-year classical-content project. The user clarified
+> end-of-session that the actual remaining work for Item 14 forward
+> leg is the **direct RR route**, estimated at **1,300–2,900 LOC
+> total**, via existing scaffolding:
+>
+>   * `RiemannRochGenusZero X` on arbitrary X via **lifting** (from
+>     the RS unconditional case) + **`RR_DimGE2_GenusZero`** + the
+>     **at-pole-germ continuity** piece. **1,000–2,300 LOC.**
+>   * Glue to existing composition lemmas. **300–600 LOC.**
+>
+> The reverse leg (`S2ImpliesGenus0 X`) is already **DONE**
+> unconditionally on arbitrary X — commit `829a6e8`
+> `feat(item14): close reverse leg unconditionally — S2ImpliesGenus0 X
+> on arbitrary X (Alt-B Chip 4e)`.
+>
+> **Next session: pivot.** See "Next-session plan (RR route)" below.
+
+## What's still useful from this branch
+
+* `70ef6ee` — **off-pole Leibniz identity `∂̄g₀ = α on X \ {p}`**.
+  Potentially useful for the at-pole-germ continuity piece of the RR
+  route. Keep.
+* `93b6676`, `97ecd57`, `0c69f75`, `24b11a4` — chart-side `partialZBar`
+  smoothness + `ChartAtConstantOnSource` + α ContMDiff under
+  chart-const. **Dead-end infrastructure** for the RR route. Either
+  leave on the branch as a `feat/item14-forward-dbar-mul` graveyard, or
+  delete when pivoting. **Do NOT continue chipping this chain.**
+* `213ada1` — original Chip 2c WIP (g₀/α scaffolding + vanishing
+  lemmas). Same status: dead-end for RR route.
+
+## Next-session plan (RR route)
+
+**Branch**: open a fresh branch off `origin/main`, e.g.
+`feat/item14-rr-direct`. Do **not** continue on
+`feat/item14-forward-dbar-mul`.
+
+### Step 0 — Read the scaffolding before writing code
+
+Read these in order, before any new file:
+
+1. **`HSP_AUDIT.md` §1** — direct discharges per named hypothesis:
+    * `LinearSystemGermDeltaPFiniteDim RiemannSphere` UNCONDITIONAL
+      (`Topology/LinearSystemGermDeltaPFiniteDimRSUnconditional.lean:84`).
+    * `ExistsSimplePoleGermAtSomePoint RiemannSphere` UNCONDITIONAL
+      (`Manifold/RiemannSphereSimplePole.lean:223–227`).
+    * `existsSimplePoleGermAtSomePoint_of_holomorphicEquiv_RS`
+      (`Topology/ExistsSimplePoleGermFromHolomorphicEquivRS.lean:172`)
+      — transport from RS via biholom equivalence.
+2. **`Topology/LinearSystemDivisorSimplePoleRank.lean`** — linear
+   system / divisor machinery and `ExistsSimplePoleGermAtSomePoint`
+   definition (line 119).
+3. **`Topology/RRDimGE2FromUniformizationAndFiniteDim.lean`** — the
+   in-tree `RR_DimGE2_GenusZero_Germ` reductions.
+4. **`Topology/RRStrictLtFromSimplePole.lean`** — strict-less-than
+   form + `RR_DimGE2_GenusZero` link.
+5. **`Topology/Item14FinalComposition.lean`** — the glue layer
+   already takes `RiemannRochGenusZero X` + transport conditionals as
+   hypotheses; understand its shape.
+
+### Step 1 — Map the precise gap
+
+After reading the scaffolding, write down (as `RR_AUDIT.md` or extend
+`HSP_AUDIT.md`):
+
+* What "lifting" means precisely — most likely: lift
+  `existsSimplePoleGermAtSomePoint_RiemannSphere` to an arbitrary
+  compact connected complex 1-manifold via the **divisor/linear-system
+  transport machinery**, not via biholom equivalence (which would
+  require uniformization, the hard route).
+* What the at-pole-germ continuity piece is — likely: bridge
+  `MeromorphicFunctionGerm` order-at-p data to the global
+  `linearSystemGermDeltaP` membership.
+* What "`RR_DimGE2_GenusZero`" itself needs — the dim ≥ 2 bound from
+  the existence-side (already in tree?) + the dimension count.
+
+### Step 2 — Chip the pieces
+
+Following the per-chip discipline in `tools/chip-prompt-preamble.md`:
+
+* No paraphrase chips. Each chip closes a named hypothesis or removes
+  a `sorry`.
+* Anti-bloat gates (the 7 gates from the chip preamble) apply.
+* Local-verify-primary; single-threaded `lake env lean`.
+* No bundling.
+* If a chip introduces top-level decls, full `lake build` before push.
+
+### Step 3 — Glue + closure
+
+Once `RiemannRochGenusZero X` is unconditional, compose with the
+existing `Item14FinalComposition.lean` chain to remove the `sorry`
+from `Basic.lean:genus_eq_zero_iff_homeo`.
+
+## Repo state pointers (verify before relying on)
+
+* `OPEN.md` — Item 14 line lists it as OPEN with named-hypothesis
+  reduction.
+* `HSP_AUDIT.md` — discharge audit; current as of 2026-05-23.
+* `S2ImpliesGenus0 X` discharge in `829a6e8` — verify the chain is
+  in `main` via `git log main --grep="reverse leg"` from a fresh
+  checkout.
+* `FiniteDimensional ℂ (HolomorphicOneForm X)` is **already discharged
+  unconditionally** internally via
+  `DiskChartCover.holomorphicOneFormFiniteDim_holds` (per
+  HSP_AUDIT TL;DR).
+* `HasAdmissibleChartCover` typeclass is **already discharged
+  unconditionally** (shipped 2026-05-23).
 
 ## Where this branch is
 
