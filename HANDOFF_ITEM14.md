@@ -1,10 +1,10 @@
 # Item 14 — handoff
 
-Last refreshed: 2026-05-24 (forward-leg **Chip 2 landed** — consolidator
-`existsSimplePoleGermAtSomePoint_of_chartPullback_data` plus the
-`DBarSolvabilityAtGenusZero` named hypothesis. Chip 2c is the
-remaining work to discharge the consolidator's two hypotheses from
-`SmoothBumpFunction` + the ∂̄-solution).
+Last refreshed: 2026-05-24 (forward-leg **Chip 2b landed** —
+chart-side CR-converse → Cauchy regularity bridge in
+`PartialZBarAnalyticConverse.lean`. Chip 2c (the bump + ∂̄-solution
+Forster §16.9 construction) remains pending, but now has its key
+"`smooth-real + ∂̄ = 0` on open ⇒ analytic" bridge ready to consume).
 
 ## Where this branch is
 
