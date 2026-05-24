@@ -182,6 +182,7 @@ import JacobianChallenge.Manifold.HolomorphicOneForm
 import JacobianChallenge.Manifold.HolomorphicOneFormChartCoeff
 import JacobianChallenge.Manifold.ComplexChainPeriodFormLinear
 import JacobianChallenge.Manifold.ChartLocalPrimitive
+import JacobianChallenge.Manifold.ChartLocalPrimitiveMax
 import JacobianChallenge.Manifold.ChartLocalPrimitiveSmoothness
 import JacobianChallenge.Manifold.BumpedSegmentParamSmooth
 import JacobianChallenge.Manifold.ChartLocalIntegrandSmooth
