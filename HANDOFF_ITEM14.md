@@ -123,7 +123,46 @@ arc. `UniformChartContainmentDepth_named X` (already unconditional in
 tree, see `Manifold/UniformChartContainmentDepth.lean`) provides the
 per-subdivision chart-image ball.
 
-## What BSLB actually requires (scope correction 2026-05-23)
+## Audit findings (2026-05-23, after deep top-down trace from `Basic.lean`)
+
+Item 14's `genus_eq_zero_iff_homeo X` factors through
+`SurfaceClassificationGenus.toIff` into **two independent named
+hypotheses** (`Genus0ImpliesS2` and `S2ImpliesGenus0`), each of which
+has its own discharge chain in tree. They do not need to be closed by
+the same route.
+
+**Reverse leg (`S2ImpliesGenus0 X`)** reduces, via
+`s2ImpliesGenus0_from_subsingletonOfSimplyConnected X` +
+`simplyConnectedS2_holds` (unconditional, in tree), to a single
+classical theorem:
+
+> *On a simply-connected compact connected complex 1-manifold X, the
+> space of holomorphic 1-forms is trivial.*
+
+[`Topology/SubsingletonFromPrimitiveExistence.lean:185`](JacobianChallenge/Topology/SubsingletonFromPrimitiveExistence.lean)
+further reduces this to: **every holomorphic 1-form on simply-connected
+X admits a global smooth primitive** (the holomorphic Poincaré lemma).
+The `subsingleton_of_primitiveExistence` lemma is unconditional in tree
+via Liouville on compact connected manifolds.
+
+This is the **cleanest** reverse-leg route. It avoids BSLB and the
+Whitney-smoothing-of-a-2-D-homotopy gap. Instead it needs only
+chart-by-chart primitive gluing along 1-D paths, which uses the chart
+ball partition + chart-local primitive arc (chip-D + mathlib's
+`DifferentiableOn.isExactOn_ball`).
+
+**Forward leg (`Genus0ImpliesS2 X`)** reduces to the named hypothesis
+`ExistsSimplePoleGermAtSomePoint X` (= `hSP`), whose bottom is
+`RR_DimGE2_GenusZero_Germ X` — Riemann-Roch at genus 0. The downstream
+chain in tree (PrincDivWitnessExtraction → degree-1 mero function →
+`bijectiveAnalyticIsBiholomorphism_holds` → `genus_eq_zero_iff_homeo_of_HolomorphicEquiv_RiemannSphere`)
+is unconditional, so the forward leg is purely gated on RR at genus 0.
+
+**The original BSLB framing was a red herring.** BSLB is one of several
+named-hypothesis discharges of subsingleton, but not the simplest. The
+primitive-existence route is structurally cleaner.
+
+## Why the original BSLB framing was tempting (and wrong)
 
 The previous version of this handoff said "discharge BSLB on arbitrary
 X". That is **structurally impossible**: BSLB asserts every smooth
@@ -214,28 +253,78 @@ The 2026-05-23 follow-up commit on this branch added:
   chart-ball partition of a smooth path (e.g. complex-period
   decomposition, Stokes-on-curved-loops, etc.).
 
+## Additional 2026-05-23 chip — structural prerequisite for the primitive-existence route
+
+* `Manifold/ConvexBallChartAtMaximalAtlas.lean` (~150 LOC) —
+  `convexBallChartAt (x : X) := (chartAt ℂ x).restr (chartBallSourcePreimage x)`.
+  Headline lemmas: `convexBallChartAt_target_eq` (target = ball),
+  `convexBallChartAt_target_convex`, and
+  `convexBallChartAt_mem_maximalAtlas` (the restricted chart lies in
+  `IsManifold.maximalAtlas (𝓘(ℂ, ℂ)) ω X` via mathlib's
+  `restr_mem_maximalAtlas` + `ClosedUnderRestriction (contDiffGroupoid ω 𝓘(ℂ,ℂ))`).
+
+  This packages, for every `x : X` on arbitrary compact connected
+  complex 1-manifold, a chart in the **maximal** atlas with a convex
+  target. The canonical `chartAt ℂ x` does not in general have convex
+  target, so the existing `HasConvexChartAtTarget X` typeclass cannot
+  be instantiated on arbitrary X. The maximal-atlas refinement here is
+  the structural foundation for a future
+  `PathPrimitiveAdmissibleChartCover_max` predicate that takes charts
+  in the maximal atlas rather than only `atlas ℂ X` — once that's in
+  place, admissibility discharges UNCONDITIONALLY on arbitrary X.
+
+  Verified: `taskpolicy -b nice -n 19 env LEAN_NUM_THREADS=1 lake
+  build JacobianChallenge.Manifold.ConvexBallChartAtMaximalAtlas`.
+
 ## What to do next session
 
-Two natural directions, both honest about the Whitney smoothing gap:
+The cleanest concrete sequence to close the reverse leg
+(`S2ImpliesGenus0 X`) on arbitrary X:
 
-* **Continue the polygonal-bordism BSLB route under
-  `[SimplyConnectedSpace X]`.** With `exists_chartBall_anchor_partition`
-  in hand, the next concrete chip is the per-segment chart-local
-  homotopy 2-simplex: takes a smooth path segment in a chart-image
-  ball and produces a `Smooth2Simplex` whose boundary is `single
-  (γ-piece) - single (chart-straight-line)`. This is honest classical
-  content using `chartHomotopyMap` (already in
-  `Manifold/SmoothHomotopyPath.lean`) — no Whitney smoothing needed
-  for the *per-segment* step (the path is already smooth, and the
-  straight-line interpolation is smooth in the chart). The Whitney
-  smoothing only enters at the *polygonal-loop null-bordism* step,
-  which can be deferred behind a named hypothesis if needed.
+1. **Generalise the chartLocalPrimitive arc from `atlas ℂ X` to
+   `IsManifold.maximalAtlas (𝓘(ℂ,ℂ)) ω X`.** The signature change
+   touches ~10 files
+   (`SmoothPathLinearInChart.lean`, `ChartLocalPrimitive.lean`,
+   `ChartLocalPrimitiveExtend.lean`, `PathPrimitiveLocalSmoothFTCNamed.lean`,
+   `PathPrimitiveGlobalSmoothFTC.lean`, `HasAdmissibleChartCoverClass.lean`,
+   `HasAdmissibleChartCoverFromConvexChartAtTarget.lean`, plus their
+   dependents). Inspection of `SmoothPathLinearInChart.lean:288-289`
+   shows `h_atlas` is used ONLY to call `IsManifold.subset_maximalAtlas`,
+   so the generalisation is mechanical: replace `h_atlas : φ ∈ atlas ℂ X`
+   with `h_max : φ ∈ IsManifold.maximalAtlas (𝓘(ℂ,ℂ)) ω X` everywhere,
+   propagate callsites via `IsManifold.subset_maximalAtlas` adapters
+   where needed.
 
-* **Switch to Path B (hSP / RR-g0 dim bound).** Discharge
-  `RR_DimGE2_GenusZero_Germ X` classically: Serre duality at genus 0
-  + canonical divisor degree. The surrounding infrastructure (divisor
-  degree, linear systems, MeromorphicNonzero lift) is already in tree.
-  This is also multi-chip but doesn't have the Whitney gap.
+2. **Provide a `HasAdmissibleChartCover X` instance for arbitrary X**
+   via the maximal-atlas-version of the admissibility chain consuming
+   `convexBallChartAt` (above).
+
+3. **`s2ImpliesGenus0_from_subsingletonOfSimplyConnected` closes the
+   reverse leg** — composing with `subsingleton_of_BSLB_and_universalAdmissibility`
+   (wait, that one still needs BSLB — use `subsingleton_of_primitiveExistence`
+   instead, which doesn't need BSLB at all once the chartLocalPrimitive
+   arc is generalised).
+
+Alternative — also closes the reverse leg without the maximal-atlas
+refactor:
+
+* **Direct primitive construction via `exists_chartBall_anchor_partition`
+  + chart-local primitives.** Don't use the existing admissibility
+  chain. Instead: for each smooth path `γ` on simply-connected X,
+  build `F(γ.tgt) = Σ_segments F_k` where `F_k` is a chart-local
+  primitive on segment k's chart-image-ball (via mathlib's
+  `DifferentiableOn.isExactOn_ball` applied to the chart-pulled-back
+  form). Show well-definedness on simply-connected X via standard
+  monodromy argument (two paths between same endpoints differ on each
+  ball segment by an additive constant that telescopes to 0 when the
+  loop is null-homotopic). This is more self-contained but requires
+  building the primitive infrastructure from scratch, parallel to the
+  existing `pathPrimitive` machinery.
+
+**For the forward leg**: classical Riemann-Roch at genus 0
+(`RR_DimGE2_GenusZero_Germ X`). Multi-chip, but no Whitney smoothing
+gap. The surrounding infrastructure (divisor degree, linear systems,
+MeromorphicNonzero lift) is already in tree.
 
 Per the chip-prompt-preamble anti-paraphrase gates, NEITHER direction
 should produce more "from N inputs" reformulations or per-X-only
