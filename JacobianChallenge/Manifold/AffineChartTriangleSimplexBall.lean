@@ -318,7 +318,30 @@ noncomputable def affineChartTriangleSimplex_ball
         ((chartAt ℂ q).symm) ((chartAt ℂ q).target) := contMDiffOn_chart_symm
     exact h_symm.comp_contMDiff hg hg_target
 
-/-! ## Step 6 — Vertex-evaluation `@[simp]` lemmas -/
+/-! ## Step 6 — Public toFun-on-simplex lemma (basis for face equalities downstream) -/
+
+/-- **On `standardSimplex2`, the ball triangle's `toFun` reduces to
+`(chartAt ℂ q).symm ∘ affineChartTriangle`.** The bump is `1` on `Δ²`
+so `tamedAffine` matches the raw affine map there.
+
+Downstream (e.g. `ChartStraightLinePathBall.lean`) uses this to identify
+the three faces of the ball triangle with canonical chart-straight-line
+paths. -/
+lemma affineChartTriangleSimplex_ball_toFun_on_simplex
+    (q : X) (z_c : ℂ) (r : ℝ) (hr : 0 < r)
+    (hB : Metric.ball z_c r ⊆ (chartAt ℂ q).target)
+    (z₀ z₁ z₂ : ℂ)
+    (h0 : z₀ ∈ Metric.ball z_c r) (h1 : z₁ ∈ Metric.ball z_c r)
+    (h2 : z₂ ∈ Metric.ball z_c r)
+    {p : Fin 2 → ℝ} (hp : p ∈ standardSimplex2) :
+    (affineChartTriangleSimplex_ball q z_c r hr hB z₀ z₁ z₂ h0 h1 h2).toFun p
+      = (chartAt ℂ q).symm (affineChartTriangle z₀ z₁ z₂ (p 0) (p 1)) := by
+  change (chartAt ℂ q).symm (tamedAffine z_c r z₀ z₁ z₂ h0 h1 h2 p)
+      = (chartAt ℂ q).symm (affineChartTriangle z₀ z₁ z₂ (p 0) (p 1))
+  congr 1
+  exact tamedAffine_eq_on_simplex z_c r z₀ z₁ z₂ h0 h1 h2 hp
+
+/-! ## Step 7 — Vertex-evaluation `@[simp]` lemmas -/
 
 @[simp] lemma affineChartTriangleSimplex_ball_toFun_v0
     (q : X) (z_c : ℂ) (r : ℝ) (hr : 0 < r)
