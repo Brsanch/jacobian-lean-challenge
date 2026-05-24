@@ -1,6 +1,10 @@
 # Item 14 — handoff
 
-Last refreshed: 2026-05-24 (forward-leg Chip 1 landed on this branch).
+Last refreshed: 2026-05-24 (forward-leg **Chip 2 landed** — consolidator
+`existsSimplePoleGermAtSomePoint_of_chartPullback_data` plus the
+`DBarSolvabilityAtGenusZero` named hypothesis. Chip 2c is the
+remaining work to discharge the consolidator's two hypotheses from
+`SmoothBumpFunction` + the ∂̄-solution).
 
 ## Where this branch is
 
@@ -106,96 +110,159 @@ chart pullback, and ships the operations Chip 2 needs:
 Plus the chart-free `partialZBar_*` arsenal already on main (`PartialZBar.lean`
 + `PartialZBarChainRule.lean`).
 
-## Chip 2 — concrete launch (next session)
+## Chip 2 — DONE (this branch, two commits, 2026-05-24)
 
-**File to create**: `JacobianChallenge/Manifold/ExistsSimplePoleGermFromGenusZeroDBarSolvability.lean`
+**File added**: [`JacobianChallenge/Manifold/ExistsSimplePoleGermFromGenusZeroDBarSolvability.lean`](JacobianChallenge/Manifold/ExistsSimplePoleGermFromGenusZeroDBarSolvability.lean)
+(511 LOC, sorry/axiom-free, in library, full-build green).
 
-**Target theorem**:
+### Commit 7348c06 — DBar definition + chart-side order keystone
+
+* **`DBarSolvabilityAtGenusZero X : Prop`** — the named classical
+  hypothesis (`genus X = 0 → ∀ α smooth-real, ∃ u smooth-real,
+  partialZBarManifold u = α pointwise`). Isolates `H¹(X, O) = 0` at
+  genus 0 / the Dolbeault statement.
+* **`meromorphicOrderAt_inv_sub_const_eq_neg_one`** —
+  `meromorphicOrderAt ((z-c)⁻¹) c = -1` (the classical pole order
+  computation, chart-side `ℂ → ℂ`).
+* **`meromorphicOrderAt_inv_sub_const_sub_analytic_eq_neg_one`** —
+  `meromorphicOrderAt ((z-c)⁻¹ - h z) c = -1` for `h` analytic at `c`.
+  The pole term dominates any analytic correction. Via
+  `meromorphicOrderAt_add_eq_left_of_lt`.
+* Manifold-side wrappers: `mmeromorphicAt_chart_inv_sub_const_sub_analytic`
+  and the corresponding order = -1 variant — for use by Chip 2c.
+
+### Commit dfdd5c3 — Forster §16.9 consolidator (assembly lemma)
+
+* **`existsSimplePoleGermAtSomePoint_of_chartPullback_data`** — the
+  unconditional assembly lemma. Given:
+  - a point `p : X`,
+  - a function `f : X → ℂ`,
+  - an analytic-at-`(chartAt ℂ p) p` correction `h : ℂ → ℂ`,
+  - **(H1)** `(f ∘ (chartAt ℂ p).symm) =ᶠ[𝓝[≠] ((chartAt ℂ p) p)] (fun z => (z - (chartAt ℂ p) p)⁻¹ - h z)`,
+  - **(H2)** `∀ x ≠ p, AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) ((chartAt ℂ x) x)`,
+
+  the conclusion `ExistsSimplePoleGermAtSomePoint X` follows
+  unconditionally. The assembly does all the MMer / germ /
+  `linearSystemGermDeltaP` bookkeeping — order = -1 at p via the
+  Commit-7348c06 keystone + chart-pullback congr; order ≥ 0 at every
+  `x ≠ p` from H2 via `AnalyticAt.meromorphicOrderAt_nonneg`.
+* **`simplePoleGermExtensionHypothesis_of_chartPullback_data`** —
+  packaged genus-conditional form returning
+  `SimplePoleGermExtensionHypothesis X`.
+
+## Chip 2c — concrete launch (next session)
+
+**Goal**: discharge **H1** and **H2** of the Chip-2 consolidator from
+the Forster §16.9 ingredients — bump function + ∂̄-solution from
+`DBarSolvabilityAtGenusZero X`. This produces the original target
+theorem
 
 ```lean
 theorem existsSimplePoleGermAtSomePoint_of_dbarSolvability
-    [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X]
-    [IsManifold (𝓘(ℂ, ℂ)) ω X] [IsManifold (𝓘(ℝ, ℂ)) ω X]
     (h : DBarSolvabilityAtGenusZero X)
     (hg : JacobianChallenge.genus X = 0) :
     ExistsSimplePoleGermAtSomePoint X
 ```
 
-Where `DBarSolvabilityAtGenusZero X` is a new `def Prop` introduced in
-this same file (precise shape — see "Risk 3 in plan" notes below).
+as a one-line application of `existsSimplePoleGermAtSomePoint_of_chartPullback_data`.
+
+**File to create**: `JacobianChallenge/Manifold/ForsterCutoffPoleConstruction.lean`
+(or extend the existing
+`ExistsSimplePoleGermFromGenusZeroDBarSolvability.lean` —
+either is acceptable; new file is recommended for cleaner separation
+of "geometric construction" from "assembly").
 
 ### Suggested sections
 
-1. **`def DBarSolvabilityAtGenusZero (X) : Prop`** — `genus X = 0 →
-   ∀ α : X → ℂ, smooth-real → ∃ u, smooth-real ∧ ∂̄u = α everywhere`.
-   Use `partialZBarManifold u x = α x` for the ∂̄ identity (not chart-side).
+1. **Pick `p : X`** via `ConnectedSpace → Nonempty`. Fix
+   `c₀ := (chartAt ℂ p) p`.
 
-2. **Pick `p : X`** via `ConnectedSpace → Nonempty`.
+2. **Bump construction.** `SmoothBumpFunction 𝓘(ℝ, ℂ) p` is
+   `Nonempty` automatically; extract `b : SmoothBumpFunction 𝓘(ℝ, ℂ) p`
+   with `rIn, rOut`. The bump `χ := (b : X → ℝ)` has:
+   - `χ p = 1` (and `χ ≡ 1` on `(extChartAt 𝓘(ℝ, ℂ) p) ⁻¹' ball c₀ rIn`)
+   - `tsupport χ ⊆ (extChartAt 𝓘(ℝ, ℂ) p).symm '' closedBall c₀ rOut`
+     (in particular, `tsupport χ ⊆ (chartAt ℂ p).source`)
+   - smooth-real (`SmoothBumpFunction.contMDiff`)
 
-3. **Bump construction.** Use mathlib's `SmoothBumpFunction 𝓘(ℝ, ℂ) p`
-   (requires `[IsManifold 𝓘(ℝ, ℂ) ∞ X]` — downgrade from ω instance).
-   Pick `rIn < rOut < chartBallRadius p` so support sits in
-   `convexBallChartAt p` source.
+3. **Local pole** `g₀ : X → ℂ`:
+   ```
+   g₀ x := if x ∈ (chartAt ℂ p).source
+           then (χ x : ℂ) * ((chartAt ℂ p) x - c₀)⁻¹
+           else 0
+   ```
+   Properties to prove:
+   - `g₀ x = 0` outside `tsupport χ` (because `χ x = 0` there).
+   - `g₀ x = ((chartAt ℂ p) x - c₀)⁻¹` for `x ∈ {y | χ y = 1} ∩ ((chartAt ℂ p).source \ {p})`
+     — in particular on the inner ball minus `{p}`.
+   - Chart-pullback `g₀ ∘ (chartAt ℂ p).symm` on chart target equals
+     `(χ ∘ (chartAt ℂ p).symm) z * (z - c₀)⁻¹` (for `z ∈` chart target).
 
-4. **Local pole** `g₀ : X → ℂ` — write as `χ • (1/(φ - c₀))` extended
-   by zero. Show: globally smooth-real off `p`, equals `(φ - c₀)⁻¹`
-   on `B(p, rIn)`.
+4. **The (0,1) form** `α := partialZBarManifold g₀ : X → ℂ`.
+   Claim: `α` is smooth-real and supported strictly inside the
+   annulus `{x | x ∈ chart.source ∧ rIn < dist (chartAt ℂ p x) c₀ < rOut}`
+   — bounded away from `p`. Proof:
+   - On the inner ball `{x | dist (chart x) c₀ < rIn}` (where `χ = 1`):
+     `g₀ = (chart - c₀)⁻¹` which is chart-holomorphic off `p`. By Chip 1's
+     `partialZBarManifold_eq_zero_of_chartPullback_differentiableAt`, `α = 0` there.
+     (At `p` itself, the chart pullback is unbounded so the formula is
+     ill-defined — handle by setting `α p := 0` if needed, since the
+     inner ball is open around `p` and `α` is constant 0 on a
+     neighborhood except possibly at `p`; conclude `α p = 0` by
+     continuity / smoothness extension.)
+   - Outside `tsupport χ` (open): `g₀ ≡ 0` on a neighborhood, hence
+     `partialZBarManifold g₀ = 0` there.
+   - On the annulus: `g₀ = χ · (chart - c₀)⁻¹` and Chip 1's
+     `partialZBarManifold_mul_of_chartPullback_differentiableAt_right`
+     gives `α x = (partialZBarManifold χ x) · ((chart x) - c₀)⁻¹`
+     (smooth-real, since χ is smooth-real and `(chart - c₀)⁻¹` is
+     chart-holomorphic on the annulus).
 
-5. **`α := partialZBarManifold g₀ : X → ℂ`** — show smooth-real
-   everywhere on X, with α x = 0 on `B(p, rIn)` (because χ ≡ 1 there
-   and `(φ-c₀)⁻¹` is chart-holomorphic) AND outside support of bump
-   (because g₀ ≡ 0 there). Uses Chip 1's `partialZBarManifold_mul` +
-   `_mul_of_chartPullback_differentiableAt_right` (with `g := 1/(φ-c₀)`
-   ℂ-holomorphic on chart minus p).
+5. **Apply DBar.** `h hg α` gives smooth-real `u : X → ℂ` with
+   `partialZBarManifold u = α` pointwise.
 
-6. **Apply `h hg α`** → smooth `u : X → ℂ` with `partialZBarManifold u
-   x = α x` everywhere.
+6. **Define** `f := g₀ - u : X → ℂ`. Discharge consolidator
+   hypotheses:
 
-7. **Corrected pole** `f := g₀ - u`. ∂̄f = 0 globally → f is
-   ℂ-MDifferentiable on `X \ {p}` (CR converse). Note: CR converse on
-   manifold side currently lives only in `DBarManifoldMDiff.lean`
-   (orphaned older subtree); the chart-side
-   `differentiableAt_complex_of_dbarChart_eq_zero` from
-   `DBarOperator.lean` + the `dbarChart = partialZBar` bridge
-   (one-liner — `unfold` + `ring`) is the cleanest path. Chip 2 should
-   write that one-line bridge locally; **do not** wire in the orphaned
-   `dbar` subtree.
+   - **(H1) chart-pullback at `p`.** On the punctured inner ball,
+     `χ ≡ 1` so `g₀ ∘ chart.symm (z) = (z - c₀)⁻¹` for `z ≠ c₀` near
+     `c₀`. Therefore
+     `f ∘ chart.symm (z) = (z - c₀)⁻¹ - u ∘ chart.symm (z)`
+     on the punctured inner ball. Set `h_chart := u ∘ (chartAt ℂ p).symm`
+     (this is the `h : ℂ → ℂ` of the consolidator). Need:
+     `AnalyticAt ℂ h_chart c₀`.
 
-8. **Inner-ball u holomorphic.** α ≡ 0 on `B(p, rIn)` implies
-   `partialZBarManifold u = 0` there, so `u ∘ chart.symm` is ℂ-diff
-   on an open ball in chart-image, hence analytic at c₀.
+   - **`h_chart` analytic at `c₀`.** Since `α = 0` on the inner ball,
+     `partialZBarManifold u = 0` on the inner ball, so the chart
+     pullback `h_chart = u ∘ chart.symm` has chart-pullback `∂̄ = 0`
+     on the chart image of the inner ball. By the chart-side CR
+     converse (`differentiableAt_complex_of_dbarChart_eq_zero` —
+     bridge `dbarChart = partialZBar` locally via the one-line
+     `unfold + ring` lemma; **do not** import the orphaned dbar
+     subtree). `h_chart` is ℂ-differentiable on an open ball around
+     `c₀`, hence analytic at `c₀`.
 
-9. **MMer construction.** Build `MMer X` directly for `f` —
-   `MMeromorphicAt 𝓘(ℂ, ℂ) f x` via canonical-chart pullback per
-   `MeromorphicAt.lean:85`. Two cases:
-   - **At `p`**: chart-at-p pullback of f equals `(z-c₀)⁻¹ - (u ∘
-     chart.symm)(z)` on a punctured neighborhood. u ∘ chart.symm is
-     analytic at c₀ (step 8). Apply `MeromorphicAt` of inverse +
-     analytic difference; `meromorphicOrderAt = -1` via
-     `meromorphicOrderAt_add_of_lt`.
-   - **At `x ≠ p`**: f is ℂ-MDifferentiable on a NEIGHBORHOOD of x
-     (step 7 gives MDifferentiable on `X \ {p}` which is open), hence
-     chart-pullback `f ∘ chartAt(x).symm` is ℂ-DifferentiableOn an
-     open set, hence analytic at `(chartAt x) x`, hence meromorphic
-     with order ≥ 0.
+   - **(H2) analytic off `p`.** For `x ≠ p`, the chart pullback
+     `f ∘ (chartAt ℂ x).symm` at `(chartAt ℂ x) x`:
+     - `g₀ ∘ (chartAt ℂ x).symm` is smooth-real on a neighborhood
+       (smoothness-of-g₀ + chart-transition + smoothness of `(chart -
+       c₀)⁻¹` away from `p`).
+     - `partialZBarManifold g₀ = α` and `partialZBarManifold u = α`
+       on all of `X`, so `partialZBarManifold (g₀ - u) = 0`
+       pointwise, hence chart-pullback `(f ∘ (chartAt ℂ x).symm)` has
+       `∂̄ = 0` at `(chartAt ℂ x) x`. By CR converse +
+       smoothness on a neighborhood, ℂ-differentiable on an open set,
+       hence analytic at `(chartAt ℂ x) x`.
 
-   **DO NOT** try to build `MMer f = MMer g₀ - MMer u`. Neither `g₀`
-   nor `u` alone is an MMer (both are smooth-real but generally not
-   chart-holomorphic). The cancellation makes only `g₀ - u`
-   meromorphic. Verified during Chip 1 planning — see "Risk 3" in
-   the chat log of session 2026-05-24.
+7. **Apply consolidator.** One-line: `existsSimplePoleGermAtSomePoint_of_chartPullback_data X p f h_chart h_an h_chart_eq h_off_pole`.
 
-10. **Germ + membership.** Take germ of f, verify `∈
-    linearSystemGermDeltaP p` (order ≥ 0 off p), conclude
-    `ExistsSimplePoleGermAtSomePoint X`.
+### Estimated LOC
 
-### Estimated LOC and session count
+~400–700 LOC for the discharge. Bulk is in step 4 (∂̄ of `χ • (chart-c₀)⁻¹`)
+and step 6's CR-converse-bridge step. Step 7 is one line.
 
-~800–1100 LOC total. Likely splits at a natural boundary (e.g. between
-step 5 and step 6, or between step 9 cases) into 2 commits. Each
-commit must close to a substantive theorem statement — **no
-setup-only commits per anti-paraphrase gates**.
+**No further split needed** — the consolidator collapses the closing
+step to one application, so a single commit lands the full target.
 
 ### Risks (resolved in Chip 1 planning, summarized for Chip 2)
 
@@ -206,17 +273,19 @@ setup-only commits per anti-paraphrase gates**.
 | Building MMer via arithmetic of MMers | Not viable (see step 9 above). Build directly with `MMer.mk` from a manifest `MMeromorphicOn` proof. |
 | Inner-ball u holomorphic | Falls out of CR converse + α ≡ 0 on `B(p, rIn)`. Use chart-side `differentiableAt_complex_of_dbarChart_eq_zero` + one-line `dbarChart = partialZBar` bridge. |
 
-### Tools / files to consult on entry
+### Tools / files to consult on entry (for Chip 2c)
 
 - `tools/chip-prompt-preamble.md` — 7 anti-paraphrase gates.
-- `HSP_AUDIT.md` — full hSP chain; §4.5 has the audit's chip-2 recipe.
+- `HSP_AUDIT.md` — full hSP chain; §4.5 has the audit's recipe (Chips 2 + 2c).
+- `JacobianChallenge/Manifold/ExistsSimplePoleGermFromGenusZeroDBarSolvability.lean` — **Chip 2 deliverable; the consolidator `existsSimplePoleGermAtSomePoint_of_chartPullback_data` is the landing pad. Read its hypotheses (H1 = `h_chart_eq`, H2 = `h_off_pole`) — they are exactly Chip 2c's targets.**
 - `JacobianChallenge/Manifold/PartialZBar.lean` — chart-side ∂̄ + Leibniz + Forster spec.
-- `JacobianChallenge/Manifold/PartialZBarManifold.lean` — **Chip 1 deliverable; consume directly.**
-- `JacobianChallenge/Manifold/ConvexBallChartAtMaximalAtlas.lean` — `convexBallChartAt p` (chart with convex ℂ-target ball, in maximal atlas).
+- `JacobianChallenge/Manifold/PartialZBarManifold.lean` — **Chip 1 deliverable; consume directly** (`partialZBarManifold_mul`, `_mul_of_chartPullback_differentiableAt_right`, `_eq_zero_of_chartPullback_differentiableAt`).
+- `.lake/packages/mathlib/Mathlib/Geometry/Manifold/BumpFunction.lean` — `SmoothBumpFunction 𝓘(ℝ, ℂ) p` API. `Nonempty` instance is automatic; `eq_one`, `support_eq_inter_preimage`, `tsupport_subset_chartAt_source`, `eventuallyEq_one_of_dist_lt`, `eventuallyEq_one`, `contMDiff` (in `Mathlib/Geometry/Manifold/ContMDiff/Atlas.lean` neighborhood).
+- `JacobianChallenge/Manifold/ConvexBallChartAtMaximalAtlas.lean` — `convexBallChartAt p` (chart with convex ℂ-target ball, in maximal atlas) — useful but optional; the canonical chart at `p` suffices.
 - `JacobianChallenge/Manifold/SimplePoleAnalyticReciprocal.lean` — analytic-reciprocal core at ℂ-side simple pole.
-- `JacobianChallenge/Manifold/RiemannSphereSimplePole.lean` — base-case construction on RS (template for what we're producing on X).
-- `JacobianChallenge/Manifold/MeromorphicFunctionField.lean` — `MMer`, germ quotient, arithmetic.
-- `JacobianChallenge/Manifold/MeromorphicAt.lean` — `MMeromorphicAt` definition + closure lemmas; chart-independence is owed.
+- `JacobianChallenge/Manifold/RiemannSphereSimplePole.lean` — base-case construction on RS (sanity check for the Chip 2c discharge applied to `X = RiemannSphere`).
+- `JacobianChallenge/Manifold/MeromorphicFunctionField.lean` — `MMer`, germ quotient, arithmetic (consumed by the consolidator; Chip 2c doesn't need to touch this).
+- `JacobianChallenge/Manifold/MeromorphicAt.lean` — `MMeromorphicAt` definition + chart-independence (already discharged for `[IsManifold 𝓘(ℂ, ℂ) ω X]`).
 - `JacobianChallenge/Topology/RRStrictLtFromSimplePole.lean:119` — `ExistsSimplePoleGermAtSomePoint` definition.
 
 ## Discipline
