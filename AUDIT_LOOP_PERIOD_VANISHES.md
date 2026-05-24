@@ -240,3 +240,101 @@ The "Hurewicz gap" was a property of the BSLB route, which the cascade
 made avoidable by exposing the chart-local primitives as a usable
 intermediate step. Future work along Alt A/B/C/D should NOT route
 through BSLB.
+
+## Addendum (2026-05-24, post-audit deeper dive)
+
+Further investigation refines the gap to a precise, narrow technical
+statement and identifies what is and isn't structurally blocked.
+
+### `holomorphicStokesHypothesis_holds_unconditional` is in tree
+
+`Manifold/UniformChartContainmentDepth.lean:289` discharges
+`HolomorphicStokesHypothesis X` UNCONDITIONALLY on arbitrary X:
+
+> for every smooth 2-simplex σ : Δ² → X and every holomorphic 1-form ω,
+> both `∫_∂σ realComponent ω = 0` and `∫_∂σ imagComponent ω = 0`.
+
+The proof uses iterated midpoint subdivision until each sub-simplex is
+chart-contained (Lebesgue number lemma on the chart-source cover of
+the compact σ image), then `complexChainPeriod_boundary_eq_zero_of_simplex_chartContained`
+on each piece. **Stokes is unconditional.**
+
+Together with `loopPeriodVanishes_of_basedSmoothLoopsBoundHypothesis`,
+this means: a smooth loop γ has zero period **iff** `single γ`
+lies in `stokesBoundaries 𝓘(ℝ, ℂ) X` (= the smooth-2-chain image of
+the boundary map).
+
+### The real gap is precisely "smooth-bordism of every smooth loop"
+
+So the remaining content is exactly:
+
+> On simply-connected X, every smooth loop bounds **some** smooth 2-chain.
+
+Mathlib's `SimplyConnectedSpace` gives a *continuous* null-homotopy
+H : I × I → X. To extract a smooth 2-chain bound, we need to
+smooth H (or replace it with a smooth bordism).
+
+### Why direct cell-telescoping (Alt C) doesn't bypass this
+
+Cell-telescoping at the chart-pullback level would compute ∫_γ ω as
+a sum of cell-boundary contributions. Each cell-boundary is the
+H-image of a small rectangle ∂cell ⊂ I². This boundary is a
+**continuous** loop in X (since H is continuous), not a smooth loop.
+
+To use chart-local primitive F_y: F_y is smooth on
+`(convexBallChartAt y).source ⊆ X`. For a continuous path
+ψ : I → (convexBallChartAt y).source, F_y(ψ(1)) − F_y(ψ(0)) is
+well-defined and depends only on endpoints. For a continuous loop,
+this difference is zero.
+
+This argument **does work** for Alt C, but requires:
+1. Defining "ω-integral along a continuous path in a chart ball" as
+   `F_y(end) − F_y(start)` (a new definition).
+2. Showing this matches `complexChainPeriod` for smooth paths.
+3. Telescoping across cells, accounting for that **different cells use
+   different chart-local primitives F_y**, which agree only up to
+   chart-transition constants on overlaps.
+
+Step 3 is where the cohomology/monodromy content lives. The chart-
+transition constants form a Čech 1-cocycle; on simply-connected X,
+this cocycle is a coboundary. Proving the coboundary property in
+Lean is the actual classical content, comparable in difficulty to the
+smooth-Hurewicz step itself.
+
+### What this means for the four alternative routes
+
+- **Alt A (polygonal + Van Kampen)**: still viable. The polygonal
+  approximation step is clean (chord-replacement preserves period
+  within a chart ball by chartContainedLoopVanishing). The Van Kampen
+  inductive step is the bulk of the work and IS substantial Lean
+  content.
+- **Alt B (étale space + monodromy)**: cleanest mathematically.
+  Mathlib's `IsLocalHomeomorph.existsUnique_continuousMap_lifts` is
+  the right tool, but constructing the étale space of primitives as
+  a `IsLocalHomeomorph` is substantial.
+- **Alt C (continuous-cell telescoping)**: revised LOC estimate
+  500-800. The cohomology-vanishing step inside the telescoping is
+  comparable to Alt A's Van Kampen step.
+- **Alt D (Sard generalisation)**: still has the X \ {q} ≅ ℂ
+  obstruction at the factoring step.
+
+### Honest scope assessment
+
+All four routes require **the same classical content** — proving that
+the chart-transition cocycle vanishes on simply-connected X
+(equivalently, that some Whitney smoothing of continuous null-homotopy
+is possible, or that monodromy is trivial). They package the content
+differently.
+
+The cleanest mathematical formulation is Alt B (étale space +
+monodromy). The cleanest reuse of existing in-tree machinery is
+Alt A (polygonal + Van Kampen). Both are 500-900 LOC efforts.
+
+### Recommendation, revised
+
+The cascade has done its work. The next-session content (whichever
+alternative) is a **single classical theorem** at the boundary
+between topology (simply-connected) and complex analysis
+(holomorphic ⇒ closed ⇒ exact-on-simply-connected). This is the
+right granularity for a dedicated multi-chip arc; not the right
+granularity for a continuation of this session.
