@@ -472,34 +472,34 @@ The map factors as: `fderiv ℝ f` is `ContDiffAt ⊤` at `z` (mathlib's
 `ContDiffAt.fderiv_right` with `⊤ + 1 ≤ ⊤`), then evaluation at `1`
 and `I` (via `ContDiffAt.clm_apply`), then `(2)⁻¹ * (· + I * ·)`. -/
 
-private lemma partialZBar_contDiffAt_of_contDiffAt {f : ℂ → ℂ} {z : ℂ}
-    (hf : ContDiffAt ℝ ⊤ f z) :
-    ContDiffAt ℝ ⊤ (partialZBar f) z := by
+private lemma partialZBar_contDiffAt_of_contDiffAt
+    {n : WithTop ℕ∞} (hn : n + 1 ≤ n)
+    {f : ℂ → ℂ} {z : ℂ}
+    (hf : ContDiffAt ℝ n f z) :
+    ContDiffAt ℝ n (partialZBar f) z := by
   -- Break the ℝ-`NormedSpace ℂ` diamond before doing fderiv-of-fderiv arithmetic
   -- (mathlib has both `NormedSpace.complexToReal` and `NormedAlgebra.toNormedSpace`).
   letI : NormedSpace ℝ ℂ := @NormedAlgebra.toNormedSpace ℝ ℂ _ _ _
-  -- Step 1: `fderiv ℝ f` is ContDiffAt ⊤ at z.
-  have h_top_add : ((⊤ : WithTop ℕ∞) + 1 : WithTop ℕ∞) ≤ ⊤ := by
-    rw [WithTop.top_add]
-  have h_fderiv : ContDiffAt ℝ ⊤ (fderiv ℝ f) z := hf.fderiv_right h_top_add
+  -- Step 1: `fderiv ℝ f` is ContDiffAt n at z.
+  have h_fderiv : ContDiffAt ℝ n (fderiv ℝ f) z := hf.fderiv_right hn
   -- Step 2: pointwise evaluation at 1 and I.
-  have h_eval_1 : ContDiffAt ℝ ⊤ (fun z : ℂ => (fderiv ℝ f z) (1 : ℂ)) z :=
+  have h_eval_1 : ContDiffAt ℝ n (fun z : ℂ => (fderiv ℝ f z) (1 : ℂ)) z :=
     h_fderiv.clm_apply contDiffAt_const
-  have h_eval_I : ContDiffAt ℝ ⊤ (fun z : ℂ => (fderiv ℝ f z) (I : ℂ)) z :=
+  have h_eval_I : ContDiffAt ℝ n (fun z : ℂ => (fderiv ℝ f z) (I : ℂ)) z :=
     h_fderiv.clm_apply contDiffAt_const
   -- Step 3: `I * (fderiv ℝ f z) I`.
-  have h_I_times : ContDiffAt ℝ ⊤ (fun z : ℂ => I * (fderiv ℝ f z) I) z :=
+  have h_I_times : ContDiffAt ℝ n (fun z : ℂ => I * (fderiv ℝ f z) I) z :=
     contDiffAt_const.mul h_eval_I
   -- Step 4: sum.
-  have h_sum : ContDiffAt ℝ ⊤
+  have h_sum : ContDiffAt ℝ n
       (fun z : ℂ => (fderiv ℝ f z) 1 + I * (fderiv ℝ f z) I) z :=
     h_eval_1.add h_I_times
   -- Step 5: `(1/2) * (...)`.
-  have h_final : ContDiffAt ℝ ⊤
+  have h_final : ContDiffAt ℝ n
       (fun z : ℂ => (2 : ℂ)⁻¹ * ((fderiv ℝ f z) 1 + I * (fderiv ℝ f z) I)) z :=
     contDiffAt_const.mul h_sum
   -- Unfold `partialZBar`.
-  change ContDiffAt ℝ ⊤
+  change ContDiffAt ℝ n
     (fun z : ℂ => (2 : ℂ)⁻¹ * ((fderiv ℝ f z) 1 + I * (fderiv ℝ f z) I)) z
   exact h_final
 
@@ -553,9 +553,99 @@ private lemma partialZBarManifold_eq_chart_p_under_const
 Under `ChartAtConstantOnSource p`, the manifold-side ∂̄ of `bC`
 reduces to the chart-p computation `partialZBar (bC ∘ chart_p.symm)
 (chart_p y)` on `chart_p.source`. The chart-side `partialZBar` is
-`ContDiffAt ℝ ⊤` (Foundation lemma above) and `chart_p` is smooth, so
-the composition is `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤` at every
+`ContDiffAt ℝ ∞` (Foundation lemma above) and `chart_p` is smooth, so
+the composition is `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞` at every
 `y ∈ chart_p.source`. -/
+
+/-- Helper: `∞ + 1 ≤ ∞` in `WithTop ℕ∞` (∞ here is `(⊤ : ℕ∞)` lifted). -/
+private lemma infty_add_one_le_infty :
+    ((∞ : WithTop ℕ∞) + 1 : WithTop ℕ∞) ≤ ∞ := by
+  show ((((⊤ : ℕ∞) : WithTop ℕ∞)) + 1) ≤ ((⊤ : ℕ∞) : WithTop ℕ∞)
+  rw [show (1 : WithTop ℕ∞) = ((1 : ℕ∞) : WithTop ℕ∞) from rfl, ← WithTop.coe_add]
+  exact le_refl _
+
+/-- The chart-y pullback `bC ∘ chart_p.symm : ℂ → ℂ` is `ContDiffOn ℝ ∞`
+on `chart_p.target`. Composes `bC_contMDiff` (global `ContMDiff ∞`) with
+mathlib's `contMDiffOn_extChartAt_symm`, then dualizes via the
+vector-space `ContMDiffOn ↔ ContDiffOn`. -/
+private lemma bC_chart_p_symm_contDiffOn
+    (p : X) (b : SmoothBumpFunction 𝓘(ℝ, ℂ) p) :
+    ContDiffOn ℝ ∞ (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm)
+      (extChartAt 𝓘(ℝ, ℂ) p).target := by
+  have h_bC : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (bC p b) := bC_contMDiff p b
+  have h_symm : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (extChartAt 𝓘(ℝ, ℂ) p).symm
+                  (extChartAt 𝓘(ℝ, ℂ) p).target :=
+    contMDiffOn_extChartAt_symm p
+  have h_comp : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞
+      (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm) (extChartAt 𝓘(ℝ, ℂ) p).target :=
+    h_bC.comp_contMDiffOn h_symm
+  exact contMDiffOn_iff_contDiffOn.mp h_comp
+
+/-- `partialZBar (bC ∘ chart_p.symm)` is `ContDiffOn ℝ ∞` on
+`chart_p.target`. Applies the foundation `partialZBar_contDiffAt_of_contDiffAt`
+pointwise on the open chart target. -/
+private lemma partialZBar_bC_chart_p_symm_contDiffOn
+    (p : X) (b : SmoothBumpFunction 𝓘(ℝ, ℂ) p) :
+    ContDiffOn ℝ ∞ (partialZBar (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm))
+      (extChartAt 𝓘(ℝ, ℂ) p).target := by
+  intro z hz
+  have h_target_open : IsOpen (extChartAt 𝓘(ℝ, ℂ) p).target :=
+    isOpen_extChartAt_target p
+  have h_cd_within := (bC_chart_p_symm_contDiffOn p b) z hz
+  -- Upgrade `ContDiffWithinAt` to `ContDiffAt` (open inclusion).
+  have h_cd_at : ContDiffAt ℝ ∞ (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm) z :=
+    h_cd_within.contDiffAt (h_target_open.mem_nhds hz)
+  -- Apply chart-side `partialZBar` smoothness with `n = ∞`.
+  have h_pZ : ContDiffAt ℝ ∞ (partialZBar (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm)) z :=
+    partialZBar_contDiffAt_of_contDiffAt infty_add_one_le_infty h_cd_at
+  exact h_pZ.contDiffWithinAt
+
+/-- Under `ChartAtConstantOnSource p`, `partialZBarManifold (bC p b)` is
+`ContMDiffOn ∞` on `(chartAt ℂ p).source`. -/
+lemma partialZBarManifold_bC_contMDiffOn_under_const
+    (p : X) (b : SmoothBumpFunction 𝓘(ℝ, ℂ) p)
+    (h_const : ChartAtConstantOnSource p) :
+    ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞
+      (partialZBarManifold (bC p b)) (chartAt ℂ p).source := by
+  intro y hy
+  -- On chart_p.source the chart-p reduction lemma applies.
+  -- Build the chart-p representative `g := partialZBar (bC ∘ chart_p.symm) ∘ chart_p`.
+  -- Show `g` is ContMDiffWithinAt at y in chart_p.source via composition.
+  -- Then conclude `partialZBarManifold (bC) y = g y` and lift.
+  have h_chart : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞
+      (chartAt ℂ p) (chartAt ℂ p).source := contMDiffOn_chart
+  have h_pZ : ContDiffOn ℝ ∞
+      (partialZBar (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm))
+      (extChartAt 𝓘(ℝ, ℂ) p).target := partialZBar_bC_chart_p_symm_contDiffOn p b
+  have h_pZ_mdiff : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞
+      (partialZBar (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm))
+      (extChartAt 𝓘(ℝ, ℂ) p).target := contMDiffOn_iff_contDiffOn.mpr h_pZ
+  -- chart_p maps chart_p.source into (extChartAt 𝓘(ℝ, ℂ) p).target.
+  -- Use `(extChartAt I p).map_source` and the defeq `(extChartAt I p) x = (chartAt H p) x`.
+  have h_maps : Set.MapsTo (chartAt ℂ p) (chartAt ℂ p).source
+      (extChartAt 𝓘(ℝ, ℂ) p).target := by
+    intro x hx
+    have hx' : x ∈ (extChartAt 𝓘(ℝ, ℂ) p).source := by
+      rw [extChartAt_source]; exact hx
+    show (chartAt ℂ p) x ∈ (extChartAt 𝓘(ℝ, ℂ) p).target
+    exact (extChartAt 𝓘(ℝ, ℂ) p).map_source hx'
+  -- Composition: `partialZBar (bC ∘ chart_p.symm) ∘ chart_p` is ContMDiffOn ∞ on chart_p.source.
+  have h_g : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞
+      (fun y : X => partialZBar (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm)
+                      ((chartAt ℂ p) y))
+      (chartAt ℂ p).source := by
+    have h_comp := h_pZ_mdiff.comp h_chart h_maps
+    exact h_comp
+  -- Pointwise: partialZBarManifold (bC) = g on chart_p.source (via reduction).
+  have h_eq_on : ∀ x ∈ (chartAt ℂ p).source,
+      partialZBarManifold (bC p b) x
+        = partialZBar (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) p).symm) ((chartAt ℂ p) x) := by
+    intro x hx
+    show partialZBarManifold (bC p b) x
+        = partialZBar (bC p b ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) x)
+    exact partialZBarManifold_eq_chart_p_under_const p (bC p b) h_const hx
+  -- Bridge via ContMDiffOn congruence.
+  exact (h_g.congr h_eq_on) y hy
 
 end JacobianChallenge.MeromorphicFunctionField
 
