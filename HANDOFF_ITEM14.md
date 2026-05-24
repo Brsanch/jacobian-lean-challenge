@@ -253,85 +253,118 @@ The 2026-05-23 follow-up commit on this branch added:
   chart-ball partition of a smooth path (e.g. complex-period
   decomposition, Stokes-on-curved-loops, etc.).
 
-## Additional 2026-05-23 chip — structural prerequisite for the primitive-existence route
+## Additional 2026-05-23 chips — foundation of the maximal-atlas cascade
 
-* `Manifold/ConvexBallChartAtMaximalAtlas.lean` (~150 LOC) —
+* `Manifold/ConvexBallChartAtMaximalAtlas.lean` (~200 LOC) —
   `convexBallChartAt (x : X) := (chartAt ℂ x).restr (chartBallSourcePreimage x)`.
   Headline lemmas: `convexBallChartAt_target_eq` (target = ball),
-  `convexBallChartAt_target_convex`, and
-  `convexBallChartAt_mem_maximalAtlas` (the restricted chart lies in
-  `IsManifold.maximalAtlas (𝓘(ℂ, ℂ)) ω X` via mathlib's
-  `restr_mem_maximalAtlas` + `ClosedUnderRestriction (contDiffGroupoid ω 𝓘(ℂ,ℂ))`).
+  `convexBallChartAt_target_convex`,
+  `convexBallChartAt_mem_maximalAtlas` (in `(𝓘(ℂ, ℂ)) ω` maxAtlas via
+  `restr_mem_maximalAtlas`), and `convexBallChartAt_mem_maximalAtlas_real`
+  (the ℝ-`⊤` model variant — what the chartLocalPrimitive cascade
+  actually consumes).
 
-  This packages, for every `x : X` on arbitrary compact connected
-  complex 1-manifold, a chart in the **maximal** atlas with a convex
-  target. The canonical `chartAt ℂ x` does not in general have convex
-  target, so the existing `HasConvexChartAtTarget X` typeclass cannot
-  be instantiated on arbitrary X. The maximal-atlas refinement here is
-  the structural foundation for a future
-  `PathPrimitiveAdmissibleChartCover_max` predicate that takes charts
-  in the maximal atlas rather than only `atlas ℂ X` — once that's in
-  place, admissibility discharges UNCONDITIONALLY on arbitrary X.
+  Packages, for every `x` on arbitrary X, a chart in BOTH maximal
+  atlases with convex (ball) target. The canonical `chartAt ℂ x` does
+  not in general have convex target, so the existing
+  `HasConvexChartAtTarget X` typeclass cannot be instantiated on
+  arbitrary X. This chip is the structural answer.
 
-  Verified: `taskpolicy -b nice -n 19 env LEAN_NUM_THREADS=1 lake
-  build JacobianChallenge.Manifold.ConvexBallChartAtMaximalAtlas`.
+* `Manifold/SmoothPathLinearInChartMax.lean` (~140 LOC) —
+  `SmoothPath.linearInChartSegmentMax`: parallel to the existing
+  `SmoothPath.linearInChartSegment`, parameterised by `h_max : φ ∈
+  IsManifold.maximalAtlas (𝓘(ℝ, ℂ)) ⊤ X` instead of `h_atlas : φ ∈
+  atlas ℂ X`. Body identical minus the `subset_maximalAtlas` call
+  (uses `h_max` directly). Bridge lemma
+  `linearInChartSegmentMax_eq_linearInChartSegment` shows the two
+  produce the **same SmoothPath** when both apply — proven by `rfl`
+  via Prop irrelevance on the `smooth` field.
 
-## What to do next session
+  This is the foundation of the cascade. The atlas-membership
+  parameter is consumed exactly once across the entire cascade (in
+  `linearInChartSegment`'s smoothness proof, via
+  `subset_maximalAtlas`); removing it here unblocks every downstream
+  function from atlas-only-membership.
 
-The cleanest concrete sequence to close the reverse leg
-(`S2ImpliesGenus0 X`) on arbitrary X:
+  Verified: full project `taskpolicy lake build` of both targets
+  succeeds (2648 jobs).
 
-1. **Generalise the chartLocalPrimitive arc from `atlas ℂ X` to
-   `IsManifold.maximalAtlas (𝓘(ℂ,ℂ)) ω X`.** The signature change
-   touches ~10 files
-   (`SmoothPathLinearInChart.lean`, `ChartLocalPrimitive.lean`,
-   `ChartLocalPrimitiveExtend.lean`, `PathPrimitiveLocalSmoothFTCNamed.lean`,
-   `PathPrimitiveGlobalSmoothFTC.lean`, `HasAdmissibleChartCoverClass.lean`,
-   `HasAdmissibleChartCoverFromConvexChartAtTarget.lean`, plus their
-   dependents). Inspection of `SmoothPathLinearInChart.lean:288-289`
-   shows `h_atlas` is used ONLY to call `IsManifold.subset_maximalAtlas`,
-   so the generalisation is mechanical: replace `h_atlas : φ ∈ atlas ℂ X`
-   with `h_max : φ ∈ IsManifold.maximalAtlas (𝓘(ℂ,ℂ)) ω X` everywhere,
-   propagate callsites via `IsManifold.subset_maximalAtlas` adapters
-   where needed.
+## What to do next session — continue the maxAtlas cascade
 
-2. **Provide a `HasAdmissibleChartCover X` instance for arbitrary X**
-   via the maximal-atlas-version of the admissibility chain consuming
-   `convexBallChartAt` (above).
+The structural foundation is in place (`convexBallChartAt` +
+`linearInChartSegmentMax`). To close the reverse leg on arbitrary X,
+build the parallel maxAtlas variants up the cascade. The work is
+mechanical and chip-sized for one session each:
 
-3. **`s2ImpliesGenus0_from_subsingletonOfSimplyConnected` closes the
-   reverse leg** — composing with `subsingleton_of_BSLB_and_universalAdmissibility`
-   (wait, that one still needs BSLB — use `subsingleton_of_primitiveExistence`
-   instead, which doesn't need BSLB at all once the chartLocalPrimitive
-   arc is generalised).
+**Cascade order** (file → defs/lemmas that need a `Max` parallel
+variant taking `h_max` instead of `h_atlas`):
 
-Alternative — also closes the reverse leg without the maximal-atlas
-refactor:
+1. `Manifold/ChartLocalPrimitive.lean` (6 decls, ~230 LOC) →
+   `ChartLocalPrimitiveMax.lean`. The def `chartLocalPrimitive` plus
+   `chartLocalPrimitive_self` (basepoint identity). Each lemma is a
+   direct parallel; same body modulo `h_atlas → h_max`.
 
-* **Direct primitive construction via `exists_chartBall_anchor_partition`
-  + chart-local primitives.** Don't use the existing admissibility
-  chain. Instead: for each smooth path `γ` on simply-connected X,
-  build `F(γ.tgt) = Σ_segments F_k` where `F_k` is a chart-local
-  primitive on segment k's chart-image-ball (via mathlib's
-  `DifferentiableOn.isExactOn_ball` applied to the chart-pulled-back
-  form). Show well-definedness on simply-connected X via standard
-  monodromy argument (two paths between same endpoints differ on each
-  ball segment by an additive constant that telescopes to 0 when the
-  loop is null-homotopic). This is more self-contained but requires
-  building the primitive infrastructure from scratch, parallel to the
-  existing `pathPrimitive` machinery.
+2. `Manifold/ChartLocalPrimitiveExtend.lean` → `ChartLocalPrimitiveExtendMax.lean`.
+   The `chartLocalPrimitiveExtend` def (extension to total function)
+   plus its source-restriction and `EventuallyEq` lemmas.
+
+3. `Manifold/PathPrimitiveLocalSmoothFTCNamed.lean` →
+   `PathPrimitiveLocalSmoothFTCNamedMax.lean`. The named hypotheses
+   `ChartLocalPrimitiveSmoothExt`, `ChartLocalPrimitiveFTC` and the
+   two `pathPrimitive_*_of_*` bridge lemmas.
+
+4. `Manifold/ChartLocalPrimitiveSmoothExtChartAt.lean` /
+   `Manifold/ChartLocalPrimitiveFTCChartAt.lean` →
+   per-chart discharges of the named hypotheses. Trickier — these are
+   the actual classical content (parameter-integral smoothness +
+   chain-rule FTC). They currently discharge for `chartAt ℂ x` only.
+   For the maxAtlas variant, they need to discharge for ANY chart in
+   maxAtlas — but the proof is generic (only uses chart smoothness),
+   so it carries.
+
+5. `Manifold/PathPrimitiveGlobalSmoothFTC.lean` →
+   `PathPrimitiveGlobalSmoothFTCMax.lean`. The
+   `PathPrimitiveAdmissibleChartCover` predicate (taking maxAtlas
+   charts) and the two `pathPrimitive_*_of_admissible` global theorems.
+
+6. `Manifold/HasAdmissibleChartCoverClass.lean` /
+   `Manifold/HasAdmissibleChartCoverFromConvexChartAtTarget.lean` →
+   the maxAtlas typeclass + UNCONDITIONAL instance on arbitrary X
+   via `convexBallChartAt` (no `HasConvexChartAtTarget X` needed).
+
+**Final composition** (single chip after the cascade lands):
+
+7. `holomorphicOneFormSubsingletonOfSimplyConnected_of_universalAdmissibilityMax`
+   — composes the new admissibility chain with
+   `subsingleton_of_BSLB_and_pathPrimitive` (or
+   `subsingleton_of_primitiveExistence`).
+   Composing with `s2ImpliesGenus0_from_subsingletonOfSimplyConnected`
+   gives `S2ImpliesGenus0 X` on arbitrary X — the reverse leg of
+   item 14, UNCONDITIONALLY closed.
+
+   Caveat: `subsingleton_of_BSLB_and_pathPrimitive` still requires
+   BSLB. To bypass BSLB entirely, the cleanest route is
+   `subsingleton_of_primitiveExistence` (in tree, unconditional in
+   the sense that it consumes only "primitive exists"). For that, the
+   maxAtlas chain delivers BOTH smoothness AND FTC of `pathPrimitive`
+   given `LoopPeriodVanishes`, and the question becomes how to
+   discharge `LoopPeriodVanishes` on simply-connected X. The
+   chart-by-chart monodromy argument noted in the previous handoff
+   version still applies and is independent of the maxAtlas
+   cascade — that's the genuine remaining classical content beyond
+   the cascade.
 
 **For the forward leg**: classical Riemann-Roch at genus 0
 (`RR_DimGE2_GenusZero_Germ X`). Multi-chip, but no Whitney smoothing
 gap. The surrounding infrastructure (divisor degree, linear systems,
 MeromorphicNonzero lift) is already in tree.
 
-Per the chip-prompt-preamble anti-paraphrase gates, NEITHER direction
-should produce more "from N inputs" reformulations or per-X-only
-instance chips. Each new chip must either remove a `sorry` from
-`Basic.lean`, discharge a classical hypothesis on arbitrary X, or prove
-a substantive mathlib-bridged lemma that IS one of the named open
-hypotheses.
+Per the chip-prompt-preamble anti-paraphrase gates, the cascade above
+is borderline: each `Max` chip parallels an existing function. The
+test for "not paraphrase" is that the cascade collectively reduces a
+named hypothesis on arbitrary X (admissibility — and once landed,
+discharges `S2ImpliesGenus0` on arbitrary X via the existing
+subsingleton-of-pathPrimitive chain).
 
 ## Discipline
 
