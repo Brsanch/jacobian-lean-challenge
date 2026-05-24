@@ -1,385 +1,217 @@
 # Item 14 — handoff
 
-Last refreshed: 2026-05-23 (BSLB scope correction + path-partition chip).
+Last refreshed: 2026-05-24 (after the chartLocalPrimitive maxAtlas
+cascade, 16 commits this session, branch
+`feat/item14-affineChartTriangleSimplex-ball`, not yet pushed).
 
-## Actual state (verified by tracing the in-tree named-hypothesis chain to leaves)
+## TL;DR
 
-Item 14 is `Basic.lean:73` —
+The reverse leg of Item 14 (`S2ImpliesGenus0 X`) on arbitrary compact
+connected complex 1-manifold X has been reduced — unconditionally —
+to **one named classical input**:
+
 ```
-genus_eq_zero_iff_homeo : genus X = 0 ↔ Nonempty (X ≃ₜ StandardS2)
-```
-on arbitrary compact connected complex 1-manifold X.
-
-The cleanest in-tree reduction is
-[`Item14ViaSubsingletonFromBSLBAndAdmissibility.lean`](JacobianChallenge/Topology/Item14ViaSubsingletonFromBSLBAndAdmissibility.lean):
-
-```lean
-genus_eq_zero_iff_homeo_via_subsingleton_from_BSLB_and_universalAdmissibility
-    (x₀ : X)
-    (hSP : ExistsSimplePoleGermAtSomePoint X)
-    (h_bslb : BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) X x₀)
-    (h_admit : ∀ om, PathPrimitiveAdmissibleChartCover om) :
-    genus X = 0 ↔ Nonempty (X ≃ₜ StandardS2)
+SimplyConnectedSpace X → BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) X x₀
 ```
 
-`h_admit` is auto-provided by the `HasAdmissibleChartCover` typeclass
-+ the chart-cover-lift instance shipped 2026-05-23.
+(per `s2ImpliesGenus0_of_basedSmoothLoopsBoundHypothesis_unconditional`
+in `Topology/S2ImpliesGenus0FromBSLBUnconditional.lean`).
 
-**So item 14 closes on arbitrary X once we discharge TWO named hypotheses:**
+Equivalently: every smooth loop on a simply-connected X bounds *some*
+smooth 2-chain.
 
-1. **`hSP : ExistsSimplePoleGermAtSomePoint X`** — Riemann-Roch dim ≥ 2 at
-   genus 0. Bottom of the chain (`Topology/RRGenusZeroFinrankChain.lean`
-   → `Topology/RRDimensionFormGerm.lean`) is `RR_DimGE2_GenusZero_Germ X`
-   (germ-form RR dim bound). Not in mathlib. Single classical statement.
+All other analytic + topological inputs are unconditionally discharged
+in tree:
+* `simplyConnectedS2_holds`,
+* `smoothPathConnected_of_preconnected`,
+* `chartContainedLoopVanishingHypothesis_holds_unconditional`,
+* `holomorphicStokesHypothesis_holds_unconditional`,
+* and (new this session) `chartLocalPrimitive{SmoothExt,FTC}Max_convexBallChartAt`.
 
-2. **`BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) X x₀`** — every smooth based
-   loop bounds a smooth 2-chain. Per
-   [`Manifold/BasedSmoothLoopsBoundFromFactorisation.lean`](JacobianChallenge/Manifold/BasedSmoothLoopsBoundFromFactorisation.lean),
-   reduces to `LoopFactorsThroughVectorSpaceHypothesis ℂ X x₀`. On RS,
-   discharged via missed-point + chartN-pullback. The
-   **missed-point part is generic** (Sard via Hausdorff dimension,
-   `SmoothLoopHasMissedPointDischarge.lean`) — just specialized to RS.
-   General-X discharge has two known routes:
-   - (a) `Smooth2Simplex` refactor from `ContMDiff` to
-     `ContMDiffOn [0,1]²`, which unblocks the chain-assembly path
-     already in tree. Per earlier HANDOFF: "one chip away once the
-     refactor lands."
-   - (b) Generalize missed-point + chart-pullback factorisation to
-     arbitrary X (needs an analog of RS's chartN/Möbius structure).
+## Read this on entry
 
-## What is UNCONDITIONAL in tree (verified sorry-free 2026-05-23)
+* `AUDIT_LOOP_PERIOD_VANISHES.md` — full audit of the remaining gap,
+  including four alternative routes and why none is a "shortcut".
+* This file.
+* `OPEN.md` — repo-wide per-item status (look for the "Authoritative
+  current state" header).
+* `REPO_AUDIT.md` — chain-trace per `sorry`.
+* `tools/chip-prompt-preamble.md` — 7 anti-paraphrase gates (load
+  before any new chip).
 
-Don't re-derive these; they exist:
+## What landed this session (16 commits)
 
-- `FiniteDimensional ℂ (HolomorphicOneForm X)` — `DiskChartCover.holomorphicOneFormFiniteDim_holds`.
-- `ramificationSumEqualsDegree_holds_unconditional` (Riemann-Hurwitz sum).
-- `surjective_of_NonConstant_Analytic_Manifold_holds`.
-- `bijectiveAnalyticIsBiholomorphism_holds`.
-- `liouvilleOnCompactConnected_holds` (holomorphic on compact connected ⟹ constant).
-- `RiemannSphere.toSphereHomeo : RiemannSphere ≃ₜ StandardS2`.
-- `meromorphicIdentityPropagation_holds`.
-- `Subsingleton (HolomorphicOneForm RiemannSphere)` (via overlap-formula).
-- All of chip-D arc (chartLocal primitive smoothness + FTC at chartAt ℂ y).
-- `HasAdmissibleChartCover` typeclass + instances on RS and `ℂ ⧸ L` via
-  `HasConvexChartAtTarget`.
+The "chartLocalPrimitive maxAtlas cascade" — a structural refactor of
+the chart-local primitive arc to take charts in the ℝ-`⊤` maximal
+atlas instead of the canonical `atlas`. The maxAtlas form accepts
+`convexBallChartAt y` (= `(chartAt ℂ y).restr (chartBallSourcePreimage y)`,
+which has convex target unconditionally), eliminating the previous
+"convex target of `chartAt ℂ y`" obstruction that blocked the chip-A/B/D
+arc on arbitrary X.
 
-## What was the 2026-05-23 session's actual contribution
+Steps:
+1. `chartLocalPrimitiveMax` data def + basepoint identity.
+2. `chartLocalPrimitiveExtendMax` total-function wrapper (incl.
+   pathPrimitive bridge lemmas).
+3a. `pathPrimitive ↔ chartLocalPrimitiveMax` bridge (Max-form chip-B3
+   foundation).
+3b. ContMDiffAt / mfderiv transfer Max.
+3c. Named hypotheses `ChartLocalPrimitive{SmoothExt,FTC}Max` +
+   composition theorems.
+4a. Max-form lifts of chartAt-form chip-A/B/D headlines (intermediate
+   step, useful when chartAt y happens to have convex target).
+4b. rfl bridges showing `chartLocalPrimitiveMax (convexBallChartAt y) =
+   chartLocalPrimitiveMax (chartAt ℂ y) (subset_maximalAtlas)` at the
+   path and value levels.
+4b SmoothExt. `chartLocalPrimitiveSmoothExtMax (convexBallChartAt y)`
+   UNCONDITIONALLY on arbitrary X — the genuine analytic content,
+   ~250 LOC. Uses chip-A on the ball + generalised chip-B3 + chart
+   smoothness via `contMDiffOn_of_mem_maximalAtlas`.
+4b FTC. `chartLocalPrimitiveFTCMax (convexBallChartAt y)` UNCONDITIONALLY,
+   ~180 LOC. D4-Max chain rule + D5 atlas reuse.
+5. `pathPrimitiveGlobalSmoothFTCMax` admissibility predicate + global
+   composition theorems.
+6. `pathPrimitiveAdmissibleChartCoverMax_holds` — admissibility
+   UNCONDITIONAL via convexBallChartAt y centered at each x. Payoff:
+   `pathPrimitive_contMDiff_unconditional` + `pathPrimitive_eval_eq_mfderiv_unconditional`
+   on arbitrary X under `LoopPeriodVanishes om x₀`.
+7. `s2ImpliesGenus0_of_loopPeriodVanishesOnSimplyConnected` — final
+   composition using the cascade.
 
-Net useful: ONE typeclass + instance — `HasConvexChartAtTarget X` →
-`HasAdmissibleChartCover X` (auto-provides `h_admit`). Repo did not
-need the redundant `Item14From2InputsUnderConvexChartAt.lean` (duplicates
-the existing `Item14ViaSubsingletonFromBSLBAndAdmissibility.lean`) or
-the chip-D arc ω-level work in the critical path (the existing in-tree
-machinery already worked at the needed regularity level).
+Plus three follow-up reduction-clarification commits:
+* `S2ImpliesGenus0FromSubdivisionTelescopingUnconditional.lean` —
+  composes the cascade with `chartContainedLoopVanishingHypothesis_holds_unconditional`.
+* `S2ImpliesGenus0FromBSLBUnconditional.lean` — composes via single-
+  basepoint BSLB.
+* `AUDIT_LOOP_PERIOD_VANISHES.md` — audit + four alternative routes.
 
-Net negative: ~385 LOC of paraphrase chips that look like progress but
-don't move the actual frontier. See
-`tools/chip-prompt-preamble.md` (added 2026-05-23) for the 7 hard
-anti-paraphrase gates installed afterwards.
+## The gap precisely
 
-## Path A progress (branch `feat/item14-affineChartTriangleSimplex-ball`, 3 commits, 2026-05-23)
+`HolomorphicStokesHypothesis X` is unconditional in tree
+(`Manifold/UniformChartContainmentDepth.lean:289` — Lebesgue + iterated
+midpoint subdivision). So the smooth-Stokes side is fully discharged.
 
-The handoff above estimated Path A as a `Smooth2Simplex` ContMDiff →
-ContMDiffOn refactor cascading through ~79 files. On inspection the
-actual blockage was narrower: one single definition
-(`affineChartTriangleSimplex_univ`) required `h_univ`, propagating
-through `chartStraightLinePath_univ`, `fanChain`, etc. A focused
-ball-data path was built instead — no structural refactor of
-`Smooth2Simplex`, no cross-file cascade.
+Combined with `loopPeriodVanishes_of_basedSmoothLoopsBoundHypothesis`,
+a smooth loop γ has zero period **iff** `single γ ∈ stokesBoundaries`
+(= the smooth-2-chain boundary image).
 
-What landed on the branch (verified, full manifest green,
-LEAN_NUM_THREADS=1 single-threaded; ~1,035 LOC across 3 new files):
+Therefore the open content is exactly:
 
-1. `Manifold/AffineChartTriangleSimplexBall.lean` — drops `h_univ` from
-   the chart-triangle simplex constructor. Takes chart-image-in-ball
-   data (`Metric.ball z_c r ⊆ (chartAt ℂ q).target` and three corner
-   points in the ball). Construction: bump-extend the affine map via
-   `exists_contMDiffMap_zero_one_of_isClosed` on the standard simplex
-   inside an open neighborhood where the affine map lands in the ball;
-   convex-combine with the ball center for global ambient extension;
-   compose with `(chartAt ℂ q).symm` (ContMDiffOn on chart target) via
-   `ContMDiffOn.comp_contMDiff`.
+> On simply-connected X, every smooth loop bounds some smooth 2-chain.
 
-2. `Manifold/ChartStraightLinePathBall.lean` — `chartStraightLinePath_ball`
-   defined canonically as `face2` of the degenerate ball triangle
-   `(z₀, z₁, z₀)`. Three face-equality lemmas + the ball-triangle
-   boundary identity.
+Mathlib's `SimplyConnectedSpace` only gives a *continuous* null-
+homotopy. Bridging continuous → smooth-bordism is the genuine open
+classical content.
 
-3. `Manifold/FanTriangulationBall.lean` — ball-data analog of
-   FanTriangulation.lean. `fanChain_ball`, `polygonalChain_ball`,
-   `spokeResidue_ball` (List ℂ + `∀ z ∈ zs, z ∈ ball` hypothesis;
-   uses Lean 4 proof irrelevance for spoke cancellation across adjacent
-   triangles). Same induction structure as the univ version's
-   `boundary₂_fanChain`, with revert/intro ceremony for the dependent
-   hypothesis and a `chartStraightLinePath_ball_congr_tgt` helper for
-   `getLast` rewrites under proof irrelevance. **Headline**:
-   `polygonalChain_ball_smoothCycle_mem_stokesBoundaries_of_closed`
-   — on arbitrary compact connected complex 1-manifold X, a closed
-   polygonal loop with all vertices in a common chart-image ball has
-   its SmoothCycle in `stokesBoundaries`.
+## How to continue — four alternative routes
 
-This is the chart-local building block for the BSLB chain-assembly
-arc. `UniformChartContainmentDepth_named X` (already unconditional in
-tree, see `Manifold/UniformChartContainmentDepth.lean`) provides the
-per-subdivision chart-image ball.
+See `AUDIT_LOOP_PERIOD_VANISHES.md` for details. Summary:
 
-## Audit findings (2026-05-23, after deep top-down trace from `Basic.lean`)
+| Route | Approach | LOC est | Pro | Con |
+|---|---|---|---|---|
+| **A** | Polygonal approximation + Van Kampen induction | 500-700 | Reuses fan-triangulation in tree | Van Kampen step is significant Lean |
+| **B** | Étale space of primitives + mathlib `monodromy_theorem` | 600-900 | Cleanest math; uses mathlib's monodromy off-the-shelf | Étale-space construction is novel to the tree |
+| **C** | Continuous-cell telescoping with Čech-coboundary | 500-800 | Direct cascade reuse | Coboundary content equivalent to smooth Hurewicz |
+| **D** | Sard generalisation + chart-by-chart loop completion | 300-500 | Sard generalises beyond RS | `X \ {q} ≅ ℂ` obstruction at factoring step |
 
-Item 14's `genus_eq_zero_iff_homeo X` factors through
-`SurfaceClassificationGenus.toIff` into **two independent named
-hypotheses** (`Genus0ImpliesS2` and `S2ImpliesGenus0`), each of which
-has its own discharge chain in tree. They do not need to be closed by
-the same route.
+All four require the *same classical content* (cohomology of
+locally-constant ℂ sheaf vanishes on simply-connected X) packaged
+differently. None is a shortcut.
 
-**Reverse leg (`S2ImpliesGenus0 X`)** reduces, via
-`s2ImpliesGenus0_from_subsingletonOfSimplyConnected X` +
-`simplyConnectedS2_holds` (unconditional, in tree), to a single
-classical theorem:
+**Recommendation**: Alt B (étale space + mathlib monodromy). It uses
+mathlib's `Mathlib.Topology.Homotopy.Lifting.monodromy_theorem` and
+`existsUnique_continuousMap_lifts`, which are purpose-built for this
+problem and not currently used in tree for anything.
 
-> *On a simply-connected compact connected complex 1-manifold X, the
-> space of holomorphic 1-forms is trivial.*
+Concrete first chip for Alt B:
 
-[`Topology/SubsingletonFromPrimitiveExistence.lean:185`](JacobianChallenge/Topology/SubsingletonFromPrimitiveExistence.lean)
-further reduces this to: **every holomorphic 1-form on simply-connected
-X admits a global smooth primitive** (the holomorphic Poincaré lemma).
-The `subsingleton_of_primitiveExistence` lemma is unconditional in tree
-via Liouville on compact connected manifolds.
+1. **Define the étale space of primitives** Et(ω) := `{(x, c) : x ∈ X, c ∈ ℂ}`
+   with the topology where a neighborhood of `(x₀, c₀)` is
+   `{(x, c) : x ∈ (convexBallChartAt y).source, c = chartLocalPrimitiveMax y x − chartLocalPrimitiveMax y x₀ + c₀}`
+   for any y with x₀, x in the chart source. The projection
+   `p : Et(ω) → X, (x, c) ↦ x` is a local homeomorphism by the
+   cascade's chart-local primitive uniqueness.
 
-This is the **cleanest** reverse-leg route. It avoids BSLB and the
-Whitney-smoothing-of-a-2-D-homotopy gap. Instead it needs only
-chart-by-chart primitive gluing along 1-D paths, which uses the chart
-ball partition + chart-local primitive arc (chip-D + mathlib's
-`DifferentiableOn.isExactOn_ball`).
+2. **Show `p` is a covering map** (or just a local homeomorphism with
+   the path-lifting needed for `existsUnique_continuousMap_lifts`).
+   The fiber over `x` is ℂ.
 
-**Forward leg (`Genus0ImpliesS2 X`)** reduces to the named hypothesis
-`ExistsSimplePoleGermAtSomePoint X` (= `hSP`), whose bottom is
-`RR_DimGE2_GenusZero_Germ X` — Riemann-Roch at genus 0. The downstream
-chain in tree (PrincDivWitnessExtraction → degree-1 mero function →
-`bijectiveAnalyticIsBiholomorphism_holds` → `genus_eq_zero_iff_homeo_of_HolomorphicEquiv_RiemannSphere`)
-is unconditional, so the forward leg is purely gated on RR at genus 0.
+3. **Apply `existsUnique_continuousMap_lifts`** with `f := id : X → X`,
+   `a₀ := x₀`, `e₀ := (x₀, 0)`. Hypotheses (existence + uniqueness of
+   path lifts) come from chart-local-primitive analytic continuation
+   + simply-connectedness.
 
-**The original BSLB framing was a red herring.** BSLB is one of several
-named-hypothesis discharges of subsingleton, but not the simplest. The
-primitive-existence route is structurally cleaner.
+4. **Conclude**: a global section X → Et(ω). Its second component is
+   the global primitive F : X → ℂ. Smoothness from local sections
+   smoothness (cascade).
 
-## Why the original BSLB framing was tempting (and wrong)
+5. **Compose with `s2ImpliesGenus0_of_loopPeriodVanishesOnSimplyConnected`**
+   (this session, in `Topology/S2ImpliesGenus0FromLoopPeriodVanishesUnconditional.lean`)
+   — closes Item 14 reverse leg on arbitrary X.
 
-The previous version of this handoff said "discharge BSLB on arbitrary
-X". That is **structurally impossible**: BSLB asserts every smooth
-loop bounds a smooth 2-chain, which is just false on, e.g., a torus —
-a loop winding around a generator does not bound. BSLB is a
-simply-connected property; on compact connected complex 1-manifolds it
-holds iff genus = 0, which by uniformization means X ≃ RS.
+## Key files added this session
 
-So the honest forms of "BSLB outside RS-specific code" are:
+In `JacobianChallenge/Manifold/`:
+* `ChartLocalPrimitiveMax.lean`
+* `ChartLocalPrimitiveExtendMax.lean`
+* `PathPrimitiveChartLocalBridgeMax.lean`
+* `PathPrimitiveSmoothnessFromChartLocalMax.lean`
+* `PathPrimitiveLocalSmoothFTCNamedMax.lean`
+* `ChartLocalPrimitiveSmoothExtFTCChartAtMax.lean`
+* `ChartLocalPrimitiveMaxConvexBallChartAt.lean`
+* `ChartLocalPrimitiveSmoothExtMaxConvexBallChartAt.lean`
+* `ChartLocalPrimitiveFTCMaxConvexBallChartAt.lean`
+* `PathPrimitiveGlobalSmoothFTCMax.lean`
+* `PathPrimitiveAdmissibleChartCoverMaxUnconditional.lean`
 
-* `BasedSmoothLoopsBoundHypothesis_of_simplyConnected`
-  (`[SimplyConnectedSpace X] → BSLB X p₀`). This is the actual
-  classical statement.
-* `BasedSmoothLoopsBoundHypothesis_of_genus_zero`
-  (`genus X = 0 → BSLB X p₀`), wired through whatever
-  genus → simply-connected step is in tree.
+In `JacobianChallenge/Topology/`:
+* `S2ImpliesGenus0FromLoopPeriodVanishesUnconditional.lean`
+* `S2ImpliesGenus0FromSubdivisionTelescopingUnconditional.lean`
+* `S2ImpliesGenus0FromBSLBUnconditional.lean`
 
-Both still need substantial classical content past what is already
-discharged:
+Root-level docs:
+* `AUDIT_LOOP_PERIOD_VANISHES.md`
+* `HANDOFF_ITEM14.md` (this file, refreshed)
 
-* Continuous null-homotopy of γ from `SimplyConnectedSpace X` is
-  already in tree:
-  `SmoothPath.continuousHomotopyOfSimplyConnected` (in
-  `Manifold/SmoothPathHomotopyFromSimplyConnected.lean`).
-* **The remaining gap is Whitney smoothing for manifold-valued maps**:
-  given a continuous `H : I × I → X` interpolating two smooth paths,
-  produce a smooth `H' : I × I → X` with the same boundary data.
-  mathlib's `Continuous.exists_contMDiff_approx_and_eqOn` requires the
-  codomain to be a normed vector space, not a general manifold, so it
-  does not apply directly. This is the same Whitney-approximation gap
-  that has blocked the cleanest cross-chart BSLB / Stokes routes for
-  months.
+## Forward leg status (unchanged this session)
 
-There are two practical workarounds, neither short:
+`Genus0ImpliesS2 X` reduces to `RR_DimGE2_GenusZero_Germ X` (Riemann-Roch
+at genus 0). The downstream chain (PrincDivWitnessExtraction → degree-1
+mero function → bijectiveAnalyticIsBiholomorphism_holds →
+genus_eq_zero_iff_homeo_of_HolomorphicEquiv_RiemannSphere) is
+unconditional. See HSP_AUDIT.md §4.5 for the cleanest deliverable.
+Independent of this session's cascade.
 
-1. **Missed-point + factor-through-ℂ, generalized.** The RS discharge
-   (`basedSmoothLoopsBoundHypothesis_RS_holds` via
-   `loopFactorsThroughVectorSpaceHypothesis_of_missedPoint`) uses
-   Sard-style "loop image has measure zero in dim-2" + the Möbius
-   shift to identify RS \ {q} ≅ ℂ. The Sard step generalizes (every
-   smooth loop on a 2-manifold has a missed point); the chart-shift
-   step needs a global biholomorphism between `X \ {q}` and a vector
-   space, which on simply-connected compact complex 1-manifolds is
-   uniformization at genus 0.
+## Discipline notes for next session
 
-2. **Polygonal subdivision + chart-local bordism + null-bordism of
-   the polygonal loop.** Use the path-level chart-ball partition (the
-   chip below) to replace γ by a polygonal loop crossing one
-   chart-image ball per segment. The γ-to-polygon homotopy in each
-   ball uses `affineChartTriangleSimplex_ball` material. The
-   *remaining* gap is null-bordism of the chart-crossing polygonal
-   loop — which by an inductive Van Kampen-style argument under
-   `[SimplyConnectedSpace X]` reduces to null-bordism of
-   single-chart-ball loops (already discharged by
-   `polygonalChain_ball_smoothCycle_mem_stokesBoundaries_of_closed`),
-   but the inductive step itself needs the Whitney smoothing above.
+The cascade chips are mechanical Max ports of an atlas-form arc — they
+collectively reduced a named hypothesis on arbitrary X (per the
+anti-paraphrase test). Future work should NOT add more "Max-form" or
+"intermediate-bridge" chips; the maxAtlas refactor is complete. The
+next chip should attack the smooth-bordism gap directly via one of
+the four alternative routes.
 
-Either route is a multi-week classical-content effort, not a
-single-chip closure.
+**Do not** route through BSLB → smooth Hurewicz via the
+RS-specific missed-point + Möbius pattern. That pattern requires
+`X \ {q} ≅ ℂ`, which is essentially uniformization — circular for
+arbitrary X.
 
-## Path A progress (2026-05-23, continued)
-
-The 2026-05-23 follow-up commit on this branch added:
-
-* `Manifold/UniformPathChartBallDepth.lean` (~210 LOC) —
-  `exists_chartBall_anchor_partition`: for every smooth path
-  `γ : SmoothPath 𝓘(ℝ, ℂ) X` on an arbitrary complex 1-manifold X
-  (`[ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]`), there is an
-  equidistant `Fin N` partition of `[0, 1]` plus per-segment chart
-  anchors `qs : Fin N → X` such that on each `[k/N, (k+1)/N]`,
-  `γ.ambient s ∈ chartBallSourcePreimage (qs k)` (i.e., γ lands in
-  `(chartAt ℂ (qs k)).source` and its chart-image lands in the
-  canonical chart-ball at `qs k`).
-
-  Pairs with `AffineChartTriangleSimplexBall`,
-  `ChartStraightLinePathBall`, and `FanTriangulationBall` to give a
-  chart-local polygonal approximation of any smooth path on X. Same
-  Lebesgue-number-lemma pattern as
-  `ComplexTorus.exists_chartAnchor_partition` (specific to ℂ ⧸ L) but
-  for arbitrary X.
-
-  Verified: `taskpolicy -b nice -n 19 env LEAN_NUM_THREADS=1 lake
-  build JacobianChallenge.Manifold.UniformPathChartBallDepth`. Full
-  manifest single-file check green.
-
-  This is reusable infrastructure for **either** of the two BSLB
-  workarounds above, plus for any other arc that wants a per-segment
-  chart-ball partition of a smooth path (e.g. complex-period
-  decomposition, Stokes-on-curved-loops, etc.).
-
-## Additional 2026-05-23 chips — foundation of the maximal-atlas cascade
-
-* `Manifold/ConvexBallChartAtMaximalAtlas.lean` (~200 LOC) —
-  `convexBallChartAt (x : X) := (chartAt ℂ x).restr (chartBallSourcePreimage x)`.
-  Headline lemmas: `convexBallChartAt_target_eq` (target = ball),
-  `convexBallChartAt_target_convex`,
-  `convexBallChartAt_mem_maximalAtlas` (in `(𝓘(ℂ, ℂ)) ω` maxAtlas via
-  `restr_mem_maximalAtlas`), and `convexBallChartAt_mem_maximalAtlas_real`
-  (the ℝ-`⊤` model variant — what the chartLocalPrimitive cascade
-  actually consumes).
-
-  Packages, for every `x` on arbitrary X, a chart in BOTH maximal
-  atlases with convex (ball) target. The canonical `chartAt ℂ x` does
-  not in general have convex target, so the existing
-  `HasConvexChartAtTarget X` typeclass cannot be instantiated on
-  arbitrary X. This chip is the structural answer.
-
-* `Manifold/SmoothPathLinearInChartMax.lean` (~140 LOC) —
-  `SmoothPath.linearInChartSegmentMax`: parallel to the existing
-  `SmoothPath.linearInChartSegment`, parameterised by `h_max : φ ∈
-  IsManifold.maximalAtlas (𝓘(ℝ, ℂ)) ⊤ X` instead of `h_atlas : φ ∈
-  atlas ℂ X`. Body identical minus the `subset_maximalAtlas` call
-  (uses `h_max` directly). Bridge lemma
-  `linearInChartSegmentMax_eq_linearInChartSegment` shows the two
-  produce the **same SmoothPath** when both apply — proven by `rfl`
-  via Prop irrelevance on the `smooth` field.
-
-  This is the foundation of the cascade. The atlas-membership
-  parameter is consumed exactly once across the entire cascade (in
-  `linearInChartSegment`'s smoothness proof, via
-  `subset_maximalAtlas`); removing it here unblocks every downstream
-  function from atlas-only-membership.
-
-  Verified: full project `taskpolicy lake build` of both targets
-  succeeds (2648 jobs).
-
-## What to do next session — continue the maxAtlas cascade
-
-The structural foundation is in place (`convexBallChartAt` +
-`linearInChartSegmentMax`). To close the reverse leg on arbitrary X,
-build the parallel maxAtlas variants up the cascade. The work is
-mechanical and chip-sized for one session each:
-
-**Cascade order** (file → defs/lemmas that need a `Max` parallel
-variant taking `h_max` instead of `h_atlas`):
-
-1. `Manifold/ChartLocalPrimitive.lean` (6 decls, ~230 LOC) →
-   `ChartLocalPrimitiveMax.lean`. The def `chartLocalPrimitive` plus
-   `chartLocalPrimitive_self` (basepoint identity). Each lemma is a
-   direct parallel; same body modulo `h_atlas → h_max`.
-
-2. `Manifold/ChartLocalPrimitiveExtend.lean` → `ChartLocalPrimitiveExtendMax.lean`.
-   The `chartLocalPrimitiveExtend` def (extension to total function)
-   plus its source-restriction and `EventuallyEq` lemmas.
-
-3. `Manifold/PathPrimitiveLocalSmoothFTCNamed.lean` →
-   `PathPrimitiveLocalSmoothFTCNamedMax.lean`. The named hypotheses
-   `ChartLocalPrimitiveSmoothExt`, `ChartLocalPrimitiveFTC` and the
-   two `pathPrimitive_*_of_*` bridge lemmas.
-
-4. `Manifold/ChartLocalPrimitiveSmoothExtChartAt.lean` /
-   `Manifold/ChartLocalPrimitiveFTCChartAt.lean` →
-   per-chart discharges of the named hypotheses. Trickier — these are
-   the actual classical content (parameter-integral smoothness +
-   chain-rule FTC). They currently discharge for `chartAt ℂ x` only.
-   For the maxAtlas variant, they need to discharge for ANY chart in
-   maxAtlas — but the proof is generic (only uses chart smoothness),
-   so it carries.
-
-5. `Manifold/PathPrimitiveGlobalSmoothFTC.lean` →
-   `PathPrimitiveGlobalSmoothFTCMax.lean`. The
-   `PathPrimitiveAdmissibleChartCover` predicate (taking maxAtlas
-   charts) and the two `pathPrimitive_*_of_admissible` global theorems.
-
-6. `Manifold/HasAdmissibleChartCoverClass.lean` /
-   `Manifold/HasAdmissibleChartCoverFromConvexChartAtTarget.lean` →
-   the maxAtlas typeclass + UNCONDITIONAL instance on arbitrary X
-   via `convexBallChartAt` (no `HasConvexChartAtTarget X` needed).
-
-**Final composition** (single chip after the cascade lands):
-
-7. `holomorphicOneFormSubsingletonOfSimplyConnected_of_universalAdmissibilityMax`
-   — composes the new admissibility chain with
-   `subsingleton_of_BSLB_and_pathPrimitive` (or
-   `subsingleton_of_primitiveExistence`).
-   Composing with `s2ImpliesGenus0_from_subsingletonOfSimplyConnected`
-   gives `S2ImpliesGenus0 X` on arbitrary X — the reverse leg of
-   item 14, UNCONDITIONALLY closed.
-
-   Caveat: `subsingleton_of_BSLB_and_pathPrimitive` still requires
-   BSLB. To bypass BSLB entirely, the cleanest route is
-   `subsingleton_of_primitiveExistence` (in tree, unconditional in
-   the sense that it consumes only "primitive exists"). For that, the
-   maxAtlas chain delivers BOTH smoothness AND FTC of `pathPrimitive`
-   given `LoopPeriodVanishes`, and the question becomes how to
-   discharge `LoopPeriodVanishes` on simply-connected X. The
-   chart-by-chart monodromy argument noted in the previous handoff
-   version still applies and is independent of the maxAtlas
-   cascade — that's the genuine remaining classical content beyond
-   the cascade.
-
-**For the forward leg**: classical Riemann-Roch at genus 0
-(`RR_DimGE2_GenusZero_Germ X`). Multi-chip, but no Whitney smoothing
-gap. The surrounding infrastructure (divisor degree, linear systems,
-MeromorphicNonzero lift) is already in tree.
-
-Per the chip-prompt-preamble anti-paraphrase gates, the cascade above
-is borderline: each `Max` chip parallels an existing function. The
-test for "not paraphrase" is that the cascade collectively reduces a
-named hypothesis on arbitrary X (admissibility — and once landed,
-discharges `S2ImpliesGenus0` on arbitrary X via the existing
-subsingleton-of-pathPrimitive chain).
-
-## Discipline
-
-Do not write more "from N inputs" chips. Do not write more per-X
-instance chips. Do not write more parallel route chips. Each of these
-adds LOC without removing the `sorry`. See
-[`tools/chip-prompt-preamble.md`](tools/chip-prompt-preamble.md) for the
-hard gates.
+**Do not** add more chips that further reformulate
+LoopPeriodVanishes / BSLB / SubdivisionTelescopingToLoop_named into
+"from N inputs" forms. The reformulations are exhausted; what's owed
+is genuine classical content.
 
 ## Worktree commands
 
 ```bash
 git worktree list      # confirm worktree still pinned
 cd "/Volumes/4TB SD/ClaudeCode/jacobian-lean-challenge-item14"
+git log --oneline feat/item14-affineChartTriangleSimplex-ball...origin/main
 ```
 
 The original checkout at `/Volumes/4TB SD/ClaudeCode/jacobian-lean-challenge`
 is used by a parallel session on a different branch. Don't `cd` into it.
+
+The branch is **not yet pushed**. Verify with `git log
+origin/feat/item14-affineChartTriangleSimplex-ball..HEAD` before
+claiming "pushed" anywhere.
