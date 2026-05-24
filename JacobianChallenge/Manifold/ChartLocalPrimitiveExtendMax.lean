@@ -5,6 +5,7 @@ Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Manifold.ChartLocalPrimitiveExtend
 import JacobianChallenge.Manifold.ChartLocalPrimitiveMax
+import JacobianChallenge.Manifold.PathPrimitiveChartLocalBridgeMax
 
 set_option linter.unusedSectionVars false
 
@@ -26,16 +27,12 @@ Maximal-atlas variant of `ChartLocalPrimitiveExtend.lean`. Same
 * `chartLocalPrimitiveExtendMax_eq_chartLocalPrimitiveExtend` —
   agreement with the atlas-parameterised original whenever `h_atlas`
   is available (i.e. equal as functions `X → ℂ`).
-
-The `pathPrimitive_*` bridge lemmas from `ChartLocalPrimitiveExtend.lean`
-(`pathPrimitive_eqOn_chartLocalPrimitiveExtend_add_const` and
-`pathPrimitive_eventuallyEq_chartLocalPrimitiveExtend_add_const_at`)
-consume `pathPrimitive_eq_pathPrimitive_at_chartBase_add_chartLocal`
-from `PathPrimitiveChartLocalBridge.lean`. That bridge is atlas-typed
-and uses `SmoothPath.linearInChartSegment` (plus its `_src`/`_tgt`
-identities) directly — porting it to the Max variant is a separate
-cascade step. The Max forms of the `pathPrimitive_*` lemmas land
-alongside that bridge port.
+* `pathPrimitive_eqOn_chartLocalPrimitiveExtendMax_add_const` and
+  `pathPrimitive_eventuallyEq_chartLocalPrimitiveExtendMax_add_const_at`
+  — the `EqOn` and `EventuallyEq` forms of the Max bridge, mirrors of
+  the atlas lemmas in `ChartLocalPrimitiveExtend.lean`, consuming the
+  bridge `pathPrimitive_eq_pathPrimitive_at_chartBase_add_chartLocalMax`
+  from `PathPrimitiveChartLocalBridgeMax.lean`.
 
 No `sorry`, no `axiom`.
 -/
@@ -113,6 +110,54 @@ lemma chartLocalPrimitiveExtendMax_eq_chartLocalPrimitiveExtend
       chartLocalPrimitiveMax_eq_chartLocalPrimitive
         φ h_atlas h_target_convex y hy om x hx]
   · rw [dif_neg hx, dif_neg hx]
+
+/-- **Set-level identity: `pathPrimitive` agrees with
+`chartLocalPrimitiveExtendMax + pathPrimitive y` on `φ.source`.**
+Maximal-atlas form of `pathPrimitive_eqOn_chartLocalPrimitiveExtend_add_const`.
+Direct restriction of `pathPrimitive_eq_pathPrimitive_at_chartBase_add_chartLocalMax`. -/
+theorem pathPrimitive_eqOn_chartLocalPrimitiveExtendMax_add_const
+    (h_conn : SmoothPathConnected 𝓘(ℝ, ℂ) X)
+    (x₀ : X) (om : HolomorphicOneForm X)
+    (h_loop : LoopPeriodVanishes om x₀)
+    (φ : OpenPartialHomeomorph X ℂ)
+    (h_max : φ ∈ IsManifold.maximalAtlas (𝓘(ℝ, ℂ)) ⊤ X)
+    (h_target_convex : Convex ℝ φ.target)
+    (y : X) (hy : y ∈ φ.source) :
+    EqOn (pathPrimitive h_conn x₀ om)
+      (fun x => chartLocalPrimitiveExtendMax φ h_max h_target_convex y hy om x
+        + pathPrimitive h_conn x₀ om y)
+      φ.source := by
+  intro x hx
+  show pathPrimitive h_conn x₀ om x
+    = chartLocalPrimitiveExtendMax φ h_max h_target_convex y hy om x
+      + pathPrimitive h_conn x₀ om y
+  rw [chartLocalPrimitiveExtendMax_eq_chartLocalPrimitiveMax
+      φ h_max h_target_convex y hy om x hx,
+    pathPrimitive_eq_pathPrimitive_at_chartBase_add_chartLocalMax
+      h_conn x₀ om h_loop φ h_max h_target_convex y hy x hx]
+  ring
+
+/-- **`EventuallyEq` version at a point of `φ.source`.** Maximal-atlas
+form of `pathPrimitive_eventuallyEq_chartLocalPrimitiveExtend_add_const_at`.
+Uses `φ.open_source` to upgrade the set-level `EqOn` to an
+`EventuallyEq` in the neighborhood filter at `x`. -/
+theorem pathPrimitive_eventuallyEq_chartLocalPrimitiveExtendMax_add_const_at
+    (h_conn : SmoothPathConnected 𝓘(ℝ, ℂ) X)
+    (x₀ : X) (om : HolomorphicOneForm X)
+    (h_loop : LoopPeriodVanishes om x₀)
+    (φ : OpenPartialHomeomorph X ℂ)
+    (h_max : φ ∈ IsManifold.maximalAtlas (𝓘(ℝ, ℂ)) ⊤ X)
+    (h_target_convex : Convex ℝ φ.target)
+    (y : X) (hy : y ∈ φ.source)
+    (x : X) (hx : x ∈ φ.source) :
+    pathPrimitive h_conn x₀ om =ᶠ[nhds x]
+      fun x' => chartLocalPrimitiveExtendMax φ h_max h_target_convex y hy om x'
+        + pathPrimitive h_conn x₀ om y := by
+  have h_open : IsOpen (φ.source : Set X) := φ.open_source
+  refine Filter.eventually_of_mem (h_open.mem_nhds hx) ?_
+  intro x' hx'
+  exact pathPrimitive_eqOn_chartLocalPrimitiveExtendMax_add_const
+    h_conn x₀ om h_loop φ h_max h_target_convex y hy hx'
 
 end JacobianChallenge
 
