@@ -77,27 +77,84 @@ don't move the actual frontier. See
 `tools/chip-prompt-preamble.md` (added 2026-05-23) for the 7 hard
 anti-paraphrase gates installed afterwards.
 
-## What to do next session (anti-paraphrase)
+## Path A progress (branch `feat/item14-affineChartTriangleSimplex-ball`, 3 commits, 2026-05-23)
 
-**Pick ONE of the two open named hypotheses and commit to its discharge.**
+The handoff above estimated Path A as a `Smooth2Simplex` ContMDiff →
+ContMDiffOn refactor cascading through ~79 files. On inspection the
+actual blockage was narrower: one single definition
+(`affineChartTriangleSimplex_univ`) required `h_univ`, propagating
+through `chartStraightLinePath_univ`, `fanChain`, etc. A focused
+ball-data path was built instead — no structural refactor of
+`Smooth2Simplex`, no cross-file cascade.
 
-Each is single-arc multi-session. Neither requires mathlib-class
-theorems that mathlib lacks; each requires real but bounded Lean work:
+What landed on the branch (verified, full manifest green,
+LEAN_NUM_THREADS=1 single-threaded; ~1,035 LOC across 3 new files):
 
-- **Path A (BSLB on arbitrary X via `Smooth2Simplex` refactor).**
-  Refactor `Smooth2Simplex` from `ContMDiff` to `ContMDiffOn [0,1]²`
-  (cascades through `boundary`, `boundary₂`, `boundary₂Cycle`,
-  integration machinery). Once done, the chain-assembly +
-  fan-triangulation + chart-local straight-line bordism (all in tree)
-  glue across chart boundaries, giving BSLB on arbitrary
-  simply-connected X. Estimated 1-3k LOC of refactor; no new classical
-  content needed.
+1. `Manifold/AffineChartTriangleSimplexBall.lean` — drops `h_univ` from
+   the chart-triangle simplex constructor. Takes chart-image-in-ball
+   data (`Metric.ball z_c r ⊆ (chartAt ℂ q).target` and three corner
+   points in the ball). Construction: bump-extend the affine map via
+   `exists_contMDiffMap_zero_one_of_isClosed` on the standard simplex
+   inside an open neighborhood where the affine map lands in the ball;
+   convex-combine with the ball center for global ambient extension;
+   compose with `(chartAt ℂ q).symm` (ContMDiffOn on chart target) via
+   `ContMDiffOn.comp_contMDiff`.
+
+2. `Manifold/ChartStraightLinePathBall.lean` — `chartStraightLinePath_ball`
+   defined canonically as `face2` of the degenerate ball triangle
+   `(z₀, z₁, z₀)`. Three face-equality lemmas + the ball-triangle
+   boundary identity.
+
+3. `Manifold/FanTriangulationBall.lean` — ball-data analog of
+   FanTriangulation.lean. `fanChain_ball`, `polygonalChain_ball`,
+   `spokeResidue_ball` (List ℂ + `∀ z ∈ zs, z ∈ ball` hypothesis;
+   uses Lean 4 proof irrelevance for spoke cancellation across adjacent
+   triangles). Same induction structure as the univ version's
+   `boundary₂_fanChain`, with revert/intro ceremony for the dependent
+   hypothesis and a `chartStraightLinePath_ball_congr_tgt` helper for
+   `getLast` rewrites under proof irrelevance. **Headline**:
+   `polygonalChain_ball_smoothCycle_mem_stokesBoundaries_of_closed`
+   — on arbitrary compact connected complex 1-manifold X, a closed
+   polygonal loop with all vertices in a common chart-image ball has
+   its SmoothCycle in `stokesBoundaries`.
+
+This is the chart-local building block for the BSLB chain-assembly
+arc. `UniformChartContainmentDepth_named X` (already unconditional in
+tree, see `Manifold/UniformChartContainmentDepth.lean`) provides the
+per-subdivision chart-image ball.
+
+## What to do next session
+
+**Assemble BSLB on arbitrary X** by chaining the chart-local ball
+machinery into a full discharge of
+`BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) X x₀`. Outline:
+
+1. Take a smooth loop γ : SmoothPath 𝓘(ℝ, ℂ) X at x₀.
+2. Use `UniformChartContainmentDepth_named X` (unconditional in tree)
+   to subdivide [0,1] into segments each mapped by γ into a single
+   chart-image ball.
+3. Per-segment chart-local polygonal approximation: replace γ on each
+   segment by a chart-straight-line path between its endpoints (same
+   chart, in the ball — uses `chartStraightLinePath_ball`).
+4. Per-segment bordism between γ-piece and chart-straight-line-piece:
+   needs a small homotopy 2-chain. The triangle simplex from
+   `affineChartTriangleSimplex_ball` is the natural piece. Polygonal
+   and straight-line pieces are the boundary; γ-piece is the third
+   edge (or a thin 2-chain interpolation).
+5. Glue: assembled 2-chain whose boundary is γ minus the closed
+   polygonal loop. By `polygonalChain_ball_smoothCycle_mem_stokesBoundaries_of_closed`
+   the polygonal loop is in stokesBoundaries; therefore γ is too.
+
+Steps 3-4 are the substantive remaining classical content. Step 2 has
+the existing in-tree compactness machinery. Step 5 is mostly
+list/sum bookkeeping.
+
+The other open named hypothesis remains:
 
 - **Path B (hSP / RR-g0 dim bound).** Discharge `RR_DimGE2_GenusZero_Germ X`
   classically — Serre duality at genus 0 + canonical divisor degree.
-  Estimated 1.5-4k LOC of classical content. The surrounding
-  infrastructure (divisor degree, linear systems, MeromorphicNonzero
-  lift) is in tree.
+  The surrounding infrastructure (divisor degree, linear systems,
+  MeromorphicNonzero lift) is in tree.
 
 ## Discipline
 
