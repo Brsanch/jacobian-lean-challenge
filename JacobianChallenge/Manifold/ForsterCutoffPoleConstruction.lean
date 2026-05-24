@@ -465,6 +465,44 @@ lemma partialZBarManifold_g₀_eq_α_off_pole
       exact h.eq_of_nhds
     rw [h_lhs, h_rhs]
 
+/-! ## Chart-side smoothness of `partialZBar`
+
+For `ContDiffAt ℝ ⊤ f z`, `partialZBar f` is `ContDiffAt ℝ ⊤` at `z`.
+The map factors as: `fderiv ℝ f` is `ContDiffAt ⊤` at `z` (mathlib's
+`ContDiffAt.fderiv_right` with `⊤ + 1 ≤ ⊤`), then evaluation at `1`
+and `I` (via `ContDiffAt.clm_apply`), then `(2)⁻¹ * (· + I * ·)`. -/
+
+private lemma partialZBar_contDiffAt_of_contDiffAt {f : ℂ → ℂ} {z : ℂ}
+    (hf : ContDiffAt ℝ ⊤ f z) :
+    ContDiffAt ℝ ⊤ (partialZBar f) z := by
+  -- Break the ℝ-`NormedSpace ℂ` diamond before doing fderiv-of-fderiv arithmetic
+  -- (mathlib has both `NormedSpace.complexToReal` and `NormedAlgebra.toNormedSpace`).
+  letI : NormedSpace ℝ ℂ := @NormedAlgebra.toNormedSpace ℝ ℂ _ _ _
+  -- Step 1: `fderiv ℝ f` is ContDiffAt ⊤ at z.
+  have h_top_add : ((⊤ : WithTop ℕ∞) + 1 : WithTop ℕ∞) ≤ ⊤ := by
+    rw [WithTop.top_add]
+  have h_fderiv : ContDiffAt ℝ ⊤ (fderiv ℝ f) z := hf.fderiv_right h_top_add
+  -- Step 2: pointwise evaluation at 1 and I.
+  have h_eval_1 : ContDiffAt ℝ ⊤ (fun z : ℂ => (fderiv ℝ f z) (1 : ℂ)) z :=
+    h_fderiv.clm_apply contDiffAt_const
+  have h_eval_I : ContDiffAt ℝ ⊤ (fun z : ℂ => (fderiv ℝ f z) (I : ℂ)) z :=
+    h_fderiv.clm_apply contDiffAt_const
+  -- Step 3: `I * (fderiv ℝ f z) I`.
+  have h_I_times : ContDiffAt ℝ ⊤ (fun z : ℂ => I * (fderiv ℝ f z) I) z :=
+    contDiffAt_const.mul h_eval_I
+  -- Step 4: sum.
+  have h_sum : ContDiffAt ℝ ⊤
+      (fun z : ℂ => (fderiv ℝ f z) 1 + I * (fderiv ℝ f z) I) z :=
+    h_eval_1.add h_I_times
+  -- Step 5: `(1/2) * (...)`.
+  have h_final : ContDiffAt ℝ ⊤
+      (fun z : ℂ => (2 : ℂ)⁻¹ * ((fderiv ℝ f z) 1 + I * (fderiv ℝ f z) I)) z :=
+    contDiffAt_const.mul h_sum
+  -- Unfold `partialZBar`.
+  change ContDiffAt ℝ ⊤
+    (fun z : ℂ => (2 : ℂ)⁻¹ * ((fderiv ℝ f z) 1 + I * (fderiv ℝ f z) I)) z
+  exact h_final
+
 end JacobianChallenge.MeromorphicFunctionField
 
 end
