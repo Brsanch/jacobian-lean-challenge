@@ -7,6 +7,7 @@ import JacobianChallenge.Manifold.ExistsSimplePoleGermFromGenusZeroDBarSolvabili
 import JacobianChallenge.Manifold.PartialZBarManifold
 import JacobianChallenge.Manifold.PartialZBarAnalyticConverse
 import JacobianChallenge.Manifold.ComplexManifoldRealification
+import JacobianChallenge.Manifold.MeromorphicAt
 import Mathlib.Geometry.Manifold.BumpFunction
 import Mathlib.Geometry.Manifold.ContMDiff.Atlas
 
@@ -148,30 +149,37 @@ private lemma partialZBar_eq_zero_of_eventuallyEq_const {f : ℂ → ℂ} {z : �
     (h : f =ᶠ[𝓝 z] fun _ => c) : partialZBar f z = 0 := by
   rw [partialZBar_congr_of_eventuallyEq h, partialZBar_const]
 
+/-- Chart-pullback tendsto helper: `chart.symm` tends to `x` as its argument
+tends to `chart x x`. -/
+private lemma extChartAt_symm_tendsto (x : X) :
+    Filter.Tendsto (extChartAt 𝓘(ℂ, ℂ) x).symm
+      (𝓝 ((extChartAt 𝓘(ℂ, ℂ) x) x)) (𝓝 x) := by
+  have h_cts := continuousAt_extChartAt_symm (I := (𝓘(ℂ, ℂ))) x
+  have h_g_eq : (extChartAt 𝓘(ℂ, ℂ) x).symm ((extChartAt 𝓘(ℂ, ℂ) x) x) = x :=
+    extChartAt_to_inv x
+  rw [show (𝓝 x) = (𝓝 ((extChartAt 𝓘(ℂ, ℂ) x).symm ((extChartAt 𝓘(ℂ, ℂ) x) x))) from
+      by rw [h_g_eq]]
+  exact h_cts
+
+/-- Manifold-side: if `f =ᶠ[𝓝 x] g`, then
+`partialZBarManifold f x = partialZBarManifold g x`. -/
+private lemma partialZBarManifold_congr_of_eventuallyEq
+    {f g : X → ℂ} {x : X} (h : f =ᶠ[𝓝 x] g) :
+    partialZBarManifold f x = partialZBarManifold g x := by
+  unfold partialZBarManifold
+  have h_chart :
+      (f ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm)
+        =ᶠ[𝓝 ((extChartAt 𝓘(ℂ, ℂ) x) x)]
+        (g ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm) :=
+    h.comp_tendsto (extChartAt_symm_tendsto x)
+  exact partialZBar_congr_of_eventuallyEq h_chart
+
 /-- Manifold-side: if `f =ᶠ[𝓝 x] (fun _ => c)`, then
 `partialZBarManifold f x = 0`. -/
 private lemma partialZBarManifold_eq_zero_of_eventuallyEq_const
     {f : X → ℂ} {x : X} {c : ℂ}
     (h : f =ᶠ[𝓝 x] fun _ => c) : partialZBarManifold f x = 0 := by
-  -- Push `h` through chart.symm using continuity of `chart.symm` at `chart x x`.
-  unfold partialZBarManifold
-  have h_tendsto : Filter.Tendsto (extChartAt 𝓘(ℂ, ℂ) x).symm
-      (𝓝 ((extChartAt 𝓘(ℂ, ℂ) x) x)) (𝓝 x) := by
-    -- `ContinuousAt g y` definitionally unfolds to `Tendsto g (𝓝 y) (𝓝 (g y))`.
-    have h_cts := continuousAt_extChartAt_symm (I := (𝓘(ℂ, ℂ))) x
-    have h_g_eq : (extChartAt 𝓘(ℂ, ℂ) x).symm ((extChartAt 𝓘(ℂ, ℂ) x) x) = x :=
-      extChartAt_to_inv x
-    rw [show (𝓝 x) = (𝓝 ((extChartAt 𝓘(ℂ, ℂ) x).symm ((extChartAt 𝓘(ℂ, ℂ) x) x))) from
-        by rw [h_g_eq]]
-    exact h_cts
-  have h_chart :
-      (f ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm)
-        =ᶠ[𝓝 ((extChartAt 𝓘(ℂ, ℂ) x) x)] ((fun _ : X => c) ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm) :=
-    h.comp_tendsto h_tendsto
-  -- `(fun _ : X => c) ∘ chart.symm = fun _ : ℂ => c`.
-  have h_const : ((fun _ : X => c) ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm) = (fun _ : ℂ => c) := rfl
-  rw [h_const] at h_chart
-  exact partialZBar_eq_zero_of_eventuallyEq_const h_chart
+  rw [partialZBarManifold_congr_of_eventuallyEq h, partialZBarManifold_const]
 
 /-! ## Vanishing of `partialZBarManifold (bC p b)` in a nbhd of `p`. -/
 
@@ -258,6 +266,204 @@ private lemma α_eventuallyEq_zero_off_tsupport
   filter_upwards [partialZBarManifold_bC_eventuallyEq_zero_off_tsupport p b hy] with y' h
   show partialZBarManifold (bC p b) y' * chartInv p y' = 0
   rw [h]; ring
+
+/-! ## Chart-transition holomorphy of `chartInv` off the pole
+
+`chartInv p` is chart-p-holomorphic by construction, but
+`partialZBarManifold` is defined via chart-y. The transition
+`chart_p ∘ chart_y.symm` is `AnalyticAt ℂ` on the holomorphic atlas
+(via `analyticAt_chart_transition_of_isManifold`), so `chartInv p`'s
+chart-y pullback is ℂ-differentiable at `chart_y y` whenever
+`y ∈ chart_p.source ∩ {y ≠ p}`. -/
+
+/-- For `y ∈ chart_p.source`, on a neighborhood of `chart_y y` the
+chart-y pullback of `chartInv p` agrees with
+`(chart_p (chart_y.symm w) - c₀)⁻¹`. -/
+private lemma chartInv_chart_pullback_eventuallyEq
+    (p : X) {y : X} (hy : y ∈ (chartAt ℂ p).source) :
+    (chartInv p ∘ (extChartAt 𝓘(ℂ, ℂ) y).symm)
+      =ᶠ[𝓝 ((extChartAt 𝓘(ℂ, ℂ) y) y)]
+      (fun w : ℂ => ((chartAt ℂ p) ((chartAt ℂ y).symm w)
+                       - (chartAt ℂ p) p)⁻¹) := by
+  -- On a nbhd of chart_y y, chart_y.symm sends w into chart_p.source.
+  -- Continuity of chart_y.symm at chart_y y, with chart_y.symm (chart_y y) = y ∈ chart_p.source.
+  have h_tendsto := extChartAt_symm_tendsto (X := X) y
+  have h_p_src_nhds : (chartAt ℂ p).source ∈ 𝓝 y :=
+    (chartAt ℂ p).open_source.mem_nhds hy
+  have h_w_in_src :
+      ∀ᶠ w in 𝓝 ((extChartAt 𝓘(ℂ, ℂ) y) y),
+        (extChartAt 𝓘(ℂ, ℂ) y).symm w ∈ (chartAt ℂ p).source :=
+    h_tendsto h_p_src_nhds
+  filter_upwards [h_w_in_src] with w hw
+  show chartInv p ((extChartAt 𝓘(ℂ, ℂ) y).symm w)
+      = ((chartAt ℂ p) ((chartAt ℂ y).symm w) - (chartAt ℂ p) p)⁻¹
+  -- `(extChartAt 𝓘(ℂ, ℂ) y).symm w = (chartAt ℂ y).symm w` definitionally
+  -- (the model 𝓘(ℂ, ℂ) is `id` on ℂ).
+  have h_symm_eq : (extChartAt 𝓘(ℂ, ℂ) y).symm w = (chartAt ℂ y).symm w := rfl
+  rw [h_symm_eq] at hw ⊢
+  exact chartInv_of_mem_source p _ hw
+
+/-- For `y ∈ chart_p.source` with `y ≠ p`, the chart-y pullback of
+`chartInv p` is ℂ-differentiable at `chart_y y`. -/
+private lemma chartInv_chart_pullback_differentiableAt
+    [IsManifold 𝓘(ℂ, ℂ) ω X]
+    (p : X) {y : X} (hy : y ∈ (chartAt ℂ p).source) (hyp : y ≠ p) :
+    DifferentiableAt ℂ (chartInv p ∘ (extChartAt 𝓘(ℂ, ℂ) y).symm)
+      ((extChartAt 𝓘(ℂ, ℂ) y) y) := by
+  -- Use the eventually-eq, then prove the simpler RHS is ℂ-differentiable.
+  rw [(chartInv_chart_pullback_eventuallyEq p hy).differentiableAt_iff]
+  -- RHS: `w ↦ ((chartAt ℂ p) ((chartAt ℂ y).symm w) - (chartAt ℂ p) p)⁻¹`.
+  -- Chart transition `(chartAt ℂ p) ∘ (chartAt ℂ y).symm` is `AnalyticAt ℂ`.
+  have h_chart_y_mem : (chartAt ℂ y) ∈ atlas ℂ X := chart_mem_atlas ℂ y
+  have h_chart_p_mem : (chartAt ℂ p) ∈ atlas ℂ X := chart_mem_atlas ℂ p
+  have h_y_in_y : y ∈ (chartAt ℂ y).source := mem_chart_source ℂ y
+  have h_an_trans :
+      AnalyticAt ℂ ((chartAt ℂ p) ∘ (chartAt ℂ y).symm)
+        ((chartAt ℂ y) y) :=
+    analyticAt_chart_transition_of_isManifold (M := X)
+      h_chart_y_mem h_chart_p_mem h_y_in_y hy
+  -- Subtract a constant: still analytic.
+  have h_an_sub :
+      AnalyticAt ℂ (fun w : ℂ => (chartAt ℂ p) ((chartAt ℂ y).symm w)
+                                   - (chartAt ℂ p) p)
+        ((chartAt ℂ y) y) := by
+    have h_const : AnalyticAt ℂ (fun _ : ℂ => (chartAt ℂ p) p)
+        ((chartAt ℂ y) y) := analyticAt_const
+    -- `(fun w => (chart_p ∘ chart_y.symm) w - c₀)` is `analyticAt`'s `sub`.
+    exact h_an_trans.sub h_const
+  -- Value of the inner function at `chart_y y` equals `chart_p y - c₀`.
+  have h_val : (fun w : ℂ => (chartAt ℂ p) ((chartAt ℂ y).symm w)
+                                   - (chartAt ℂ p) p) ((chartAt ℂ y) y)
+      = (chartAt ℂ p) y - (chartAt ℂ p) p := by
+    show (chartAt ℂ p) ((chartAt ℂ y).symm ((chartAt ℂ y) y))
+          - (chartAt ℂ p) p
+        = (chartAt ℂ p) y - (chartAt ℂ p) p
+    have h_left_inv : (chartAt ℂ y).symm ((chartAt ℂ y) y) = y :=
+      (chartAt ℂ y).left_inv h_y_in_y
+    rw [h_left_inv]
+  -- `chart_p y ≠ chart_p p` since `chart_p` is injective on its source.
+  have h_inj : (chartAt ℂ p) y ≠ (chartAt ℂ p) p := by
+    intro h_eq
+    have h_p_in_src : p ∈ (chartAt ℂ p).source := mem_chart_source ℂ p
+    have h_y_eq_p : y = p := (chartAt ℂ p).injOn hy h_p_in_src h_eq
+    exact hyp h_y_eq_p
+  have h_nonzero : (chartAt ℂ p) y - (chartAt ℂ p) p ≠ 0 := sub_ne_zero.mpr h_inj
+  -- Show w ↦ (inner)⁻¹ is `AnalyticAt`, hence differentiableAt.
+  have h_an_inv : AnalyticAt ℂ (fun w : ℂ => ((chartAt ℂ p) ((chartAt ℂ y).symm w)
+                                                - (chartAt ℂ p) p)⁻¹)
+      ((chartAt ℂ y) y) := by
+    apply h_an_sub.inv
+    show (chartAt ℂ p) ((chartAt ℂ y).symm ((chartAt ℂ y) y)) - (chartAt ℂ p) p ≠ 0
+    rw [(chartAt ℂ y).left_inv h_y_in_y]
+    exact h_nonzero
+  -- Bridge `extChartAt 𝓘(ℂ, ℂ) y` to `chartAt ℂ y` (defeq on ℂ).
+  show DifferentiableAt ℂ (fun w : ℂ => ((chartAt ℂ p) ((chartAt ℂ y).symm w)
+                                            - (chartAt ℂ p) p)⁻¹)
+    ((extChartAt 𝓘(ℂ, ℂ) y) y)
+  have h_base_eq : (extChartAt 𝓘(ℂ, ℂ) y) y = (chartAt ℂ y) y := rfl
+  rw [h_base_eq]
+  exact h_an_inv.differentiableAt
+
+/-! ## Chart-y pullback of `bC` is ℝ-differentiable
+
+`bC` is globally `ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞`. Composing with the
+chart-y inverse (`ContMDiffOn` on the chart target) and using the
+vector-space identification `ContMDiffAt 𝓘(ℝ, E) 𝓘(ℝ, E') = ContDiffAt ℝ`,
+the chart-y pullback inherits `ContDiffAt ℝ ∞`. -/
+
+private lemma bC_chart_pullback_differentiableAt
+    (p : X) (b : SmoothBumpFunction 𝓘(ℝ, ℂ) p) (y : X) :
+    DifferentiableAt ℝ (bC p b ∘ (extChartAt 𝓘(ℂ, ℂ) y).symm)
+      ((extChartAt 𝓘(ℂ, ℂ) y) y) := by
+  -- Step 1: `bC` is `ContMDiff` globally.
+  have h_bC : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (bC p b) := bC_contMDiff p b
+  -- Step 2: `chart.symm` is `ContMDiffOn` on `chart.target`.
+  have h_symm : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (extChartAt 𝓘(ℝ, ℂ) y).symm
+                  (extChartAt 𝓘(ℝ, ℂ) y).target :=
+    contMDiffOn_extChartAt_symm y
+  -- Step 3: composition is `ContMDiffOn` on `chart.target`.
+  have h_comp : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞
+      (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) y).symm) (extChartAt 𝓘(ℝ, ℂ) y).target :=
+    h_bC.comp_contMDiffOn h_symm
+  -- Step 4: basepoint is in chart target (open).
+  have h_y_mem : (extChartAt 𝓘(ℝ, ℂ) y) y ∈ (extChartAt 𝓘(ℝ, ℂ) y).target :=
+    mem_extChartAt_target y
+  have h_target_open : IsOpen (extChartAt 𝓘(ℝ, ℂ) y).target :=
+    isOpen_extChartAt_target y
+  -- Step 5: `ContMDiffOn` ⇒ `ContMDiffAt` (open inclusion).
+  have h_within := h_comp _ h_y_mem
+  have h_at : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞
+      (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) y).symm) ((extChartAt 𝓘(ℝ, ℂ) y) y) :=
+    h_within.contMDiffAt (h_target_open.mem_nhds h_y_mem)
+  -- Step 6: vector-space bridge `ContMDiffAt` ⇔ `ContDiffAt`.
+  have h_cd : ContDiffAt ℝ ∞ (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) y).symm)
+      ((extChartAt 𝓘(ℝ, ℂ) y) y) := h_at.contDiffAt
+  -- Step 7: differentiable from `ContDiffAt ∞`.
+  have h_diff : DifferentiableAt ℝ (bC p b ∘ (extChartAt 𝓘(ℝ, ℂ) y).symm)
+      ((extChartAt 𝓘(ℝ, ℂ) y) y) := h_cd.differentiableAt (by decide)
+  -- Step 8: bridge `𝓘(ℝ, ℂ)` extChartAt to `𝓘(ℂ, ℂ)` extChartAt — both are
+  -- definitionally `chartAt ℂ y` with the identity model attached.
+  exact h_diff
+
+/-! ## Leibniz application: `partialZBarManifold g₀ y = α y` for `y ≠ p`
+
+For `y ∈ chart_p.source ∩ {y ≠ p}`: `chartInv`'s chart-y pullback is
+ℂ-differentiable at `chart_y y` (chart-transition holomorphy), so the
+Leibniz specialization
+`partialZBarManifold (bC · chartInv) y = partialZBarManifold bC y · chartInv y`
+applies. The LHS equals `partialZBarManifold g₀ y` (since g₀ = bC·chartInv
+pointwise), and the RHS is `α y` by definition.
+
+For `y ∉ tsupport b`: both sides vanish in a neighborhood (g₀ ≡ 0 and
+∂̄bC ≡ 0 nearby).
+
+Together these cover `X \ {p}`, since `tsupport b ⊆ chart_p.source` and
+`p ∈ tsupport b` is the only excluded case. -/
+
+/-- On `chart_p.source ∩ {y ≠ p}` the Leibniz spec applies, giving
+`partialZBarManifold g₀ y = α y`. -/
+private lemma partialZBarManifold_g₀_eq_α_on_source_off_pole
+    (p : X) (b : SmoothBumpFunction 𝓘(ℝ, ℂ) p) {y : X}
+    (hy : y ∈ (chartAt ℂ p).source) (hyp : y ≠ p) :
+    partialZBarManifold (g₀ p b) y = α p b y := by
+  -- Rewrite `g₀ = bC · chartInv` pointwise.
+  have h_g₀_eq : g₀ p b = fun z : X => bC p b z * chartInv p z := by
+    funext z; exact g₀_eq_bC_mul_chartInv p b z
+  rw [h_g₀_eq]
+  -- Leibniz spec (chartInv side ℂ-holomorphic).
+  have h_bC_diff := bC_chart_pullback_differentiableAt p b y
+  have h_chartInv_diff := chartInv_chart_pullback_differentiableAt p hy hyp
+  have h_leibniz :
+      partialZBarManifold (fun z : X => bC p b z * chartInv p z) y
+        = partialZBarManifold (bC p b) y * chartInv p y :=
+    partialZBarManifold_mul_of_chartPullback_differentiableAt_right
+      h_bC_diff h_chartInv_diff
+  rw [h_leibniz]
+  rfl
+
+/-- `partialZBarManifold g₀ y = α y` for every `y ≠ p`. -/
+lemma partialZBarManifold_g₀_eq_α_off_pole
+    (p : X) (b : SmoothBumpFunction 𝓘(ℝ, ℂ) p) {y : X} (hyp : y ≠ p) :
+    partialZBarManifold (g₀ p b) y = α p b y := by
+  -- Case split on `y ∈ tsupport b` vs `y ∉ tsupport b`.
+  by_cases hy_supp : y ∈ tsupport (b : X → ℝ)
+  · -- `tsupport b ⊆ chart_p.source` (mathlib bump fact), so apply the
+    -- on-source case.
+    have h_y_src : y ∈ (chartAt ℂ p).source :=
+      b.tsupport_subset_chartAt_source hy_supp
+    exact partialZBarManifold_g₀_eq_α_on_source_off_pole p b h_y_src hyp
+  · -- Off `tsupport b`: both sides vanish on a nbhd of y.
+    have h_g₀_zero : g₀ p b =ᶠ[𝓝 y] (fun _ : X => (0 : ℂ)) := by
+      filter_upwards [bC_eventuallyEq_zero_off_tsupport p b hy_supp] with z hz
+      show g₀ p b z = 0
+      rw [g₀_eq_bC_mul_chartInv]
+      rw [show bC p b z = 0 from hz]; ring
+    have h_lhs : partialZBarManifold (g₀ p b) y = 0 :=
+      partialZBarManifold_eq_zero_of_eventuallyEq_const h_g₀_zero
+    have h_rhs : α p b y = 0 := by
+      have h := α_eventuallyEq_zero_off_tsupport p b hy_supp
+      exact h.eq_of_nhds
+    rw [h_lhs, h_rhs]
 
 end JacobianChallenge.MeromorphicFunctionField
 
