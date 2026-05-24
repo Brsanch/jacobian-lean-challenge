@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last refreshed: 2026-05-23 (post deep-audit corrections).
+Last refreshed: 2026-05-23 (BSLB scope correction + path-partition chip).
 
 ## Actual state (verified by tracing the in-tree named-hypothesis chain to leaves)
 
@@ -123,38 +123,126 @@ arc. `UniformChartContainmentDepth_named X` (already unconditional in
 tree, see `Manifold/UniformChartContainmentDepth.lean`) provides the
 per-subdivision chart-image ball.
 
+## What BSLB actually requires (scope correction 2026-05-23)
+
+The previous version of this handoff said "discharge BSLB on arbitrary
+X". That is **structurally impossible**: BSLB asserts every smooth
+loop bounds a smooth 2-chain, which is just false on, e.g., a torus —
+a loop winding around a generator does not bound. BSLB is a
+simply-connected property; on compact connected complex 1-manifolds it
+holds iff genus = 0, which by uniformization means X ≃ RS.
+
+So the honest forms of "BSLB outside RS-specific code" are:
+
+* `BasedSmoothLoopsBoundHypothesis_of_simplyConnected`
+  (`[SimplyConnectedSpace X] → BSLB X p₀`). This is the actual
+  classical statement.
+* `BasedSmoothLoopsBoundHypothesis_of_genus_zero`
+  (`genus X = 0 → BSLB X p₀`), wired through whatever
+  genus → simply-connected step is in tree.
+
+Both still need substantial classical content past what is already
+discharged:
+
+* Continuous null-homotopy of γ from `SimplyConnectedSpace X` is
+  already in tree:
+  `SmoothPath.continuousHomotopyOfSimplyConnected` (in
+  `Manifold/SmoothPathHomotopyFromSimplyConnected.lean`).
+* **The remaining gap is Whitney smoothing for manifold-valued maps**:
+  given a continuous `H : I × I → X` interpolating two smooth paths,
+  produce a smooth `H' : I × I → X` with the same boundary data.
+  mathlib's `Continuous.exists_contMDiff_approx_and_eqOn` requires the
+  codomain to be a normed vector space, not a general manifold, so it
+  does not apply directly. This is the same Whitney-approximation gap
+  that has blocked the cleanest cross-chart BSLB / Stokes routes for
+  months.
+
+There are two practical workarounds, neither short:
+
+1. **Missed-point + factor-through-ℂ, generalized.** The RS discharge
+   (`basedSmoothLoopsBoundHypothesis_RS_holds` via
+   `loopFactorsThroughVectorSpaceHypothesis_of_missedPoint`) uses
+   Sard-style "loop image has measure zero in dim-2" + the Möbius
+   shift to identify RS \ {q} ≅ ℂ. The Sard step generalizes (every
+   smooth loop on a 2-manifold has a missed point); the chart-shift
+   step needs a global biholomorphism between `X \ {q}` and a vector
+   space, which on simply-connected compact complex 1-manifolds is
+   uniformization at genus 0.
+
+2. **Polygonal subdivision + chart-local bordism + null-bordism of
+   the polygonal loop.** Use the path-level chart-ball partition (the
+   chip below) to replace γ by a polygonal loop crossing one
+   chart-image ball per segment. The γ-to-polygon homotopy in each
+   ball uses `affineChartTriangleSimplex_ball` material. The
+   *remaining* gap is null-bordism of the chart-crossing polygonal
+   loop — which by an inductive Van Kampen-style argument under
+   `[SimplyConnectedSpace X]` reduces to null-bordism of
+   single-chart-ball loops (already discharged by
+   `polygonalChain_ball_smoothCycle_mem_stokesBoundaries_of_closed`),
+   but the inductive step itself needs the Whitney smoothing above.
+
+Either route is a multi-week classical-content effort, not a
+single-chip closure.
+
+## Path A progress (2026-05-23, continued)
+
+The 2026-05-23 follow-up commit on this branch added:
+
+* `Manifold/UniformPathChartBallDepth.lean` (~210 LOC) —
+  `exists_chartBall_anchor_partition`: for every smooth path
+  `γ : SmoothPath 𝓘(ℝ, ℂ) X` on an arbitrary complex 1-manifold X
+  (`[ChartedSpace ℂ X] [IsManifold (𝓘(ℂ, ℂ)) ω X]`), there is an
+  equidistant `Fin N` partition of `[0, 1]` plus per-segment chart
+  anchors `qs : Fin N → X` such that on each `[k/N, (k+1)/N]`,
+  `γ.ambient s ∈ chartBallSourcePreimage (qs k)` (i.e., γ lands in
+  `(chartAt ℂ (qs k)).source` and its chart-image lands in the
+  canonical chart-ball at `qs k`).
+
+  Pairs with `AffineChartTriangleSimplexBall`,
+  `ChartStraightLinePathBall`, and `FanTriangulationBall` to give a
+  chart-local polygonal approximation of any smooth path on X. Same
+  Lebesgue-number-lemma pattern as
+  `ComplexTorus.exists_chartAnchor_partition` (specific to ℂ ⧸ L) but
+  for arbitrary X.
+
+  Verified: `taskpolicy -b nice -n 19 env LEAN_NUM_THREADS=1 lake
+  build JacobianChallenge.Manifold.UniformPathChartBallDepth`. Full
+  manifest single-file check green.
+
+  This is reusable infrastructure for **either** of the two BSLB
+  workarounds above, plus for any other arc that wants a per-segment
+  chart-ball partition of a smooth path (e.g. complex-period
+  decomposition, Stokes-on-curved-loops, etc.).
+
 ## What to do next session
 
-**Assemble BSLB on arbitrary X** by chaining the chart-local ball
-machinery into a full discharge of
-`BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) X x₀`. Outline:
+Two natural directions, both honest about the Whitney smoothing gap:
 
-1. Take a smooth loop γ : SmoothPath 𝓘(ℝ, ℂ) X at x₀.
-2. Use `UniformChartContainmentDepth_named X` (unconditional in tree)
-   to subdivide [0,1] into segments each mapped by γ into a single
-   chart-image ball.
-3. Per-segment chart-local polygonal approximation: replace γ on each
-   segment by a chart-straight-line path between its endpoints (same
-   chart, in the ball — uses `chartStraightLinePath_ball`).
-4. Per-segment bordism between γ-piece and chart-straight-line-piece:
-   needs a small homotopy 2-chain. The triangle simplex from
-   `affineChartTriangleSimplex_ball` is the natural piece. Polygonal
-   and straight-line pieces are the boundary; γ-piece is the third
-   edge (or a thin 2-chain interpolation).
-5. Glue: assembled 2-chain whose boundary is γ minus the closed
-   polygonal loop. By `polygonalChain_ball_smoothCycle_mem_stokesBoundaries_of_closed`
-   the polygonal loop is in stokesBoundaries; therefore γ is too.
+* **Continue the polygonal-bordism BSLB route under
+  `[SimplyConnectedSpace X]`.** With `exists_chartBall_anchor_partition`
+  in hand, the next concrete chip is the per-segment chart-local
+  homotopy 2-simplex: takes a smooth path segment in a chart-image
+  ball and produces a `Smooth2Simplex` whose boundary is `single
+  (γ-piece) - single (chart-straight-line)`. This is honest classical
+  content using `chartHomotopyMap` (already in
+  `Manifold/SmoothHomotopyPath.lean`) — no Whitney smoothing needed
+  for the *per-segment* step (the path is already smooth, and the
+  straight-line interpolation is smooth in the chart). The Whitney
+  smoothing only enters at the *polygonal-loop null-bordism* step,
+  which can be deferred behind a named hypothesis if needed.
 
-Steps 3-4 are the substantive remaining classical content. Step 2 has
-the existing in-tree compactness machinery. Step 5 is mostly
-list/sum bookkeeping.
+* **Switch to Path B (hSP / RR-g0 dim bound).** Discharge
+  `RR_DimGE2_GenusZero_Germ X` classically: Serre duality at genus 0
+  + canonical divisor degree. The surrounding infrastructure (divisor
+  degree, linear systems, MeromorphicNonzero lift) is already in tree.
+  This is also multi-chip but doesn't have the Whitney gap.
 
-The other open named hypothesis remains:
-
-- **Path B (hSP / RR-g0 dim bound).** Discharge `RR_DimGE2_GenusZero_Germ X`
-  classically — Serre duality at genus 0 + canonical divisor degree.
-  The surrounding infrastructure (divisor degree, linear systems,
-  MeromorphicNonzero lift) is in tree.
+Per the chip-prompt-preamble anti-paraphrase gates, NEITHER direction
+should produce more "from N inputs" reformulations or per-X-only
+instance chips. Each new chip must either remove a `sorry` from
+`Basic.lean`, discharge a classical hypothesis on arbitrary X, or prove
+a substantive mathlib-bridged lemma that IS one of the named open
+hypotheses.
 
 ## Discipline
 
