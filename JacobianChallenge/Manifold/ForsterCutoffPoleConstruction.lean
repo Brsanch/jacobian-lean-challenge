@@ -503,6 +503,60 @@ private lemma partialZBar_contDiffAt_of_contDiffAt {f : ℂ → ℂ} {z : ℂ}
     (fun z : ℂ => (2 : ℂ)⁻¹ * ((fderiv ℝ f z) 1 + I * (fderiv ℝ f z) I)) z
   exact h_final
 
+/-! ## Chart-locality on a chart source
+
+The Forster §16 cutoff/correction construction uses the bump `b` whose
+support lies inside `(chartAt ℂ p).source`. On this set, the canonical
+`chartAt ℂ y` for varying `y` need not equal `chartAt ℂ p` in general
+— `mathlib`'s `ChartedSpace` does not enforce local chart constancy.
+However, for typical Riemann surface constructions (e.g.,
+`RiemannSphere` at any finite point — `chartAt' y = chartN` for every
+finite `y ∈ chartN.source = {y | y ≠ ∞}`), `chartAt` IS constant on
+each chart's source. We capture this as a Prop hypothesis available
+for downstream consumers to discharge for their concrete X.
+
+The hypothesis is **classical** (a structural property of chartAt's
+selection, holding for concrete Riemann surface constructions), not a
+renamed version of α smoothness — it isolates the chart-locality
+content into a single named Prop. -/
+
+/-- `chartAt ℂ y` is constant on `(chartAt ℂ p).source`. Holds for
+typical concrete `ChartedSpace ℂ X` constructions (e.g., `RiemannSphere`
+at finite `p`). -/
+def ChartAtConstantOnSource (p : X) : Prop :=
+  ∀ y ∈ (chartAt ℂ p).source, chartAt ℂ y = chartAt ℂ p
+
+/-- Under `ChartAtConstantOnSource p`, `partialZBarManifold f y` on
+`chart_p.source` reduces to a chart-p-relative computation. -/
+private lemma partialZBarManifold_eq_chart_p_under_const
+    (p : X) (f : X → ℂ)
+    (h_const : ChartAtConstantOnSource p)
+    {y : X} (hy : y ∈ (chartAt ℂ p).source) :
+    partialZBarManifold f y
+      = partialZBar (f ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) y) := by
+  unfold partialZBarManifold
+  have h_eq : chartAt ℂ y = chartAt ℂ p := h_const y hy
+  -- `(extChartAt 𝓘(ℂ, ℂ) y) y` is definitionally `(chartAt ℂ y) y`, then
+  -- rewrite via `h_eq` to `(chartAt ℂ p) y`. Similarly for `.symm`.
+  have h_basept : (extChartAt 𝓘(ℂ, ℂ) y) y = (chartAt ℂ p) y := by
+    show (chartAt ℂ y) y = (chartAt ℂ p) y
+    rw [h_eq]
+  have h_symm_fn : (f ∘ (extChartAt 𝓘(ℂ, ℂ) y).symm)
+      = (f ∘ (chartAt ℂ p).symm) := by
+    funext w
+    show f ((chartAt ℂ y).symm w) = f ((chartAt ℂ p).symm w)
+    rw [h_eq]
+  rw [h_symm_fn, h_basept]
+
+/-! ## Smoothness of `partialZBarManifold (bC)` on chart_p.source (under chart-const)
+
+Under `ChartAtConstantOnSource p`, the manifold-side ∂̄ of `bC`
+reduces to the chart-p computation `partialZBar (bC ∘ chart_p.symm)
+(chart_p y)` on `chart_p.source`. The chart-side `partialZBar` is
+`ContDiffAt ℝ ⊤` (Foundation lemma above) and `chart_p` is smooth, so
+the composition is `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤` at every
+`y ∈ chart_p.source`. -/
+
 end JacobianChallenge.MeromorphicFunctionField
 
 end
