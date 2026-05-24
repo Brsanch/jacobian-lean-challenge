@@ -191,35 +191,75 @@ on those open sets trivially). The **annulus** part —
 `{y ∈ chart_p.source | 0 < ‖chart_p y − c₀‖}` ∩ `tsupport b` — is where
 the work is.
 
-Strategy: on the annulus, use the chart-p chart-pullback formula. For
-`y` in the annulus, the chart-p target evaluation point
-`z := chart_p y ≠ c₀`. The chart-p representation of α is:
+**Foundation in tree (commit `93b6676`):**
 
-  `α_p(z) := (z − c₀)⁻¹ · partialZBar (bC ∘ chart_p.symm) z`
+  `partialZBar_contDiffAt_of_contDiffAt :
+     ContDiffAt ℝ ⊤ f z → ContDiffAt ℝ ⊤ (partialZBar f) z`
 
-which is `C^∞-ℝ` on the punctured chart_p.target (both factors are
-`C^∞-ℝ` away from `c₀`, and the inversion is OK since `z − c₀ ≠ 0`).
+is the chart-side (`ℂ → ℂ`, no manifold) regularity bridge — built
+via `ContDiffAt.fderiv_right` + `ContDiffAt.clm_apply` + scalar/add.
+This gives `ContDiffOn ℝ ⊤ (partialZBar (bC ∘ chart_p.symm))
+chart_p.target` after pointwise + ContDiffOn assembly. This is the
+chart-p-relative ∂̄ of `bC ∘ chart_p.symm`.
 
-Bridging `α_p` (chart-p view) ↔ `α` (chart-y view) requires the
-chart-transition factor `conj(deriv (chart_p ∘ chart_y.symm))`, since
-`partialZBarManifold` uses chart at y rather than chart at p. The
-`partialZBar_comp_of_differentiableAt` chain rule
-(`PartialZBarChainRule.lean`) handles this — chart transitions of a
-`[IsManifold 𝓘(ℂ, ℂ) ω X]` are ℂ-holomorphic, so `deriv` is just the
-complex derivative, and `conj(deriv)` is `C^∞-ℝ` away from chart
-boundary.
+**Obstacle for lifting to manifold-side α smoothness**:
+`partialZBarManifold f x` is defined as
+`partialZBar (f ∘ (extChartAt 𝓘(ℂ, ℂ) x).symm) ((extChartAt 𝓘(ℂ, ℂ) x) x)`,
+i.e., it uses **`chartAt ℂ x`** (the canonical chart at `x`).
+Mathlib's `ChartedSpace` does NOT guarantee that `chartAt` is locally
+constant; for two nearby points `y` and `y'`, `chartAt ℂ y` and
+`chartAt ℂ y'` may be entirely different charts. Smoothness of
+`y ↦ partialZBarManifold (bC) y` as a function of `y` therefore needs
+either (a) `chartAt` locally constant on chart sources (true for
+concrete instances like `RiemannSphere`, see
+`RiemannSphere.lean:363` — `chartAt' x := OnePoint.rec chartS (fun _ ↦ chartN) x`
+is constant on the `coe`-image and on `{∞}` separately), or (b) the
+chart-transition factor `conj (deriv (chart_p ∘ chartAt y.symm))` to be
+*itself* a smooth function of `y`, non-trivial when `chartAt y` varies
+with `y`.
 
-Concretely, prove:
+**Three resolution options for the next session:**
 
-  `partialZBarManifold (bC p b) y = (∂̄(bC ∘ chart_p.symm))(chart_p y)
-                                       · conj(deriv (chart_p ∘ chart_y.symm)(chart_y y))`
+1. **Add a `LocallyConstantChartAt` assumption** (or specialize to
+   concrete X like `RiemannSphere`/`ℂ ⧸ L` where this is automatic).
+   Weakens the final theorem from arbitrary X to "nice-chartAt" X.
+   Simplest path; matches what is already used elsewhere in the repo
+   for similar issues.
 
-for `y ∈ chart_p.source`. Then α's chart-y view is
+2. **Use mfderiv-based intrinsic ∂̄** instead of
+   `partialZBarManifold`. The mfderiv is chart-invariant (it's the
+   intrinsic differential), and ∂̄ extracted from it via the
+   `(0,1)`-part of a real-linear CLM should be smooth via standard
+   mfderiv smoothness machinery in mathlib. Requires re-stating the
+   off-pole identity in mfderiv terms — moderate rework.
 
-  `α y = chartInv y · partialZBar(bC ∘ chart_p.symm)(chart_p y)
-            · conj(deriv (chart_p ∘ chart_y.symm)(chart_y y))`.
+3. **Chart-transition factor smoothness for varying `chartAt`.** Prove
+   that even when `chartAt y` varies with `y`, the chart-transition
+   between `chart_p` and `chartAt y` gives a smooth conjugate-derivative
+   factor. Requires either a mathlib-level smoothness statement for
+   `y ↦ chartAt y` (probably not available in general) or a structural
+   assumption on X.
 
-Smoothness as a function of `y` factors through smooth chart maps.
+**Recommended**: option 1 (or 2). Option 3 likely requires
+auxiliary mathlib-style work.
+
+**Concrete chart-transition identity (for whichever option is picked):**
+On `chart_p.source`, the chain rule gives
+
+  `partialZBarManifold (bC p b) y = partialZBar (bC ∘ chart_p.symm)
+        (chart_p y) · conj (deriv (chart_p ∘ chart_y.symm)(chart_y y))`
+
+via `partialZBar_comp_of_differentiableAt` in `PartialZBarChainRule.lean`,
+using:
+  - `bC ∘ chart_p.symm` ℝ-differentiable at `chart_p y` (bC ContMDiff +
+    chart smooth),
+  - `chart_p ∘ chart_y.symm` ℂ-differentiable at `chart_y y` (via
+    `analyticAt_chart_transition_of_isManifold`, used already in
+    `chartInv_chart_pullback_differentiableAt`).
+
+  Then `α y = chartInv y · partialZBar (bC ∘ chart_p.symm) (chart_p y)
+                · conj (deriv (chart_p ∘ chart_y.symm)(chart_y y))`
+  and smoothness reduces to smoothness of each factor.
 
 ### Remaining (ii) — apply DBarSolvability + consolidator
 
