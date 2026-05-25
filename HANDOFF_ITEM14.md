@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, **3c-E** landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, **3c-F-1 + 3c-F-2-prep + 3c-F-2 polar transformation + 3c-F-2 bound lemma** landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -8,7 +8,7 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
 
-Last rewrite: 2026-05-25 (post Chip 3c-E).
+Last rewrite: 2026-05-25 (post Chip 3c-F partial: F-1 done + F-2 polar transformation + bound landed; FTC closure of universal constant `-π` pending).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated **20–45 focused sessions / 5–10 months** at typical chip cadence (Chips 1a–2d done; Chip 3 is the next and heaviest).
 
@@ -385,68 +385,104 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
   - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
     only). Library entry added.
 
-### Next chip: **Chip 3c-F — radial-bump limit on second summand + final identity** (~600-1500 LOC)
+### Chip 3c-F — **IN FLIGHT**: radial-bump limit on second summand + final identity
 
-With Chip 3c-E's plane-form balance equation and DCT limit on the
-first summand in hand:
+Chip 3c-F broke into sub-pieces. Option (b) above (build an explicit
+radial bump from scratch) was chosen — much cleaner than chasing
+typeclass-unfolding workarounds for mathlib's abstract `ContDiffBump`.
 
-* `balance_plane_eq_zero`:
-  ```
-  ∫ ζ : ℂ, partialZBar α ζ * regularizedInvSub z hε ζ
-    + α ζ * partialZBar (regularizedInvSub z hε) ζ = 0.
-  ```
-* `tendsto_integral_partialZBar_alpha_mul_regInvSub`:
-  ```
-  ∫ ζ, partialZBar α ζ * regInvSub z hε ζ
-    → ∫ ζ, partialZBar α ζ * (ζ - z)⁻¹  as  ε → 0⁺.
-  ```
-  The RHS equals `-π · pompeiuKernel (partialZBar α) z` (def of `pompeiuKernel`).
+#### Sub-pieces landed
 
-Chip 3c-F has to close the remaining limit:
-```
-∫ ζ, α ζ * partialZBar (regularizedInvSub z hε) ζ  →  π · α z  as  ε → 0⁺.
-```
+* **Chip 3c-F-1 — DONE** (commit `d99d822`, two files):
+  - [`Analysis/PompeiuKernelRadialBump.lean`](JacobianChallenge/Analysis/PompeiuKernelRadialBump.lean) (~160 LOC):
+    `psiBump ε r := Real.smoothTransition (2 - 2r/ε)` (1D radial profile),
+    `radialBump z ε η := psiBump ε ‖η - z‖` (the bump on ℂ — radially
+    symmetric by construction), `radialCutoff z ε η := 1 - radialBump z ε η`.
+    Mirrors `pompeiuBump`/`pompeiuCutoff`'s properties (= 1 on
+    `closedBall z (ε/2)`, = 0 outside `ball z ε`, bounded by 1, `ContDiff`,
+    `=ᶠ[𝓝 z] 0`).
+  - [`Analysis/PompeiuKernelRadialWirtinger.lean`](JacobianChallenge/Analysis/PompeiuKernelRadialWirtinger.lean) (~200 LOC):
+    `partialZBar_radial_of_ne : η ≠ z → HasDerivAt ψ ψ' ‖η-z‖ →
+       partialZBar (fun w => (ψ ‖w-z‖ : ℂ)) η = (ψ'/2) * (η - z) / ‖η - z‖`.
+    Proven via `hasFDerivAt_norm_sq_sub_const` (mathlib's
+    `fderiv_norm_sq_apply` + chain rule for `(· - z)`), `HasFDerivAt.sqrt`,
+    `Complex.ofRealCLM.hasFDerivAt`, `innerSL_{one,I}_complex` evaluations
+    via `Complex.inner`, and `Complex.re_add_im` for the final assembly.
 
-Combined with `balance_plane_eq_zero` and Section C's DCT, this gives
-`-π · pompeiuKernel (partialZBar α) z + π · α z = 0`, hence
-`pompeiuKernel (partialZBar α) z = α z`. Composing with Chip 3b's bridge
-`partialZBar (pompeiuKernel α) z = pompeiuKernel (partialZBar α) z` gives
-the final identity `partialZBar (pompeiuKernel α) z = α z`.
+* **Chip 3c-F-2-prep — DONE** (commit `07333c8`, two files):
+  - [`Analysis/PompeiuKernelRadialIntegrand.lean`](JacobianChallenge/Analysis/PompeiuKernelRadialIntegrand.lean) (~80 LOC):
+    `partialZBar_radial_div_eq_radial : η ≠ 0 → HasDerivAt ψ ψ' ‖η‖ →
+       partialZBar (fun w => (ψ ‖w‖ : ℂ)) η / η = (ψ' / (2·‖η‖) : ℂ)`.
+    The `η/‖η‖` factor from Wirtinger cancels with the dividing `η`.
+  - [`Analysis/PompeiuKernelRadialIntegral.lean`](JacobianChallenge/Analysis/PompeiuKernelRadialIntegral.lean) (initial ~150 LOC):
+    `unitRadialBumpC w := (radialBump 0 1 w : ℂ)` (unit-scale ℂ-valued bump),
+    boundary values (`psiBump_one_{zero,one,...}`), polar-point invariants
+    (`complex_polarCoord_symm_ne_zero`, `norm_complex_polarCoord_symm_of_pos`),
+    `integrand_at_polar_symm : 0 < r →
+       partialZBar unitRadialBumpC (polarCoord.symm (r, θ)) / polarCoord.symm (r, θ)
+         = ((deriv (psiBump 1) r / (2·r)) : ℂ)`.
 
-**The classical proof of the second-summand limit** uses the radial-bump
-rescaling `η = z + ε · w` to reduce the integral to a fixed unit-scale
-calculation:
-```
-∫∫ α(η) · ∂̄(regInvSub z hε)(η) dA
-  = ∫∫ α(η) · (∂̄χ_ε)(η) / (η - z) dA   (Leibniz off z, via Chip 3c-A)
-  = ∫∫ α(z + εw) · (-(1/ε) (∂̄φ_1)(w)) · ((1/ε)·w⁻¹) · ε² dA(w)   (subst.)
-  = -∫∫ α(z + εw) · (∂̄φ_1)(w) / w  dA(w)
-  →  -α(z) · ∫∫ (∂̄φ_1)(w) / w  dA(w)   (DCT, α(z+εw) → α(z))
-  =  -α(z) · (-π)  =  π · α(z).
-```
+* **Chip 3c-F-2 polar transformation — DONE** (commit `945aa34`,
+  extends `PompeiuKernelRadialIntegral.lean` by ~50 LOC):
+  - `scaled_integrand_at_polar_symm`: the Jacobian `r` cancels `1/(2r)`,
+    leaving `((deriv (psiBump 1) r / 2) : ℂ)`.
+  - `integral_partialZBar_div_eq_polar_integral`:
+    ```
+    ∫ ζ : ℂ, partialZBar unitRadialBumpC ζ / ζ
+      = ∫ p in Ioi 0 ×ˢ Ioo (-π) π, ((deriv (psiBump 1) p.1 / 2) : ℂ).
+    ```
+    Via `Complex.integral_comp_polarCoord_symm` + `setIntegral_congr_fun`
+    on the polar target.
 
-The universal constant `∫∫ (∂̄φ_1)(w)/w dA = -π` is computed by:
-1. **Radial structure of `φ_1`**: `φ_1(w) = ψ(‖w‖)` for some smooth
-   `ψ : ℝ → ℝ` with `ψ(r) = 1` for `r ≤ 1/2`, `ψ(r) = 0` for `r ≥ 1`.
-2. **Wirtinger of radial function**: `(∂̄φ_1)(w) = (1/2) · ψ'(‖w‖) · w/‖w‖`.
-3. **Polar coords** (via `Complex.lintegral_comp_polarCoord_symm`):
-   `∫∫ (1/2)·ψ'(r)/r · r dr dθ = π · ∫_0^∞ ψ'(r) dr = π · (0 - 1) = -π`
-   (FTC).
+* **Chip 3c-F-2 bound lemma — DONE** (commit `e55dbfb`,
+  extends `PompeiuKernelRadialIntegral.lean` by ~30 LOC):
+  - `exists_bound_deriv_psiBump_one`: `∃ M, ∀ r, ‖deriv (psiBump 1) r‖ ≤ M`.
+  - `deriv_psiBump_one_eq_zero_of_{neg, one_lt}`: derivative vanishes
+    outside `[0, 1]` (locally constant there).
 
-**Caveat**: mathlib's `ContDiffBump` exposes its function via the
-`HasContDiffBump`/`someContDiffBumpBase` typeclass mechanism, which is
-intentionally abstract — `someContDiffBumpBase E := default` doesn't
-unfold to the inner-product `ofInnerProductSpace E` definitionally
-without typeclass instance access. So Step 1 either needs:
-- (a) **Replace `pompeiuBump` with an explicit `ofInnerProductSpace`-backed
-  bump** (changes `pompeiuCutoff`'s definition; cascades through Chips
-  3c-C₁/C₂/D — manageable but invasive); OR
-- (b) **Construct an explicit radial bump from scratch** (~500-800 LOC of
-  new infrastructure: smooth-transition, monotone decreasing on [1/2, 1],
-  etc.).
+All sub-pieces sorry-free, axiom-free (`propext`, `Classical.choice`,
+`Quot.sound`).
 
-Option (a) is cleaner. After that, the polar-coord + FTC chain is
-~300-500 LOC (mostly mechanical).
+#### Sub-pieces remaining for Chip 3c-F
+
+* **Chip 3c-F-2-final — universal constant `-π`** (~200-400 LOC):
+  Combining the polar transformation + bound:
+  1. **Fubini** (`MeasureTheory.setIntegral_prod`): separate `r`/`θ`
+     in `∫ p in Ioi 0 ×ˢ Ioo (-π) π, ((deriv (psiBump 1) p.1 / 2) : ℂ)`.
+     Integrability via the bound + compact-support truncation
+     `(Ioi 0 ∩ [0, 1]) × (-π, π)` (finite measure `2π`).
+  2. **`θ` integral** = `2π` (constant integrand × `volume (Ioo (-π) π)`).
+  3. **`r` integral via FTC** (`intervalIntegral.integral_deriv_eq_sub`):
+     `∫ r in (0)..1, deriv (psiBump 1) r = psiBump 1 1 - psiBump 1 0
+        = 0 - 1 = -1`. Extend to `Ioi 0` via `setIntegral_eq_integral_of_*`
+     and the vanishing of `deriv (psiBump 1)` outside `[0, 1]`.
+  4. **Combine**: `(2π) · (1/2) · (-1) = -π`. Headline result:
+     `∫ ζ : ℂ, partialZBar unitRadialBumpC ζ / ζ = -π`.
+
+* **Chip 3c-F-3 — DCT on second summand** (~300-500 LOC):
+  Substitution `η = z + ε · w` reduces
+  `∫ α(η) · ∂̄(radialCutoff z ε)(η) / (η - z) dA(η)` to
+  `-∫ α(z + εw) · ∂̄(radialBump 0 1)(w) / w dA(w)`. DCT (with
+  α continuity at `z` as the dominating control) gives the limit
+  `-α(z) · (-π) = π · α(z)` using Chip 3c-F-2-final's universal constant.
+
+  Caveat: Chip 3c-E's `balance_plane_eq_zero` and
+  `tendsto_integral_partialZBar_alpha_mul_regInvSub` use
+  `pompeiuCutoff` (the abstract-bump version). Chip 3c-F-3 must either
+  (a) re-derive them for `radialCutoff` (duplication; ~200 LOC), or
+  (b) show `pompeiuCutoff =ᶠ[appropriate filter] radialCutoff` and
+  transfer. Route (a) is cleaner and the redundancy is small.
+
+* **Chip 3c-F-4 — final identity** (~50 LOC):
+  Combine `balance_plane_eq_zero` (over `radialCutoff`) + Section C's
+  DCT (over `radialCutoff`) + Chip 3c-F-3's second-summand limit:
+  `0 = -π · pompeiuKernel (∂̄α) z + π · α z`, hence
+  `pompeiuKernel (∂̄α) z = α z`. Compose with Chip 3b's
+  `partialZBar_pompeiuKernel_eq_pompeiuKernel_partialZBar` to get the
+  Cauchy-Pompeiu identity `partialZBar (pompeiuKernel α) z = α z`.
+
+**Estimate for completing Chip 3c-F**: 2-4 more sessions,
+600-1000 more LOC.
 
 **Chips 4-7** (after Chip 3c-F):
 
