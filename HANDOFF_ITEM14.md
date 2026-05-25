@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, **3a** landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, **3b** landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -8,7 +8,7 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
 
-Last rewrite: 2026-05-25 (post Chip 3a).
+Last rewrite: 2026-05-25 (post Chip 3b).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated **20–45 focused sessions / 5–10 months** at typical chip cadence (Chips 1a–2d done; Chip 3 is the next and heaviest).
 
@@ -114,6 +114,32 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
     derivative with `pompeiuKernel` via Chip 2a + `HasDerivAt.const_mul (-π⁻¹)`.
   - Sorry-free, axiom-free. Library entry added.
 
+* **Chip 3b — DONE** ([`Analysis/PompeiuKernelPartialZBarBridge.lean`](JacobianChallenge/Analysis/PompeiuKernelPartialZBarBridge.lean), ~180 LOC).
+  - `partialZBar_pompeiuKernel_eq_pompeiuKernel_partialZBar
+      {α : ℂ → ℂ} (h_smooth : ContDiff ℝ 1 α) (h_supp : HasCompactSupport α)
+      (z : ℂ) :
+      partialZBar (pompeiuKernel α) z = pompeiuKernel (partialZBar α) z`.
+  - This algebraic bridge reduces the full Cauchy-Pompeiu identity to
+    the single classical statement `pompeiuKernel (partialZBar α) z = α z`
+    (Chip 3c).
+  - Proof: Chip 2d's `fderiv_pompeiuKernel_apply` specialized at
+    `v = 1` and `v = I` rewrites the LHS as
+    `(1/2) · (pompeiuKernel (αDeriv α 1) z + I · pompeiuKernel (αDeriv α I) z)`.
+    By definition `partialZBar α ζ = (1/2) · (αDeriv α 1 ζ) + ((1/2)·I) · (αDeriv α I ζ)`
+    pointwise, so the RHS expands the same way via `pompeiuKernel` linearity.
+  - Supporting infrastructure (general-purpose, used here and useful
+    downstream):
+    * `pompeiuKernel_add` — additivity, for continuous compactly-supported
+      `α, β` (both integrands integrable by Chip 1c, then
+      `MeasureTheory.integral_add`).
+    * `pompeiuKernel_const_mul` — `pompeiuKernel (c · α) z = c · pompeiuKernel α z`.
+      Unconditional in `α` (Bochner's `integral_const_mul` does not need
+      integrability — when not integrable both sides are zero).
+    * `pompeiuIntegrand_add`, `pompeiuIntegrand_const_mul` — pointwise
+      integrand helpers.
+  - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
+    only). Library entry added.
+
 * **Chip 3a — DONE** ([`Analysis/PompeiuKernelSmallDiscLimit.lean`](JacobianChallenge/Analysis/PompeiuKernelSmallDiscLimit.lean), ~250 LOC).
   - `tendsto_circleIntegral_pompeiu_smallDisc
       {α : ℂ → ℂ} (h_cont : Continuous α) (z : ℂ) :
@@ -144,42 +170,69 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
   - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
     only). Library entry added.
 
-### Next chip: **Chip 3b — rectangle Stokes for `α(ζ) / (ζ - z)` on `[−L, L]² \ closedBall z ε`** (~1–2k LOC)
+### Next chip: **Chip 3c — classical Cauchy-Pompeiu identity** `pompeiuKernel (partialZBar α) z = α z` (~1.5–3k LOC, the heavy classical piece)
 
-With Chip 3a complete, the pointwise small-disc limit is in hand. Next
-is applying `integral_boundary_rect_of_hasFDerivAt_real_off_countable`
-([`Mathlib/Analysis/Complex/CauchyIntegral.lean:187`](.lake/packages/mathlib/Mathlib/Analysis/Complex/CauchyIntegral.lean))
-to `f(ζ) := α(ζ) / (ζ - z)` on the rectangle `[−L, L]²` with the small
-closed disc `closedBall z ε` removed. The boundary then consists of
-the large rectangle (which vanishes for `L` large by `HasCompactSupport α`)
-plus the small circle (handled by Chip 3a in the `ε → 0` limit).
-
-Concretely, the deliverable for Chip 3b is something like:
+With Chips 3a (small-disc limit) and 3b (algebraic bridge) complete,
+the remaining content for the full Cauchy-Pompeiu identity
+`partialZBar (pompeiuKernel α) z = α z` reduces to a single classical
+statement:
 
 ```
-theorem rectangle_stokes_pompeiu_off_disc
-    (h_smooth : ContDiff ℝ 1 α) (h_supp : HasCompactSupport α)
-    (z : ℂ) {ε L : ℝ} (hε : 0 < ε) (hεL : ε < L)
-    (h_supp_in : tsupport α ⊆ closedBall 0 (L - 1)) :
-    (rectangle integral of ∂̄(α/(·-z)) over [-L,L]² \ closedBall z ε)
-      = - (∮ ζ in C(z, ε), α ζ * (ζ - z)⁻¹)
+theorem pompeiuKernel_partialZBar_eq_self
+    (h_smooth : ContDiff ℝ 1 α) (h_supp : HasCompactSupport α) (z : ℂ) :
+    pompeiuKernel (partialZBar α) z = α z
 ```
 
-(exact statement TBD once we work out how mathlib's rectangle integral
-combines with a hole). The right-hand side becomes `-2πI · α(z)` in the
-ε → 0 limit by Chip 3a, while the left-hand side is the volume integral
-of `(∂̄ α / (ζ - z))` (since `1/(ζ-z)` is holomorphic in `ζ` off
-`ζ = z`, only `∂̄ α` survives). Combined with the relation between
-`pompeiuKernel α` and the same volume integral (via the Pompeiu kernel
-definition), we get `∂̄(pompeiuKernel α) z = α z`.
+Unfolding `pompeiuKernel`, this is
 
-* **Chip 3c** — Combine 3a + 3b + take `ε → 0` to conclude
-  `partialZBar (pompeiuKernel α) z = α z` for `α ∈ C^∞` with compact
-  support.
+```
+-(1/π) · ∫ ζ, (partialZBar α)(ζ) · (ζ - z)⁻¹ dA(ζ) = α z.
+```
 
-Estimate: Chip 3b is ~3–6 sessions, Chip 3c is ~1–2 sessions. After
-Chip 3, Chips 4–7 are chart-pullback + globalization + integration
-into the existing chain.
+Classical proof outline (Green's-theorem / rectangle Stokes):
+
+1. Choose `L` large so `tsupport α ⊆ ball 0 (L - 1)`; for `0 < ε < 1`
+   and `R := [−L, L]² \ ball z ε`, the form `α(ζ) / (ζ - z)` is `C¹`
+   on `R`.
+2. Apply `integral_boundary_rect_of_hasFDerivAt_real_off_countable`
+   ([`Mathlib/Analysis/Complex/CauchyIntegral.lean:187`](.lake/packages/mathlib/Mathlib/Analysis/Complex/CauchyIntegral.lean))
+   to `g(ζ) := α(ζ) / (ζ - z)` on the rectangle. Because mathlib's
+   rectangle Stokes is for the *full* closed rectangle and admits a
+   countable bad set (not a 2D hole), Chip 3c will need either:
+   - (a) An "annulus-Stokes" lemma assembled by cutting `R` into two
+     rectangles + a half-disc removal, OR
+   - (b) A direct rectangle-Stokes argument with a smooth cutoff
+     `χ_ε` supported off `ball z ε`, then a `ε → 0` Lebesgue-DCT
+     argument that exploits `(ζ - z)⁻¹` being locally integrable in 2D.
+   Option (b) is more standard and likely smaller; option (a) is
+   closer to the textbook proof but heavier in Lean.
+3. The boundary integral on the outer rectangle vanishes because
+   `α ≡ 0` there (compact support, `L` large).
+4. The boundary integral on the inner circle `C(z, ε)` is
+   `∮ ζ in C(z, ε), α ζ · (ζ - z)⁻¹`, which tends to `2πI · α z` by
+   Chip 3a.
+5. The interior 2D integral becomes
+   `∫_{R} (partialZBar α)(ζ) · (ζ - z)⁻¹ dA + ∫_{R} α(ζ) · partialZBar((·-z)⁻¹)(ζ) dA`
+   via the Leibniz rule for `partialZBar`. The second term vanishes
+   because `(ζ - z)⁻¹` is holomorphic in `ζ` off `ζ = z`
+   (`partialZBar_eq_zero_of_differentiableAt` from
+   `Manifold/PartialZBar.lean`).
+6. Combine and take `ε → 0`: the volume integral on `R` tends to the
+   full-plane integral `∫_ℂ (partialZBar α)(ζ) · (ζ - z)⁻¹ dA` by
+   Lebesgue DCT + Chip 1b/1c (`(ζ - z)⁻¹` is locally integrable, and
+   `partialZBar α` is bounded with compact support).
+
+After Chip 3c lands, **Chip 3d** is the trivial composition
+`partialZBar (pompeiuKernel α) z = pompeiuKernel (partialZBar α) z = α z`
+(Chip 3b + Chip 3c). One short file (~20 LOC).
+
+After Chip 3, Chips 4–7 are chart-pullback + globalization +
+integration into the existing chain.
+
+**Estimate**: Chip 3c is ~6–12 sessions across multiple sub-chips
+(annulus-Stokes setup, cutoff function, DCT-limit, Leibniz product
+rule for `partialZBar` on `(·-z)⁻¹`, assembly). Likely the heaviest
+single chip in the arc.
 
 ### Chips 4 through 7 (after Chip 3)
 
