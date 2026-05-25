@@ -484,14 +484,100 @@ All sub-pieces sorry-free, axiom-free (`propext`, `Classical.choice`,
 **Estimate for completing Chip 3c-F**: 2-4 more sessions,
 600-1000 more LOC.
 
-**Chips 4-7** (after Chip 3c-F):
+**Chips 4-7** (after Chip 3c-F) — refined 2026-05-25 via direct repo
+scouting (see "Chip 5 scouting report" below):
 
-* **Chip 4 (~1-2k LOC)** — chart pull-back: lift the Pompeiu kernel from ℂ to a chart-disk on X.
-* **Chip 5 (~2-3k LOC)** — globalize to compact X at genus 0. Combines partition of unity over a finite chart cover with the genus-0-specific spreading function construction (Forster Ch. 14, Behnke-Stein-light). This is the substantive classical-content step.
-* **Chip 6 (~200 LOC)** — wire to the existing `ofCurve_inj_under_genus_pos`-style chain at [`OfCurveInjFromDegreeOne.lean:90`](JacobianChallenge/Manifold/OfCurveInjFromDegreeOne.lean) to get `δQ - δP ∈ PrincDiv X`, then through the unconditional chain to `X ≃ₜ S²`.
-* **Chip 7 (<50 LOC)** — close `Basic.lean:73` by composition.
+* **Chip 4 (~600-1,200 LOC, 3-5 sessions)** — chart pull-back: lift the
+  Pompeiu kernel from ℂ to a chart-disk on X. Lighter than the original
+  ~1-2k estimate because `PartialZBarManifold.lean` (215 LOC),
+  `PartialZBarManifoldChartPullbackVanish.lean` (146 LOC), and
+  `ChartPullbackDataConstruction.lean` already exist and are reusable.
+* **Chip 5 (~1,800-2,800 LOC, 7-12 sessions)** — globalize to compact X
+  at genus 0 via partition of unity over a finite chart cover + the
+  genus-0-specific spreading-function construction (Forster Ch. 14,
+  Behnke-Stein-light). The substantive classical-content step. See
+  scouting report below for the floor/ceiling and dominant uncertainty.
+* **Chip 6 (~200 LOC, 1 session)** — wire to the existing
+  `ofCurve_inj_under_genus_pos`-style chain at
+  [`OfCurveInjFromDegreeOne.lean:90`](JacobianChallenge/Manifold/OfCurveInjFromDegreeOne.lean)
+  to get `δQ - δP ∈ PrincDiv X`, then through the unconditional chain
+  to `X ≃ₜ S²`.
+* **Chip 7 (<50 LOC, <1 session)** — close `Basic.lean:73` by composition.
 
-**Net (remaining, Chips 3c-F through 7): 20-45 sessions, 4-9k LOC.**
+**Net (remaining, Chips 3c-F-rest through 7): ~3,250-5,250 LOC,
+~13-22 sessions.** (Refined down from the original 20-45 sessions /
+4-9k LOC: Chip 4 shrank thanks to pre-existing chart-pullback
+infrastructure; Chip 5 tightened via direct mathlib + repo coverage
+audit. The original wide band reflected pre-scouting uncertainty.)
+
+### Chip 5 scouting report (2026-05-25)
+
+**Target hypothesis** — [`ExistsSimplePoleGermFromGenusZeroDBarSolvability.lean:121`](JacobianChallenge/Manifold/ExistsSimplePoleGermFromGenusZeroDBarSolvability.lean):
+```
+def DBarSolvabilityAtGenusZero : Prop :=
+  JacobianChallenge.genus X = 0 →
+  ∀ α : X → ℂ, ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ α →
+  ∃ u : X → ℂ,
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ u ∧
+    ∀ x : X, partialZBarManifold u x = α x
+```
+i.e. `∂̄` is surjective on `C∞(X)` whenever `genus X = 0`. Equivalent
+to `H¹(X, 𝒪) = 0`. For **arbitrary** genus-0 compact RS, not just
+the Riemann sphere — we cannot use uniformization (Item 14 IS the
+uniformization-side result).
+
+**Discharge chain already wired** — [`ForsterCutoffPoleConstruction.lean:1357`](JacobianChallenge/Manifold/ForsterCutoffPoleConstruction.lean) closes
+`DBarSolvabilityAtGenusZero + ChartAtConstantOnSource →
+ExistsSimplePoleGermAtSomePoint` via Chip 2c-Final. So Chip 5 only
+needs to PROVE `DBarSolvabilityAtGenusZero X` itself, then composition
+through the existing chain closes Item 14.
+
+**In-repo infrastructure usable for Chip 5**:
+- `PartialZBarManifold.lean` (215 LOC) + chart-pullback transfer (146 LOC).
+- 32 chart-cover files, ~4,200 LOC of `DiskChartCover*` machinery.
+  Caveat: most target the C3/Hodge chain (genus-positive); some
+  reusable for the partition-of-unity gluing step in Chip 5.
+- `CompactDiskChartCover.lean` constructs finite covers with
+  inner/outer disk radii — exactly the input shape Chip 5 needs.
+- `HasConvexTargetChartCover.lean` / `HasAdmissibleChartCoverClass.lean`
+  — chart-cover type classes that may extend cleanly to the Chip-5
+  setting.
+
+**Mathlib coverage**:
+- ✅ `Mathlib/Geometry/Manifold/PartitionOfUnity.lean` — partition of
+  unity on smooth manifolds.
+- ✅ `Mathlib/Geometry/Manifold/BumpFunction.lean`,
+  `WhitneyEmbedding.lean`, `SmoothApprox.lean`.
+- ❌ NO Dolbeault complex.
+- ❌ NO sheaf cohomology of holomorphic structure sheaf on Riemann
+  surfaces. Mathlib has abstract sheaf cohomology in
+  `AlgebraicGeometry/`, but not connected to the analytic side.
+- ❌ NO Behnke-Stein / Stein manifold theorem.
+
+**Textbook length**: Forster Ch. 14's proof of `H¹(X, 𝒪) = 0` for
+genus-0 compact RS via Cauchy-Pompeiu + partition of unity + spreading
+function is **4-6 dense pages**. At observed Pompeiu-arc cadence of
+~300-600 LOC/session for substantive analytical work (Chip 3c-E =
+636 LOC/session, Chip 2d = 515 LOC/session), 4-6 pages × ~200-400
+LOC/page = **1,200-2,400 LOC core**, plus framework/setup (Dolbeault
+iso shortcut, partition-of-unity gluing on ℂ-valued smooth functions,
+spreading-function construction) brings the realistic estimate to
+**1,800-2,800 LOC** (7-12 sessions).
+
+**Floors and ceilings**:
+- **Optimistic floor (~1,200 LOC, 5 sessions)**: tight tracking of
+  Forster + no Dolbeault framework needed (direct Cauchy-Pompeiu +
+  spreading function chain).
+- **Pessimistic ceiling (~3,500-4,000 LOC, 14-18 sessions)**: the
+  spreading-function construction needs new functional-analysis
+  machinery, OR sheaf cohomology has to be wired in.
+
+**Dominant uncertainty source**: whether `H¹(genus-0 compact RS, 𝒪) = 0`
+is provable via a direct Cauchy-Pompeiu + partition-of-unity argument
+(2,000-2,500 LOC range) or whether some Dolbeault/Hodge/sheaf-cohomology
+framework needs building (pushes toward 3,500+). The Forster route
+assumes the former; plausible but unverified at the Lean level until
+the first 2-3 Chip 5 sessions land.
 
 ### Discipline lesson learned today (KEEP)
 
