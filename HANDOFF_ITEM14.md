@@ -8,7 +8,9 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
 
-After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated **25–50 focused sessions / 6–12 months** at typical chip cadence.
+Last rewrite: 2026-05-25 (post Chip 2d).
+
+After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated **20–45 focused sessions / 5–10 months** at typical chip cadence (Chips 1a–2d done; Chip 3 is the next and heaviest).
 
 ### Where we are right now
 
@@ -87,6 +89,16 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
   - Sorry-free, axiom-free. Library entry added.
 
 * **Chip 2c-main — DONE** ([`Analysis/PompeiuKernelDerivative.lean`](JacobianChallenge/Analysis/PompeiuKernelDerivative.lean), 292 LOC).
+* **Chip 2d — DONE** ([`Analysis/PompeiuKernelSmoothness.lean`](JacobianChallenge/Analysis/PompeiuKernelSmoothness.lean), 515 LOC, commit pending).
+  - `pompeiuFDerivIntegrand α z η := (η⁻¹ : ℂ) • fderiv ℝ α (η + z) : ℂ →L[ℝ] ℂ` — CLM-valued integrand for the complex-parameter derivative.
+  - `hasFDerivAt_translated_integral` — `HasFDerivAt` for `z ↦ ∫ η, α(η + z) * η⁻¹` at any `z₀`, derivative `∫ η, pompeiuFDerivIntegrand α z₀ η`. Proven by `MeasureTheory.hasFDerivAt_integral_of_dominated_of_fderiv_le` with `K := closedBall 0 (R + ‖z₀‖ + 1)` and uniform-in-`z ∈ ball z₀ 1` dominating function `K.indicator (M' · ‖η‖⁻¹)`.
+  - `integrable_pompeiuFDerivIntegrand` — integrability of the CLM-valued integrand (needed for `ContinuousLinearMap.integral_apply`).
+  - `hasFDerivAt_pompeiuKernel` — scaled by `-(π⁻¹)` via `HasFDerivAt.const_mul`, with the function side rewritten using Chip 2a's translated form.
+  - `fderiv_pompeiuKernel_apply` — **the inductive engine**: `fderiv ℝ (pompeiuKernel α) z₀ v = pompeiuKernel (αDeriv α v) z₀`. Proven by `ContinuousLinearMap.integral_apply` + commutativity + Chip 2a applied to `αDeriv α v`.
+  - `contDiff_αDeriv` — `α ∈ C^(n+1)` ⇒ `αDeriv α v ∈ C^n` (via `contDiff_succ_iff_fderiv` + `ContinuousLinearMap.apply` smoothness).
+  - `contDiff_pompeiuKernel_of_nat` — **the induction**: `∀ n : ℕ`, `ContDiff ℝ n α → HasCompactSupport α → ContDiff ℝ n (pompeiuKernel α)`. Base case `n = 0` via Chip 2b's continuity. Successor via `contDiff_succ_iff_fderiv_apply` (uses finite-dimensionality of `ℂ` over `ℝ`): differentiability from `hasFDerivAt_pompeiuKernel`, ω case vacuous (`(k : WithTop ℕ∞) ≠ ⊤`), and for each `v`, `(fun z => fderiv ℝ (pompeiuKernel α) z v) = pompeiuKernel (αDeriv α v)` is `C^n` by IH on `αDeriv α v`.
+  - `contDiff_pompeiuKernel_infty` — **main theorem**: `ContDiff ℝ ∞ α → HasCompactSupport α → ContDiff ℝ ∞ (pompeiuKernel α)`. Via `contDiff_infty : ContDiff 𝕜 ∞ f ↔ ∀ n : ℕ, ContDiff 𝕜 n f`.
+  - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound` only). Library entry added.
   - `hasDerivAt_pompeiuKernel_real_direction
       {α : ℂ → ℂ} (h_smooth : ContDiff ℝ 1 α) (h_supp : HasCompactSupport α)
       (v z₀ : ℂ) :
@@ -102,36 +114,47 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
     derivative with `pompeiuKernel` via Chip 2a + `HasDerivAt.const_mul (-π⁻¹)`.
   - Sorry-free, axiom-free. Library entry added.
 
-### Next chip: **Chip 2d — ℝ-C^∞ smoothness of `pompeiuKernel α`** (~300–500 LOC)
+### Next chip: **Chip 3 — `∂̄(pompeiuKernel α) = α` via rectangle Stokes** (~2–4k LOC, the heaviest chip)
 
-With Chip 2c-main giving the first directional derivative
-`(d/dt) pompeiuKernel α (z₀ + t • v) = pompeiuKernel (αDeriv α v) z₀`,
-the iteration is structural: each derivative of `pompeiuKernel α`
-along a direction equals `pompeiuKernel` of the corresponding
-directional derivative of `α`. For `α` of class `C^k` with compact
-support, `αDeriv α v` is again `C^(k-1)` with compact support, so the
-same theorem applies inductively. Use `ContDiff.of_succ` or induction
-on `n` to conclude `ContDiff ℝ ∞ (pompeiuKernel α)` when
-`ContDiff ℝ ∞ α + HasCompactSupport α`.
+With Chip 2d complete, `pompeiuKernel α ∈ C^∞` for `α ∈ C^∞` with
+compact support. The next milestone is the **Cauchy-Pompeiu identity**:
 
-Sketch:
-* Lift Chip 2c-main from `ContDiff ℝ 1 α` to `ContDiff ℝ n α` via
-  induction on `n`.
-* Or: prove `HasFDerivAt (pompeiuKernel α) L z₀` directly where
-  `L : ℂ →L[ℝ] ℂ` is `v ↦ pompeiuKernel (αDeriv α v) z₀`, then
-  iterate via `ContDiff.iff_hasFDerivAt`.
-* Identify `αDeriv α v` with `(iteratedFDeriv ℝ 1 α z₀) v` and
-  generalize to `iteratedFDeriv ℝ n α z₀`.
+```
+partialZBar (pompeiuKernel α) z = α z   for all z : ℂ
+```
 
-### Chips 3 through 7 (after 2)
+where `partialZBar u z := (1/2) · ((fderiv ℝ u z) 1 + I · (fderiv ℝ u z) I)`
+is the Wirtinger `∂̄` operator.
 
-* **Chip 3 (~2–4k LOC, the heaviest chip)** — the identity `∂̄(pompeiuKernel α) = α`. Routes through Cauchy-Pompeiu boundary terms; rectangle Stokes (`integral_boundary_rect_of_hasFDerivAt_real_off_countable` from mathlib's CauchyIntegral) is the key tool.
+Classical proof outline:
+1. **Rectangle Stokes** (`integral_boundary_rect_of_hasFDerivAt_real_off_countable`
+   in `Mathlib/Analysis/Complex/CauchyIntegral.lean:187`) applied to
+   `f(ζ) := α(ζ) / (ζ - z)` on a rectangle avoiding `ζ = z`.
+2. **Boundary contributions at infinity vanish** by compact support of `α`.
+3. **Small-disc contribution around `ζ = z`** gives `-2πI · α(z)` in the
+   limit (Cauchy integral formula for the constant `α(z)` mod higher-order
+   terms that vanish as the radius → 0).
+4. **Combine**: the interior `∂̄` integral equals the boundary contour
+   integral mod the singular term, yielding `∂̄ (pompeiuKernel α) = α`.
+
+Suggested sub-chips:
+* **Chip 3a** — small-disc estimate: `∫_{‖ζ-z‖=ε} α(ζ)/(ζ-z) dζ → 2πI · α(z)`.
+* **Chip 3b** — rectangle Stokes applied to `α(ζ)/(ζ-z)` on
+  `R := [−L, L]² \ closedBall z ε`, with the large boundary vanishing
+  (compact support).
+* **Chip 3c** — combine + take ε → 0 limit.
+
+Estimate: 4–10 sessions for Chip 3. After Chip 3, Chips 4–7 are
+chart-pullback + globalization + integration into the existing chain.
+
+### Chips 4 through 7 (after Chip 3)
+
 * **Chip 4 (~1–2k LOC)** — chart pull-back: lift the Pompeiu kernel from ℂ to a chart-disk on X.
 * **Chip 5 (~2–3k LOC)** — globalize to compact X at genus 0. Combines partition of unity over a finite chart cover with the genus-0-specific spreading function construction (Forster Ch. 14, Behnke-Stein-light). This is the substantive classical-content step.
 * **Chip 6 (~200 LOC)** — wire to the existing `ofCurve_inj_under_genus_pos`-style chain at [`OfCurveInjFromDegreeOne.lean:90`](JacobianChallenge/Manifold/OfCurveInjFromDegreeOne.lean) to get `δQ - δP ∈ PrincDiv X`, then through the unconditional chain to `X ≃ₜ S²`.
 * **Chip 7 (<50 LOC)** — close `Basic.lean:73` by composition.
 
-**Net: 25–50 sessions, 5–10k LOC.**
+**Net (remaining, Chips 3–7): 20–45 sessions, 4–9k LOC.**
 
 ### Discipline lesson learned today (KEEP)
 
