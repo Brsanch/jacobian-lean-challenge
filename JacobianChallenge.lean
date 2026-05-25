@@ -8,6 +8,7 @@ import JacobianChallenge.Analysis.L2InnerOnManifold
 import JacobianChallenge.Analysis.PolynomialLiouville
 import JacobianChallenge.Analysis.PompeiuIntegrandIntegrability
 import JacobianChallenge.Analysis.PompeiuKernel
+import JacobianChallenge.Analysis.PompeiuKernelTranslation
 import JacobianChallenge.Basic
 import JacobianChallenge.Divisor
 import JacobianChallenge.Divisor.ChipAliases
