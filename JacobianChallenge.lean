@@ -17,6 +17,7 @@ import JacobianChallenge.Analysis.PompeiuKernelMulInvFDeriv
 import JacobianChallenge.Analysis.PompeiuKernelPartialZBarBridge
 import JacobianChallenge.Analysis.PompeiuKernelRegularizedInv
 import JacobianChallenge.Analysis.PompeiuKernelSmallDiscLimit
+import JacobianChallenge.Analysis.PompeiuKernelStokes
 import JacobianChallenge.Analysis.PompeiuKernelSmoothness
 import JacobianChallenge.Analysis.PompeiuKernelTranslation
 import JacobianChallenge.Basic
