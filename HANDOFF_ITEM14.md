@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, 3c-F-1, 3c-F-2-prep, 3c-F-2 polar transformation, 3c-F-2 bound lemma, **3c-F-2-final** landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, 3c-F-1, 3c-F-2-prep, 3c-F-2 polar transformation, 3c-F-2 bound lemma, 3c-F-2-final, **3c-F-3a, 3c-F-3b, 3c-F-3c, 3c-F-3d-1** landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -8,7 +8,7 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
 
-Last rewrite: 2026-05-25 (post Chip 3c-F-2-final: universal constant `-π` closed; Chip 3c-F-3 substitution + DCT on second summand is the next sub-piece).
+Last rewrite: 2026-05-25 (post Chip 3c-F-3d-1: radial regularized inverse, Stokes balance, plane balance + DCT first summand, and `∂̄(regInvSubRadial) = (η-z)⁻¹ · ∂̄(radialCutoffℂ)` identity all closed. Chip 3c-F-3d-2 substitution η = z + ε·w + change-of-variable is next).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post 3c-F-2-final): ~1-3 sessions for Chip 3c-F-3+F-4, then Chips 4-7 (~13-22 sessions).
 
@@ -473,32 +473,100 @@ typeclass-unfolding workarounds for mathlib's abstract `ContDiffBump`.
 All sub-pieces sorry-free, axiom-free (`propext`, `Classical.choice`,
 `Quot.sound`).
 
+#### Chip 3c-F-3 (radial-cutoff replays) sub-pieces
+
+Chip 3c-F-3 (DCT on second summand) needs the radial-cutoff replays
+of Chip 3c-E + the new substitution + DCT argument. Route (a) was
+chosen — re-derive instead of transfer-from-pompeiuCutoff.
+
+* **Chip 3c-F-3a — DONE** (commit `299034a`,
+  [`Analysis/PompeiuKernelRegularizedInvRadial.lean`](JacobianChallenge/Analysis/PompeiuKernelRegularizedInvRadial.lean),
+  ~131 LOC):
+  - `regularizedInvSubRadial z ε η := (η - z)⁻¹ · ((radialCutoff z ε η : ℝ) : ℂ)`.
+  - `regularizedInvSubRadial_eventuallyEq_zero` inherited from
+    `radialCutoff_eventuallyEq_zero` (Chip 3c-F-1).
+  - `regularizedInvSubRadial_contDiff` via case-split on `ζ = z` vs
+    `ζ ≠ z` (product of two smooth factors off `z`; eventuallyEq 0 at `z`).
+  - Also fills the docstring-promised but missing `radialBump_contDiff`
+    and `radialCutoff_contDiff` in `PompeiuKernelRadialBump.lean`
+    (~30 LOC; case-split on `η = z` locally constant 1 vs `η ≠ z`
+    chain rule via `psiBump_contDiff ∘ contDiffAt_norm`).
+
+* **Chip 3c-F-3b — DONE** (commit `44dd309`,
+  [`Analysis/PompeiuKernelStokesRadial.lean`](JacobianChallenge/Analysis/PompeiuKernelStokesRadial.lean),
+  ~136 LOC):
+  - `balance_iteratedIntegral_eq_zero_radial` — radial-bump analog of
+    Chip 3c-D's iterated Stokes balance. Line-for-line replay applying
+    the generic `iteratedIntegral_partialZBar_eq_zero` (Chip 3c-D,
+    unchanged) to `α · regularizedInvSubRadial`, then Leibniz rewrite
+    via `partialZBar_mul`.
+  - Supporting helpers: `contDiff_/hasCompactSupport_/tsupport_/partialZBar_
+    alpha_mul_regInvSubRadial`.
+
+* **Chip 3c-F-3c — DONE** (commit `22f6898`,
+  [`Analysis/PompeiuKernelDCTLimitRadial.lean`](JacobianChallenge/Analysis/PompeiuKernelDCTLimitRadial.lean),
+  ~303 LOC):
+  - Section B replay: `balance_plane_eq_zero_radial` via 3c-F-3b's
+    iterated balance + Chip 3c-E's Fubini bridge (unchanged).
+  - Section C replay: `tendsto_integral_partialZBar_alpha_mul_regInvSubRadial`
+    via mathlib's `tendsto_integral_filter_of_dominated_convergence`.
+    Pointwise convergence: at `ζ ≠ z`, eventually `radialCutoff z ε ζ = 1`,
+    so the wrapper equals `(ζ-z)⁻¹`; at `ζ = z`, both sides vanish via
+    `(z-z)⁻¹ = 0⁻¹ = 0`. Dominator reused from Chip 3c-E
+    (`integrable_dominator_partialZBar`).
+  - Defines `regularizedInvSubRadialReal z ε` wrapping the dependent
+    `regularizedInvSubRadial` into a `ℝ → ℂ → ℂ` function.
+
+* **Chip 3c-F-3d-1 — DONE** (commit `3068824`,
+  [`Analysis/PompeiuKernelSecondSummandIdentity.lean`](JacobianChallenge/Analysis/PompeiuKernelSecondSummandIdentity.lean),
+  ~144 LOC):
+  - `partialZBar_regInvSubRadial : ∀ z ε η, 0 < ε →
+       partialZBar (regularizedInvSubRadial z ε) η
+         = (η - z)⁻¹ · partialZBar (radialCutoffComplex z ε) η`,
+    where `radialCutoffComplex z ε η := ((radialCutoff z ε η : ℝ) : ℂ)`.
+  - Off `z`: Leibniz on the product + `partialZBar_inv_sub_const_eq_zero`
+    from Chip 3c-A.
+  - At `η = z`: both sides vanish via `regularizedInvSubRadial =ᶠ[𝓝 z] 0`
+    and `(z - z)⁻¹ = 0` in ℂ.
+  - This is the pointwise reduction that powers Chip 3c-F-3d-2's
+    substitution η = z + ε·w.
+
 #### Sub-pieces remaining for Chip 3c-F
 
-* **Chip 3c-F-3 — DCT on second summand** (~300-500 LOC):
-  Substitution `η = z + ε · w` reduces
-  `∫ α(η) · ∂̄(radialCutoff z ε)(η) / (η - z) dA(η)` to
-  `-∫ α(z + εw) · ∂̄(radialBump 0 1)(w) / w dA(w)`. DCT (with
-  α continuity at `z` as the dominating control) gives the limit
-  `-α(z) · (-π) = π · α(z)` using Chip 3c-F-2-final's universal constant.
+* **Chip 3c-F-3d-2 — substitution identity** (~200-300 LOC):
+  Change-of-variable + chain rule for `partialZBar`:
+  ```
+  ∫ ζ, α(ζ) · partialZBar(regularizedInvSubRadial z ε)(ζ) dA(ζ)
+    = -∫ w, α(z + εw) · (partialZBar(unitRadialBumpC)(w) / w) dA(w).
+  ```
+  Uses Chip 3c-F-3d-1's pointwise identity + the algebraic relation
+  `radialCutoff z ε (z + εw) = radialCutoff 0 1 w` (from
+  `psiBump ε (ε‖w‖) = psiBump 1 ‖w‖`) + chain rule for `partialZBar`
+  under the affine substitution `η = z + ε·w` (ε factor cancels with
+  the Jacobian ε²).
 
-  Caveat: Chip 3c-E's `balance_plane_eq_zero` and
-  `tendsto_integral_partialZBar_alpha_mul_regInvSub` use
-  `pompeiuCutoff` (the abstract-bump version). Chip 3c-F-3 must either
-  (a) re-derive them for `radialCutoff` (duplication; ~200 LOC), or
-  (b) show `pompeiuCutoff =ᶠ[appropriate filter] radialCutoff` and
-  transfer. Route (a) is cleaner and the redundancy is small.
+* **Chip 3c-F-3d-3 — DCT on substituted integral** (~150-200 LOC):
+  ```
+  Tendsto (fun ε ↦ -∫ w, α(z+εw) · ∂̄(unitRadialBumpC)(w)/w dA(w))
+    (𝓝[>] 0) (𝓝 (π · α z)).
+  ```
+  Mathlib's DCT applied with α(z + εw) → α(z) pointwise (continuity)
+  and dominator `M · ‖∂̄(unitRadialBumpC)(w)/w‖` (M = sup |α|), with
+  integrability of the dominator from Chip 3c-F-2-final (`-π` was an
+  integrable integrand). Final RHS uses Chip 3c-F-2-final's universal
+  constant `-π`.
 
 * **Chip 3c-F-4 — final identity** (~50 LOC):
-  Combine `balance_plane_eq_zero` (over `radialCutoff`) + Section C's
-  DCT (over `radialCutoff`) + Chip 3c-F-3's second-summand limit:
+  Combine `balance_plane_eq_zero_radial` (Chip 3c-F-3c) +
+  `tendsto_integral_partialZBar_alpha_mul_regInvSubRadial` (Chip
+  3c-F-3c) + Chip 3c-F-3d-3's second-summand limit:
   `0 = -π · pompeiuKernel (∂̄α) z + π · α z`, hence
   `pompeiuKernel (∂̄α) z = α z`. Compose with Chip 3b's
   `partialZBar_pompeiuKernel_eq_pompeiuKernel_partialZBar` to get the
   Cauchy-Pompeiu identity `partialZBar (pompeiuKernel α) z = α z`.
 
-**Estimate for completing Chip 3c-F (post-F-2-final)**: 1-3 more sessions,
-400-600 more LOC (F-3 + F-4).
+**Estimate for completing Chip 3c-F (post-3d-1)**: 1-3 more sessions,
+~400-550 more LOC (3d-2 + 3d-3 + 4).
 
 **Chips 4-7** (after Chip 3c-F) — refined 2026-05-25 via direct repo
 scouting (see "Chip 5 scouting report" below):
