@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-24 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c landed).
+Last rewrite: 2026-05-24 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -40,8 +40,53 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
     `integrableOn_inv_norm_closedBall`. Pointwise domination is via the
     enorm identity `‖w⁻¹‖ₑ = ‖(‖w‖⁻¹ : ℝ)‖ₑ` for `w : ℂ`.
   - Sorry-free, axiom-free. Library entry added.
+* **Chip 2a — DONE** ([`Analysis/PompeiuKernelTranslation.lean`](JacobianChallenge/Analysis/PompeiuKernelTranslation.lean), 114 LOC).
+  - `pompeiuKernel_eq_translated_integrand (α : ℂ → ℂ) (z : ℂ) :
+      pompeiuKernel α z = -((Real.pi : ℂ)⁻¹) * ∫ η, α (η + z) * η⁻¹`.
+  - Companion `integrable_translated_pompeiuIntegrand_of_continuous_hasCompactSupport`
+    transports Chip 1c's integrability to the translated integrand
+    via `measurePreserving_add_right`.
+  - Pushes the `z`-dependence out of the singular factor `(ζ - z)⁻¹`
+    and into the regular factor `α (η + z)`. With the singularity now
+    pinned at `η = 0` (independent of `z`), differentiation under the
+    integral (Chips 2b/2c) reduces to a routine dominated-convergence
+    argument: the dominating function is integrable once (Chip 1c)
+    rather than once per `z`.
+  - Sorry-free, axiom-free. Library entry added.
 
-### Next chip: **Chip 2 — `pompeiuKernel α` is `C^∞ ℝ` on `ℂ`**
+### Next chip: **Chip 2b — continuity of `pompeiuKernel α` in `z`** (~150–300 LOC)
+
+**Target lemma.**
+
+```
+theorem continuous_pompeiuKernel_of_continuous_hasCompactSupport
+    {α : ℂ → ℂ} (h_cont : Continuous α) (h_supp : HasCompactSupport α) :
+    Continuous (pompeiuKernel α)
+```
+
+**Strategy.** Use Chip 2a's translation form
+`pompeiuKernel α z = -(π⁻¹) · ∫ η, α (η + z) · η⁻¹`. The singularity is
+now pinned at `η = 0` (independent of `z`). For `z` in any bounded
+ball `B ⊆ ℂ`:
+1. Pick a fixed compact `K ⊇ closedBall 0 R₀` containing `tsupport α
+   − z` uniformly for `z ∈ B` (concretely `K := closedBall 0
+   (R₀ + diam B + ‖center B‖)`).
+2. Outside `K`, `α (η + z) = 0` (for `z ∈ B`), so the integrand
+   vanishes; uniformly bound by `M · ‖η‖⁻¹` on `K`, which is
+   integrable by Chip 1b.
+3. Apply `MeasureTheory.continuous_of_dominated` (or
+   `Continuous.integral_continuous_param`) with the integrable
+   dominating function `M · ‖η‖⁻¹ · K.indicator`.
+
+### Chip 2c, 2d (after 2b)
+
+* **Chip 2c (~400–700 LOC)** — first ℝ-derivative `∂/∂z` (or partial in
+  Re/Im). Differentiation under the integral: `∂_z [α(η+z) · η⁻¹] =
+  (∂_z α)(η+z) · η⁻¹`. Dominating function still `‖∂_z α‖_∞ · M' · ‖η‖⁻¹`.
+* **Chip 2d (~300–500 LOC)** — iterate to obtain ℝ-C^∞ smoothness. Use
+  `ContDiff.of_succ` or induction on derivative order.
+
+### Chips 3 through 7 (after 2)
 
 * **Chip 2 (~1–2k LOC)** — smoothness in z: `pompeiuKernel α` is `C^∞ ℝ` on ℂ. Uses differentiation under the integral.
 * **Chip 3 (~2–4k LOC, the heaviest chip)** — the identity `∂̄(pompeiuKernel α) = α`. Routes through Cauchy-Pompeiu boundary terms; rectangle Stokes (`integral_boundary_rect_of_hasFDerivAt_real_off_countable` from mathlib's CauchyIntegral) is the key tool.
