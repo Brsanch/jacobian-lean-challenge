@@ -6,9 +6,9 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ---
 
-## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24) — **Chip 3c-F + Chip 4 COMPLETE, Sub-chip 5.1 LANDED**
+## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24) — **Chip 3c-F + Chip 4 COMPLETE, Sub-chips 5.1 + 5.2 LANDED**
 
-Last rewrite: 2026-05-25 (Sub-chip 5.1 of Chip 5 landed — finite chart cover from compactness). Headlines —
+Last rewrite: 2026-05-25 (Sub-chips 5.1 + 5.2 of Chip 5 landed — finite chart cover + subordinate smooth partition of unity). Headlines —
 
 * **`partialZBar_pompeiuKernel_eq_self`** ([`Analysis/PompeiuKernelCauchyPompeiu.lean`](JacobianChallenge/Analysis/PompeiuKernelCauchyPompeiu.lean), 213 LOC, Chip 3c-F-4): the unconditional Cauchy-Pompeiu identity on ℂ.
 * **`partialZBar_pompeiuKernelChart_eq_α_on_chart_source`** ([`Manifold/ChartPompeiuKernel.lean`](JacobianChallenge/Manifold/ChartPompeiuKernel.lean), 462 LOC, Chip 4): chart-x view local identity — for `y ∈ (chartAt ℂ x).source`, `partialZBar (pompeiuKernelChart x α ∘ chart_x.symm) (chart_x y) = α y`.
@@ -16,10 +16,11 @@ Last rewrite: 2026-05-25 (Sub-chip 5.1 of Chip 5 landed — finite chart cover f
 * **`partialZBarManifold_pompeiuKernelChart_eq_α_mul_transition`** (Chip 4): the manifold-level identity at any `y ∈ (chartAt ℂ x).source`, with the chart-transition conjugate-derivative factor `conj(deriv (chart_y ∘ chart_x.symm)(chart_x y))` absorbing the (0,1)-form transformation under chart change.
 * **`contDiffOn_pompeiuKernelChart_chart_symm`** (Chip 4): `pompeiuKernelChart x α ∘ chart_x.symm` is `C^∞` on `(chartAt ℂ x).target`.
 * **`FiniteChartCover X`** + **`FiniteChartCover.exists_of_compact`** ([`Manifold/CompactnessChartCover.lean`](JacobianChallenge/Manifold/CompactnessChartCover.lean), 120 LOC, Sub-chip 5.1): bundled `Finset` of base points whose chart sources cover a compact charted-ℂ space `X`, plus its existence theorem (no nonemptiness assumption). Supporting lemma `iUnion_source_eq_univ` restates the cover as `(⋃ x ∈ basePoints, (chartAt ℂ x).source) = univ` for downstream rewriting.
+* **`FiniteChartCoverPartition cover`** + **`exists_of_cover`** ([`Manifold/PartitionOfUnitySubordinateToCover.lean`](JacobianChallenge/Manifold/PartitionOfUnitySubordinateToCover.lean), 233 LOC, Sub-chip 5.2): smooth partition of unity indexed by `{x // x ∈ cover.basePoints}`, subordinate to chart sources. Thin wrapper over mathlib's `SmoothPartitionOfUnity.exists_isSubordinate` at `I := 𝓘(ℝ, ℂ)`, `s := univ`. Exposes `P.rho i : X → ℝ` (smooth ℝ-valued partition) and `P.rhoC i : X → ℂ` (`Complex.ofRealCLM` cast, the form Chip 5.3 multiplies by `α : X → ℂ`). Properties shipped: `rho_nonneg`, `rho_le_one`, `sum_rho_eq_one`, `tsupport_rho_subset`, `rho_smooth`, `rho_continuous`; plus ℂ-side counterparts `rhoC_smooth` (`ContinuousLinearMap.contMDiff` + `ContMDiff.comp`), `rhoC_continuous`, `tsupport_rhoC_subset` (via `Complex.ofReal_eq_zero`-injective support equality), and `sum_rhoC_eq_one` (via `Complex.ofReal_sum` to push the cast through the finite sum). Hypotheses: `[T2Space X] [IsManifold 𝓘(ℝ, ℂ) ⊤ X]` (plus `[CompactSpace X]` for existence).
 
 All axiom-free (`propext, Classical.choice, Quot.sound` only).
 
-Next: **Sub-chip 5.2 — partition of unity subordinate to `FiniteChartCover`**. Will lift `Mathlib.Geometry.Manifold.PartitionOfUnity` to produce a smooth ℝ-valued partition `{ρ_i}_{i ∈ cover.basePoints}` with `tsupport ρ_i ⊆ (chartAt ℂ x_i).source` and `Σ ρ_i = 1`, then cast to ℂ-valued. After Sub-chip 5.2: 5.3 (chart-local Pompeiu solutions), 5.4 (cutoff multiplication + error analysis), 5.5 (Behnke-Stein spreading correction — the heavy one), 5.6 (assembly + manifold identity). Estimated remaining for Chip 5: ~1,700-2,700 LOC, 6-11 sessions.
+Next: **Sub-chip 5.3 — chart-local Pompeiu solutions with cutoffs**. For each `i`, define `u_i := pompeiuKernelChart x_i (ρ_i · α) : X → ℂ` using Chip 4's `pompeiuKernelChart`. Apply the chart-x view local identity to get `∂̄ (u_i ∘ chart_x_i.symm) ((chart_x_i) y) = (ρ_i · α) y` for `y ∈ chart_x_i.source`. Note: each `u_i` is C^∞ on `chart_x_i.source` (via Chip 4 smoothness) but NOT compactly supported in `chart_x_i.source` — the Pompeiu kernel decays like `1/|z|`, not to zero. Estimated 300-500 LOC, 2 sessions. After Sub-chip 5.3: 5.4 (cutoff multiplication + error analysis), 5.5 (Behnke-Stein spreading correction — the heavy one), 5.6 (assembly + manifold identity). Estimated remaining for Chip 5: ~1,400-2,500 LOC, 5-10 sessions.
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post Chip 4): Chips 5-7 (~10-18 sessions).
 
