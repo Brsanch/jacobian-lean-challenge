@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-24 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a and 1b landed).
+Last rewrite: 2026-05-24 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -28,34 +28,20 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
     bounded by `1`.
   - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
     only). Library entry added.
+* **Chip 1c — DONE** ([`Analysis/PompeiuIntegrandIntegrability.lean`](JacobianChallenge/Analysis/PompeiuIntegrandIntegrability.lean), 140 LOC).
+  - `integrable_pompeiuIntegrand_of_continuous_hasCompactSupport
+      {α : ℂ → ℂ} (h_cont : Continuous α) (h_supp : HasCompactSupport α) (z : ℂ) :
+      Integrable (pompeiuIntegrand α z) volume`.
+  - Combines `Continuous.bounded_above_of_compact_support` (uniform
+    bound `M` on `‖α‖`), `HasCompactSupport.isBounded.subset_closedBall`
+    (`tsupport α ⊆ closedBall 0 R`), the geometric inclusion
+    `closedBall 0 R ⊆ closedBall z (R + ‖z‖)`, Chip 1a's
+    `integrableOn_inv_norm_sub_iff_origin`, and Chip 1b's
+    `integrableOn_inv_norm_closedBall`. Pointwise domination is via the
+    enorm identity `‖w⁻¹‖ₑ = ‖(‖w‖⁻¹ : ℝ)‖ₑ` for `w : ℂ`.
+  - Sorry-free, axiom-free. Library entry added.
 
-### Next chip: **Chip 1c — Pompeiu integrand integrability for continuous compactly-supported `α`** (~200 LOC)
-
-**Target lemma.**
-
-```
-theorem integrable_pompeiuIntegrand_of_continuous_hasCompactSupport
-    {α : ℂ → ℂ} (h_cont : Continuous α) (h_supp : HasCompactSupport α) (z : ℂ) :
-    Integrable (pompeiuIntegrand α z) volume
-```
-
-**Strategy.** Pick a closed ball `closedBall 0 R` containing
-`tsupport α ∪ {z}`. Outside this ball, `pompeiuIntegrand α z = 0`
-(since `α = 0` there), so integrability reduces to integrability on the
-ball. On the ball, `‖pompeiuIntegrand α z ζ‖ = ‖α ζ‖ · ‖ζ - z‖⁻¹`;
-`‖α‖` is bounded by `‖α‖_∞` (continuous on compact), so by
-`Integrable.bdd_mul` (or pointwise enorm bound + `Integrable.mono`) it
-suffices to show `‖ζ - z‖⁻¹` is integrable on the ball. Apply
-`integrableOn_inv_norm_sub_iff_origin` (Chip 1a) to translate, then
-`integrableOn_inv_norm_closedBall` (Chip 1b). For the easy case `z ∉ closedBall 0 R`,
-`integrableOn_inv_norm_sub_of_not_mem_compact` (Chip 1a) plus bounded
-α already gives integrability on the ball directly.
-
-Both Chip 1a and Chip 1b pieces are in tree under
-`JacobianChallenge.PompeiuKernel` namespace; this chip is the
-combinator.
-
-### Chips 2 through 5 (after 1c)
+### Next chip: **Chip 2 — `pompeiuKernel α` is `C^∞ ℝ` on `ℂ`**
 
 * **Chip 2 (~1–2k LOC)** — smoothness in z: `pompeiuKernel α` is `C^∞ ℝ` on ℂ. Uses differentiation under the integral.
 * **Chip 3 (~2–4k LOC, the heaviest chip)** — the identity `∂̄(pompeiuKernel α) = α`. Routes through Cauchy-Pompeiu boundary terms; rectangle Stokes (`integral_boundary_rect_of_hasFDerivAt_real_off_countable` from mathlib's CauchyIntegral) is the key tool.
