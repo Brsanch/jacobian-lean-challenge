@@ -1,27 +1,55 @@
 # Item 14 — handoff
 
-> **🛑 STOP — read this first (2026-05-24 session-end correction).**
+> **🔄 UPDATE (2026-05-24 second session) — DBar route reconsidered.**
 >
-> The forward-leg work on this branch took the **wrong route**. The
-> Forster §16.9 / `DBarSolvabilityAtGenusZero` / chart-const / α
-> smoothness chain (commits `70ef6ee`, `93b6676`, `97ecd57`,
-> `0c69f75`, `24b11a4`) is building toward Dolbeault discharge — a
-> multi-year classical-content project. The user clarified
-> end-of-session that the actual remaining work for Item 14 forward
-> leg is the **direct RR route**, estimated at **1,300–2,900 LOC
-> total**, via existing scaffolding:
+> The "RR-direct route" suggested in the previous STOP banner does
+> **not** actually shorten the gap on arbitrary X. Audit lives in
+> [`RR_AUDIT.md`](RR_AUDIT.md). Summary: every route to
+> `RiemannRochGenusZero X` on arbitrary X in tree consumes either
+> `hSP X` (open) or `Nonempty (HolomorphicEquiv X RS)` (also open).
+> The only `linearSystemGermDeltaP` transport in tree
+> ([`LinearSystemGermDeltaPHolomorphicEquivTransport.lean`](JacobianChallenge/Topology/LinearSystemGermDeltaPHolomorphicEquivTransport.lean))
+> is biholom-mediated. So "lift from RS unconditional case via
+> divisor/linear-system transport machinery, not via biholom" — as
+> literally described — has no realization in the current tree.
 >
->   * `RiemannRochGenusZero X` on arbitrary X via **lifting** (from
->     the RS unconditional case) + **`RR_DimGE2_GenusZero`** + the
->     **at-pole-germ continuity** piece. **1,000–2,300 LOC.**
->   * Glue to existing composition lemmas. **300–600 LOC.**
+> User confirmed: **continue with the DBar/Forster §16.9 route** on
+> this branch. The previous STOP banner's "multi-year" framing was
+> pessimistic; with the chart-locality obstacle resolved via the
+> chart-transition chain rule (see below), the remaining work is
+> bounded.
 >
-> The reverse leg (`S2ImpliesGenus0 X`) is already **DONE**
-> unconditionally on arbitrary X — commit `829a6e8`
-> `feat(item14): close reverse leg unconditionally — S2ImpliesGenus0 X
-> on arbitrary X (Alt-B Chip 4e)`.
+> **Reverse leg (`S2ImpliesGenus0 X`) is DONE** unconditionally on
+> arbitrary X — commit `829a6e8` (on `main`).
+
+> **🟢 Chip 2c progress (2026-05-24 second session):**
 >
-> **Next session: pivot.** See "Next-session plan (RR route)" below.
+> 1. Re-audited the chartAt-locality obstacle. Initial reading
+>    suggested `[LocallyConstantChartAt X]` typeclass; deeper analysis
+>    showed it FAILS on RS (e.g. at `p = ∞`, chart_S.source contains
+>    finite y where chartAt y = chartN ≠ chartS).
+> 2. Found the obstacle's real shape: only α-smoothness needs
+>    `ChartAtConstantOnSource p` (per-p, holds on RS at any finite p).
+>    For H2 at x ≠ p, the chart-locality dissolves via the
+>    chart-transition chain rule for `partialZBar` — because chart
+>    transitions in `IsManifold ℂ ω X` are holomorphic, ∂̄ vanishing
+>    transfers across chart pullbacks (`0 * conj(deriv) = 0`).
+> 3. Landed
+>    [`Manifold/PartialZBarManifoldChartPullbackVanish.lean`](JacobianChallenge/Manifold/PartialZBarManifoldChartPullbackVanish.lean)
+>    — single lemma `partialZBarChartPullback_eq_zero_of_partialZBarManifold_zero`.
+>    Sorry/axiom-free, library-registered, single-file `lake env lean`
+>    + targeted `lake build` both green.
+>
+> **Next session: land Chip 2c-Final.** Take
+> `(p : X) (h_const_p : ChartAtConstantOnSource p) (h_dbar : DBarSolvabilityAtGenusZero X)`,
+> apply DBar to α, set `f := g₀ - u`, discharge consolidator H1 / h_an
+> (chart_p view under `h_const_p`) and H2 (chart_x view at every
+> `x ≠ p` using the new chart-pullback vanishing helper + CR converse).
+> Apply `existsSimplePoleGermAtSomePoint_of_chartPullback_data`. Add
+> an RS specialization corollary (`ChartAtConstantOnSource (some 0)`
+> holds; chart_∞ for x = ∞ uses the helper). Closes hSP X under one
+> per-p structural hypothesis + the named `DBarSolvabilityAtGenusZero`
+> classical-content gap.
 
 ## What's still useful from this branch
 
