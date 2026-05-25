@@ -30,6 +30,7 @@ import JacobianChallenge.Analysis.PompeiuKernelStokesRadial
 import JacobianChallenge.Analysis.PompeiuKernelDCTLimitRadial
 import JacobianChallenge.Analysis.PompeiuKernelSecondSummandIdentity
 import JacobianChallenge.Analysis.PompeiuKernelRadialRescaling
+import JacobianChallenge.Analysis.PompeiuKernelRadialSubstitution
 import JacobianChallenge.Analysis.PompeiuKernelSmoothness
 import JacobianChallenge.Analysis.PompeiuKernelTranslation
 import JacobianChallenge.Basic
