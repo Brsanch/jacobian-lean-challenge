@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, **3c-C₁** landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, **3c-C₂** landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -8,7 +8,7 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
 
-Last rewrite: 2026-05-25 (post Chip 3c-C₁).
+Last rewrite: 2026-05-25 (post Chip 3c-C₂).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated **20–45 focused sessions / 5–10 months** at typical chip cadence (Chips 1a–2d done; Chip 3 is the next and heaviest).
 
@@ -113,6 +113,30 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
     (`fderiv_of_notMem_tsupport`). Identifies both function and
     derivative with `pompeiuKernel` via Chip 2a + `HasDerivAt.const_mul (-π⁻¹)`.
   - Sorry-free, axiom-free. Library entry added.
+
+* **Chip 3c-C₂ — DONE** ([`Analysis/PompeiuKernelRegularizedInv.lean`](JacobianChallenge/Analysis/PompeiuKernelRegularizedInv.lean), ~140 LOC).
+  - `regularizedInvSub z hε : ℂ → ℂ` —
+    `regularizedInvSub z hε η := (η - z)⁻¹ * ((pompeiuCutoff z hε η : ℝ) : ℂ)`.
+  - `regularizedInvSub_contDiff
+      (z : ℂ) {ε : ℝ} (hε : 0 < ε) {n : ℕ∞} :
+      ContDiff ℝ n (regularizedInvSub z hε)`.
+  - Proof: case-split on `ζ = z` vs `ζ ≠ z` via
+    `contDiff_iff_contDiffAt`:
+    * `ζ ≠ z` — `regularizedInvSub_contDiffAt_of_ne`. Product of
+      `(·-z)⁻¹` (smooth at `ζ` via `contDiffAt_inv` over `ℂ` composed
+      with `sub_const` and `restrict_scalars ℝ` under the same
+      `set_option backward.isDefEq.respectTransparency false in`
+      diamond workaround as 3c-A/3c-B) and `((pompeiuCutoff · : ℝ) : ℂ)`
+      (smooth via `Complex.ofRealCLM.contDiff` ∘ `pompeiuCutoff_contDiff`).
+    * `ζ = z` — `regularizedInvSub_contDiffAt_of_eq`. Use
+      `regularizedInvSub =ᶠ[𝓝 z] 0` (from Chip 3c-C₁'s
+      `pompeiuCutoff_eventuallyEq_zero` carried through via
+      `filter_upwards`), so `ContDiffAt.congr_of_eventuallyEq` with
+      `contDiffAt_const` finishes.
+  - Supporting helpers: `contDiff_ofReal`, `contDiffAt_inv_sub_const`,
+    `regularizedInvSub_eventuallyEq_zero`.
+  - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
+    only). Library entry added.
 
 * **Chip 3c-C₁ — DONE** ([`Analysis/PompeiuKernelCutoff.lean`](JacobianChallenge/Analysis/PompeiuKernelCutoff.lean), ~160 LOC).
   - `pompeiuCutoff (z : ℂ) {ε : ℝ} (hε : 0 < ε) : ℂ → ℝ` — the cutoff
@@ -247,50 +271,47 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
   - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
     only). Library entry added.
 
-### Next chip: **Chip 3c-C₂ — smoothness of the regularized factor `(η - z)⁻¹ · χ_ε(η)`** (~200–400 LOC)
+### Next chip: **Chip 3c-C₃ — rectangle Stokes for the regularized integrand `α · g_ε` on `[−L, L]²`** (~300–500 LOC)
 
-With Chip 3c-C₁'s cutoff in hand, Chip 3c-C₂ proves that the
-regularized factor
+With Chips 3c-C₁ (`pompeiuCutoff`) and 3c-C₂ (`regularizedInvSub` is
+`C^∞`) in hand, the regularized full integrand `f_ε(η) := α(η) · g_ε(η)`
+(where `g_ε := regularizedInvSub z hε`) is `C^∞` everywhere on `ℂ`
+when `α ∈ C^∞`. This satisfies mathlib rectangle Stokes' hypotheses
+**without** any exceptional bad set (`s := ∅`).
+
+Chip 3c-C₃ invokes
+`Complex.integral_boundary_rect_of_hasFDerivAt_real_off_countable`
+([`Analysis/Complex/CauchyIntegral.lean:187`](.lake/packages/mathlib/Mathlib/Analysis/Complex/CauchyIntegral.lean))
+on `[−L, L]²` (square rectangle centred at `0`, side `2L`) for
+`f_ε` with `s := ∅`, getting:
 
 ```
-g_ε(η) := (η - z)⁻¹ * (pompeiuCutoff z hε η : ℂ)
+(line integral on top edge of f_ε)
+  - (line integral on bottom edge)
+  + I • (right edge)
+  - I • (left edge)
+  = ∫∫_{rect} (f_ε' I - I • f_ε' 1) dA
 ```
 
-is `C^∞` everywhere on `ℂ` (not just off `z`), and computes its
-fderiv. This is the regularization that unblocks rectangle Stokes:
-the raw factor `(η - z)⁻¹` is not even continuous at `η = z`, but
-`g_ε` is `C^∞` everywhere because `pompeiuCutoff z hε` is `≡ 0` on
-a neighborhood of `z` (Chip 3c-C₁'s
-`pompeiuCutoff_eventuallyEq_zero`).
+For `L` large with `tsupport α ⊆ ball 0 (L - 1)`, all four boundary
+line integrals vanish because `f_ε` is identically `0` outside the
+support of `α`. The volume RHS is what we want to identify with the
+Pompeiu kernel integral.
 
-Strategy:
+Hypotheses to discharge for the invocation:
 
-1. Off `z`: `g_ε` is the product of two `C^∞` functions
-   (`(·-z)⁻¹` smooth off `z` from `hasDerivAt_inv` ∘ `sub_const`,
-   plus `pompeiuCutoff` smooth everywhere).
-2. At `z`: `g_ε` is `=ᶠ[𝓝 z] 0` because `pompeiuCutoff =ᶠ[𝓝 z] 0`
-   (Chip 3c-C₁), so it is `C^∞` at `z` (any function eventually
-   equal to a `C^∞` function is `C^∞` at that point — `ContDiffAt`
-   is local).
-3. Combine via `ContDiff.contDiffAt_iff` (or
-   `contDiffAt_of_forall_x_in_nhds`).
+1. **`Hc : ContinuousOn f_ε (closed rect)`** — `f_ε ∈ C^∞` everywhere,
+   so this is just `(continuous_of_contDiff).continuousOn`.
+2. **`Hd : ∀ x ∈ interior, HasFDerivAt f_ε (f' x) x`** (no bad set)
+   — direct from `ContDiff.differentiable` + `.hasFDerivAt`.
+3. **`Hi : IntegrableOn (f' I - I • f' 1) (closed rect)`** —
+   continuous on a compact rectangle, hence integrable.
 
-After Chip 3c-C₂, the regularized **full integrand**
-`α(η) · g_ε(η)` is `C^∞` when `α ∈ C^∞`, which directly satisfies
-mathlib rectangle Stokes' `Hc` (`ContinuousOn`) and `Hd`
-(`HasFDerivAt` on full interior).
+Then combine with the boundary-vanishing argument to get a clean
+volume integral equation.
 
 Then the remaining sub-sub-chips toward
 `pompeiuKernel (partialZBar α) z = α z`:
-
-* **Chip 3c-C₃** — rectangle Stokes invocation for the regularized
-  integrand on `[−L, L]²` (with empty bad set `s = ∅` and no
-  singularity exception needed — `g_ε` is `C^∞` everywhere).
-  Together with the outer-boundary vanishing (compact support of
-  `α`), this gives:
-  ```
-  ∫∫_{[-L,L]²} ∂̄(α · g_ε)(η) dA(η) = 0  (no boundary terms)
-  ```
 * **Chip 3c-C₄** — split the volume integral via the Leibniz rule:
   `∂̄(α · g_ε) = (∂̄α) · g_ε + α · ∂̄g_ε`. Off `closedBall z (ε/2)`,
   `∂̄g_ε = (∂̄ pompeiuCutoff · (·-z)⁻¹)`. On the half-ball, both
