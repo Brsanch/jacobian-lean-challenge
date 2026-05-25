@@ -27,6 +27,7 @@ import JacobianChallenge.Analysis.PompeiuKernelRegularizedInvRadial
 import JacobianChallenge.Analysis.PompeiuKernelSmallDiscLimit
 import JacobianChallenge.Analysis.PompeiuKernelStokes
 import JacobianChallenge.Analysis.PompeiuKernelStokesRadial
+import JacobianChallenge.Analysis.PompeiuKernelDCTLimitRadial
 import JacobianChallenge.Analysis.PompeiuKernelSmoothness
 import JacobianChallenge.Analysis.PompeiuKernelTranslation
 import JacobianChallenge.Basic
