@@ -1,5 +1,32 @@
 # Item 14 — handoff
 
+> **🔗 UPDATE (2026-05-24, post-merge) — both legs now present on this branch.**
+>
+> Merged `origin/feat/item14-affineChartTriangleSimplex-ball` into
+> `feat/item14-forward-dbar-mul`. The reverse-leg étale-primitives arc
+> (Chips 1-4e, culminating in commit `829a6e8`) is now on this branch.
+>
+> **Reverse leg DONE on this branch:** `s2ImpliesGenus0_etalePrimitivesArc :
+> S2ImpliesGenus0 X` (`Topology/S2ImpliesGenus0FromEtalePrimitives.lean`)
+> takes only `[IsManifold (𝓘(ℂ, ℂ)) ⊤ X]` (auto), sorry/axiom-free.
+> Eliminates BSLB from the Item 14 reduction.
+>
+> **Composition that closes Item 14 in one line, given hSP X:**
+> `Topology/Item14ForwardFromCompactConnected.lean:68`
+> `genus_eq_zero_iff_homeo_from_existsSimplePoleGerm` takes
+> `hSP X + S2ImpliesGenus0 X` → the iff. After the merge it consumes
+> only the unconditional `s2ImpliesGenus0_etalePrimitivesArc` plus
+> `hSP X`. So Item 14 = JUST hSP X.
+>
+> **Forward leg state (this branch's Chip 2c-Final):** hSP X reduces
+> to `DBarSolvabilityAtGenusZero X + ChartAtConstantOnSource p` for
+> some chosen `p`. Both gaps documented below.
+>
+> The merged tree's reverse-leg discharge does NOT depend on BSLB,
+> path-primitive admissibility, or chart-cover assumptions. Those are
+> obsolete for Item 14 closure (older HANDOFF / OPEN.md framing said
+> "Item 14 = hSP + BSLB"; that's stale).
+
 > **🔄 UPDATE (2026-05-24 second session) — DBar route reconsidered.**
 >
 > The "RR-direct route" suggested in the previous STOP banner does
