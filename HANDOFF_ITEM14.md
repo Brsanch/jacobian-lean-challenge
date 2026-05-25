@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, 3c-F-1, 3c-F-2-prep, 3c-F-2 polar transformation, 3c-F-2 bound lemma, 3c-F-2-final, **3c-F-3a, 3c-F-3b, 3c-F-3c, 3c-F-3d-1** landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, 3c-F-1, 3c-F-2-prep, 3c-F-2 polar transformation, 3c-F-2 bound lemma, 3c-F-2-final, 3c-F-3a, 3c-F-3b, 3c-F-3c, 3c-F-3d-1, **3c-F-3d-2-prep, 3c-F-3d-2a, 3c-F-3d-2b** landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -8,7 +8,7 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
 
-Last rewrite: 2026-05-25 (post Chip 3c-F-3d-1: radial regularized inverse, Stokes balance, plane balance + DCT first summand, and `∂̄(regInvSubRadial) = (η-z)⁻¹ · ∂̄(radialCutoffℂ)` identity all closed. Chip 3c-F-3d-2 substitution η = z + ε·w + change-of-variable is next).
+Last rewrite: 2026-05-25 (post Chip 3c-F-3d-2b: all pointwise pieces for the substitution η = z + ε·w now in place — rescaling identities, derivative rescaling, and the key pointwise identity `partialZBar (radialBumpComplex z ε)(z + εw) = ε⁻¹ · partialZBar (unitRadialBumpC) w`. Chip 3c-F-3d-2c — change of variable for the integral — is next).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post 3c-F-2-final): ~1-3 sessions for Chip 3c-F-3+F-4, then Chips 4-7 (~13-22 sessions).
 
@@ -528,22 +528,46 @@ chosen — re-derive instead of transfer-from-pompeiuCutoff.
     from Chip 3c-A.
   - At `η = z`: both sides vanish via `regularizedInvSubRadial =ᶠ[𝓝 z] 0`
     and `(z - z)⁻¹ = 0` in ℂ.
-  - This is the pointwise reduction that powers Chip 3c-F-3d-2's
-    substitution η = z + ε·w.
+  - Powers Chip 3c-F-3d-2's substitution η = z + ε·w.
+
+* **Chip 3c-F-3d-2-prep, 3d-2a, 3d-2b — DONE** (commits `c9b8c7c`,
+  `83f1e81`, `08479b1`, all in
+  [`Analysis/PompeiuKernelRadialRescaling.lean`](JacobianChallenge/Analysis/PompeiuKernelRadialRescaling.lean),
+  total ~246 LOC):
+  - **3d-2-prep** (algebraic): `psiBump_rescale : 0 < ε →
+    psiBump ε (ε * r) = psiBump 1 r`; `norm_z_add_smul_sub`;
+    `radialBump_at_rescaled`; `radialBumpComplex_at_rescaled`;
+    `radialCutoff{,Complex}_at_rescaled`.
+  - **3d-2a** (derivative rescaling): `deriv_psiBump_rescale : 0 < ε →
+    deriv (psiBump ε) (ε * r) = ε⁻¹ * deriv (psiBump 1) r`. Proven by
+    differentiating `psiBump_rescale` both sides via `HasDerivAt.unique`
+    + chain rule, then solving via `field_simp`/`linarith`.
+  - **3d-2b** (pointwise ∂̄ rescaling, headline of this sub-chip):
+    `partialZBar_radialBumpComplex_rescaled : 0 < ε →
+       partialZBar (fun η => ((radialBump z ε η : ℝ) : ℂ)) (z + ε·w)
+         = ε⁻¹ * partialZBar unitRadialBumpC w` for all `w`.
+    Case-split: at `w = 0` both sides vanish via the eventually-constant-1
+    lemma `radialBumpComplex_eventuallyEq_one`; at `w ≠ 0` apply
+    `partialZBar_radial_of_ne` (Chip 3c-F-1) to each side + `deriv_psiBump_rescale`
+    + norm/algebraic identities + `push_cast`/`field_simp`.
 
 #### Sub-pieces remaining for Chip 3c-F
 
-* **Chip 3c-F-3d-2 — substitution identity** (~200-300 LOC):
-  Change-of-variable + chain rule for `partialZBar`:
+* **Chip 3c-F-3d-2c — substitution identity for the integral** (~150-250 LOC):
+  Apply the pointwise identity 3c-F-3d-2b inside the integral and use
+  the change-of-variable `∫ f(ζ) dA(ζ) = ε² · ∫ f(z + εw) dA(w)` (via
+  mathlib's `MeasureTheory.Measure.integral_comp_smul`-style lemmas +
+  translation invariance) to obtain:
   ```
   ∫ ζ, α(ζ) · partialZBar(regularizedInvSubRadial z ε)(ζ) dA(ζ)
     = -∫ w, α(z + εw) · (partialZBar(unitRadialBumpC)(w) / w) dA(w).
   ```
-  Uses Chip 3c-F-3d-1's pointwise identity + the algebraic relation
-  `radialCutoff z ε (z + εw) = radialCutoff 0 1 w` (from
-  `psiBump ε (ε‖w‖) = psiBump 1 ‖w‖`) + chain rule for `partialZBar`
-  under the affine substitution `η = z + ε·w` (ε factor cancels with
-  the Jacobian ε²).
+  Combines: 3c-F-3d-1 (pointwise ∂̄ identity) → reduces LHS integrand to
+  α · (ζ-z)⁻¹ · ∂̄(cutoff); the cutoff is `-radialBump` plus a constant,
+  so ∂̄(cutoff) = -∂̄(bump); 3c-F-3d-2b transforms ∂̄(bump) at z+εw to
+  ε⁻¹ · ∂̄(unitRadialBumpC) at w; change of variable cancels ε² (from
+  Jacobian) with ε⁻¹ (from (ζ-z)⁻¹ = (εw)⁻¹) and ε⁻¹ (from the chain
+  rule factor), leaving the unit-scale integral.
 
 * **Chip 3c-F-3d-3 — DCT on substituted integral** (~150-200 LOC):
   ```
@@ -565,8 +589,8 @@ chosen — re-derive instead of transfer-from-pompeiuCutoff.
   `partialZBar_pompeiuKernel_eq_pompeiuKernel_partialZBar` to get the
   Cauchy-Pompeiu identity `partialZBar (pompeiuKernel α) z = α z`.
 
-**Estimate for completing Chip 3c-F (post-3d-1)**: 1-3 more sessions,
-~400-550 more LOC (3d-2 + 3d-3 + 4).
+**Estimate for completing Chip 3c-F (post-3d-2b)**: 1-2 more sessions,
+~300-450 more LOC (3d-2c + 3d-3 + 4).
 
 **Chips 4-7** (after Chip 3c-F) — refined 2026-05-25 via direct repo
 scouting (see "Chip 5 scouting report" below):
