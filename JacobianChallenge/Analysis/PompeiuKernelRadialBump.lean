@@ -7,6 +7,7 @@ import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Analysis.Complex.Basic
+import Mathlib.Analysis.InnerProductSpace.Calculus
 
 set_option linter.unusedSectionVars false
 set_option maxHeartbeats 1600000
@@ -145,6 +146,34 @@ lemma radialBump_nonneg (z : ℂ) (ε : ℝ) (η : ℂ) : 0 ≤ radialBump z ε 
 lemma radialBump_le_one (z : ℂ) (ε : ℝ) (η : ℂ) : radialBump z ε η ≤ 1 :=
   psiBump_le_one ε _
 
+/-- `radialBump z ε` is `ContDiff ℝ n`. Off `z`, the norm `‖· - z‖`
+is smooth (via `contDiffAt_norm`) and `psiBump ε` is smooth, so the
+composition is smooth. At `η = z`, `radialBump` is locally constant
+`1` on `ball z (ε/2)`, hence smooth there too. -/
+lemma radialBump_contDiff (z : ℂ) {ε : ℝ} (hε : 0 < ε) {n : ℕ∞} :
+    ContDiff ℝ n (radialBump z ε) := by
+  rw [contDiff_iff_contDiffAt]
+  intro η
+  by_cases h_ne : η = z
+  · -- `radialBump z ε` is constantly `1` on `ball z (ε/2)`, a nbhd of z.
+    subst h_ne
+    have h_nhds : Metric.ball η (ε / 2) ∈ 𝓝 η :=
+      Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self (half_pos hε))
+    have h_eventually : radialBump η ε =ᶠ[𝓝 η] (fun _ : ℂ => (1 : ℝ)) := by
+      filter_upwards [h_nhds] with w hw
+      exact radialBump_eq_one_of_mem_closedBall_half η hε
+        (Metric.ball_subset_closedBall hw)
+    exact contDiffAt_const.congr_of_eventuallyEq h_eventually
+  · -- `η ≠ z`: chain rule on `psiBump ε ∘ (‖· - z‖)`.
+    have h_sub : ContDiffAt ℝ n (fun w : ℂ => w - z) η :=
+      (contDiff_id.sub contDiff_const).contDiffAt
+    have h_ne_zero : (fun w : ℂ => w - z) η ≠ 0 := sub_ne_zero.mpr h_ne
+    have h_norm : ContDiffAt ℝ n (fun w : ℂ => ‖w - z‖) η :=
+      h_sub.norm ℝ h_ne_zero
+    have h_psi : ContDiffAt ℝ n (psiBump ε) (‖η - z‖) :=
+      (psiBump_contDiff hε).contDiffAt
+    exact h_psi.comp η h_norm
+
 /-! ## The radial cutoff -/
 
 /-- The cutoff `1 - radialBump`: equals `0` on `closedBall z (ε/2)` and
@@ -171,6 +200,12 @@ lemma radialCutoff_nonneg (z : ℂ) (ε : ℝ) (η : ℂ) : 0 ≤ radialCutoff z
 lemma radialCutoff_le_one (z : ℂ) (ε : ℝ) (η : ℂ) : radialCutoff z ε η ≤ 1 := by
   unfold radialCutoff
   linarith [radialBump_nonneg z ε η]
+
+/-- `radialCutoff z ε` is `ContDiff ℝ n` (since it is `1 - radialBump`). -/
+lemma radialCutoff_contDiff (z : ℂ) {ε : ℝ} (hε : 0 < ε) {n : ℕ∞} :
+    ContDiff ℝ n (radialCutoff z ε) := by
+  unfold radialCutoff
+  exact contDiff_const.sub (radialBump_contDiff z hε)
 
 /-- Eventually `0` on a neighborhood of `z`. -/
 lemma radialCutoff_eventuallyEq_zero (z : ℂ) {ε : ℝ} (hε : 0 < ε) :
