@@ -9,6 +9,7 @@ import JacobianChallenge.Analysis.PolynomialLiouville
 import JacobianChallenge.Analysis.PompeiuIntegrandIntegrability
 import JacobianChallenge.Analysis.PompeiuKernel
 import JacobianChallenge.Analysis.PompeiuKernelContinuity
+import JacobianChallenge.Analysis.PompeiuKernelCutoff
 import JacobianChallenge.Analysis.PompeiuKernelDerivative
 import JacobianChallenge.Analysis.PompeiuKernelDirectionalIntegrand
 import JacobianChallenge.Analysis.PompeiuKernelLeibniz
