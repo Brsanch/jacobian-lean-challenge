@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bryan Sanchez
 -/
 import JacobianChallenge.Analysis.PompeiuKernelRadialIntegral
+import JacobianChallenge.Analysis.PompeiuKernelRadialWirtinger
 import JacobianChallenge.Analysis.PompeiuKernelSecondSummandIdentity
 
 set_option linter.unusedSectionVars false
@@ -137,5 +138,109 @@ lemma deriv_psiBump_rescale {ε : ℝ} (hε : 0 < ε) (r : ℝ) :
   have hε_ne : (ε : ℝ) ≠ 0 := ne_of_gt hε
   field_simp at h_unique ⊢
   linarith [h_unique]
+
+/-! ## Eventual constancy of radial bumps near their centers -/
+
+/-- `radialBumpComplex z ε =ᶠ[𝓝 z] 1`. -/
+lemma radialBumpComplex_eventuallyEq_one (z : ℂ) {ε : ℝ} (hε : 0 < ε) :
+    (fun η : ℂ => ((radialBump z ε η : ℝ) : ℂ)) =ᶠ[𝓝 z] (fun _ => (1 : ℂ)) := by
+  have h_nhds : Metric.ball z (ε / 2) ∈ 𝓝 z :=
+    Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self (half_pos hε))
+  filter_upwards [h_nhds] with η hη
+  have h_eq_one : radialBump z ε η = 1 :=
+    radialBump_eq_one_of_mem_closedBall_half z hε (Metric.ball_subset_closedBall hη)
+  show ((radialBump z ε η : ℝ) : ℂ) = (1 : ℂ)
+  rw [h_eq_one]; norm_num
+
+/-- `partialZBar (radialBumpComplex z ε) z = 0` (the lifted radial bump
+is locally constant at its center). -/
+lemma partialZBar_radialBumpComplex_at_z (z : ℂ) {ε : ℝ} (hε : 0 < ε) :
+    partialZBar (fun η : ℂ => ((radialBump z ε η : ℝ) : ℂ)) z = 0 := by
+  have h_eq : (fun η : ℂ => ((radialBump z ε η : ℝ) : ℂ)) =ᶠ[𝓝 z]
+      (fun _ : ℂ => (1 : ℂ)) := radialBumpComplex_eventuallyEq_one z hε
+  unfold partialZBar
+  have h_fderiv : fderiv ℝ (fun η : ℂ => ((radialBump z ε η : ℝ) : ℂ)) z
+      = fderiv ℝ (fun _ : ℂ => (1 : ℂ)) z :=
+    Filter.EventuallyEq.fderiv_eq h_eq
+  rw [h_fderiv]
+  simp
+
+/-- `partialZBar (unitRadialBumpC) 0 = 0` (the unit-scale bump is
+locally constant at the origin). -/
+lemma partialZBar_unitRadialBumpC_at_zero :
+    partialZBar unitRadialBumpC 0 = 0 := by
+  have h_fun_eq : unitRadialBumpC =
+      (fun η : ℂ => ((radialBump 0 1 η : ℝ) : ℂ)) := by
+    funext w; rfl
+  rw [h_fun_eq]
+  exact partialZBar_radialBumpComplex_at_z 0 one_pos
+
+/-! ## Explicit `partialZBar` for the radial bump and unit bump (off center) -/
+
+/-- For `η ≠ z`, `partialZBar (radialBumpComplex z ε) η` evaluates via
+`partialZBar_radial_of_ne` applied to `psiBump ε`. -/
+lemma partialZBar_radialBumpComplex_of_ne
+    {z η : ℂ} (hη : η ≠ z) {ε : ℝ} (hε : 0 < ε) :
+    partialZBar (fun w : ℂ => ((radialBump z ε w : ℝ) : ℂ)) η
+      = ((deriv (psiBump ε) ‖η - z‖ / 2 : ℝ) : ℂ) * (η - z) / ‖η - z‖ := by
+  have hψ : HasDerivAt (psiBump ε) (deriv (psiBump ε) ‖η - z‖) ‖η - z‖ :=
+    hasDerivAt_psiBump hε ‖η - z‖
+  have h_fun_eq :
+      (fun w : ℂ => ((radialBump z ε w : ℝ) : ℂ))
+        = (fun w : ℂ => ((psiBump ε ‖w - z‖ : ℝ) : ℂ)) := by
+    funext w; rfl
+  rw [h_fun_eq]
+  exact partialZBar_radial_of_ne hη hψ
+
+/-- For `w ≠ 0`, `partialZBar (unitRadialBumpC) w` evaluates via the
+radial-Wirtinger formula at `z = 0, ψ = psiBump 1`. -/
+lemma partialZBar_unitRadialBumpC_of_ne {w : ℂ} (hw : w ≠ 0) :
+    partialZBar unitRadialBumpC w
+      = ((deriv (psiBump 1) ‖w‖ / 2 : ℝ) : ℂ) * w / ‖w‖ := by
+  have h_eq := partialZBar_radialBumpComplex_of_ne (z := (0 : ℂ)) hw one_pos
+  have h_fun_eq : unitRadialBumpC =
+      (fun w : ℂ => ((radialBump 0 1 w : ℝ) : ℂ)) := by
+    funext w; rfl
+  rw [h_fun_eq, h_eq]
+  simp
+
+/-! ## The main pointwise rescaling identity for `partialZBar` -/
+
+/-- **Chip 3c-F-3d-2b.** For `ε > 0` and any `w : ℂ`,
+```
+partialZBar (radialBumpComplex z ε) (z + ε·w)
+  = ε⁻¹ · partialZBar (unitRadialBumpC) w.
+```
+At `w = 0` both sides are zero (locally constant `1` at the center).
+At `w ≠ 0`, `partialZBar_radial_of_ne` evaluates each side in terms of
+`deriv (psiBump ·) ‖·‖`, and `deriv_psiBump_rescale` cancels the ε. -/
+theorem partialZBar_radialBumpComplex_rescaled
+    {z : ℂ} {ε : ℝ} (hε : 0 < ε) (w : ℂ) :
+    partialZBar (fun η : ℂ => ((radialBump z ε η : ℝ) : ℂ)) (z + (ε : ℂ) * w)
+      = (ε : ℂ)⁻¹ * partialZBar unitRadialBumpC w := by
+  by_cases hw : w = 0
+  · -- Both sides 0: at w = 0, the substituted point is z and the unit
+    -- bump is at 0.
+    subst hw
+    simp only [mul_zero, add_zero, partialZBar_unitRadialBumpC_at_zero]
+    exact partialZBar_radialBumpComplex_at_z z hε
+  · -- η = z + εw ≠ z.
+    have h_η_ne : z + (ε : ℂ) * w ≠ z := by
+      intro h
+      have h_diff : (ε : ℂ) * w = 0 := by linear_combination h
+      have hε_ne : (ε : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt hε
+      rcases mul_eq_zero.mp h_diff with h | h
+      · exact absurd h hε_ne
+      · exact hw h
+    rw [partialZBar_radialBumpComplex_of_ne h_η_ne hε,
+        partialZBar_unitRadialBumpC_of_ne hw]
+    have h_norm : ‖(z + (ε : ℂ) * w) - z‖ = ε * ‖w‖ := norm_z_add_smul_sub hε.le
+    have h_diff : (z + (ε : ℂ) * w) - z = (ε : ℂ) * w := by ring
+    rw [h_norm, h_diff, deriv_psiBump_rescale hε]
+    have hε_C_ne : (ε : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt hε
+    have hw_norm_ne : (‖w‖ : ℂ) ≠ 0 := by
+      exact_mod_cast (norm_ne_zero_iff.mpr hw)
+    push_cast
+    field_simp
 
 end JacobianChallenge.PompeiuKernel
