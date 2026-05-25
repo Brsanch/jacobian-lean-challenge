@@ -6,19 +6,20 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ---
 
-## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24) — **Chip 3c-F + Chip 4 COMPLETE**
+## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24) — **Chip 3c-F + Chip 4 COMPLETE, Sub-chip 5.1 LANDED**
 
-Last rewrite: 2026-05-25 (post Chip 4: the chart-pullback of the Pompeiu kernel is lifted to the manifold side. Headlines —
+Last rewrite: 2026-05-25 (Sub-chip 5.1 of Chip 5 landed — finite chart cover from compactness). Headlines —
 
 * **`partialZBar_pompeiuKernel_eq_self`** ([`Analysis/PompeiuKernelCauchyPompeiu.lean`](JacobianChallenge/Analysis/PompeiuKernelCauchyPompeiu.lean), 213 LOC, Chip 3c-F-4): the unconditional Cauchy-Pompeiu identity on ℂ.
 * **`partialZBar_pompeiuKernelChart_eq_α_on_chart_source`** ([`Manifold/ChartPompeiuKernel.lean`](JacobianChallenge/Manifold/ChartPompeiuKernel.lean), 462 LOC, Chip 4): chart-x view local identity — for `y ∈ (chartAt ℂ x).source`, `partialZBar (pompeiuKernelChart x α ∘ chart_x.symm) (chart_x y) = α y`.
 * **`partialZBarManifold_pompeiuKernelChart_at_basepoint`** (Chip 4): the manifold-level identity at the construction basepoint `x` — `partialZBarManifold (pompeiuKernelChart x α) x = α x`.
 * **`partialZBarManifold_pompeiuKernelChart_eq_α_mul_transition`** (Chip 4): the manifold-level identity at any `y ∈ (chartAt ℂ x).source`, with the chart-transition conjugate-derivative factor `conj(deriv (chart_y ∘ chart_x.symm)(chart_x y))` absorbing the (0,1)-form transformation under chart change.
 * **`contDiffOn_pompeiuKernelChart_chart_symm`** (Chip 4): `pompeiuKernelChart x α ∘ chart_x.symm` is `C^∞` on `(chartAt ℂ x).target`.
+* **`FiniteChartCover X`** + **`FiniteChartCover.exists_of_compact`** ([`Manifold/CompactnessChartCover.lean`](JacobianChallenge/Manifold/CompactnessChartCover.lean), 120 LOC, Sub-chip 5.1): bundled `Finset` of base points whose chart sources cover a compact charted-ℂ space `X`, plus its existence theorem (no nonemptiness assumption). Supporting lemma `iUnion_source_eq_univ` restates the cover as `(⋃ x ∈ basePoints, (chartAt ℂ x).source) = univ` for downstream rewriting.
 
 All axiom-free (`propext, Classical.choice, Quot.sound` only).
 
-Next: **Chip 5 — genus-0 globalization to `DBarSolvabilityAtGenusZero X`**. Estimated 1,800-2,800 LOC, 7-12 sessions. Will use Chip 4's chart-pullback identity + partition of unity + Behnke-Stein spreading-function technique.
+Next: **Sub-chip 5.2 — partition of unity subordinate to `FiniteChartCover`**. Will lift `Mathlib.Geometry.Manifold.PartitionOfUnity` to produce a smooth ℝ-valued partition `{ρ_i}_{i ∈ cover.basePoints}` with `tsupport ρ_i ⊆ (chartAt ℂ x_i).source` and `Σ ρ_i = 1`, then cast to ℂ-valued. After Sub-chip 5.2: 5.3 (chart-local Pompeiu solutions), 5.4 (cutoff multiplication + error analysis), 5.5 (Behnke-Stein spreading correction — the heavy one), 5.6 (assembly + manifold identity). Estimated remaining for Chip 5: ~1,700-2,700 LOC, 6-11 sessions.
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post Chip 4): Chips 5-7 (~10-18 sessions).
 
