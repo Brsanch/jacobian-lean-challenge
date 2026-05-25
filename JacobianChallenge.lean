@@ -6,6 +6,7 @@ import JacobianChallenge.Analysis.H1OnManifold
 import JacobianChallenge.Analysis.InvNormIntegrability
 import JacobianChallenge.Analysis.L2InnerOnManifold
 import JacobianChallenge.Analysis.PolynomialLiouville
+import JacobianChallenge.Analysis.PompeiuIntegrandIntegrability
 import JacobianChallenge.Analysis.PompeiuKernel
 import JacobianChallenge.Basic
 import JacobianChallenge.Divisor
