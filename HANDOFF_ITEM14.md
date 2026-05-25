@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, **3c-F-1 + 3c-F-2-prep + 3c-F-2 polar transformation + 3c-F-2 bound lemma** landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, 3c-F-1, 3c-F-2-prep, 3c-F-2 polar transformation, 3c-F-2 bound lemma, **3c-F-2-final** landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -8,9 +8,9 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
 
-Last rewrite: 2026-05-25 (post Chip 3c-F partial: F-1 done + F-2 polar transformation + bound landed; FTC closure of universal constant `-π` pending).
+Last rewrite: 2026-05-25 (post Chip 3c-F-2-final: universal constant `-π` closed; Chip 3c-F-3 substitution + DCT on second summand is the next sub-piece).
 
-After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated **20–45 focused sessions / 5–10 months** at typical chip cadence (Chips 1a–2d done; Chip 3 is the next and heaviest).
+After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post 3c-F-2-final): ~1-3 sessions for Chip 3c-F-3+F-4, then Chips 4-7 (~13-22 sessions).
 
 ### Where we are right now
 
@@ -440,24 +440,40 @@ typeclass-unfolding workarounds for mathlib's abstract `ContDiffBump`.
   - `deriv_psiBump_one_eq_zero_of_{neg, one_lt}`: derivative vanishes
     outside `[0, 1]` (locally constant there).
 
+* **Chip 3c-F-2-final — DONE** (commit `750bab2`,
+  [`Analysis/PompeiuKernelRadialIntegralFinal.lean`](JacobianChallenge/Analysis/PompeiuKernelRadialIntegralFinal.lean),
+  ~205 LOC):
+  - **Headline**: `integral_partialZBar_unitRadialBumpC_div_eq_neg_pi :
+    ∫ ζ : ℂ, partialZBar unitRadialBumpC ζ / ζ = -π`.
+  - **FTC on `[0, 1]`** via `intervalIntegral.integral_deriv_eq_sub`
+    + `psiBump_one_{zero,one}`: `∫ r in 0..1, deriv (psiBump 1) r =
+    0 - 1 = -1` (`intervalIntegral_deriv_psiBump_one`,
+    `setIntegral_Ioc_deriv_psiBump_one`).
+  - **Extension to `Ioi 0`** via decomposition
+    `Ioi 0 = Ioc 0 1 ∪ Ioi 1` (`Set.Ioc_union_Ioi_eq_Ioi`) with
+    `deriv_psiBump_one_eq_zero_of_one_lt` giving a.e. vanishing on
+    `Ioi 1`, then `setIntegral_union` to combine
+    (`setIntegral_Ioi_deriv_psiBump_one`).
+  - **ℂ-lift** via `MeasureTheory.integral_ofReal` (Bochner integration
+    commutes with `Complex.ofReal`) + `MeasureTheory.integral_mul_const`:
+    `∫ r in Ioi 0, ((deriv (psiBump 1) r / 2 : ℝ) : ℂ) = (-1/2 : ℂ)`
+    (`setIntegral_Ioi_ofReal_deriv_psiBump_one_div_two`).
+  - **θ-integral** via `MeasureTheory.setIntegral_const` +
+    `Real.volume_real_Ioo_of_le` + `Complex.real_smul` (the smul
+    rewrite forced via `show` because `rw` doesn't unify the smul-
+    instance form): `∫ _ in Ioo (-π) π, (1 : ℂ) = (2π : ℂ)`
+    (`setIntegral_Ioo_neg_pi_pi_one_complex`).
+  - **Fubini + combine**: `MeasureTheory.setIntegral_prod_mul` with
+    `g ≡ 1` (explicit `μ, ν := volume` to resolve SFinite metavariables;
+    `show` aligns the goal's `volume` with `volume.prod volume`;
+    `Eq.trans` instead of `rw` to bypass alpha-equivalence pattern-
+    matching failures). Final `(-1/2) * (2π) = -π`.
+  - Sorry-free, axiom-free. Library entry added.
+
 All sub-pieces sorry-free, axiom-free (`propext`, `Classical.choice`,
 `Quot.sound`).
 
 #### Sub-pieces remaining for Chip 3c-F
-
-* **Chip 3c-F-2-final — universal constant `-π`** (~200-400 LOC):
-  Combining the polar transformation + bound:
-  1. **Fubini** (`MeasureTheory.setIntegral_prod`): separate `r`/`θ`
-     in `∫ p in Ioi 0 ×ˢ Ioo (-π) π, ((deriv (psiBump 1) p.1 / 2) : ℂ)`.
-     Integrability via the bound + compact-support truncation
-     `(Ioi 0 ∩ [0, 1]) × (-π, π)` (finite measure `2π`).
-  2. **`θ` integral** = `2π` (constant integrand × `volume (Ioo (-π) π)`).
-  3. **`r` integral via FTC** (`intervalIntegral.integral_deriv_eq_sub`):
-     `∫ r in (0)..1, deriv (psiBump 1) r = psiBump 1 1 - psiBump 1 0
-        = 0 - 1 = -1`. Extend to `Ioi 0` via `setIntegral_eq_integral_of_*`
-     and the vanishing of `deriv (psiBump 1)` outside `[0, 1]`.
-  4. **Combine**: `(2π) · (1/2) · (-1) = -π`. Headline result:
-     `∫ ζ : ℂ, partialZBar unitRadialBumpC ζ / ζ = -π`.
 
 * **Chip 3c-F-3 — DCT on second summand** (~300-500 LOC):
   Substitution `η = z + ε · w` reduces
@@ -481,8 +497,8 @@ All sub-pieces sorry-free, axiom-free (`propext`, `Classical.choice`,
   `partialZBar_pompeiuKernel_eq_pompeiuKernel_partialZBar` to get the
   Cauchy-Pompeiu identity `partialZBar (pompeiuKernel α) z = α z`.
 
-**Estimate for completing Chip 3c-F**: 2-4 more sessions,
-600-1000 more LOC.
+**Estimate for completing Chip 3c-F (post-F-2-final)**: 1-3 more sessions,
+400-600 more LOC (F-3 + F-4).
 
 **Chips 4-7** (after Chip 3c-F) — refined 2026-05-25 via direct repo
 scouting (see "Chip 5 scouting report" below):
