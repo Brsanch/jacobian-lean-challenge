@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-24 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chip 1a landed).
+Last rewrite: 2026-05-24 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a and 1b landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -10,7 +10,7 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated **25–50 focused sessions / 6–12 months** at typical chip cadence.
 
-### Where we are right now (branch tip `bcf6951`)
+### Where we are right now
 
 * **Chip 1a — DONE** ([`Analysis/PompeiuKernel.lean`](JacobianChallenge/Analysis/PompeiuKernel.lean), commit `bcf6951`).
   - `pompeiuIntegrand`, `pompeiuKernel` definitions.
@@ -18,36 +18,45 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
   - `integrableOn_inv_norm_sub_iff_origin` — translation reduction.
   - `integrableOn_inv_norm_sub_of_not_mem_compact` — trivial case.
   - Sorry-free, axiom-free. Library entry added.
+* **Chip 1b — DONE** ([`Analysis/InvNormIntegrability.lean`](JacobianChallenge/Analysis/InvNormIntegrability.lean), 163 LOC).
+  - `integrableOn_inv_norm_closedBall (R : ℝ) : IntegrableOn (fun ζ : ℂ => ‖ζ‖⁻¹) (closedBall (0 : ℂ) R) volume`.
+  - Auxiliary `lintegral_inv_enorm_closedBall_le` gives the quantitative
+    bound `∫⁻ ζ in closedBall 0 R, ‖(‖ζ‖⁻¹ : ℝ)‖ₑ ∂volume ≤ (max R 0) * 2π`,
+    proved by changing to polar coordinates via
+    `Complex.lintegral_comp_polarCoord_symm`; the Jacobian factor cancels
+    the integrand factor on `polarCoord.target` leaving an integrand
+    bounded by `1`.
+  - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
+    only). Library entry added.
 
-### Next chip: **Chip 1b — polar-coords integrability of `‖ζ‖⁻¹` on `closedBall 0 R`**
+### Next chip: **Chip 1c — Pompeiu integrand integrability for continuous compactly-supported `α`** (~200 LOC)
 
-**Target lemma (single chip):**
+**Target lemma.**
 
 ```
-theorem integrableOn_inv_norm_closedBall (R : ℝ) :
-    IntegrableOn (fun ζ : ℂ => ‖ζ‖⁻¹) (closedBall (0 : ℂ) R) volume
+theorem integrable_pompeiuIntegrand_of_continuous_hasCompactSupport
+    {α : ℂ → ℂ} (h_cont : Continuous α) (h_supp : HasCompactSupport α) (z : ℂ) :
+    Integrable (pompeiuIntegrand α z) volume
 ```
 
-**Proof strategy.** Reduce to `lintegral < ⊤` via `integrable_iff_finite_lintegral_enorm`. Bridge `ℂ ≃ᵐ ℝ × ℝ` via `Complex.measurableEquivRealProd` (measure preserving, see `volume_preserving_equiv_real_prod` in `Mathlib.MeasureTheory.Measure.Lebesgue.Complex`). Apply the polar identity `lintegral_comp_polarCoord_symm` (`Mathlib.Analysis.SpecialFunctions.PolarCoord:154`). Identify `‖polarCoord.symm (r, θ)‖ = |p.1|` via `norm_polarCoord_symm` (`PolarCoord.lean:202`). The Jacobian `ofReal r · ‖·‖⁻¹ₑ = 1` for `r > 0`. Bound by `volume(polar.target ∩ {r ≤ R}) ≤ R · 2π`. Estimated ~300–500 LOC.
+**Strategy.** Pick a closed ball `closedBall 0 R` containing
+`tsupport α ∪ {z}`. Outside this ball, `pompeiuIntegrand α z = 0`
+(since `α = 0` there), so integrability reduces to integrability on the
+ball. On the ball, `‖pompeiuIntegrand α z ζ‖ = ‖α ζ‖ · ‖ζ - z‖⁻¹`;
+`‖α‖` is bounded by `‖α‖_∞` (continuous on compact), so by
+`Integrable.bdd_mul` (or pointwise enorm bound + `Integrable.mono`) it
+suffices to show `‖ζ - z‖⁻¹` is integrable on the ball. Apply
+`integrableOn_inv_norm_sub_iff_origin` (Chip 1a) to translate, then
+`integrableOn_inv_norm_closedBall` (Chip 1b). For the easy case `z ∉ closedBall 0 R`,
+`integrableOn_inv_norm_sub_of_not_mem_compact` (Chip 1a) plus bounded
+α already gives integrability on the ball directly.
 
-**Mathlib import calibration (USE THESE, derived in Chip 1a):**
+Both Chip 1a and Chip 1b pieces are in tree under
+`JacobianChallenge.PompeiuKernel` namespace; this chip is the
+combinator.
 
-```lean
-import Mathlib.MeasureTheory.Measure.Haar.OfBasis        -- measureSpaceOfInnerProductSpace
-import Mathlib.MeasureTheory.Constructions.BorelSpace.Complex  -- BorelSpace ℂ
-import Mathlib.LinearAlgebra.Complex.FiniteDimensional   -- FiniteDimensional ℝ ℂ
-import Mathlib.MeasureTheory.Measure.Lebesgue.Complex    -- volume_preserving_equiv_real_prod
-import Mathlib.Analysis.SpecialFunctions.PolarCoord      -- lintegral_comp_polarCoord_symm, norm_polarCoord_symm
-import Mathlib.MeasureTheory.Function.LocallyIntegrable
-import Mathlib.MeasureTheory.Integral.Bochner.Basic
-import Mathlib.MeasureTheory.Integral.IntegrableOn
-```
+### Chips 2 through 5 (after 1c)
 
-`MeasureSpace ℂ` requires the **first three** imports together — this was the friction point in Chip 1a. Don't waste session time re-deriving.
-
-### Chips 1c through 5 (after 1b)
-
-* **Chip 1c (~200 LOC)** — combine 1a + 1b: prove `pompeiuIntegrand α z` integrable for continuous compactly-supported α. Two-case split (z in tsupport α / z outside tsupport α) using `integrableOn_inv_norm_sub_iff_origin` + 1b for the hard case and `integrableOn_inv_norm_sub_of_not_mem_compact` for the easy case. Combine with `Integrable.bdd_mul` for the α factor.
 * **Chip 2 (~1–2k LOC)** — smoothness in z: `pompeiuKernel α` is `C^∞ ℝ` on ℂ. Uses differentiation under the integral.
 * **Chip 3 (~2–4k LOC, the heaviest chip)** — the identity `∂̄(pompeiuKernel α) = α`. Routes through Cauchy-Pompeiu boundary terms; rectangle Stokes (`integral_boundary_rect_of_hasFDerivAt_real_off_countable` from mathlib's CauchyIntegral) is the key tool.
 * **Chip 4 (~1–2k LOC)** — chart pull-back: lift the Pompeiu kernel from ℂ to a chart-disk on X.
