@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, **3c-B** landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, **3c-C₁** landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -8,7 +8,7 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
 
-Last rewrite: 2026-05-25 (post Chip 3c-B).
+Last rewrite: 2026-05-25 (post Chip 3c-C₁).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated **20–45 focused sessions / 5–10 months** at typical chip cadence (Chips 1a–2d done; Chip 3 is the next and heaviest).
 
@@ -113,6 +113,29 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
     (`fderiv_of_notMem_tsupport`). Identifies both function and
     derivative with `pompeiuKernel` via Chip 2a + `HasDerivAt.const_mul (-π⁻¹)`.
   - Sorry-free, axiom-free. Library entry added.
+
+* **Chip 3c-C₁ — DONE** ([`Analysis/PompeiuKernelCutoff.lean`](JacobianChallenge/Analysis/PompeiuKernelCutoff.lean), ~160 LOC).
+  - `pompeiuCutoff (z : ℂ) {ε : ℝ} (hε : 0 < ε) : ℂ → ℝ` — the cutoff
+    function `χ_ε(η) := 1 - bump(η)` where `bump : ContDiffBump z` has
+    `rIn := ε/2`, `rOut := ε`. The underlying bump is exposed as
+    `pompeiuBump z hε`.
+  - Key properties (all sorry- and axiom-free):
+    * `pompeiuCutoff_eq_zero_of_mem_closedBall_half` — `χ_ε(ζ) = 0` on
+      `closedBall z (ε/2)`.
+    * `pompeiuCutoff_eq_one_of_not_mem_ball` — `χ_ε(ζ) = 1` outside
+      `ball z ε`.
+    * `pompeiuCutoff_nonneg`, `pompeiuCutoff_le_one` — `0 ≤ χ_ε ≤ 1`.
+    * `pompeiuCutoff_contDiff` — `ContDiff ℝ n χ_ε` for all `n`.
+    * `pompeiuCutoff_eventuallyEq_zero` — `χ_ε =ᶠ[𝓝 z] 0`. This is
+      the key fact that makes the regularized integrand `α · (·-z)⁻¹ · χ_ε`
+      smooth even at `η = z`.
+    * `one_sub_pompeiuCutoff_eq_bump`, `tsupport_one_sub_pompeiuCutoff_subset` —
+      the "interior" `(1 - χ_ε)` equals the bump, hence is compactly
+      supported in `closedBall z ε`.
+  - Uses mathlib's `ContDiffBump` (`Analysis/Calculus/BumpFunction/Basic.lean`)
+    with `HasContDiffBump ℂ` via the inner-product-space instance
+    (`Analysis/Calculus/BumpFunction/InnerProduct.lean:57`).
+  - Library entry added.
 
 * **Chip 3c-B — DONE** ([`Analysis/PompeiuKernelMulInvFDeriv.lean`](JacobianChallenge/Analysis/PompeiuKernelMulInvFDeriv.lean), ~130 LOC).
   - `hasFDerivAt_mul_inv_sub
@@ -224,47 +247,65 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
   - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
     only). Library entry added.
 
-### Next chip: **Chip 3c-C — rectangle Stokes invocation for `α(·)·(·-z)⁻¹` on `[−L, L]²`** (~300–700 LOC; the heaviest single sub-chip of the 3c arc)
+### Next chip: **Chip 3c-C₂ — smoothness of the regularized factor `(η - z)⁻¹ · χ_ε(η)`** (~200–400 LOC)
 
-With Chips 3c-A (`partialZBar` reduction) and 3c-B (`HasFDerivAt` off
-`z`) in hand, Chip 3c-C invokes mathlib's
-`Complex.integral_boundary_rect_of_hasFDerivAt_real_off_countable`
-([`Analysis/Complex/CauchyIntegral.lean:187`](.lake/packages/mathlib/Mathlib/Analysis/Complex/CauchyIntegral.lean))
-on `[−L, L]²` for the function `f(η) := α η * (η - z)⁻¹` with
-`s := {z}` as the countable bad set.
+With Chip 3c-C₁'s cutoff in hand, Chip 3c-C₂ proves that the
+regularized factor
 
-Hypotheses needed for that invocation:
+```
+g_ε(η) := (η - z)⁻¹ * (pompeiuCutoff z hε η : ℂ)
+```
 
-1. **`Hc : ContinuousOn f (closed rect)`** — fails at `η = z`. Two
-   options:
-   - (a) Restrict to rectangles not containing `z`, then bridge to the
-     general case (probably loses the small-circle contribution).
-   - (b) Redefine `f` to be `0` at `η = z` (using `Function.update` or
-     a piecewise definition). The integrand has a `1/(η - z)`
-     singularity, so `f(z)` is undefined by `inv_zero = 0` — `f` *is*
-     `0` at `z` by definition, but `Continuous` fails. **Mathlib's
-     rectangle Stokes needs `ContinuousOn` on the closed rect, so this
-     option is also blocked.**
-   - (c) **Use the annulus form**: apply rectangle Stokes to
-     `[−L, L]² \ ball z ε` (which is not a single rectangle — needs
-     assembly). Or use an *altered* `f` via a cutoff `χ_ε`.
+is `C^∞` everywhere on `ℂ` (not just off `z`), and computes its
+fderiv. This is the regularization that unblocks rectangle Stokes:
+the raw factor `(η - z)⁻¹` is not even continuous at `η = z`, but
+`g_ε` is `C^∞` everywhere because `pompeiuCutoff z hε` is `≡ 0` on
+a neighborhood of `z` (Chip 3c-C₁'s
+`pompeiuCutoff_eventuallyEq_zero`).
 
-   This is the actual hard step. Most likely path: rectangle-minus-disc
-   is assembled by Lebesgue-DCT-limit `ε → 0` of `α(η) · (η - z)⁻¹ ·
-   χ_ε(η)` where `χ_ε` is a `C^∞` cutoff vanishing in `ball z (ε/2)`
-   and equal to `1` outside `ball z ε`. Then the integral of
-   `χ_ε · (·)⁻¹` is `C^∞` on the full rectangle, so rectangle Stokes
-   applies. Take `ε → 0` afterwards.
+Strategy:
 
-2. **`Hd : ∀ x ∈ interior \ s, HasFDerivAt f (f' x) x`** — discharged
-   by Chip 3c-B (or its analogue for the cutoff `f · χ_ε`).
+1. Off `z`: `g_ε` is the product of two `C^∞` functions
+   (`(·-z)⁻¹` smooth off `z` from `hasDerivAt_inv` ∘ `sub_const`,
+   plus `pompeiuCutoff` smooth everywhere).
+2. At `z`: `g_ε` is `=ᶠ[𝓝 z] 0` because `pompeiuCutoff =ᶠ[𝓝 z] 0`
+   (Chip 3c-C₁), so it is `C^∞` at `z` (any function eventually
+   equal to a `C^∞` function is `C^∞` at that point — `ContDiffAt`
+   is local).
+3. Combine via `ContDiff.contDiffAt_iff` (or
+   `contDiffAt_of_forall_x_in_nhds`).
 
-3. **`Hi : IntegrableOn (fun x => f' x I - I • f' x 1) (rect)`** —
-   local integrability of `(η - z)⁻¹` in 2D, available from Chip 1b's
-   `integrableOn_inv_norm_closedBall`. With Chip 3c-B's explicit fderiv,
-   `f' x I - I • f' x 1` will involve `(η - z)⁻¹` and `(η - z)⁻²`; the
-   latter is not locally integrable, so further care is needed — this
-   may force option (c) above.
+After Chip 3c-C₂, the regularized **full integrand**
+`α(η) · g_ε(η)` is `C^∞` when `α ∈ C^∞`, which directly satisfies
+mathlib rectangle Stokes' `Hc` (`ContinuousOn`) and `Hd`
+(`HasFDerivAt` on full interior).
+
+Then the remaining sub-sub-chips toward
+`pompeiuKernel (partialZBar α) z = α z`:
+
+* **Chip 3c-C₃** — rectangle Stokes invocation for the regularized
+  integrand on `[−L, L]²` (with empty bad set `s = ∅` and no
+  singularity exception needed — `g_ε` is `C^∞` everywhere).
+  Together with the outer-boundary vanishing (compact support of
+  `α`), this gives:
+  ```
+  ∫∫_{[-L,L]²} ∂̄(α · g_ε)(η) dA(η) = 0  (no boundary terms)
+  ```
+* **Chip 3c-C₄** — split the volume integral via the Leibniz rule:
+  `∂̄(α · g_ε) = (∂̄α) · g_ε + α · ∂̄g_ε`. Off `closedBall z (ε/2)`,
+  `∂̄g_ε = (∂̄ pompeiuCutoff · (·-z)⁻¹)`. On the half-ball, both
+  factors of `g_ε` vanish.
+* **Chip 3c-C₅** — Lebesgue DCT for `ε → 0`:
+  - The `(∂̄α) · g_ε` term converges to `(∂̄α) · (·-z)⁻¹` (recovering
+    the full integral).
+  - The `α · ∂̄g_ε` term — this involves `α · ∂̄χ_ε · (·-z)⁻¹` on
+    `closedBall z ε \ closedBall z (ε/2)`. The annular volume is
+    `O(ε²)` and `(·-z)⁻¹` is `O(1/ε)` there, so the term is `O(ε)`
+    if `α(z)` is bounded — vanishes in the limit. Alternative
+    approach: this term is exactly the small-disc contour integral
+    captured by Chip 3a (via Green's theorem).
+* **Chip 3c-C₆** — final assembly:
+  `pompeiuKernel (partialZBar α) z = α z`.
 * **Chip 3c-D** — outer-rectangle boundary vanishing: for `L` large
   enough (`tsupport α ⊆ ball 0 (L - 1)`), the four line integrals
   on `∂[−L, L]²` are all zero because `α ≡ 0` there.
