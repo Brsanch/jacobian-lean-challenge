@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, **3c-D** landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, **3c-E** landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -8,7 +8,7 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
 
-Last rewrite: 2026-05-25 (post Chip 3c-D).
+Last rewrite: 2026-05-25 (post Chip 3c-E).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated **20–45 focused sessions / 5–10 months** at typical chip cadence (Chips 1a–2d done; Chip 3 is the next and heaviest).
 
@@ -113,6 +113,79 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
     (`fderiv_of_notMem_tsupport`). Identifies both function and
     derivative with `pompeiuKernel` via Chip 2a + `HasDerivAt.const_mul (-π⁻¹)`.
   - Sorry-free, axiom-free. Library entry added.
+
+* **Chip 3c-E — DONE** (two files: [`Analysis/PompeiuKernelPlaneIntegral.lean`](JacobianChallenge/Analysis/PompeiuKernelPlaneIntegral.lean), ~230 LOC + [`Analysis/PompeiuKernelDCTLimit.lean`](JacobianChallenge/Analysis/PompeiuKernelDCTLimit.lean), ~406 LOC; 636 LOC total).
+  - **Section A — Fubini bridge** ([`PompeiuKernelPlaneIntegral.lean`](JacobianChallenge/Analysis/PompeiuKernelPlaneIntegral.lean)):
+    `integral_complex_eq_iteratedIntegral_of_tsupport_in_ball
+        {f : ℂ → ℂ} (h_int : Integrable f) {L : ℝ} (hL_pos : 0 < L)
+        (h_supp : tsupport f ⊆ Metric.ball 0 L) :
+        ∫ ζ : ℂ, f ζ = ∫ x in -L..L, ∫ y in -L..L, f ((x : ℂ) + y * I)`.
+    Converts Chip 3c-D's iterated-integral form into the plane
+    (Bochner-over-ℂ) form. Chain: `Complex.volume_preserving_equiv_real_prod`
+    (`ℂ ↔ ℝ × ℝ` change of variables) → `MeasureTheory.integral_prod`
+    (Fubini) → `setIntegral_eq_integral_of_forall_compl_eq_zero` (cut both
+    `ℝ`-integrals to `Ioc (-L) L` using compact support in `ball 0 L`)
+    → `intervalIntegral.integral_of_le` (convert to interval integrals).
+  - **Section B — plane-form balance equation** ([`PompeiuKernelDCTLimit.lean`](JacobianChallenge/Analysis/PompeiuKernelDCTLimit.lean)):
+    `balance_plane_eq_zero
+        (h_smooth : ContDiff ℝ 1 α) (h_supp : HasCompactSupport α)
+        (z : ℂ) {ε : ℝ} (hε : 0 < ε)
+        {L : ℝ} (hL_pos : 0 < L) (hL_supp : tsupport α ⊆ Metric.ball 0 L) :
+        ∫ ζ : ℂ, partialZBar α ζ * regularizedInvSub z hε ζ
+          + α ζ * partialZBar (regularizedInvSub z hε) ζ = 0`.
+    Applies Section A's Fubini bridge to Chip 3c-D's iterated balance,
+    using `tsupport_partialZBar_subset` (Wirtinger-derivative support
+    bound via `tsupport_fderiv_apply_subset` + `tsupport_mul_subset_right`
+    + `tsupport_add`) and `tsupport_mul_subset_left` to certify the
+    integrand support sits in `tsupport α ⊆ Metric.ball 0 L`.
+    Supporting: continuity + compact-support preservation lemmas for
+    both summands (`integrable_partialZBar_mul_regInvSub`,
+    `integrable_alpha_mul_partialZBar_regInvSub`).
+  - **Section C — DCT limit on the first summand** ([`PompeiuKernelDCTLimit.lean`](JacobianChallenge/Analysis/PompeiuKernelDCTLimit.lean)):
+    `tendsto_integral_partialZBar_alpha_mul_regInvSub
+        (h_smooth : ContDiff ℝ 1 α) (h_supp : HasCompactSupport α) (z : ℂ) :
+        Tendsto (fun ε : ℝ =>
+            ∫ ζ : ℂ, partialZBar α ζ * regularizedInvSubReal z ε ζ)
+          (𝓝[>] (0 : ℝ))
+          (𝓝 (∫ ζ : ℂ, partialZBar α ζ * (ζ - z)⁻¹))`.
+    Mathlib's `MeasureTheory.tendsto_integral_filter_of_dominated_convergence`
+    on filter `𝓝[>] (0 : ℝ)` (countably-generated), with:
+    - Dominator `‖partialZBar α ζ‖ * ‖(ζ - z)⁻¹‖` integrable via Chip 1c
+      (`integrable_pompeiuIntegrand_of_continuous_hasCompactSupport`)
+      applied to `partialZBar α` (continuous + compactly-supported, via
+      `partialZBar_continuous` + `partialZBar_hasCompactSupport`).
+    - Pointwise convergence: at `ζ ≠ z`, the wrapper is eventually
+      `(ζ - z)⁻¹` (because `pompeiuCutoff z hε ζ = 1` for `ε < dist ζ z`);
+      at `ζ = z`, both function values and the limit value are `0` (since
+      `(z - z)⁻¹ = 0` and `pompeiuCutoff z hε z = 0`).
+    - Pointwise norm bound `‖regularizedInvSub z hε ζ‖ ≤ ‖(ζ - z)⁻¹‖`
+      via `|pompeiuCutoff z hε ζ| ≤ 1`.
+    Wrapper `regularizedInvSubReal z ε : ℂ → ℂ` is `regularizedInvSub z hε`
+    for `0 < ε` and defaults to `(·-z)⁻¹` on `ε ≤ 0` (matches the limit),
+    eliminating the dependent-type complication for `Tendsto`.
+  - The RHS `∫ ζ, partialZBar α ζ * (ζ - z)⁻¹` equals
+    `-π · pompeiuKernel (partialZBar α) z` by definition of `pompeiuKernel`.
+  - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
+    only). Library entries added.
+  - **What is NOT in this chip (deferred to Chip 3c-F):**
+    1. The matching DCT limit on the second summand
+       `∫ ζ : ℂ, α ζ * partialZBar (regularizedInvSub z hε) ζ → π · α z`.
+       This needs the radial-bump rescaling `η = z + ε·w` + polar-coords
+       calculation `∫∫ (∂̄φ_1)(w)/w dA = -π`, which depends on accessing
+       the radial structure of mathlib's `ContDiffBump` (currently abstract
+       via the `HasContDiffBump`/`someContDiffBumpBase` typeclass mechanism;
+       the inner-product instance `ofInnerProductSpace` IS radially
+       symmetric in `‖x‖`, but extracting that for the `pompeiuBump`
+       requires either a typeclass-unfolding workaround or constructing
+       an explicit radial bump from scratch — both are substantive).
+    2. Combining the two DCT limits with `balance_plane_eq_zero` to get
+       `pompeiuKernel (partialZBar α) z = α z` (the trivial step once
+       Item 1 is in hand).
+    3. Composition with Chip 3b's
+       `partialZBar_pompeiuKernel_eq_pompeiuKernel_partialZBar` to give
+       the final `partialZBar (pompeiuKernel α) z = α z` (trivial).
+  - **Estimate for Chip 3c-F**: ~600-1500 LOC, 3-6 sessions. The radial-bump
+    machinery is the heaviest classical content in the entire Pompeiu arc.
 
 * **Chip 3c-D — DONE** ([`Analysis/PompeiuKernelStokes.lean`](JacobianChallenge/Analysis/PompeiuKernelStokes.lean), ~370 LOC).
   - **Main theorem (Stokes-for-`∂̄`)**:
@@ -312,82 +385,77 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
   - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
     only). Library entry added.
 
-### Next chip: **Chip 3c-E — DCT-limit `ε → 0` + final identity `pompeiuKernel (partialZBar α) z = α z`** (~600–1200 LOC)
+### Next chip: **Chip 3c-F — radial-bump limit on second summand + final identity** (~600-1500 LOC)
 
-With Chip 3c-D's balance equation (iterated form) in hand:
+With Chip 3c-E's plane-form balance equation and DCT limit on the
+first summand in hand:
 
+* `balance_plane_eq_zero`:
+  ```
+  ∫ ζ : ℂ, partialZBar α ζ * regularizedInvSub z hε ζ
+    + α ζ * partialZBar (regularizedInvSub z hε) ζ = 0.
+  ```
+* `tendsto_integral_partialZBar_alpha_mul_regInvSub`:
+  ```
+  ∫ ζ, partialZBar α ζ * regInvSub z hε ζ
+    → ∫ ζ, partialZBar α ζ * (ζ - z)⁻¹  as  ε → 0⁺.
+  ```
+  The RHS equals `-π · pompeiuKernel (partialZBar α) z` (def of `pompeiuKernel`).
+
+Chip 3c-F has to close the remaining limit:
 ```
-∫ x in -L..L, ∫ y in -L..L,
-  partialZBar α (x+y*I) * regularizedInvSub z hε (x+y*I)
-    + α (x+y*I) * partialZBar (regularizedInvSub z hε) (x+y*I) = 0
+∫ ζ, α ζ * partialZBar (regularizedInvSub z hε) ζ  →  π · α z  as  ε → 0⁺.
 ```
 
-Chip 3c-E takes the `ε → 0` limit to extract
-`pompeiuKernel (partialZBar α) z = α z`.
+Combined with `balance_plane_eq_zero` and Section C's DCT, this gives
+`-π · pompeiuKernel (partialZBar α) z + π · α z = 0`, hence
+`pompeiuKernel (partialZBar α) z = α z`. Composing with Chip 3b's bridge
+`partialZBar (pompeiuKernel α) z = pompeiuKernel (partialZBar α) z` gives
+the final identity `partialZBar (pompeiuKernel α) z = α z`.
 
-Sub-tasks:
+**The classical proof of the second-summand limit** uses the radial-bump
+rescaling `η = z + ε · w` to reduce the integral to a fixed unit-scale
+calculation:
+```
+∫∫ α(η) · ∂̄(regInvSub z hε)(η) dA
+  = ∫∫ α(η) · (∂̄χ_ε)(η) / (η - z) dA   (Leibniz off z, via Chip 3c-A)
+  = ∫∫ α(z + εw) · (-(1/ε) (∂̄φ_1)(w)) · ((1/ε)·w⁻¹) · ε² dA(w)   (subst.)
+  = -∫∫ α(z + εw) · (∂̄φ_1)(w) / w  dA(w)
+  →  -α(z) · ∫∫ (∂̄φ_1)(w) / w  dA(w)   (DCT, α(z+εw) → α(z))
+  =  -α(z) · (-π)  =  π · α(z).
+```
 
-1. **Extend iterated integral to full-plane integral**. For each of the
-   two integrand pieces, the support is bounded by `Metric.closedBall 0 L`
-   for L large (since `tsupport α ⊆ ball 0 L` and `regularizedInvSub`
-   and its `partialZBar` are bounded on `ball 0 L`). So:
-   - `∫ x in -L..L, ∫ y in -L..L, (·)` equals
-     `∫ ζ : ℂ, (·) ζ ∂volume` for L large.
-   This uses `MeasurePreserving.integral_comp` via
-   `Complex.volume_preserving_equiv_real_prod` + Fubini.
-2. **`ε → 0` limit of `∫ partialZBar α · regularizedInvSub z hε`**.
-   - As `ε → 0⁺`, `regularizedInvSub z hε (η) → (η - z)⁻¹` pointwise
-     for `η ≠ z` (since `pompeiuCutoff → 1` pointwise off `z`).
-   - Dominated convergence: dominating function
-     `‖partialZBar α (η)‖ · ‖(η - z)⁻¹‖` is integrable (compact
-     support × locally integrable).
-   - Limit:
-     `∫ ζ, partialZBar α (ζ) * (ζ - z)⁻¹`
-     `= -π · pompeiuKernel (partialZBar α) z` (by definition).
-3. **`ε → 0` limit of `∫ α · partialZBar (regularizedInvSub z hε)`**.
-   This is the harder piece. Using Chip 3c-A's Leibniz reduction
-   off `z`:
-   `partialZBar (regularizedInvSub z hε) (η)
-       = partialZBar (pompeiuCutoff z hε) (η) · (η - z)⁻¹`
-   for `η ≠ z`. The support of `partialZBar (pompeiuCutoff z hε)`
-   is in the annulus `closedBall z ε \ ball z (ε/2)`. As `ε → 0`, this
-   becomes a small-disc contribution.
-   
-   The cleanest path: use Green's theorem / 2D divergence theorem to
-   convert `∫∫_{annulus} α · ∂̄g_ε` to a contour integral around
-   the inner boundary `C(z, ε/2)` (where `g_ε = (·-z)⁻¹` outside
-   the inner ball, plus the boundary contour around the outer ball
-   where `g_ε = 0`). Result:
-   `∫ α(η) · partialZBar (regularizedInvSub z hε)(η) dA → -π · α(z)`
-   as `ε → 0`, via Chip 3a's small-disc Cauchy limit (scaled by
-   `1/(2I)` due to Green's-theorem orientation factor).
-4. **Combine**: balance equation `→ 0 = -π · (pompeiuKernel (∂̄α) z) - π · α(z)`, so `pompeiuKernel (∂̄α) z = α(z)`. Wait sign: balance gives `∫(∂̄α)·g_ε = -∫α·∂̄g_ε → -π·α(z)·(-1) = π·α(z)`. Hence `pompeiuKernel (∂̄α) z = -(1/π) · π · α z = -α z`? Sign check needed. The Cauchy-Pompeiu identity standard form is `(∂̄α)/π · (·)⁻¹ → α` so sign should work out. Verify in proof.
+The universal constant `∫∫ (∂̄φ_1)(w)/w dA = -π` is computed by:
+1. **Radial structure of `φ_1`**: `φ_1(w) = ψ(‖w‖)` for some smooth
+   `ψ : ℝ → ℝ` with `ψ(r) = 1` for `r ≤ 1/2`, `ψ(r) = 0` for `r ≥ 1`.
+2. **Wirtinger of radial function**: `(∂̄φ_1)(w) = (1/2) · ψ'(‖w‖) · w/‖w‖`.
+3. **Polar coords** (via `Complex.lintegral_comp_polarCoord_symm`):
+   `∫∫ (1/2)·ψ'(r)/r · r dr dθ = π · ∫_0^∞ ψ'(r) dr = π · (0 - 1) = -π`
+   (FTC).
 
-5. **Compose with Chip 3b** for the final
-   `partialZBar (pompeiuKernel α) z = α z`.
+**Caveat**: mathlib's `ContDiffBump` exposes its function via the
+`HasContDiffBump`/`someContDiffBumpBase` typeclass mechanism, which is
+intentionally abstract — `someContDiffBumpBase E := default` doesn't
+unfold to the inner-product `ofInnerProductSpace E` definitionally
+without typeclass instance access. So Step 1 either needs:
+- (a) **Replace `pompeiuBump` with an explicit `ofInnerProductSpace`-backed
+  bump** (changes `pompeiuCutoff`'s definition; cascades through Chips
+  3c-C₁/C₂/D — manageable but invasive); OR
+- (b) **Construct an explicit radial bump from scratch** (~500-800 LOC of
+  new infrastructure: smooth-transition, monotone decreasing on [1/2, 1],
+  etc.).
 
-After Chip 3c-E lands, the Item 14 reduction is closed (modulo the
-per-`p` `ChartAtConstantOnSource` structural hypothesis, which is
-discharged trivially on every concrete X). Chips 4–7 are
-chart-pullback + globalization + integration into the existing chain.
+Option (a) is cleaner. After that, the polar-coord + FTC chain is
+~300-500 LOC (mostly mechanical).
 
-**Estimate**: Chip 3c-E is the most analytically heavy piece (DCT,
-Green-theorem-like manipulation, careful sign tracking). Realistic
-~3–6 sessions, ~600–1200 LOC.
+**Chips 4-7** (after Chip 3c-F):
 
-**Estimate**: Chip 3c is ~6–12 sessions across multiple sub-chips
-(annulus-Stokes setup, cutoff function, DCT-limit, Leibniz product
-rule for `partialZBar` on `(·-z)⁻¹`, assembly). Likely the heaviest
-single chip in the arc.
-
-### Chips 4 through 7 (after Chip 3)
-
-* **Chip 4 (~1–2k LOC)** — chart pull-back: lift the Pompeiu kernel from ℂ to a chart-disk on X.
-* **Chip 5 (~2–3k LOC)** — globalize to compact X at genus 0. Combines partition of unity over a finite chart cover with the genus-0-specific spreading function construction (Forster Ch. 14, Behnke-Stein-light). This is the substantive classical-content step.
+* **Chip 4 (~1-2k LOC)** — chart pull-back: lift the Pompeiu kernel from ℂ to a chart-disk on X.
+* **Chip 5 (~2-3k LOC)** — globalize to compact X at genus 0. Combines partition of unity over a finite chart cover with the genus-0-specific spreading function construction (Forster Ch. 14, Behnke-Stein-light). This is the substantive classical-content step.
 * **Chip 6 (~200 LOC)** — wire to the existing `ofCurve_inj_under_genus_pos`-style chain at [`OfCurveInjFromDegreeOne.lean:90`](JacobianChallenge/Manifold/OfCurveInjFromDegreeOne.lean) to get `δQ - δP ∈ PrincDiv X`, then through the unconditional chain to `X ≃ₜ S²`.
 * **Chip 7 (<50 LOC)** — close `Basic.lean:73` by composition.
 
-**Net (remaining, Chips 3–7): 20–45 sessions, 4–9k LOC.**
+**Net (remaining, Chips 3c-F through 7): 20-45 sessions, 4-9k LOC.**
 
 ### Discipline lesson learned today (KEEP)
 
