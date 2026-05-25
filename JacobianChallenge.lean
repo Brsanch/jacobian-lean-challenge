@@ -11,6 +11,7 @@ import JacobianChallenge.Analysis.PompeiuKernel
 import JacobianChallenge.Analysis.PompeiuKernelContinuity
 import JacobianChallenge.Analysis.PompeiuKernelDerivative
 import JacobianChallenge.Analysis.PompeiuKernelDirectionalIntegrand
+import JacobianChallenge.Analysis.PompeiuKernelSmoothness
 import JacobianChallenge.Analysis.PompeiuKernelTranslation
 import JacobianChallenge.Basic
 import JacobianChallenge.Divisor
