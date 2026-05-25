@@ -737,6 +737,125 @@ This was a real failure mode in the Chip 1a session (three deletion cycles befor
 
 ---
 
+## 🚀 Session 5 entry plan (Chip 5 kickoff)
+
+Chip 5 globalizes Chip 4's local Pompeiu identity to discharge
+`DBarSolvabilityAtGenusZero X` for every genus-0 compact Riemann surface
+(not just RS — uniformization is precisely Item 14's *output*, so we
+cannot assume it). The Forster Ch. 14 strategy: partition-of-unity glue
++ Behnke-Stein spreading correction. Estimated 1,800-2,800 LOC,
+7-12 sub-chip sessions.
+
+### Recommended sub-chip decomposition
+
+**Sub-chip 5.1 — finite chart cover from compactness** (~150-300 LOC,
+1 session).
+Goal: from `CompactSpace X` (which follows from any path to `genus X = 0`
+via the existing chain), extract a finite chart cover
+`{(x_i, chart_{x_i})}_{i ∈ Fin n}` with `X = ⋃ (chart_{x_i}.source)`.
+Use mathlib's `IsCompact.elim_nhds_subcover` applied to the open cover
+by chart sources, plus `IsCompact.elim_finite_subcover` for the finite
+reduction. Wraps these into a clean data structure that Chip 4's
+`pompeiuKernelChart` accepts.
+
+**Sub-chip 5.2 — partition of unity on a complex 1-manifold**
+(~200-400 LOC, 1-2 sessions). Goal: lift mathlib's
+`Mathlib/Geometry/Manifold/PartitionOfUnity.lean` to produce a smooth
+ℝ-valued partition `{ρ_i}_{i ∈ Fin n}` subordinate to the chart cover,
+with `ρ_i : X → ℝ` smooth, `0 ≤ ρ_i ≤ 1`, `tsupport ρ_i ⊆ chart_{x_i}.source`,
+and `Σ ρ_i = 1` pointwise on `X`. Cast to `ℂ`-valued (multiply by
+`Complex.ofRealCLM` or compose). Mathlib has the real-manifold version;
+the ℝ ↔ ℂ trivial model rewrites are the only fiddly bit.
+
+**Sub-chip 5.3 — local Pompeiu solutions with cutoffs** (~300-500 LOC,
+2 sessions). Goal: for each `i`, define
+`u_i := pompeiuKernelChart x_i (ρ_i · α) : X → ℂ`. Use Chip 4's
+`pompeiuKernelChart`. Apply `partialZBar_pompeiuKernelChart_eq_α_on_chart_source`
+to get the chart-x_i view local identity `∂̄ (u_i^chart_x_i) = (ρ_i · α)^chart_x_i`
+on `chart_{x_i}.source`. Note: each `u_i` is C^∞ ON `chart_{x_i}.source`
+(via Chip 4's smoothness lemma) but generally NOT compactly supported
+in `chart_{x_i}.source` — the Pompeiu kernel decays like `1/|z|`, not
+to zero. This produces the error term that Sub-chip 5.4 corrects.
+
+**Sub-chip 5.4 — cutoff multiplication + error analysis** (~300-500 LOC,
+2 sessions). Multiply each `u_i` by another smooth cutoff `χ_i` with
+`χ_i ≡ 1` on a neighborhood of `supp(ρ_i)` and `tsupport χ_i ⊆ chart_{x_i}.source`,
+giving `v_i := χ_i · u_i : X → ℂ` smooth and supported in
+`chart_{x_i}.source` (so extendable by 0 to a smooth global function).
+Apply the Leibniz rule
+(`partialZBarManifold_mul`) to `v_i`:
+`∂̄(χ_i · u_i) = χ_i · ∂̄u_i + ∂̄χ_i · u_i`.
+On `supp(ρ_i)` the first term gives `χ_i · ρ_i · α = ρ_i · α` (since
+χ_i = 1). Summing over `i`: `Σ ∂̄v_i = α + e` where the error
+`e := Σ ∂̄χ_i · u_i` has support disjoint from any neighborhood of
+`⋃ supp(ρ_i) = X` — i.e., `e ≡ 0` on `X`! Actually e is NOT zero
+because `∂̄χ_i` is supported in the cutoff annulus where `χ_i` transitions
+from 1 to 0; this annulus is *inside* `chart_{x_i}.source` but *outside*
+`supp(ρ_i)`. So `e` has support inside `X \ supp(ρ_i)` for each `i`,
+which is non-trivial — this is the genuine error term that Sub-chip 5.5
+must correct via spreading.
+
+**Sub-chip 5.5 — Behnke-Stein spreading correction** (~600-1,000 LOC,
+3-5 sessions). The heaviest sub-chip. Iteratively correct the error
+`e_0 := α - ∂̄v` by re-solving `∂̄w_1 = e_0` (smaller-supported), then
+`∂̄w_2 = e_1`, etc. On genus-0 X this iteration converges to a smooth
+global solution. The classical proof uses Forster Ch. 14's
+spreading-function lemma (a strengthening of Schauder estimates +
+geometric-series convergence on contracting annuli). At the Lean
+level: ~600-1,000 LOC of analytic infrastructure for the convergence
+argument, possibly with a Stein-manifold-light variant if direct
+spreading proves too heavy.
+
+**Sub-chip 5.6 — assembly and manifold identity** (~150-300 LOC,
+1 session). Combine all `v_i + w_k` into the final `u : X → ℂ`,
+discharge `ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ u`, and show
+`partialZBarManifold u x = α x` for all `x`. The chart-transition factor
+analysis from Chip 4 handles the manifold-side identity at arbitrary
+`x` — at each `x`, the canonical chart's view of `u` satisfies the
+local identity from Sub-chips 5.3-5.5, and the manifold-side identity
+follows by the same `extChartAt = chartAt` reduction used in Chip 4's
+basepoint theorem.
+
+### Entry checklist (first thing next session)
+
+1. **Read `Manifold/ChartPompeiuKernel.lean`** (462 LOC) — the API
+   that Chip 5 consumes.
+2. **Confirm `git status` clean + `lake build` green** on
+   `feat/item14-forward-dbar-mul`. Last commit `ed468fb`.
+3. **Search mathlib** for partition-of-unity API:
+   `grep -rn "IsOpen.*PartitionOfUnity\|exists.*partition.*unity\|smoothPartitionOfUnity"
+    .lake/packages/mathlib/Mathlib/Geometry/Manifold/PartitionOfUnity.lean`
+   — confirm what's available, and what cast/lift work is needed
+   for ℝ → ℂ.
+4. **Start Sub-chip 5.1**: `CompactnessChartCover.lean` (new file).
+   Use `IsCompact.elim_finite_subcover` on
+   `{(chartAt ℂ x).source | x : X}`. Output: a `FiniteChartCover X`
+   structure (or just an `∃ s : Finset X, X ⊆ ⋃ ...` proposition).
+
+### Risk register for Chip 5
+
+* **R1 (high)** — Behnke-Stein spreading is the biggest unknown.
+  Classical reference (Forster §14) assumes underlying functional
+  analysis (uniform convergence on compact sets) that mathlib may not
+  have packaged. Plan B if 5.5 stalls: try Dolbeault iso shortcut
+  (`H¹(X, 𝒪) = H^{0,1}_{∂̄}(X)`) — but this requires building
+  Dolbeault cohomology from scratch (3,000+ LOC). Plan C: assume an
+  axiom `behnkeSteinSpreading` for the inductive step, document, and
+  push for external review.
+* **R2 (medium)** — The chart-transition factor from Chip 4
+  (`partialZBarManifold_pompeiuKernelChart_eq_α_mul_transition`)
+  makes the manifold-side identity non-trivial when summing local
+  contributions. If the partition-of-unity sum doesn't yield a clean
+  manifold identity (due to mismatched chart-transition factors),
+  may need to refactor to a chart-invariant variant of
+  `partialZBarManifold`.
+* **R3 (low)** — `ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞` is in the
+  `DBarSolvabilityAtGenusZero` predicate, but the chart-side
+  smoothness lemma uses `ContDiff ℝ ∞`. Bridge via mathlib's
+  `contMDiff_iff_contDiff_on_charts` style lemmas.
+
+---
+
 ## TL;DR — current frontier
 
 **`Basic.lean:73 genus_eq_zero_iff_homeo`** still has a `sorry`. The reduction chain in tree, after this session's work:
