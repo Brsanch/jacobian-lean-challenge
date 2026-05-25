@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, **3c-C₂** landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, **3c-D** landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -8,7 +8,7 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
 
-Last rewrite: 2026-05-25 (post Chip 3c-C₂).
+Last rewrite: 2026-05-25 (post Chip 3c-D).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated **20–45 focused sessions / 5–10 months** at typical chip cadence (Chips 1a–2d done; Chip 3 is the next and heaviest).
 
@@ -113,6 +113,47 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
     (`fderiv_of_notMem_tsupport`). Identifies both function and
     derivative with `pompeiuKernel` via Chip 2a + `HasDerivAt.const_mul (-π⁻¹)`.
   - Sorry-free, axiom-free. Library entry added.
+
+* **Chip 3c-D — DONE** ([`Analysis/PompeiuKernelStokes.lean`](JacobianChallenge/Analysis/PompeiuKernelStokes.lean), ~370 LOC).
+  - **Main theorem (Stokes-for-`∂̄`)**:
+    `iteratedIntegral_partialZBar_eq_zero
+        {f : ℂ → ℂ} (h_smooth : ContDiff ℝ 1 f) {L : ℝ} (hL_pos : 0 < L)
+        (hL_supp : tsupport f ⊆ Metric.ball 0 L) :
+        ∫ x in -L..L, ∫ y in -L..L, partialZBar f (x + y * I) = 0`.
+    For any compactly-supported `C¹` function `f`, the iterated `∂̄`
+    integral over a large enough square rectangle vanishes.
+  - **Application (balance equation)**:
+    `balance_iteratedIntegral_eq_zero
+        {α : ℂ → ℂ} (h_α : ContDiff ℝ 1 α) (z : ℂ) {ε : ℝ} (hε : 0 < ε)
+        {L : ℝ} (hL_pos : 0 < L) (hL_supp : tsupport α ⊆ Metric.ball 0 L) :
+        ∫ x in -L..L, ∫ y in -L..L,
+          partialZBar α (x+y*I) * regularizedInvSub z hε (x+y*I)
+            + α (x+y*I) * partialZBar (regularizedInvSub z hε) (x+y*I) = 0`.
+    The iterated-integral form of integration-by-parts in the
+    Cauchy-Pompeiu argument.
+  - Proof of Stokes-for-`∂̄`:
+    1. Apply mathlib's
+       `Complex.integral_boundary_rect_of_differentiableOn_real` on the
+       square `[-L, L]²` (corners `z₀ := -L - L·I`, `w₀ := L + L·I`).
+    2. All four boundary line integrals vanish:
+       `intervalIntegral_zero_on_uIcc_{horiz,vert}` + helpers
+       `norm_horiz_ge`, `norm_vert_ge` (every boundary point has
+       Euclidean norm `≥ L`, hence outside `ball 0 L`, hence outside
+       `tsupport f`, hence `f = 0` there).
+    3. Algebraic identity `partialZBar_eq_integrand_div_two_I`:
+       `I • fderiv ℝ f x 1 - fderiv ℝ f x I = 2 * I * partialZBar f x`
+       (direct from the Wirtinger definition).
+    4. Pull `2 * I` out of both interval integrals (via
+       `intervalIntegral.integral_const_mul`); divide by the nonzero
+       scalar.
+  - Application: combine Stokes with Leibniz expansion
+    `partialZBar_alpha_mul_regInvSub` (using existing
+    `partialZBar_mul` from `Manifold/PartialZBar.lean` + Chip 3c-C₂'s
+    `regularizedInvSub_contDiff`) and
+    `tsupport_alpha_mul_regInvSub_subset` (product support is in
+    factor support).
+  - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
+    only). Library entry added.
 
 * **Chip 3c-C₂ — DONE** ([`Analysis/PompeiuKernelRegularizedInv.lean`](JacobianChallenge/Analysis/PompeiuKernelRegularizedInv.lean), ~140 LOC).
   - `regularizedInvSub z hε : ℂ → ℂ` —
@@ -271,86 +312,68 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
   - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
     only). Library entry added.
 
-### Next chip: **Chip 3c-C₃ — rectangle Stokes for the regularized integrand `α · g_ε` on `[−L, L]²`** (~300–500 LOC)
+### Next chip: **Chip 3c-E — DCT-limit `ε → 0` + final identity `pompeiuKernel (partialZBar α) z = α z`** (~600–1200 LOC)
 
-With Chips 3c-C₁ (`pompeiuCutoff`) and 3c-C₂ (`regularizedInvSub` is
-`C^∞`) in hand, the regularized full integrand `f_ε(η) := α(η) · g_ε(η)`
-(where `g_ε := regularizedInvSub z hε`) is `C^∞` everywhere on `ℂ`
-when `α ∈ C^∞`. This satisfies mathlib rectangle Stokes' hypotheses
-**without** any exceptional bad set (`s := ∅`).
-
-Chip 3c-C₃ invokes
-`Complex.integral_boundary_rect_of_hasFDerivAt_real_off_countable`
-([`Analysis/Complex/CauchyIntegral.lean:187`](.lake/packages/mathlib/Mathlib/Analysis/Complex/CauchyIntegral.lean))
-on `[−L, L]²` (square rectangle centred at `0`, side `2L`) for
-`f_ε` with `s := ∅`, getting:
+With Chip 3c-D's balance equation (iterated form) in hand:
 
 ```
-(line integral on top edge of f_ε)
-  - (line integral on bottom edge)
-  + I • (right edge)
-  - I • (left edge)
-  = ∫∫_{rect} (f_ε' I - I • f_ε' 1) dA
+∫ x in -L..L, ∫ y in -L..L,
+  partialZBar α (x+y*I) * regularizedInvSub z hε (x+y*I)
+    + α (x+y*I) * partialZBar (regularizedInvSub z hε) (x+y*I) = 0
 ```
 
-For `L` large with `tsupport α ⊆ ball 0 (L - 1)`, all four boundary
-line integrals vanish because `f_ε` is identically `0` outside the
-support of `α`. The volume RHS is what we want to identify with the
-Pompeiu kernel integral.
+Chip 3c-E takes the `ε → 0` limit to extract
+`pompeiuKernel (partialZBar α) z = α z`.
 
-Hypotheses to discharge for the invocation:
+Sub-tasks:
 
-1. **`Hc : ContinuousOn f_ε (closed rect)`** — `f_ε ∈ C^∞` everywhere,
-   so this is just `(continuous_of_contDiff).continuousOn`.
-2. **`Hd : ∀ x ∈ interior, HasFDerivAt f_ε (f' x) x`** (no bad set)
-   — direct from `ContDiff.differentiable` + `.hasFDerivAt`.
-3. **`Hi : IntegrableOn (f' I - I • f' 1) (closed rect)`** —
-   continuous on a compact rectangle, hence integrable.
+1. **Extend iterated integral to full-plane integral**. For each of the
+   two integrand pieces, the support is bounded by `Metric.closedBall 0 L`
+   for L large (since `tsupport α ⊆ ball 0 L` and `regularizedInvSub`
+   and its `partialZBar` are bounded on `ball 0 L`). So:
+   - `∫ x in -L..L, ∫ y in -L..L, (·)` equals
+     `∫ ζ : ℂ, (·) ζ ∂volume` for L large.
+   This uses `MeasurePreserving.integral_comp` via
+   `Complex.volume_preserving_equiv_real_prod` + Fubini.
+2. **`ε → 0` limit of `∫ partialZBar α · regularizedInvSub z hε`**.
+   - As `ε → 0⁺`, `regularizedInvSub z hε (η) → (η - z)⁻¹` pointwise
+     for `η ≠ z` (since `pompeiuCutoff → 1` pointwise off `z`).
+   - Dominated convergence: dominating function
+     `‖partialZBar α (η)‖ · ‖(η - z)⁻¹‖` is integrable (compact
+     support × locally integrable).
+   - Limit:
+     `∫ ζ, partialZBar α (ζ) * (ζ - z)⁻¹`
+     `= -π · pompeiuKernel (partialZBar α) z` (by definition).
+3. **`ε → 0` limit of `∫ α · partialZBar (regularizedInvSub z hε)`**.
+   This is the harder piece. Using Chip 3c-A's Leibniz reduction
+   off `z`:
+   `partialZBar (regularizedInvSub z hε) (η)
+       = partialZBar (pompeiuCutoff z hε) (η) · (η - z)⁻¹`
+   for `η ≠ z`. The support of `partialZBar (pompeiuCutoff z hε)`
+   is in the annulus `closedBall z ε \ ball z (ε/2)`. As `ε → 0`, this
+   becomes a small-disc contribution.
+   
+   The cleanest path: use Green's theorem / 2D divergence theorem to
+   convert `∫∫_{annulus} α · ∂̄g_ε` to a contour integral around
+   the inner boundary `C(z, ε/2)` (where `g_ε = (·-z)⁻¹` outside
+   the inner ball, plus the boundary contour around the outer ball
+   where `g_ε = 0`). Result:
+   `∫ α(η) · partialZBar (regularizedInvSub z hε)(η) dA → -π · α(z)`
+   as `ε → 0`, via Chip 3a's small-disc Cauchy limit (scaled by
+   `1/(2I)` due to Green's-theorem orientation factor).
+4. **Combine**: balance equation `→ 0 = -π · (pompeiuKernel (∂̄α) z) - π · α(z)`, so `pompeiuKernel (∂̄α) z = α(z)`. Wait sign: balance gives `∫(∂̄α)·g_ε = -∫α·∂̄g_ε → -π·α(z)·(-1) = π·α(z)`. Hence `pompeiuKernel (∂̄α) z = -(1/π) · π · α z = -α z`? Sign check needed. The Cauchy-Pompeiu identity standard form is `(∂̄α)/π · (·)⁻¹ → α` so sign should work out. Verify in proof.
 
-Then combine with the boundary-vanishing argument to get a clean
-volume integral equation.
+5. **Compose with Chip 3b** for the final
+   `partialZBar (pompeiuKernel α) z = α z`.
 
-Then the remaining sub-sub-chips toward
-`pompeiuKernel (partialZBar α) z = α z`:
-* **Chip 3c-C₄** — split the volume integral via the Leibniz rule:
-  `∂̄(α · g_ε) = (∂̄α) · g_ε + α · ∂̄g_ε`. Off `closedBall z (ε/2)`,
-  `∂̄g_ε = (∂̄ pompeiuCutoff · (·-z)⁻¹)`. On the half-ball, both
-  factors of `g_ε` vanish.
-* **Chip 3c-C₅** — Lebesgue DCT for `ε → 0`:
-  - The `(∂̄α) · g_ε` term converges to `(∂̄α) · (·-z)⁻¹` (recovering
-    the full integral).
-  - The `α · ∂̄g_ε` term — this involves `α · ∂̄χ_ε · (·-z)⁻¹` on
-    `closedBall z ε \ closedBall z (ε/2)`. The annular volume is
-    `O(ε²)` and `(·-z)⁻¹` is `O(1/ε)` there, so the term is `O(ε)`
-    if `α(z)` is bounded — vanishes in the limit. Alternative
-    approach: this term is exactly the small-disc contour integral
-    captured by Chip 3a (via Green's theorem).
-* **Chip 3c-C₆** — final assembly:
-  `pompeiuKernel (partialZBar α) z = α z`.
-* **Chip 3c-D** — outer-rectangle boundary vanishing: for `L` large
-  enough (`tsupport α ⊆ ball 0 (L - 1)`), the four line integrals
-  on `∂[−L, L]²` are all zero because `α ≡ 0` there.
-* **Chip 3c-E** — inner-circle boundary contribution: identify the
-  remaining boundary contribution as `∮_{C(z, ε)} α ζ · (ζ - z)⁻¹ dζ`
-  for the inner circle, with `ε → 0` handled by Chip 3a. (Only needed
-  if Chip 3c-C goes the annulus route; if direct rectangle Stokes
-  works, this collapses into 3c-C.)
-* **Chip 3c-F** — Lebesgue DCT to identify the rectangle volume
-  integral with the full-plane integral
-  `∫_ℂ (partialZBar α) ζ · (ζ - z)⁻¹ dA(ζ) = -π · α z`.
-* **Chip 3c-G** — final assembly: `pompeiuKernel (partialZBar α) z = α z`.
+After Chip 3c-E lands, the Item 14 reduction is closed (modulo the
+per-`p` `ChartAtConstantOnSource` structural hypothesis, which is
+discharged trivially on every concrete X). Chips 4–7 are
+chart-pullback + globalization + integration into the existing chain.
 
-After Chip 3c-G, **Chip 3d** is the trivial composition
-`partialZBar (pompeiuKernel α) z = pompeiuKernel (partialZBar α) z = α z`
-(Chip 3b + Chip 3c-G). One short file (~20 LOC).
-
-**Estimate**: Chip 3c-B is ~1 session; Chip 3c-C is the heaviest piece
-(~3–5 sessions, much depends on whether direct rectangle Stokes works
-or we need an annulus assembly); Chips 3c-D, 3c-E, 3c-F, 3c-G are
-~1–2 sessions each. Total Chip 3c remaining: ~6–10 sessions.
-
-After Chip 3, Chips 4–7 are chart-pullback + globalization +
-integration into the existing chain.
+**Estimate**: Chip 3c-E is the most analytically heavy piece (DCT,
+Green-theorem-like manipulation, careful sign tracking). Realistic
+~3–6 sessions, ~600–1200 LOC.
 
 **Estimate**: Chip 3c is ~6–12 sessions across multiple sub-chips
 (annulus-Stokes setup, cutoff function, DCT-limit, Leibniz product
