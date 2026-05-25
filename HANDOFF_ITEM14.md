@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-24 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b landed).
+Last rewrite: 2026-05-24 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -53,6 +53,24 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
     argument: the dominating function is integrable once (Chip 1c)
     rather than once per `z`.
   - Sorry-free, axiom-free. Library entry added.
+* **Chip 2c-prep — DONE** ([`Analysis/PompeiuKernelDirectionalIntegrand.lean`](JacobianChallenge/Analysis/PompeiuKernelDirectionalIntegrand.lean), 135 LOC).
+  - `αDeriv α v ζ := fderiv ℝ α ζ v` — directional derivative as a
+    `ℂ → ℂ` function.
+  - `αDeriv_hasCompactSupport` (from `HasCompactSupport.fderiv_apply`)
+    and `αDeriv_continuous` (from `ContDiff.continuous_fderiv` +
+    `ContinuousLinearMap.apply` continuity) — input shape for Chips
+    1c and 2b.
+  - `integrable_pompeiuIntegrand_αDeriv` and
+    `continuous_pompeiuKernel_αDeriv` — Chips 1c and 2b applied to
+    `αDeriv α v`, giving integrability and continuity of the
+    directional-derivative Pompeiu integrand and kernel.
+  - `exists_fderiv_norm_bound` — uniform bound `M'` with
+    `‖fderiv ℝ α ζ‖ ≤ M'` for all `ζ`, via
+    `Continuous.bounded_above_of_compact_support` on `fderiv ℝ α`
+    (which has compact support and is continuous for `α ∈ C^1`).
+  - `norm_αDeriv_le` — pointwise `‖αDeriv α v ζ‖ ≤ M' · ‖v‖` from the
+    uniform bound and `ContinuousLinearMap.le_opNorm`.
+  - Sorry-free, axiom-free. Library entry added.
 * **Chip 2b — DONE** ([`Analysis/PompeiuKernelContinuity.lean`](JacobianChallenge/Analysis/PompeiuKernelContinuity.lean), 157 LOC).
   - `continuous_pompeiuKernel_of_continuous_hasCompactSupport
       {α : ℂ → ℂ} (h_cont : Continuous α) (h_supp : HasCompactSupport α) :
@@ -68,19 +86,41 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
     via `continuous_iff_continuousAt`.
   - Sorry-free, axiom-free. Library entry added.
 
-### Next chip: **Chip 2c — first ℝ-derivative of `pompeiuKernel α`** (~400–700 LOC)
+### Next chip: **Chip 2c-main — directional derivative of `pompeiuKernel α`** (~300–500 LOC)
 
-Differentiation under the integral on Chip 2a's translated form.
-Hypothesis strengthens to `ContDiff ℝ 1 α` (or `ContMDiff … 1 α`) +
-`HasCompactSupport α`. The candidate derivative is
+With Chip 2c-prep in place, apply
+`MeasureTheory.hasDerivAt_integral_of_dominated_loc_of_deriv_le` to
+the translated parametric integral
+`t ↦ ∫ η, α (η + z₀ + t • v) · η⁻¹` (Chip 2a's form, with the
+singularity pinned at `η = 0`).
 
-  `pompeiuKernel α' z`
+**Target lemma.**
 
-where `α' = ∂_(∂_z) α` (the corresponding real-direction partial
-derivative). Tool: `hasFDerivAt_integral_of_dominated_loc_of_lip`
-applied per-point `z₀`. The Lipschitz dominating function is again
-`K.indicator (fun η => M_{α'} · ‖η‖⁻¹)` via Chip 1b on a `z₀`-local
-compact `K`.
+```
+theorem hasDerivAt_pompeiuKernel_real_direction
+    {α : ℂ → ℂ} (h_smooth : ContDiff ℝ 1 α) (h_supp : HasCompactSupport α)
+    (v z₀ : ℂ) :
+    HasDerivAt
+      (fun t : ℝ => pompeiuKernel α (z₀ + (t : ℝ) • v))
+      (pompeiuKernel (αDeriv α v) z₀)
+      0
+```
+
+**Strategy.**
+1. Translated form: rewrite via Chip 2a.
+2. Per-`η` chain rule: `d/dt α(η + z₀ + t • v) = (fderiv ℝ α (η + z₀ + t • v)) v
+   = αDeriv α v (η + z₀ + t • v)`.
+3. Uniform derivative bound on `closedBall 0 1` for `t`: bound
+   `‖(fderiv ℝ α (η + z₀ + t • v)) v‖ ≤ M' · ‖v‖`
+   (from `exists_fderiv_norm_bound` + `norm_αDeriv_le`).
+4. Dominating function: `K.indicator (fun η => M' · ‖v‖ · ‖η‖⁻¹)`
+   with `K := closedBall 0 (R + ‖z₀‖ + ‖v‖ + 1)`. Integrable via
+   Chip 1b on `K`. Outside `K`, the path `η + z₀ + t • v` stays
+   outside `closedBall 0 R ⊇ tsupport α` for all `t ∈ [-1, 1]`, so
+   `αDeriv α v (η + z₀ + t • v) = 0`.
+5. Apply `hasDerivAt_integral_of_dominated_loc_of_deriv_le`.
+6. Identify the conclusion with `pompeiuKernel (αDeriv α v) z₀` via
+   the inverse of Chip 2a's translation reduction.
 
 ### Chip 2d (after 2c, ~300–500 LOC)
 
