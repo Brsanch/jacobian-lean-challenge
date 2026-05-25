@@ -3,6 +3,7 @@ import JacobianChallenge.Analysis.CompactManifoldMeasure
 import JacobianChallenge.Analysis.CompactManifoldMeasureExistence
 import JacobianChallenge.Analysis.CompactManifoldMeasureFromCharts
 import JacobianChallenge.Analysis.H1OnManifold
+import JacobianChallenge.Analysis.InvNormIntegrability
 import JacobianChallenge.Analysis.L2InnerOnManifold
 import JacobianChallenge.Analysis.PolynomialLiouville
 import JacobianChallenge.Analysis.PompeiuKernel
