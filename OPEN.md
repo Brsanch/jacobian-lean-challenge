@@ -56,7 +56,7 @@ authoritative item table that follows.
 | 11 | `instance : CompactSpace (Jacobian X)` | **OPEN** | `sorry`. Reduces to item 5 via the C3 rewire. |
 | 12 | `instance : IsManifold ... ω (Jacobian X)` | **OPEN** | `sorry`. Reduces to item 5. |
 | 13 | `instance : LieAddGroup ... ω (Jacobian X)` | **OPEN** | `sorry`. Reduces to item 5 plus smoothness of group ops (auto from the analytic Jacobian construction). |
-| 14 | `genus_eq_zero_iff_homeo` (anti-hack vs. `genus := 0`) | **OPEN** | `sorry`. Reduces to two named classical hypotheses: `hSP` (Riemann–Roch dim ≥ 2 at genus 0) + `BSLB` (every smooth based loop bounds). See `HANDOFF_ITEM14.md` for the audited path. |
+| 14 | `genus_eq_zero_iff_homeo` (anti-hack vs. `genus := 0`) | **OPEN** | `sorry`. **Post-merge state (2026-05-24):** reduces to ONE named classical hypothesis `hSP X = ExistsSimplePoleGermAtSomePoint X`. The reverse leg `S2ImpliesGenus0 X` is unconditional via `s2ImpliesGenus0_etalePrimitivesArc` (étale-primitives arc, merged from `feat/item14-affineChartTriangleSimplex-ball`). One-input composition is `Topology/Item14FromHSPOnly.lean:genus_eq_zero_iff_homeo_from_hSP`. **BSLB is no longer needed for Item 14.** Via Chip 2c-Final (`Manifold/ForsterCutoffPoleConstruction.lean:existsSimplePoleGermAtSomePoint_of_dbarSolvability_under_chartConst`), hSP X further reduces to `DBarSolvabilityAtGenusZero X` (genus-0 sheaf cohomology / `H¹(X,𝒪)=0`) plus a per-`p` structural hypothesis `ChartAtConstantOnSource p` (innocuous on every concrete X: RS at finite p, ℂ/L tori, single-chart spaces). See `HANDOFF_ITEM14.md`. |
 | 15 | `ofCurve_self : ofCurve P P = 0` | **STRICT-CLOSED** | Real proof reducing to `[δP − δP] = 0` in honest `Pic⁰`. |
 | 16 | `ofCurve_inj` (anti-hack vs. `Jacobian := PUnit`) | **STRICT-CLOSED** | Body in `Basic.lean` line 143–144: `JacobianChallenge.ofCurve_inj_holds P h` (`Manifold/ChartDerivNeZeroImpliesNonCriticalDischarge.lean`). All-unconditional discharge chain: `PrincDivWitnessExtraction` → degree-1 mero function (via `DegreeOneFromSimpleZeroSimplePoleDischarge`) → `bijective_of_degreeFiber_eq_one` + `bijectiveAnalyticIsBiholomorphism_holds` → biholomorphism `X ≃ RiemannSphere` → `genus = 0`, contradicting `0 < genus X`. |
 | 17 | `Jacobian.ofCurve_contMDiff` | **OPEN** | `sorry`. Requires item 5 plus per-curve Abel–Jacobi smoothness from `JacobianAnalyticClosureBundle`. |
@@ -74,17 +74,31 @@ authoritative item table that follows.
 - **STUB: 2** — items 4, 10 (placeholder discrete topology; flips mechanically with item 5).
 - **OPEN: 8** — items 5, 11, 12, 13, 14, 17, 18, 21.
 
-## The 8 OPEN items collapse to 3 substantive classical theorems
+## The 8 OPEN items collapse to 2 substantive classical theorems
+
+(Was 3 pre-2026-05-24 merge; BSLB became obsolete when the étale-primitives
+arc merged in, leaving `DBarSolvabilityAtGenusZero X` and `C3FullInputExt X`.)
 
 After auditing every named-hypothesis chain to its leaves (2026-05-23):
 
-1. **Item 14's `hSP`** — Riemann–Roch dim ≥ 2 at genus 0 (germ form).
-   Bottom of the chain: `RR_DimGE2_GenusZero_Germ X`.
-2. **Item 14's `BSLB`** — `BasedSmoothLoopsBoundHypothesis X x₀` on
-   arbitrary X. Two known paths: (A) the `Smooth2Simplex` refactor
-   from `ContMDiff` to `ContMDiffOn [0,1]²` unblocks the chain-assembly
-   path already in tree; (B) generalize the missed-point chart-pullback
-   factorisation (currently RS-specific).
+1. **Item 14's `hSP`** — `ExistsSimplePoleGermAtSomePoint X`. After
+   Chip 2c-Final (2026-05-24, `Manifold/ForsterCutoffPoleConstruction.lean`),
+   reduces further to **`DBarSolvabilityAtGenusZero X`** (= `H¹(X, 𝒪) = 0`
+   at genus 0, equivalently solvability of `∂̄ u = α` for smooth (0,1)
+   forms α at genus 0) plus a per-`p` structural hypothesis
+   `ChartAtConstantOnSource p` (innocuous on concrete X). DBar is the
+   actual classical-content gap. Bottom of the alternate Riemann-Roch
+   chain: `RR_DimGE2_GenusZero_Germ X` (equivalent statement, not
+   shorter).
+2. ~~**Item 14's `BSLB`**~~ **OBSOLETE for Item 14 (2026-05-24 merge).**
+   The reverse leg `S2ImpliesGenus0 X` is unconditionally discharged
+   on arbitrary X by `s2ImpliesGenus0_etalePrimitivesArc`
+   (`Topology/S2ImpliesGenus0FromEtalePrimitives.lean`, étale-primitives
+   arc from `feat/item14-affineChartTriangleSimplex-ball`). The BSLB
+   chain was a parallel route to the same conclusion and is no longer
+   needed. The one-input composition
+   `Topology/Item14FromHSPOnly.genus_eq_zero_iff_homeo_from_hSP` shows
+   Item 14 reduces to hSP alone.
 3. **C3's `C3FullInputExt X`** — bundle of Riemann bilinear relations
    + Abel's theorem + Jacobi inversion. Closes items 5/11/12/13/17/18/21
    collectively once landed. Per-curve `lattice_match` certificates
@@ -96,12 +110,20 @@ textbook Forster Ch. III §16–21 / Griffiths-Harris Ch. 2 §2–§3.
 
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 
-- **Whitney smooth approximation for manifold-valued maps** —
-  mathlib has finite-dim Whitney (`Continuous.exists_contDiff_dist_le_of_forall_mem_ball_dist_le`)
-  but not the manifold-valued / cross-chart version. Useful for item 14
-  BSLB path (a).
-- **Riemann–Roch + Serre duality** — for item 14 `hSP`. Multi-month
-  Lean project; no current mathlib coverage.
+- ~~**Whitney smooth approximation for manifold-valued maps**~~ —
+  was tagged for the BSLB path; **obsolete after the 2026-05-24
+  étale-primitives merge** (reverse leg discharged unconditionally
+  without Whitney machinery).
+- **Cauchy-Pompeiu kernel + ∂̄-solvability on disks** — would let us
+  formalize Forster's elementary route to `DBarSolvabilityAtGenusZero X`
+  if combined with classical content on globalization. Mathlib has
+  the building blocks (rectangle Stokes, divergence thm, 2D integrals)
+  but not the explicit kernel. ~1k LOC, 2–4 weeks. Useful upstream
+  even outside this project. **Does not by itself close item 14** —
+  globalization still requires `H¹(𝒪) = 0` at genus 0 or equivalent.
+- **Riemann–Roch + Serre duality** — for item 14 `hSP` (alternate
+  classical route to DBar). Multi-month Lean project; no current
+  mathlib coverage.
 - **Period-lattice / Hodge bilinear positivity** — for C3 `C3FullInputExt`.
 - **Topological degree of proper holomorphic maps** between Riemann
   surfaces. `fibres_finite_statement` and `regular_value_exists_statement`
