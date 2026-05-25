@@ -1,8 +1,74 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-24 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit).
+Last rewrite: 2026-05-24 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chip 1a landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
+
+---
+
+## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
+
+After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated **25–50 focused sessions / 6–12 months** at typical chip cadence.
+
+### Where we are right now (branch tip `bcf6951`)
+
+* **Chip 1a — DONE** ([`Analysis/PompeiuKernel.lean`](JacobianChallenge/Analysis/PompeiuKernel.lean), commit `bcf6951`).
+  - `pompeiuIntegrand`, `pompeiuKernel` definitions.
+  - Measurability lemmas for the integrand.
+  - `integrableOn_inv_norm_sub_iff_origin` — translation reduction.
+  - `integrableOn_inv_norm_sub_of_not_mem_compact` — trivial case.
+  - Sorry-free, axiom-free. Library entry added.
+
+### Next chip: **Chip 1b — polar-coords integrability of `‖ζ‖⁻¹` on `closedBall 0 R`**
+
+**Target lemma (single chip):**
+
+```
+theorem integrableOn_inv_norm_closedBall (R : ℝ) :
+    IntegrableOn (fun ζ : ℂ => ‖ζ‖⁻¹) (closedBall (0 : ℂ) R) volume
+```
+
+**Proof strategy.** Reduce to `lintegral < ⊤` via `integrable_iff_finite_lintegral_enorm`. Bridge `ℂ ≃ᵐ ℝ × ℝ` via `Complex.measurableEquivRealProd` (measure preserving, see `volume_preserving_equiv_real_prod` in `Mathlib.MeasureTheory.Measure.Lebesgue.Complex`). Apply the polar identity `lintegral_comp_polarCoord_symm` (`Mathlib.Analysis.SpecialFunctions.PolarCoord:154`). Identify `‖polarCoord.symm (r, θ)‖ = |p.1|` via `norm_polarCoord_symm` (`PolarCoord.lean:202`). The Jacobian `ofReal r · ‖·‖⁻¹ₑ = 1` for `r > 0`. Bound by `volume(polar.target ∩ {r ≤ R}) ≤ R · 2π`. Estimated ~300–500 LOC.
+
+**Mathlib import calibration (USE THESE, derived in Chip 1a):**
+
+```lean
+import Mathlib.MeasureTheory.Measure.Haar.OfBasis        -- measureSpaceOfInnerProductSpace
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Complex  -- BorelSpace ℂ
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional   -- FiniteDimensional ℝ ℂ
+import Mathlib.MeasureTheory.Measure.Lebesgue.Complex    -- volume_preserving_equiv_real_prod
+import Mathlib.Analysis.SpecialFunctions.PolarCoord      -- lintegral_comp_polarCoord_symm, norm_polarCoord_symm
+import Mathlib.MeasureTheory.Function.LocallyIntegrable
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Integral.IntegrableOn
+```
+
+`MeasureSpace ℂ` requires the **first three** imports together — this was the friction point in Chip 1a. Don't waste session time re-deriving.
+
+### Chips 1c through 5 (after 1b)
+
+* **Chip 1c (~200 LOC)** — combine 1a + 1b: prove `pompeiuIntegrand α z` integrable for continuous compactly-supported α. Two-case split (z in tsupport α / z outside tsupport α) using `integrableOn_inv_norm_sub_iff_origin` + 1b for the hard case and `integrableOn_inv_norm_sub_of_not_mem_compact` for the easy case. Combine with `Integrable.bdd_mul` for the α factor.
+* **Chip 2 (~1–2k LOC)** — smoothness in z: `pompeiuKernel α` is `C^∞ ℝ` on ℂ. Uses differentiation under the integral.
+* **Chip 3 (~2–4k LOC, the heaviest chip)** — the identity `∂̄(pompeiuKernel α) = α`. Routes through Cauchy-Pompeiu boundary terms; rectangle Stokes (`integral_boundary_rect_of_hasFDerivAt_real_off_countable` from mathlib's CauchyIntegral) is the key tool.
+* **Chip 4 (~1–2k LOC)** — chart pull-back: lift the Pompeiu kernel from ℂ to a chart-disk on X.
+* **Chip 5 (~2–3k LOC)** — globalize to compact X at genus 0. Combines partition of unity over a finite chart cover with the genus-0-specific spreading function construction (Forster Ch. 14, Behnke-Stein-light). This is the substantive classical-content step.
+* **Chip 6 (~200 LOC)** — wire to the existing `ofCurve_inj_under_genus_pos`-style chain at [`OfCurveInjFromDegreeOne.lean:90`](JacobianChallenge/Manifold/OfCurveInjFromDegreeOne.lean) to get `δQ - δP ∈ PrincDiv X`, then through the unconditional chain to `X ≃ₜ S²`.
+* **Chip 7 (<50 LOC)** — close `Basic.lean:73` by composition.
+
+**Net: 25–50 sessions, 5–10k LOC.**
+
+### Discipline lesson learned today (KEEP)
+
+**No backing out.** The pattern of writing → hitting an error → deleting and restarting eats session time and produces nothing. When stuck:
+
+1. **Debug in place.** Don't delete.
+2. **For typeclass synth errors,** decompose the prerequisites and test each in isolation. The fix is usually a missing import 1–2 dependency-hops away.
+3. **For tactic failures,** read the actual goal at the failure point and pick the right replacement tactic. `linarith` doesn't work on complex sub-eq-zero; use `sub_ne_zero.mpr` or `sub_eq_zero.mp` directly.
+4. **Pull the file only after the session ends with a sorry-free result OR after a clear decision to descope.** Don't pull mid-debug.
+
+This was a real failure mode in the Chip 1a session (three deletion cycles before pushing through). After committing to debug-in-place, the import calibration resolved in ~5 minutes.
+
+---
 
 ## TL;DR — current frontier
 
@@ -103,7 +169,7 @@ A genus-0-specific route avoiding the circularity must use either uniformization
 3. **Wait for organic mathlib progress on complex geometry.** Estimated 1–3 years for the relevant infrastructure (Hodge, Dolbeault, or uniformization) to land via other contributors.
 4. **Sponsor a focused arc** (mathlib-experienced contributor, ~6 months for Route 1). Realistic if Item 14 closure is a hard goal.
 
-The current branch state (`feat/item14-forward-dbar-mul`, tip `850be5e`) is a stable handoff point: both legs present, single named-hypothesis reduction, all assemblies sorry/axiom-free and individually verified.
+The current branch state (`feat/item14-forward-dbar-mul`, tip `bcf6951`) is a stable handoff point: both legs present, single named-hypothesis reduction, Pompeiu Chip 1a landed, all assemblies sorry/axiom-free and individually verified. See the **ACTIVE ARC** section at the top for the in-flight chip breakdown and next-session entry point.
 
 ## Pointers
 
