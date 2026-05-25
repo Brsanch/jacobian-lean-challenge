@@ -1,25 +1,26 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, 3c-F-1, 3c-F-2-prep, 3c-F-2 polar transformation, 3c-F-2 bound lemma, 3c-F-2-final, 3c-F-3a, 3c-F-3b, 3c-F-3c, 3c-F-3d-1, **3c-F-3d-2-prep, 3c-F-3d-2a, 3c-F-3d-2b, 3c-F-3d-2c, 3c-F-3d-3, 3c-F-4** landed — **Cauchy-Pompeiu identity on ℂ unconditional**).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, 3c-F-1, 3c-F-2-prep, 3c-F-2 polar transformation, 3c-F-2 bound lemma, 3c-F-2-final, 3c-F-3a, 3c-F-3b, 3c-F-3c, 3c-F-3d-1, **3c-F-3d-2-prep, 3c-F-3d-2a, 3c-F-3d-2b, 3c-F-3d-2c, 3c-F-3d-3, 3c-F-4, **4** landed — **Cauchy-Pompeiu identity on ℂ unconditional + chart-pullback lifted to manifold-side**).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
 ---
 
-## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24) — **Chip 3c-F COMPLETE**
+## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24) — **Chip 3c-F + Chip 4 COMPLETE**
 
-Last rewrite: 2026-05-25 (post Chips 3c-F-3d-3 + 3c-F-4: the **unconditional Cauchy-Pompeiu identity on ℂ** is closed —
+Last rewrite: 2026-05-25 (post Chip 4: the chart-pullback of the Pompeiu kernel is lifted to the manifold side. Headlines —
 
-```
-∀ α : ℂ → ℂ, ContDiff ℝ 1 α → HasCompactSupport α →
-  ∀ z : ℂ, partialZBar (pompeiuKernel α) z = α z.
-```
+* **`partialZBar_pompeiuKernel_eq_self`** ([`Analysis/PompeiuKernelCauchyPompeiu.lean`](JacobianChallenge/Analysis/PompeiuKernelCauchyPompeiu.lean), 213 LOC, Chip 3c-F-4): the unconditional Cauchy-Pompeiu identity on ℂ.
+* **`partialZBar_pompeiuKernelChart_eq_α_on_chart_source`** ([`Manifold/ChartPompeiuKernel.lean`](JacobianChallenge/Manifold/ChartPompeiuKernel.lean), 462 LOC, Chip 4): chart-x view local identity — for `y ∈ (chartAt ℂ x).source`, `partialZBar (pompeiuKernelChart x α ∘ chart_x.symm) (chart_x y) = α y`.
+* **`partialZBarManifold_pompeiuKernelChart_at_basepoint`** (Chip 4): the manifold-level identity at the construction basepoint `x` — `partialZBarManifold (pompeiuKernelChart x α) x = α x`.
+* **`partialZBarManifold_pompeiuKernelChart_eq_α_mul_transition`** (Chip 4): the manifold-level identity at any `y ∈ (chartAt ℂ x).source`, with the chart-transition conjugate-derivative factor `conj(deriv (chart_y ∘ chart_x.symm)(chart_x y))` absorbing the (0,1)-form transformation under chart change.
+* **`contDiffOn_pompeiuKernelChart_chart_symm`** (Chip 4): `pompeiuKernelChart x α ∘ chart_x.symm` is `C^∞` on `(chartAt ℂ x).target`.
 
-`JacobianChallenge.PompeiuKernel.partialZBar_pompeiuKernel_eq_self` in [`Analysis/PompeiuKernelCauchyPompeiu.lean`](JacobianChallenge/Analysis/PompeiuKernelCauchyPompeiu.lean), 213 LOC. Axioms: `propext, Classical.choice, Quot.sound` only.
+All axiom-free (`propext, Classical.choice, Quot.sound` only).
 
-Next: **Chip 4 — chart pull-back** (lift the Pompeiu kernel from ℂ to a chart-disk on X). Estimated 600-1,200 LOC, 3-5 sessions.
+Next: **Chip 5 — genus-0 globalization to `DBarSolvabilityAtGenusZero X`**. Estimated 1,800-2,800 LOC, 7-12 sessions. Will use Chip 4's chart-pullback identity + partition of unity + Behnke-Stein spreading-function technique.
 
-After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post Chip 3c-F): Chips 4-7 (~13-22 sessions).
+After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post Chip 4): Chips 5-7 (~10-18 sessions).
 
 ### Where we are right now
 
