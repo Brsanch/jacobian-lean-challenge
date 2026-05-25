@@ -40,16 +40,80 @@
 >    Sorry/axiom-free, library-registered, single-file `lake env lean`
 >    + targeted `lake build` both green.
 >
-> **Next session: land Chip 2c-Final.** Take
-> `(p : X) (h_const_p : ChartAtConstantOnSource p) (h_dbar : DBarSolvabilityAtGenusZero X)`,
-> apply DBar to α, set `f := g₀ - u`, discharge consolidator H1 / h_an
-> (chart_p view under `h_const_p`) and H2 (chart_x view at every
-> `x ≠ p` using the new chart-pullback vanishing helper + CR converse).
-> Apply `existsSimplePoleGermAtSomePoint_of_chartPullback_data`. Add
-> an RS specialization corollary (`ChartAtConstantOnSource (some 0)`
-> holds; chart_∞ for x = ∞ uses the helper). Closes hSP X under one
-> per-p structural hypothesis + the named `DBarSolvabilityAtGenusZero`
-> classical-content gap.
+> **🟢 Chip 2c-Final DONE (2026-05-24 second session, follow-up commit).**
+>
+> Landed appended to
+> [`Manifold/ForsterCutoffPoleConstruction.lean`](JacobianChallenge/Manifold/ForsterCutoffPoleConstruction.lean)
+> (single file, sorry/axiom-free, single-file `lake env lean` green).
+>
+> Main theorem:
+> ```
+> theorem existsSimplePoleGermAtSomePoint_of_dbarSolvability_under_chartConst
+>     (p : X) (h_const : ChartAtConstantOnSource p)
+>     (h_dbar : DBarSolvabilityAtGenusZero X)
+>     (hg : JacobianChallenge.genus X = 0) :
+>     ExistsSimplePoleGermAtSomePoint X
+> ```
+>
+> Assembly: pick smooth bump `b` at `p` (mathlib `Nonempty` instance),
+> apply `α_contMDiff_under_const` + `DBarSolvabilityAtGenusZero` to get
+> `u` smooth with `∂̄u = α`. Set `f := g₀ - u`. Discharge:
+> * **H1** chart_p pullback of `f` near `c₀` = `(z - c₀)⁻¹ - h(z)` with
+>   `h := u ∘ chart_p.symm`. Uses χ ≡ 1 near `p` and the explicit
+>   `g₀ ∘ chart_p.symm` formula.
+> * **h_an** `AnalyticAt ℂ (u ∘ chart_p.symm) c₀` via CR converse on
+>   `chart_p.target ∩ chart_p.symm⁻¹ W` where `W` is an open nbhd of
+>   `p` with α ≡ 0 (from `α_eventuallyEq_zero_near_p`).
+> * **H2** Case A `x ∈ chart_p.source, x ≠ p`: CR converse on
+>   `chart_p.target \ {c₀}` using `partialZBarManifold_fForster_eq_zero_off_pole`.
+>   Case B `x ∉ chart_p.source`: CR converse on
+>   `(chart_x.source ∩ (tsupport b)ᶜ)`-image; `g₀ ∘ chart_x.symm ≡ 0`
+>   there, so reduces to analyticity of `-(u ∘ chart_x.symm)`, which
+>   needs `partialZBar(u ∘ chart_x.symm) = 0` — discharged via the new
+>   chart-pullback vanishing helper `partialZBarChartPullback_eq_zero_of_partialZBarManifold_zero`.
+> * One-line apply consolidator
+>   `existsSimplePoleGermAtSomePoint_of_chartPullback_data`.
+>
+> Also landed a private local CR converse
+> `analyticAt_of_contDiffOn_infty_of_partialZBar_eqOn_zero` because the
+> public `analyticAt_of_contDiffOn_of_partialZBar_eqOn_zero` takes
+> `ContDiffOn ℝ ⊤ = ω` (real-analytic) input, but our chart pullbacks
+> are `C^∞` only. The local version reuses the underlying public
+> `differentiableAt_complex_of_differentiableAt_real_of_partialZBar_zero`.
+>
+> **Net result.** `hSP X` reduces to TWO smaller named items:
+> 1. `DBarSolvabilityAtGenusZero X` (genus-0 sheaf-cohomology;
+>    `H¹(X, O) = 0`).
+> 2. The per-`p` structural hypothesis `ChartAtConstantOnSource p`.
+>
+> The per-`p` structural hypothesis holds on `RiemannSphere` at every
+> finite `p`, on `ℂ / L` tori at every `p`, and on any X with the
+> identity-coercion canonical-chart selection. Eliminating it on
+> arbitrary X is the mfderiv refactor (defer).
+
+## Next session plan
+
+Two independent directions, choose:
+
+**(A) RS specialization smoke test.** Write a corollary
+`existsSimplePoleGermAtSomePoint RiemannSphere` from the new theorem
+at `p := some 0` (finite point on RS), discharging
+`ChartAtConstantOnSource (some 0)` from `RiemannSphere.chartAt'` defn
++ providing `DBarSolvabilityAtGenusZero RiemannSphere` as a separate
+named hypothesis (or specializing further if RS DBar can be tackled
+classically). This validates the theorem isn't vacuously typed but
+won't itself remove a `sorry` (RS hSP is already unconditional in
+tree).
+
+**(B) Mfderiv refactor.** Replace `partialZBarManifold` with the
+intrinsic mfderiv-based ∂̄ in the assembly, eliminating the
+`ChartAtConstantOnSource p` hypothesis. Significantly larger scope —
+touches `partialZBarManifold`, `α_contMDiff_under_const`, the off-pole
+identity, and Chip 2c-Final. Multi-session work.
+
+**(C) Reduce `DBarSolvabilityAtGenusZero X` to mathlib content.**
+Classical sheaf cohomology / L²-Hodge at genus 0. Multi-year as
+flagged in the prior STOP banner — not feasible in a single session.
 
 ## What's still useful from this branch
 
