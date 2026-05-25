@@ -149,6 +149,52 @@ lemma integrand_at_polar_symm {r θ : ℝ} (hr : 0 < r) :
   rw [h_fun_eq]
   rw [h_collapse, h_norm_eq]
 
+/-! ## Polar transformation of the integral -/
+
+/-- The Jacobian-scaled integrand at a polar point: for `r > 0`,
+`r • (integrand at polarCoord.symm (r, θ)) = ((deriv (psiBump 1) r / 2) : ℂ)`. -/
+lemma scaled_integrand_at_polar_symm {r θ : ℝ} (hr : 0 < r) :
+    (r : ℝ) • (partialZBar unitRadialBumpC (Complex.polarCoord.symm (r, θ))
+                  / Complex.polarCoord.symm (r, θ))
+      = ((deriv (psiBump 1) r / 2 : ℝ) : ℂ) := by
+  rw [integrand_at_polar_symm hr]
+  -- Goal: r • ((deriv (psiBump 1) r / (2 * r) : ℝ) : ℂ) = ((deriv (psiBump 1) r / 2 : ℝ) : ℂ)
+  have hr_ne : (r : ℝ) ≠ 0 := ne_of_gt hr
+  show (r : ℝ) • ((deriv (psiBump 1) r / (2 * r) : ℝ) : ℂ)
+       = ((deriv (psiBump 1) r / 2 : ℝ) : ℂ)
+  rw [Complex.real_smul]
+  push_cast
+  have hr_C_ne : (r : ℂ) ≠ 0 := by exact_mod_cast hr_ne
+  field_simp
+
+/-- **Polar transformation of the integral.** Apply `Complex.integral_comp_polarCoord_symm`
+and use the radial collapse to express
+```
+∫ ζ : ℂ, partialZBar unitRadialBumpC ζ / ζ
+  = ∫ p in Ioi 0 ×ˢ Ioo (-π) π, ((deriv (psiBump 1) p.1 / 2) : ℂ).
+```
+-/
+theorem integral_partialZBar_div_eq_polar_integral :
+    ∫ ζ : ℂ, partialZBar unitRadialBumpC ζ / ζ
+      = ∫ p in Set.Ioi (0 : ℝ) ×ˢ Set.Ioo (-Real.pi) Real.pi,
+          ((deriv (psiBump 1) p.1 / 2 : ℝ) : ℂ) := by
+  -- Step 1: apply `Complex.integral_comp_polarCoord_symm` (in reverse).
+  have h_polar :
+      (∫ p in Complex.polarCoord.target, p.1 •
+          (fun ζ : ℂ => partialZBar unitRadialBumpC ζ / ζ)
+            (Complex.polarCoord.symm p))
+        = ∫ ζ : ℂ, partialZBar unitRadialBumpC ζ / ζ :=
+    Complex.integral_comp_polarCoord_symm
+      (fun ζ : ℂ => partialZBar unitRadialBumpC ζ / ζ)
+  rw [← h_polar, Complex.polarCoord_target]
+  -- Step 2: congruence to replace the scaled integrand with the radial form.
+  apply MeasureTheory.setIntegral_congr_fun
+    (MeasurableSet.prod measurableSet_Ioi measurableSet_Ioo)
+  intro p hp
+  rcases hp with ⟨hp_r, _hp_θ⟩
+  have hr : 0 < p.1 := hp_r
+  exact scaled_integrand_at_polar_symm hr
+
 end JacobianChallenge.PompeiuKernel
 
 end
