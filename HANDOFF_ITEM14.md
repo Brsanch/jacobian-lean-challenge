@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, **3c-A** landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, **3c-B** landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -8,7 +8,7 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
 
-Last rewrite: 2026-05-25 (post Chip 3c-A).
+Last rewrite: 2026-05-25 (post Chip 3c-B).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated **20–45 focused sessions / 5–10 months** at typical chip cadence (Chips 1a–2d done; Chip 3 is the next and heaviest).
 
@@ -114,6 +114,31 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
     derivative with `pompeiuKernel` via Chip 2a + `HasDerivAt.const_mul (-π⁻¹)`.
   - Sorry-free, axiom-free. Library entry added.
 
+* **Chip 3c-B — DONE** ([`Analysis/PompeiuKernelMulInvFDeriv.lean`](JacobianChallenge/Analysis/PompeiuKernelMulInvFDeriv.lean), ~130 LOC).
+  - `hasFDerivAt_mul_inv_sub
+      {α : ℂ → ℂ} {ζ : ℂ}
+      (h_α : HasFDerivAt α (fderiv ℝ α ζ) ζ) (z : ℂ) (hζ : ζ ≠ z) :
+      HasFDerivAt (fun η : ℂ => α η * (η - z)⁻¹)
+        (α ζ • ((smulRight (1 : ℂ →L[ℂ] ℂ) (-((ζ-z)^2)⁻¹)).restrictScalars ℝ)
+          + (ζ - z)⁻¹ • fderiv ℝ α ζ)
+        ζ`. Plus the `ContDiff ℝ 1`-input corollary
+    `hasFDerivAt_mul_inv_sub_of_contDiff`.
+  - This is the **input shape** required by mathlib's rectangle Stokes
+    (`Complex.integral_boundary_rect_of_hasFDerivAt_real_off_countable`),
+    whose `Hd` hypothesis demands `HasFDerivAt f (f' x) x` pointwise
+    off a countable bad set. With Chip 3c-B, the lone singularity `z`
+    becomes the only point we exclude (`s = {z}`).
+  - Proof: build `HasDerivAt (fun η => (η - z)⁻¹) (-(ζ-z)⁻²) ζ` over `ℂ`
+    via `hasDerivAt_inv` composed with `sub_const` and `HasDerivAt.comp`,
+    convert to `ℂ`-`HasFDerivAt`, restrict scalars to `ℝ` (with the same
+    `set_option backward.isDefEq.respectTransparency false in` diamond
+    workaround as Chip 3c-A), then product-rule via `HasFDerivAt.mul`.
+  - Supporting helpers:
+    * `hasDerivAt_inv_sub_const` — the `ℂ`-`HasDerivAt`.
+    * `hasFDerivAt_real_inv_sub_const` — the `ℝ`-`HasFDerivAt` of `(·-z)⁻¹`.
+  - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
+    only). Library entry added.
+
 * **Chip 3c-A — DONE** ([`Analysis/PompeiuKernelLeibniz.lean`](JacobianChallenge/Analysis/PompeiuKernelLeibniz.lean), ~115 LOC).
   - `partialZBar_mul_inv_sub
       {α : ℂ → ℂ} {ζ : ℂ} (h_diff : DifferentiableAt ℝ α ζ) (z : ℂ) (hζ : ζ ≠ z) :
@@ -199,37 +224,47 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
   - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
     only). Library entry added.
 
-### Next chip: **Chip 3c-B — `HasFDerivAt` for `α(η) · (η - z)⁻¹` off the singularity** (~200–400 LOC)
+### Next chip: **Chip 3c-C — rectangle Stokes invocation for `α(·)·(·-z)⁻¹` on `[−L, L]²`** (~300–700 LOC; the heaviest single sub-chip of the 3c arc)
 
-With Chip 3c-A's pointwise `partialZBar` reduction in hand, Chip 3c-B
-upgrades it to a `HasFDerivAt` statement that mathlib's rectangle
-Stokes (`integral_boundary_rect_of_hasFDerivAt_real_off_countable`)
-can consume directly.
+With Chips 3c-A (`partialZBar` reduction) and 3c-B (`HasFDerivAt` off
+`z`) in hand, Chip 3c-C invokes mathlib's
+`Complex.integral_boundary_rect_of_hasFDerivAt_real_off_countable`
+([`Analysis/Complex/CauchyIntegral.lean:187`](.lake/packages/mathlib/Mathlib/Analysis/Complex/CauchyIntegral.lean))
+on `[−L, L]²` for the function `f(η) := α η * (η - z)⁻¹` with
+`s := {z}` as the countable bad set.
 
-Target signature (subject to refinement):
+Hypotheses needed for that invocation:
 
-```
-theorem hasFDerivAt_alpha_div_sub
-    {α : ℂ → ℂ} (h_smooth : ContDiff ℝ 1 α) (z : ℂ) {ζ : ℂ} (hζ : ζ ≠ z) :
-    HasFDerivAt (fun η => α η * (η - z)⁻¹)
-      (some explicit fderiv) ζ
-```
+1. **`Hc : ContinuousOn f (closed rect)`** — fails at `η = z`. Two
+   options:
+   - (a) Restrict to rectangles not containing `z`, then bridge to the
+     general case (probably loses the small-circle contribution).
+   - (b) Redefine `f` to be `0` at `η = z` (using `Function.update` or
+     a piecewise definition). The integrand has a `1/(η - z)`
+     singularity, so `f(z)` is undefined by `inv_zero = 0` — `f` *is*
+     `0` at `z` by definition, but `Continuous` fails. **Mathlib's
+     rectangle Stokes needs `ContinuousOn` on the closed rect, so this
+     option is also blocked.**
+   - (c) **Use the annulus form**: apply rectangle Stokes to
+     `[−L, L]² \ ball z ε` (which is not a single rectangle — needs
+     assembly). Or use an *altered* `f` via a cutoff `χ_ε`.
 
-This is the "off-singularity" hypothesis that rectangle Stokes needs,
-matching its `Hd : ∀ x ∈ interior \ s, HasFDerivAt f (f' x) x` shape.
+   This is the actual hard step. Most likely path: rectangle-minus-disc
+   is assembled by Lebesgue-DCT-limit `ε → 0` of `α(η) · (η - z)⁻¹ ·
+   χ_ε(η)` where `χ_ε` is a `C^∞` cutoff vanishing in `ball z (ε/2)`
+   and equal to `1` outside `ball z ε`. Then the integral of
+   `χ_ε · (·)⁻¹` is `C^∞` on the full rectangle, so rectangle Stokes
+   applies. Take `ε → 0` afterwards.
 
-After 3c-B, the remaining sub-chips toward
-`pompeiuKernel (partialZBar α) z = α z`:
+2. **`Hd : ∀ x ∈ interior \ s, HasFDerivAt f (f' x) x`** — discharged
+   by Chip 3c-B (or its analogue for the cutoff `f · χ_ε`).
 
-* **Chip 3c-C** — rectangle Stokes invocation for `[−L, L]²` with
-  the singularity at `z` as a one-point exception. Because mathlib's
-  rectangle Stokes admits a countable bad set
-  (`hs : s.Countable`, `s = {z}` here), we may be able to apply it
-  directly without an annulus cutoff — *provided* the integrability
-  hypothesis `Hi : IntegrableOn (fun x => f' x I - I • f' x 1) (rect)`
-  still holds despite the singularity. This needs a careful local
-  integrability check of `(ζ - z)⁻¹` (Chip 1b's
-  `integrableOn_inv_norm_closedBall` should suffice in 2D).
+3. **`Hi : IntegrableOn (fun x => f' x I - I • f' x 1) (rect)`** —
+   local integrability of `(η - z)⁻¹` in 2D, available from Chip 1b's
+   `integrableOn_inv_norm_closedBall`. With Chip 3c-B's explicit fderiv,
+   `f' x I - I • f' x 1` will involve `(η - z)⁻¹` and `(η - z)⁻²`; the
+   latter is not locally integrable, so further care is needed — this
+   may force option (c) above.
 * **Chip 3c-D** — outer-rectangle boundary vanishing: for `L` large
   enough (`tsupport α ⊆ ball 0 (L - 1)`), the four line integrals
   on `∂[−L, L]²` are all zero because `α ≡ 0` there.
