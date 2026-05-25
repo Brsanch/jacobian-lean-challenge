@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, **3a** landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -8,7 +8,7 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
 
-Last rewrite: 2026-05-25 (post Chip 2d).
+Last rewrite: 2026-05-25 (post Chip 3a).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated **20–45 focused sessions / 5–10 months** at typical chip cadence (Chips 1a–2d done; Chip 3 is the next and heaviest).
 
@@ -114,38 +114,72 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
     derivative with `pompeiuKernel` via Chip 2a + `HasDerivAt.const_mul (-π⁻¹)`.
   - Sorry-free, axiom-free. Library entry added.
 
-### Next chip: **Chip 3 — `∂̄(pompeiuKernel α) = α` via rectangle Stokes** (~2–4k LOC, the heaviest chip)
+* **Chip 3a — DONE** ([`Analysis/PompeiuKernelSmallDiscLimit.lean`](JacobianChallenge/Analysis/PompeiuKernelSmallDiscLimit.lean), ~250 LOC).
+  - `tendsto_circleIntegral_pompeiu_smallDisc
+      {α : ℂ → ℂ} (h_cont : Continuous α) (z : ℂ) :
+      Tendsto (fun ε : ℝ => ∮ ζ in C(z, ε), α ζ * (ζ - z)⁻¹) (𝓝[>] 0)
+        (𝓝 (α z * (2 * ↑π * I)))`.
+  - Pointwise decomposition
+    `α ζ · (ζ - z)⁻¹ = α z · (ζ - z)⁻¹ + (α ζ - α z) · (ζ - z)⁻¹`
+    is lifted to circle integrals on `C(z, ε)` for `ε > 0` via
+    `circleIntegral.integral_add`. Both pieces are circle-integrable
+    because the singularity at `ζ = z` sits at the centre, not on the
+    sphere.
+  - Constant piece evaluates exactly: `∮ α z · (ζ - z)⁻¹ = α z · (2πi)`
+    via `circleIntegral.integral_const_mul` +
+    `circleIntegral.integral_sub_inv_of_mem_ball` with `w = z, c = z,
+    R = ε > 0` (so `z ∈ ball z ε`).
+  - Remainder is controlled by the modulus of continuity at `z`:
+    `‖(α ζ - α z) · (ζ - z)⁻¹‖ ≤ C / ε` on `sphere z ε` where
+    `‖ζ - z‖ = ε`, hence
+    `‖∮ (α ζ - α z) · (ζ - z)⁻¹‖ ≤ 2 * π * ε * (C / ε) = 2 * π * C`
+    via `circleIntegral.norm_integral_le_of_norm_le_const`. For
+    `ε < r` from continuity-at-`z` with tolerance `δ / (2π + 1)`, the
+    full bound is `2π · δ / (2π + 1) < δ`.
+  - Helpers: `circleIntegrable_smul_inv_sub_of_continuous`,
+    `circleIntegrable_const_smul_inv_sub`,
+    `circleIntegrable_remainder`, `circleIntegral_constant_smul_sub_inv`,
+    `norm_circleIntegral_remainder_le`,
+    `circleIntegral_pompeiu_decompose`.
+  - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
+    only). Library entry added.
 
-With Chip 2d complete, `pompeiuKernel α ∈ C^∞` for `α ∈ C^∞` with
-compact support. The next milestone is the **Cauchy-Pompeiu identity**:
+### Next chip: **Chip 3b — rectangle Stokes for `α(ζ) / (ζ - z)` on `[−L, L]² \ closedBall z ε`** (~1–2k LOC)
+
+With Chip 3a complete, the pointwise small-disc limit is in hand. Next
+is applying `integral_boundary_rect_of_hasFDerivAt_real_off_countable`
+([`Mathlib/Analysis/Complex/CauchyIntegral.lean:187`](.lake/packages/mathlib/Mathlib/Analysis/Complex/CauchyIntegral.lean))
+to `f(ζ) := α(ζ) / (ζ - z)` on the rectangle `[−L, L]²` with the small
+closed disc `closedBall z ε` removed. The boundary then consists of
+the large rectangle (which vanishes for `L` large by `HasCompactSupport α`)
+plus the small circle (handled by Chip 3a in the `ε → 0` limit).
+
+Concretely, the deliverable for Chip 3b is something like:
 
 ```
-partialZBar (pompeiuKernel α) z = α z   for all z : ℂ
+theorem rectangle_stokes_pompeiu_off_disc
+    (h_smooth : ContDiff ℝ 1 α) (h_supp : HasCompactSupport α)
+    (z : ℂ) {ε L : ℝ} (hε : 0 < ε) (hεL : ε < L)
+    (h_supp_in : tsupport α ⊆ closedBall 0 (L - 1)) :
+    (rectangle integral of ∂̄(α/(·-z)) over [-L,L]² \ closedBall z ε)
+      = - (∮ ζ in C(z, ε), α ζ * (ζ - z)⁻¹)
 ```
 
-where `partialZBar u z := (1/2) · ((fderiv ℝ u z) 1 + I · (fderiv ℝ u z) I)`
-is the Wirtinger `∂̄` operator.
+(exact statement TBD once we work out how mathlib's rectangle integral
+combines with a hole). The right-hand side becomes `-2πI · α(z)` in the
+ε → 0 limit by Chip 3a, while the left-hand side is the volume integral
+of `(∂̄ α / (ζ - z))` (since `1/(ζ-z)` is holomorphic in `ζ` off
+`ζ = z`, only `∂̄ α` survives). Combined with the relation between
+`pompeiuKernel α` and the same volume integral (via the Pompeiu kernel
+definition), we get `∂̄(pompeiuKernel α) z = α z`.
 
-Classical proof outline:
-1. **Rectangle Stokes** (`integral_boundary_rect_of_hasFDerivAt_real_off_countable`
-   in `Mathlib/Analysis/Complex/CauchyIntegral.lean:187`) applied to
-   `f(ζ) := α(ζ) / (ζ - z)` on a rectangle avoiding `ζ = z`.
-2. **Boundary contributions at infinity vanish** by compact support of `α`.
-3. **Small-disc contribution around `ζ = z`** gives `-2πI · α(z)` in the
-   limit (Cauchy integral formula for the constant `α(z)` mod higher-order
-   terms that vanish as the radius → 0).
-4. **Combine**: the interior `∂̄` integral equals the boundary contour
-   integral mod the singular term, yielding `∂̄ (pompeiuKernel α) = α`.
+* **Chip 3c** — Combine 3a + 3b + take `ε → 0` to conclude
+  `partialZBar (pompeiuKernel α) z = α z` for `α ∈ C^∞` with compact
+  support.
 
-Suggested sub-chips:
-* **Chip 3a** — small-disc estimate: `∫_{‖ζ-z‖=ε} α(ζ)/(ζ-z) dζ → 2πI · α(z)`.
-* **Chip 3b** — rectangle Stokes applied to `α(ζ)/(ζ-z)` on
-  `R := [−L, L]² \ closedBall z ε`, with the large boundary vanishing
-  (compact support).
-* **Chip 3c** — combine + take ε → 0 limit.
-
-Estimate: 4–10 sessions for Chip 3. After Chip 3, Chips 4–7 are
-chart-pullback + globalization + integration into the existing chain.
+Estimate: Chip 3b is ~3–6 sessions, Chip 3c is ~1–2 sessions. After
+Chip 3, Chips 4–7 are chart-pullback + globalization + integration
+into the existing chain.
 
 ### Chips 4 through 7 (after Chip 3)
 
