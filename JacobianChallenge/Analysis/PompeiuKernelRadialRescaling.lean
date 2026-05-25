@@ -95,4 +95,47 @@ lemma radialCutoffComplex_at_rescaled {z : ℂ} {ε : ℝ} (hε : 0 < ε) (w : �
   congr 1
   rw [sub_zero]
 
+/-! ## Derivative of the rescaled profile -/
+
+/-- `HasDerivAt (psiBump ε) (deriv (psiBump ε) r) r`. The 1D profile
+is differentiable everywhere (it is `C^∞`). -/
+lemma hasDerivAt_psiBump {ε : ℝ} (hε : 0 < ε) (r : ℝ) :
+    HasDerivAt (psiBump ε) (deriv (psiBump ε) r) r :=
+  ((psiBump_contDiff hε (n := 1)).differentiable
+    (by norm_num)).differentiableAt.hasDerivAt
+
+/-- **Derivative rescaling.** For `ε > 0`,
+`deriv (psiBump ε) (ε * r) = ε⁻¹ * deriv (psiBump 1) r`.
+
+Differentiating `psiBump_rescale : psiBump ε (ε * r) = psiBump 1 r`
+both sides as functions of `r`: the LHS gives `ε · deriv (psiBump ε) (ε * r)`
+by chain rule; the RHS gives `deriv (psiBump 1) r`. Equating and
+dividing by `ε ≠ 0` produces the claim. -/
+lemma deriv_psiBump_rescale {ε : ℝ} (hε : 0 < ε) (r : ℝ) :
+    deriv (psiBump ε) (ε * r) = ε⁻¹ * deriv (psiBump 1) r := by
+  -- LHS function: `fun r => psiBump ε (ε * r)`. Derivative at r:
+  -- (deriv (psiBump ε) (ε * r)) * ε  (by chain rule).
+  have h_inner : HasDerivAt (fun r : ℝ => ε * r) ε r := by
+    have := (hasDerivAt_id r).const_mul ε
+    simpa using this
+  have h_lhs : HasDerivAt (fun r : ℝ => psiBump ε (ε * r))
+      ((deriv (psiBump ε) (ε * r)) * ε) r :=
+    (hasDerivAt_psiBump hε (ε * r)).comp r h_inner
+  -- RHS function: `fun r => psiBump 1 r`. Derivative is `deriv (psiBump 1) r`.
+  have h_rhs : HasDerivAt (psiBump 1) (deriv (psiBump 1) r) r :=
+    hasDerivAt_psiBump one_pos r
+  -- The two functions agree (psiBump_rescale).
+  have h_eq : (fun r : ℝ => psiBump ε (ε * r)) = psiBump 1 := by
+    funext r'
+    exact psiBump_rescale hε r'
+  -- Transport h_lhs through h_eq to compare with h_rhs.
+  rw [h_eq] at h_lhs
+  -- HasDerivAt gives unique derivative, so:
+  have h_unique : (deriv (psiBump ε) (ε * r)) * ε = deriv (psiBump 1) r :=
+    h_lhs.unique h_rhs
+  -- Solve for `deriv (psiBump ε) (ε * r)`.
+  have hε_ne : (ε : ℝ) ≠ 0 := ne_of_gt hε
+  field_simp at h_unique ⊢
+  linarith [h_unique]
+
 end JacobianChallenge.PompeiuKernel
