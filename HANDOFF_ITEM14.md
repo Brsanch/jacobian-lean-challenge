@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-24 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -86,41 +86,42 @@ After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pi
     via `continuous_iff_continuousAt`.
   - Sorry-free, axiom-free. Library entry added.
 
-### Next chip: **Chip 2c-main — directional derivative of `pompeiuKernel α`** (~300–500 LOC)
+* **Chip 2c-main — DONE** ([`Analysis/PompeiuKernelDerivative.lean`](JacobianChallenge/Analysis/PompeiuKernelDerivative.lean), 292 LOC).
+  - `hasDerivAt_pompeiuKernel_real_direction
+      {α : ℂ → ℂ} (h_smooth : ContDiff ℝ 1 α) (h_supp : HasCompactSupport α)
+      (v z₀ : ℂ) :
+      HasDerivAt (fun t : ℝ => pompeiuKernel α (z₀ + (t : ℝ) • v))
+        (pompeiuKernel (αDeriv α v) z₀) 0`.
+  - Applies `MeasureTheory.hasDerivAt_integral_of_dominated_loc_of_deriv_le`
+    on Chip 2a's translated parametric integral. Dominating function
+    `K.indicator (fun η => M' · ‖v‖ · ‖η‖⁻¹)` with
+    `K := closedBall 0 (R + ‖z₀‖ + ‖v‖ + 1)`. Outside `K`, the path
+    `η + z₀ + t • v` stays outside `tsupport α` for all
+    `t ∈ Ioo (-1) 1`, so `fderiv ℝ α (η + z₀ + t • v) = 0`
+    (`fderiv_of_notMem_tsupport`). Identifies both function and
+    derivative with `pompeiuKernel` via Chip 2a + `HasDerivAt.const_mul (-π⁻¹)`.
+  - Sorry-free, axiom-free. Library entry added.
 
-With Chip 2c-prep in place, apply
-`MeasureTheory.hasDerivAt_integral_of_dominated_loc_of_deriv_le` to
-the translated parametric integral
-`t ↦ ∫ η, α (η + z₀ + t • v) · η⁻¹` (Chip 2a's form, with the
-singularity pinned at `η = 0`).
+### Next chip: **Chip 2d — ℝ-C^∞ smoothness of `pompeiuKernel α`** (~300–500 LOC)
 
-**Target lemma.**
+With Chip 2c-main giving the first directional derivative
+`(d/dt) pompeiuKernel α (z₀ + t • v) = pompeiuKernel (αDeriv α v) z₀`,
+the iteration is structural: each derivative of `pompeiuKernel α`
+along a direction equals `pompeiuKernel` of the corresponding
+directional derivative of `α`. For `α` of class `C^k` with compact
+support, `αDeriv α v` is again `C^(k-1)` with compact support, so the
+same theorem applies inductively. Use `ContDiff.of_succ` or induction
+on `n` to conclude `ContDiff ℝ ∞ (pompeiuKernel α)` when
+`ContDiff ℝ ∞ α + HasCompactSupport α`.
 
-```
-theorem hasDerivAt_pompeiuKernel_real_direction
-    {α : ℂ → ℂ} (h_smooth : ContDiff ℝ 1 α) (h_supp : HasCompactSupport α)
-    (v z₀ : ℂ) :
-    HasDerivAt
-      (fun t : ℝ => pompeiuKernel α (z₀ + (t : ℝ) • v))
-      (pompeiuKernel (αDeriv α v) z₀)
-      0
-```
-
-**Strategy.**
-1. Translated form: rewrite via Chip 2a.
-2. Per-`η` chain rule: `d/dt α(η + z₀ + t • v) = (fderiv ℝ α (η + z₀ + t • v)) v
-   = αDeriv α v (η + z₀ + t • v)`.
-3. Uniform derivative bound on `closedBall 0 1` for `t`: bound
-   `‖(fderiv ℝ α (η + z₀ + t • v)) v‖ ≤ M' · ‖v‖`
-   (from `exists_fderiv_norm_bound` + `norm_αDeriv_le`).
-4. Dominating function: `K.indicator (fun η => M' · ‖v‖ · ‖η‖⁻¹)`
-   with `K := closedBall 0 (R + ‖z₀‖ + ‖v‖ + 1)`. Integrable via
-   Chip 1b on `K`. Outside `K`, the path `η + z₀ + t • v` stays
-   outside `closedBall 0 R ⊇ tsupport α` for all `t ∈ [-1, 1]`, so
-   `αDeriv α v (η + z₀ + t • v) = 0`.
-5. Apply `hasDerivAt_integral_of_dominated_loc_of_deriv_le`.
-6. Identify the conclusion with `pompeiuKernel (αDeriv α v) z₀` via
-   the inverse of Chip 2a's translation reduction.
+Sketch:
+* Lift Chip 2c-main from `ContDiff ℝ 1 α` to `ContDiff ℝ n α` via
+  induction on `n`.
+* Or: prove `HasFDerivAt (pompeiuKernel α) L z₀` directly where
+  `L : ℂ →L[ℝ] ℂ` is `v ↦ pompeiuKernel (αDeriv α v) z₀`, then
+  iterate via `ContDiff.iff_hasFDerivAt`.
+* Identify `αDeriv α v` with `(iteratedFDeriv ℝ 1 α z₀) v` and
+  generalize to `iteratedFDeriv ℝ n α z₀`.
 
 ### Chip 2d (after 2c, ~300–500 LOC)
 
