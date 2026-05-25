@@ -1,6 +1,6 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, 3c-F-1, 3c-F-2-prep, 3c-F-2 polar transformation, 3c-F-2 bound lemma, 3c-F-2-final, 3c-F-3a, 3c-F-3b, 3c-F-3c, 3c-F-3d-1, **3c-F-3d-2-prep, 3c-F-3d-2a, 3c-F-3d-2b** landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, 3c-F-1, 3c-F-2-prep, 3c-F-2 polar transformation, 3c-F-2 bound lemma, 3c-F-2-final, 3c-F-3a, 3c-F-3b, 3c-F-3c, 3c-F-3d-1, **3c-F-3d-2-prep, 3c-F-3d-2a, 3c-F-3d-2b, 3c-F-3d-2c** landed).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
@@ -8,7 +8,7 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
 
-Last rewrite: 2026-05-25 (post Chip 3c-F-3d-2b: all pointwise pieces for the substitution η = z + ε·w now in place — rescaling identities, derivative rescaling, and the key pointwise identity `partialZBar (radialBumpComplex z ε)(z + εw) = ε⁻¹ · partialZBar (unitRadialBumpC) w`. Chip 3c-F-3d-2c — change of variable for the integral — is next).
+Last rewrite: 2026-05-25 (post Chip 3c-F-3d-2c: the substitution identity for the integral is closed — `∫ ζ, α(ζ) · ∂̄(regInvSubRadial z ε)(ζ) = -∫ w, α(z + εw) · (∂̄(unitRadialBumpC)(w) / w)` via `integral_add_left_eq_self` (translation) + `Measure.integral_comp_smul` (scaling, with `finrank ℝ ℂ = 2` Jacobian) + the pointwise rescaling. Chip 3c-F-3d-3 — DCT on the substituted integral — is next).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post 3c-F-2-final): ~1-3 sessions for Chip 3c-F-3+F-4, then Chips 4-7 (~13-22 sessions).
 
@@ -553,21 +553,24 @@ chosen — re-derive instead of transfer-from-pompeiuCutoff.
 
 #### Sub-pieces remaining for Chip 3c-F
 
-* **Chip 3c-F-3d-2c — substitution identity for the integral** (~150-250 LOC):
-  Apply the pointwise identity 3c-F-3d-2b inside the integral and use
-  the change-of-variable `∫ f(ζ) dA(ζ) = ε² · ∫ f(z + εw) dA(w)` (via
-  mathlib's `MeasureTheory.Measure.integral_comp_smul`-style lemmas +
-  translation invariance) to obtain:
-  ```
-  ∫ ζ, α(ζ) · partialZBar(regularizedInvSubRadial z ε)(ζ) dA(ζ)
-    = -∫ w, α(z + εw) · (partialZBar(unitRadialBumpC)(w) / w) dA(w).
-  ```
-  Combines: 3c-F-3d-1 (pointwise ∂̄ identity) → reduces LHS integrand to
-  α · (ζ-z)⁻¹ · ∂̄(cutoff); the cutoff is `-radialBump` plus a constant,
-  so ∂̄(cutoff) = -∂̄(bump); 3c-F-3d-2b transforms ∂̄(bump) at z+εw to
-  ε⁻¹ · ∂̄(unitRadialBumpC) at w; change of variable cancels ε² (from
-  Jacobian) with ε⁻¹ (from (ζ-z)⁻¹ = (εw)⁻¹) and ε⁻¹ (from the chain
-  rule factor), leaving the unit-scale integral.
+* **Chip 3c-F-3d-2c — DONE** (this session,
+  [`Analysis/PompeiuKernelRadialSubstitution.lean`](JacobianChallenge/Analysis/PompeiuKernelRadialSubstitution.lean),
+  ~231 LOC):
+  - **Pointwise step** (`partialZBar_regInvSubRadial_at_rescaled`):
+    `∂̄(regularizedInvSubRadial z ε)(z + ε·w) = -((ε : ℂ)²)⁻¹ · (∂̄(unitRadialBumpC)(w) / w)`.
+    Chain: Chip 3c-F-3d-1 (`∂̄(regInvSubRadial) = (·-z)⁻¹ · ∂̄(cutoffℂ)`)
+    + `partialZBar_radialCutoffComplex_eq_neg` (linearity on `1 - f`
+    via `partialZBar_sub` + `partialZBar_const`) + Chip 3c-F-3d-2b
+    (bump rescaling) + `mul_inv` (valid in a CommGroupWithZero).
+  - **Integral step** (`integral_alpha_mul_partialZBar_regInvSubRadial_eq_substituted`):
+    Translation `ζ = z + η` via `integral_add_left_eq_self` on Lebesgue
+    measure (left-invariant Haar) + rescaling `η = ε·w` via
+    `Measure.integral_comp_smul` (additive Haar, `Module.finrank ℝ ℂ = 2`
+    → Jacobian `|ε²|⁻¹` after `abs_of_nonneg`). The pointwise step
+    introduces the `-((ε:ℂ)²)⁻¹` factor; the Jacobian `(ε:ℝ)²` cancels
+    it via `Complex.real_smul` + cast.
+  - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
+    only). Library entry added.
 
 * **Chip 3c-F-3d-3 — DCT on substituted integral** (~150-200 LOC):
   ```
@@ -589,8 +592,8 @@ chosen — re-derive instead of transfer-from-pompeiuCutoff.
   `partialZBar_pompeiuKernel_eq_pompeiuKernel_partialZBar` to get the
   Cauchy-Pompeiu identity `partialZBar (pompeiuKernel α) z = α z`.
 
-**Estimate for completing Chip 3c-F (post-3d-2b)**: 1-2 more sessions,
-~300-450 more LOC (3d-2c + 3d-3 + 4).
+**Estimate for completing Chip 3c-F (post-3d-2c)**: 1 more session,
+~200-350 more LOC (3d-3 + 4).
 
 **Chips 4-7** (after Chip 3c-F) — refined 2026-05-25 via direct repo
 scouting (see "Chip 5 scouting report" below):
