@@ -195,6 +195,36 @@ theorem integral_partialZBar_div_eq_polar_integral :
   have hr : 0 < p.1 := hp_r
   exact scaled_integrand_at_polar_symm hr
 
+/-! ## Fubini decomposition -/
+
+/-- Bound on `deriv (psiBump 1)`: it is continuous with compact support,
+hence bounded. -/
+lemma exists_bound_deriv_psiBump_one :
+    ∃ M : ℝ, ∀ r : ℝ, ‖deriv (psiBump 1) r‖ ≤ M := by
+  -- `deriv (psiBump 1)` is continuous (ContDiff ℝ 2 → continuous deriv).
+  -- It has compact support since `psiBump 1` does (subset of [0, 1] image).
+  have h_cont : Continuous (deriv (psiBump 1)) := psiBump_one_deriv_continuous
+  -- The support of `deriv (psiBump 1)` is contained in `tsupport (psiBump 1) ⊆ [0, 1]`.
+  -- `psiBump 1` has compact support since the bump vanishes outside [0, 1].
+  -- Use `Continuous.bounded_above_of_compact_support` if we had it cleanly;
+  -- alternatively, use that deriv vanishes outside [0,1] and is continuous on [0,1].
+  -- Bound = `sSup (deriv (psiBump 1) '' Icc 0 1)` + 1, but simpler: continuous on
+  -- compact [0,1] is bounded, and outside it's 0.
+  obtain ⟨M, hM⟩ : ∃ M : ℝ, ∀ r ∈ Set.Icc (0 : ℝ) 1, ‖deriv (psiBump 1) r‖ ≤ M := by
+    have h_compact : IsCompact (Set.Icc (0 : ℝ) 1) := isCompact_Icc
+    exact h_compact.exists_bound_of_continuousOn h_cont.continuousOn
+  refine ⟨max M 0, fun r => ?_⟩
+  by_cases h_in : r ∈ Set.Icc (0 : ℝ) 1
+  · exact le_max_of_le_left (hM r h_in)
+  · -- r ∉ [0, 1]: either r < 0 or r > 1.
+    rw [Set.mem_Icc, not_and_or, not_le, not_le] at h_in
+    have h_zero : deriv (psiBump 1) r = 0 := by
+      rcases h_in with hr | hr
+      · exact deriv_psiBump_one_eq_zero_of_neg hr
+      · exact deriv_psiBump_one_eq_zero_of_one_lt hr
+    rw [h_zero, norm_zero]
+    exact le_max_right _ _
+
 end JacobianChallenge.PompeiuKernel
 
 end
