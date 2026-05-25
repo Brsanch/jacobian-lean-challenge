@@ -12,7 +12,7 @@ topology, which is the wrong topology).
 
 | Line | Item | Reduces to |
 |---|---|---|
-| 73 | 14 | hSP + BSLB (see `HANDOFF_ITEM14.md`) |
+| 73 | 14 | hSP X (one input — post-2026-05-24 merge, BSLB no longer needed; see `HANDOFF_ITEM14.md`) |
 | 103 | 5/11 | `[HasJacobianAnalyticStructure X]` (see `C3_AUDIT.md`) |
 | 108 | 5/12 | same |
 | 111 | 5/12 | same |
@@ -45,7 +45,7 @@ OPEN.md's massive scoreboard.
 | 11 | `CompactSpace (Jacobian X)` | OPEN | Same as item 5. |
 | 12 | `IsManifold ... ω (Jacobian X)` | OPEN | Same as item 5. |
 | 13 | `LieAddGroup ... (Jacobian X)` | OPEN | Same as item 5. |
-| 14 | `genus_eq_zero_iff_homeo` | OPEN | hSP + BSLB. See `HANDOFF_ITEM14.md`. |
+| 14 | `genus_eq_zero_iff_homeo` | OPEN | hSP X only (post-2026-05-24 étale-leg merge; reverse-leg `S2ImpliesGenus0` now unconditional via `s2ImpliesGenus0_etalePrimitivesArc`; one-input composition in `Topology/Item14FromHSPOnly.lean`). Via Chip 2c-Final, hSP X further reduces to `DBarSolvabilityAtGenusZero X` + per-`p` `ChartAtConstantOnSource p`. See `HANDOFF_ITEM14.md`. |
 | 15 | `ofCurve_self` | STRICT-CLOSED | Reduces to `[δP - δP] = 0`. |
 | 16 | `ofCurve_inj` | STRICT-CLOSED | Via `JacobianChallenge.ofCurve_inj_holds` unconditional discharge chain. |
 | 17 | `ofCurve_contMDiff` | OPEN | Reduces to item 5 + `JacobianAnalyticClosureBundle` smoothness field. |
@@ -64,13 +64,19 @@ OPEN.md's massive scoreboard.
 The 8 OPEN sorries collapse to just **3 substantive classical theorems**
 across the whole challenge (after auditing all named-hypothesis chains):
 
-1. **Item 14's `hSP`** — Riemann–Roch dim ≥ 2 at genus 0 (germ form).
-   Reduces to `RR_DimGE2_GenusZero_Germ X` after the existing chain.
+1. **Item 14's `hSP`** — `ExistsSimplePoleGermAtSomePoint X`. After
+   Chip 2c-Final (2026-05-24, `Manifold/ForsterCutoffPoleConstruction.lean`),
+   reduces further to **`DBarSolvabilityAtGenusZero X`** (= `H¹(X, 𝒪) = 0`
+   at genus 0) plus a per-`p` structural hypothesis `ChartAtConstantOnSource p`
+   (innocuous on every concrete X). The Riemann–Roch / uniformization framings
+   remain valid as equivalent alternate routes but do not shorten the gap.
 
-2. **Item 14's `BSLB`** — `BasedSmoothLoopsBoundHypothesis X x₀` on
-   arbitrary X. Path A: refactor `Smooth2Simplex` to `ContMDiffOn [0,1]²`
-   (unblocks chain-assembly path). Path B: generalize missed-point
-   chart-pullback factorisation.
+2. ~~**Item 14's `BSLB`**~~ **OBSOLETE for Item 14 (2026-05-24 merge).**
+   The reverse leg `S2ImpliesGenus0 X` is unconditionally discharged on
+   arbitrary X by `s2ImpliesGenus0_etalePrimitivesArc`
+   (`Topology/S2ImpliesGenus0FromEtalePrimitives.lean`). The one-input
+   composition `Topology/Item14FromHSPOnly.lean:genus_eq_zero_iff_homeo_from_hSP`
+   shows Item 14 reduces to hSP alone.
 
 3. **C3's `C3FullInputExt X`** — bundle of Riemann bilinear relations
    + Abel's theorem + Jacobi inversion + Abel-Jacobi smoothness +
@@ -81,8 +87,10 @@ across the whole challenge (after auditing all named-hypothesis chains):
 3a. Per-curve `JacobianAnalyticPushforward/PullbackLift` for items
     18/21 — depends on (3).
 
-That's it. Three textbook classical theorems away from 22/24
-STRICT-CLOSED (items 4 and 10 flip automatically with item 5).
+That's it. **TWO** textbook classical theorems away from 22/24
+STRICT-CLOSED — BSLB was the third entry pre-merge but is now obsolete
+(reverse leg of Item 14 unconditional). Items 4 and 10 flip automatically
+with item 5.
 
 ## Sorries outside `Basic.lean` (live audit `grep`)
 
@@ -141,10 +149,11 @@ Same pattern as item 14 audit found:
 
 ## Bottom line
 
-The whole Jacobian Challenge is **3 substantive classical theorems
-away from 22/24 STRICT-CLOSED** (items 4, 10 flip mechanically with
-item 5; the remaining items are 14 and one item from item 5's chain
-counted differently).
+The whole Jacobian Challenge is **2 substantive classical theorems
+away from 22/24 STRICT-CLOSED** (post-2026-05-24 merge: item 14 reduces
+to JUST `DBarSolvabilityAtGenusZero X` after the étale-leg merge made
+BSLB obsolete; item 5's chain still needs `C3FullInputExt X`. Items 4,
+10 flip mechanically with item 5).
 
 The structural plumbing is ENORMOUSLY over-built (1072 `.lean` files,
 182k LOC). Maybe 30–40% of that LOC is structural-reduction /

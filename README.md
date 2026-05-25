@@ -13,12 +13,22 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-23):** 14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN.
+**Current state (2026-05-24, post Chip 2c-Final + étale-leg merge):**
+14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN. The 8 open items collapse
+to **two substantive classical theorems**:
+* `DBarSolvabilityAtGenusZero X` (= `H¹(X, 𝒪) = 0` at genus 0) — closes Item 14.
+* `C3FullInputExt X` (Riemann bilinear + Abel + Jacobi inversion) — closes items 5, 11, 12, 13, 17, 18, 21 collectively.
+
+(Pre-merge framing was three classical theorems; BSLB became obsolete
+when the étale-primitives reverse-leg arc merged into the forward-leg
+branch and the one-input composition `Topology/Item14FromHSPOnly.lean`
+landed.)
+
+**Earlier baseline (2026-05-23):** 14/24 STRICT-CLOSED, 2 STUB, 8 OPEN.
 Umbrella `lake build` clean at **9,326 jobs** (zero `sorry`, zero
 `axiom`). Repo: **182,183 LOC across 1,072 `.lean` files**. Per-file
 `LEAN_NUM_THREADS=1 lake env lean` clean on all 6 chips of the
-2026-05-23 holomorphic parametric integral arc (local on `main`, not
-pushed; not yet wired into the umbrella).
+2026-05-23 holomorphic parametric integral arc.
 
 Major recent landings (all on `main`):
 

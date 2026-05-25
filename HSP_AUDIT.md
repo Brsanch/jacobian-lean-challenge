@@ -1,6 +1,36 @@
 # HSP / RR-dim sub-tree audit (item 14)
 
-Audit date: 2026-05-23. Methodology mirrors `RESIDUE_AUDIT.md` —
+> **🔄 UPDATE 2026-05-24 (post Chip 2c-Final + étale-leg merge).**
+>
+> Since the original audit, two changes:
+>
+> 1. **Chip 2c-Final landed** (commit `f39cae3`,
+>    `Manifold/ForsterCutoffPoleConstruction.lean:existsSimplePoleGermAtSomePoint_of_dbarSolvability_under_chartConst`).
+>    `ExistsSimplePoleGermAtSomePoint X` now has an additional
+>    discharge route via Forster §16.9 cutoff + correction, conditional
+>    on `DBarSolvabilityAtGenusZero X` (= `H¹(X, 𝒪) = 0` at genus 0,
+>    equivalently smooth `∂̄`-solvability) and a per-`p` structural
+>    hypothesis `ChartAtConstantOnSource p`. Equivalent in size to the
+>    uniformization route; both lead to the same classical-content gap.
+>
+> 2. **Reverse leg merged from `feat/item14-affineChartTriangleSimplex-ball`**
+>    (commit `57357b9`). `s2ImpliesGenus0_etalePrimitivesArc :
+>    S2ImpliesGenus0 X` (`Topology/S2ImpliesGenus0FromEtalePrimitives.lean`)
+>    is unconditional on this branch. `Topology/Item14FromHSPOnly.lean`
+>    composes it with the existing
+>    `genus_eq_zero_iff_homeo_from_existsSimplePoleGerm` to give a
+>    one-input form of Item 14: `(hSP X) → genus = 0 ↔ Nonempty (X ≃ₜ S²)`.
+>    BSLB is no longer needed for Item 14.
+>
+> **Net post-update Item 14 reduction.** Single classical-content gap:
+> `DBarSolvabilityAtGenusZero X` (modulo the per-`p` structural hypothesis
+> `ChartAtConstantOnSource p`, innocuous on RS / tori / single-chart X).
+> The Riemann-Roch / uniformization framings below remain valid as
+> equivalent alternate routes but are not "shorter" in any sense.
+
+---
+
+Audit date: 2026-05-23 (pre-Chip 2c-Final, pre-merge). Methodology mirrors `RESIDUE_AUDIT.md` —
 walk every file in tree that names `ExistsSimplePoleGermAtSomePoint`,
 `RR_DimGE2_GenusZero_Germ`, `RR_StrictLt_GenusZero_Germ`,
 `ExistsNonConstantBoundedByDeltaP_GenusZero`, `RiemannRochGenusZero`,
@@ -33,13 +63,16 @@ as a `def Prop`, and where is it actually discharged by a
   X — `Nonempty (HolomorphicEquiv X RiemannSphere)` (uniformization
   at genus 0), or equivalently the "`∂̄`-equation solvability" content
   in `SimplePoleGermExtensionHypothesis` (an equivalent named form).
-* **Item 14 = `genus_eq_zero_iff_homeo X` is already reduced to TWO
-  classical inputs** by the existing in-tree theorem
-  `genus_eq_zero_iff_homeo_from_existsSimplePoleGerm`
-  (`JacobianChallenge/Topology/Item14ForwardFromCompactConnected.lean:68`):
-  `hSP X` and `S2ImpliesGenus0 X`. The `[FiniteDimensional]` typeclass
-  is **already discharged unconditionally** internally via
-  `DiskChartCover.holomorphicOneFormFiniteDim_holds`.
+* **Item 14 = `genus_eq_zero_iff_homeo X` is reduced to ONE classical
+  input (post-merge 2026-05-24):** `hSP X`. The `S2ImpliesGenus0 X`
+  side is unconditional via `s2ImpliesGenus0_etalePrimitivesArc`
+  (`Topology/S2ImpliesGenus0FromEtalePrimitives.lean`, brought in
+  from the merged étale-primitives arc). One-input composition:
+  `Topology/Item14FromHSPOnly.lean:genus_eq_zero_iff_homeo_from_hSP`.
+  The `[FiniteDimensional]` typeclass is **already discharged
+  unconditionally** internally via
+  `DiskChartCover.holomorphicOneFormFiniteDim_holds`. Pre-merge
+  framings of "two classical inputs (hSP + BSLB)" are obsolete.
 
 So the actual hSP-side gap is one classical content statement —
 uniformization-at-genus-0 (or, equivalently, `∂̄`-solvability at
