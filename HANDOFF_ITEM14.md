@@ -123,13 +123,6 @@ Sketch:
 * Identify `αDeriv α v` with `(iteratedFDeriv ℝ 1 α z₀) v` and
   generalize to `iteratedFDeriv ℝ n α z₀`.
 
-### Chip 2d (after 2c, ~300–500 LOC)
-
-Iterate Chip 2c to obtain ℝ-C^∞ smoothness. Use `ContDiff.of_succ`
-or induction on derivative order. Each derivative of `pompeiuKernel α`
-equals `pompeiuKernel` applied to the corresponding derivative of `α`,
-so smoothness propagates.
-
 ### Chips 3 through 7 (after 2)
 
 * **Chip 3 (~2–4k LOC, the heaviest chip)** — the identity `∂̄(pompeiuKernel α) = α`. Routes through Cauchy-Pompeiu boundary terms; rectangle Stokes (`integral_boundary_rect_of_hasFDerivAt_real_off_countable` from mathlib's CauchyIntegral) is the key tool.
