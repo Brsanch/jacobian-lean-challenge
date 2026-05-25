@@ -1,16 +1,25 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, 3c-F-1, 3c-F-2-prep, 3c-F-2 polar transformation, 3c-F-2 bound lemma, 3c-F-2-final, 3c-F-3a, 3c-F-3b, 3c-F-3c, 3c-F-3d-1, **3c-F-3d-2-prep, 3c-F-3d-2a, 3c-F-3d-2b, 3c-F-3d-2c** landed).
+Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, 3c-F-1, 3c-F-2-prep, 3c-F-2 polar transformation, 3c-F-2 bound lemma, 3c-F-2-final, 3c-F-3a, 3c-F-3b, 3c-F-3c, 3c-F-3d-1, **3c-F-3d-2-prep, 3c-F-3d-2a, 3c-F-3d-2b, 3c-F-3d-2c, 3c-F-3d-3, 3c-F-4** landed — **Cauchy-Pompeiu identity on ℂ unconditional**).
 
 Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
 
 ---
 
-## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24)
+## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24) — **Chip 3c-F COMPLETE**
 
-Last rewrite: 2026-05-25 (post Chip 3c-F-3d-2c: the substitution identity for the integral is closed — `∫ ζ, α(ζ) · ∂̄(regInvSubRadial z ε)(ζ) = -∫ w, α(z + εw) · (∂̄(unitRadialBumpC)(w) / w)` via `integral_add_left_eq_self` (translation) + `Measure.integral_comp_smul` (scaling, with `finrank ℝ ℂ = 2` Jacobian) + the pointwise rescaling. Chip 3c-F-3d-3 — DCT on the substituted integral — is next).
+Last rewrite: 2026-05-25 (post Chips 3c-F-3d-3 + 3c-F-4: the **unconditional Cauchy-Pompeiu identity on ℂ** is closed —
 
-After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post 3c-F-2-final): ~1-3 sessions for Chip 3c-F-3+F-4, then Chips 4-7 (~13-22 sessions).
+```
+∀ α : ℂ → ℂ, ContDiff ℝ 1 α → HasCompactSupport α →
+  ∀ z : ℂ, partialZBar (pompeiuKernel α) z = α z.
+```
+
+`JacobianChallenge.PompeiuKernel.partialZBar_pompeiuKernel_eq_self` in [`Analysis/PompeiuKernelCauchyPompeiu.lean`](JacobianChallenge/Analysis/PompeiuKernelCauchyPompeiu.lean), 213 LOC. Axioms: `propext, Classical.choice, Quot.sound` only.
+
+Next: **Chip 4 — chart pull-back** (lift the Pompeiu kernel from ℂ to a chart-disk on X). Estimated 600-1,200 LOC, 3-5 sessions.
+
+After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post Chip 3c-F): Chips 4-7 (~13-22 sessions).
 
 ### Where we are right now
 
@@ -572,28 +581,52 @@ chosen — re-derive instead of transfer-from-pompeiuCutoff.
   - Sorry-free, axiom-free (`propext`, `Classical.choice`, `Quot.sound`
     only). Library entry added.
 
-* **Chip 3c-F-3d-3 — DCT on substituted integral** (~150-200 LOC):
-  ```
-  Tendsto (fun ε ↦ -∫ w, α(z+εw) · ∂̄(unitRadialBumpC)(w)/w dA(w))
-    (𝓝[>] 0) (𝓝 (π · α z)).
-  ```
-  Mathlib's DCT applied with α(z + εw) → α(z) pointwise (continuity)
-  and dominator `M · ‖∂̄(unitRadialBumpC)(w)/w‖` (M = sup |α|), with
-  integrability of the dominator from Chip 3c-F-2-final (`-π` was an
-  integrable integrand). Final RHS uses Chip 3c-F-2-final's universal
-  constant `-π`.
+* **Chip 3c-F-3d-3 — DONE** (this session,
+  [`Analysis/PompeiuKernelSubstitutedDCT.lean`](JacobianChallenge/Analysis/PompeiuKernelSubstitutedDCT.lean),
+  ~226 LOC):
+  - `tendsto_integral_alpha_substituted : Continuous α → HasCompactSupport α →
+    Tendsto (fun ε ↦ ∫ w, α(z + ε·w) · (∂̄(unitRadialBumpC)(w) / w))
+      (𝓝[>] 0) (𝓝 (α z · (-π : ℂ)))`.
+  - Supporting infrastructure: `unitRadialBumpC_continuous`,
+    `unitRadialBumpC_hasCompactSupport` (via
+    `tsupport_unitRadialBumpC_subset ⊆ closedBall 0 1` and
+    `IsCompact.of_isClosed_subset`), `partialZBar_unitRadialBumpC_continuous`,
+    `partialZBar_unitRadialBumpC_hasCompactSupport` (via Chip 3c-E helpers),
+    `integrable_partialZBar_unitRadialBumpC_div` (Chip 1c at `z := 0`).
+  - DCT via `tendsto_integral_filter_of_dominated_convergence` with
+    dominator `M · ‖∂̄(unitRadialBumpC)(w)/w‖` (`M` from
+    `Continuous.bounded_above_of_compact_support` on α). Pointwise:
+    `tendsto_alpha_at_substituted` (continuity of α at `z` ∘ continuous
+    `ε ↦ z + (ε:ℂ)·w`). Final value: `integral_const_mul` +
+    Chip 3c-F-2-final's universal `-π`.
+  - Sorry-free, axiom-free. Library entry added.
 
-* **Chip 3c-F-4 — final identity** (~50 LOC):
-  Combine `balance_plane_eq_zero_radial` (Chip 3c-F-3c) +
-  `tendsto_integral_partialZBar_alpha_mul_regInvSubRadial` (Chip
-  3c-F-3c) + Chip 3c-F-3d-3's second-summand limit:
-  `0 = -π · pompeiuKernel (∂̄α) z + π · α z`, hence
-  `pompeiuKernel (∂̄α) z = α z`. Compose with Chip 3b's
-  `partialZBar_pompeiuKernel_eq_pompeiuKernel_partialZBar` to get the
-  Cauchy-Pompeiu identity `partialZBar (pompeiuKernel α) z = α z`.
+* **Chip 3c-F-4 — DONE** (this session,
+  [`Analysis/PompeiuKernelCauchyPompeiu.lean`](JacobianChallenge/Analysis/PompeiuKernelCauchyPompeiu.lean),
+  ~213 LOC):
+  - `partialZBar_pompeiuKernel_eq_self : ContDiff ℝ 1 α → HasCompactSupport α →
+    ∀ z, partialZBar (pompeiuKernel α) z = α z` —
+    **the unconditional Cauchy-Pompeiu identity on ℂ**.
+  - Helpers: `tendsto_integral_partialZBar_alpha_mul_regInvSubRadial_unwrapped`
+    (3c-F-3c reformulated without the `Real`-wrapper via
+    `regularizedInvSubRadialReal_of_pos`),
+    `tendsto_integral_alpha_mul_partialZBar_regInvSubRadial` (combines
+    3c-F-3d-2c symmetric form + 3c-F-3d-3 + negation to give the
+    second-summand limit `α z · π`), `sum_summand_integrals_eq_zero`
+    (splits `balance_plane_eq_zero_radial` via `integral_add` with
+    `integrable_partialZBar_mul_regInvSubRadial` and
+    `integrable_alpha_mul_partialZBar_regInvSubRadial`; gets the L bound
+    from `IsBounded.subset_ball_lt`).
+  - Headline algebraic step (`integral_partialZBar_alpha_mul_inv_sub_eq_neg_pi_mul`):
+    `∫ ζ, ∂̄α(ζ) · (ζ-z)⁻¹ = -π · α(z)` via the constant-zero
+    Tendsto of `A(ε) + B(ε)` and uniqueness of limits in ℂ (T2).
+  - Final identity via Chip 3b's bridge
+    (`partialZBar_pompeiuKernel_eq_pompeiuKernel_partialZBar`) + unfolding
+    `pompeiuKernel` + `field_simp` with `Real.pi_ne_zero`.
+  - Sorry-free, axiom-free. Library entry added.
 
-**Estimate for completing Chip 3c-F (post-3d-2c)**: 1 more session,
-~200-350 more LOC (3d-3 + 4).
+**Chip 3c-F COMPLETE.** Net Pompeiu arc LOC (Chips 1a-4): ~6,500 LOC,
+~25 sessions. Next: Chip 4 (chart pull-back).
 
 **Chips 4-7** (after Chip 3c-F) — refined 2026-05-25 via direct repo
 scouting (see "Chip 5 scouting report" below):
