@@ -137,22 +137,43 @@ Route: **Route III (Behnke-Stein iteration)** — user-selected
   `setIntegral_mono_set` via the inclusion
   `closedBall (-z) R ⊆ closedBall 0 (R + ‖z‖)` + Sub-chip 5.5c-III-1a.
 
-**CRITICAL RISK still unresolved** (from `ROUTE_5_5C_III_PLAN.md` risk
-register): the classical Behnke-Stein iteration is for non-compact
-Stein RS, not compact. For compact ℂℙ¹ the actual classical path may
-be Cousin-I / Laurent decomposition on the two-chart annulus, not
-abstract iteration. Phase A (the sup-norm bound just landed) is
-useful in either path; **but Phase C (contraction-mapping iteration
-on X) commits to the iteration architecture. Resolve the risk
-before starting Phase C.**
+**Critical risk RESOLVED 2026-05-26** via Forster Ch.14 / Berkeley
+241/96 + 213b audit. Audit doc:
+[`ROUTE_5_5C_III_FORSTER_PINNED.md`](ROUTE_5_5C_III_FORSTER_PINNED.md).
 
-Next options (pick one):
+**Finding**: the original Behnke-Stein-iteration-on-X framing was
+wrong. The classical compact-ℂℙ¹ proof has TWO distinct ingredients:
 
-1. **5.5c-III-2 — Pompeiu Lipschitz/Hölder bound** (Phase A continuation,
-   ~250-400 LOC). Still robust to which Phase C wins.
-2. **Resolve the critical risk first**: open Forster §14 / a
-   reference treatment of `H¹(ℂℙ¹, O) = 0` and confirm the iteration
-   vs Cousin-I/Laurent choice before committing Phase C LOC.
+1. **Behnke-Stein iteration on the disk Δ** (Forster Thm 14 /
+   McMullen Berkeley Thm 7.2): cutoff partition `g = Σ g_n` →
+   per-piece Pompeiu solutions `f_n` → polynomial corrections `h_n`
+   from Taylor truncation + `2^{-n}` Schwarz error → geometric-series
+   `f := Σ (f_n - h_n)` converges in `C^∞`. **On the disk, not on
+   `X`.**
+
+2. **Cousin I / Laurent decomposition on the chart overlap `ℂ*`**
+   (McMullen Cor 7.6 / Anagol §52): split `g_{12} ∈ O(ℂ*)` Laurent
+   series into positive part `f_2 ∈ O(U_1)` and negative part
+   `-f_1 ∈ O(U_2)`. Cocycle is coboundary, `H¹(ℂℙ¹, O) = 0`.
+
+Iteration alone (without Cousin I) does **not** discharge the
+compact case. The original Route III plan's Phases B-E (contraction
+mapping on `X`) was based on a misreading; the corrected chip arc
+is in `ROUTE_5_5C_III_FORSTER_PINNED.md`.
+
+Phase A (the 356 LOC already landed) **carries over unchanged** —
+it is the analytic foundation for both ingredients.
+
+Three forks now:
+
+1. **5.5c-III-2: Phase B (Behnke-Stein on Δ)** — ~600-900 LOC,
+   foundational, useful in either eventual closure path. Safe
+   continuation.
+2. **Skip-Phase-B Pompeiu-decay route** — for `α` smooth on `ℂℙ¹`,
+   restrict to finite chart and use direct decay at `∞`. Risky:
+   the decay may not hold for arbitrary smooth `α`.
+3. **Specialize discharge to `RiemannSphere`** — narrow the named
+   hypothesis scope. Audit downstream consumers first.
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post Chip 4): Chips 5-7 (~10-18 sessions).
 
