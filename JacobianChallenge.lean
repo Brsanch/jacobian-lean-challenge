@@ -35,6 +35,7 @@ import JacobianChallenge.Analysis.PompeiuKernelRadialSubstitution
 import JacobianChallenge.Analysis.PompeiuKernelSubstitutedDCT
 import JacobianChallenge.Analysis.PompeiuKernelCauchyPompeiu
 import JacobianChallenge.Analysis.PompeiuKernelSmoothness
+import JacobianChallenge.Analysis.PompeiuKernelSupNormBound
 import JacobianChallenge.Analysis.PompeiuKernelTranslation
 import JacobianChallenge.Basic
 import JacobianChallenge.Divisor
