@@ -6,9 +6,9 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ---
 
-## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24) — **Chip 3c-F + Chip 4 COMPLETE; Chip 5 structural backbone (5.1 + 5.2 + 5.3{a,b,c} + 5.4{a,b,c-prep,c-final}) + assembly layer (7 chips) + Sub-chip 5.5a (chart-anchored ∂̄ op — Path A fork resolution) LANDED**
+## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24) — **Chip 3c-F + Chip 4 COMPLETE; Chip 5 structural backbone (5.1 + 5.2 + 5.3{a,b,c} + 5.4{a,b,c-prep,c-final}) + assembly layer (7 chips) + Sub-chip 5.5a + 5.5b + 5.5c-I-{a, b (def+cocycle), b-smoothness, b-final} LANDED — Route I (0,1)-form encoding operational**
 
-Last rewrite: 2026-05-25 (Sub-chip 5.5a landed — chart-anchored `partialZBarManifoldAtChart` operator + algebra + finset-sum distributivity + transfer lemma re-exporting the Chip 4 bridge. This resolves the open architectural question gating Sub-chip 5.5 in favor of **Path A**: per-`i` recovery identities will be re-stated in the chart-anchored frame, where they are clean of the chart-transition factor; chart-y `partialZBarManifold` reconciliation is consumed once via the transfer lemma at the end). Headlines —
+Last rewrite: 2026-05-26 (Sub-chip 5.5c-I-b-final landed — the `OmegaForm.ofChartLocalFunction` constructor + `localFormCoeff_transition_general` upgrading the anchor-relative cocycle to a cocycle for arbitrary chart pairs via chain rule + case-split. The 5.5c-I-b sub-chip family is now end-to-end COMPLETE: definition (5.5c-I-b def+cocycle, 312 LOC) + smoothness (5.5c-I-b-smoothness, 356 LOC) + constructor (5.5c-I-b-final, 240 LOC) = 908 LOC, all axiom-free. Route I ((0,1)-form record encoding from `ROUTE_5_5C_AUDIT.md`) is now operational for the partition-sum step). Headlines —
 
 * **`partialZBar_pompeiuKernel_eq_self`** ([`Analysis/PompeiuKernelCauchyPompeiu.lean`](JacobianChallenge/Analysis/PompeiuKernelCauchyPompeiu.lean), 213 LOC, Chip 3c-F-4): the unconditional Cauchy-Pompeiu identity on ℂ.
 * **`partialZBar_pompeiuKernelChart_eq_α_on_chart_source`** ([`Manifold/ChartPompeiuKernel.lean`](JacobianChallenge/Manifold/ChartPompeiuKernel.lean), 462 LOC, Chip 4): chart-x view local identity — for `y ∈ (chartAt ℂ x).source`, `partialZBar (pompeiuKernelChart x α ∘ chart_x.symm) (chart_x y) = α y`.
