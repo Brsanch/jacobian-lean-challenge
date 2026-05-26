@@ -89,7 +89,16 @@ Concrete options for Sub-chip 5.5c (architectural choice needed):
   * **Set B** = `chart_y.target ∩ chart_y.symm⁻¹((tsupport β)ᶜ)`: `localFormCoeff x β y` vanishes here via `localFormCoeff_eq_zero_of_not_mem_tsupport`; `ContDiffOn.congr` against `contDiffOn_const`.
   Glue via `ContDiffOn.union_of_isOpen` (both sets manifestly open as intersections of open sets), with the cover identity `A ∪ B = chart_y.target` consuming the precondition `tsupport β ⊆ chart_x.source`: for any `p ∈ chart_y.source` with `p ∉ chart_x.source`, we have `p ∉ tsupport β` (contrapositive of `h_supp`), so `p ∈ (tsupport β)ᶜ`. Sorry-free, axiom-free.
 
-Next: **Sub-chip 5.5c-I-b-final — `OmegaForm.ofChartLocalFunction` constructor**. Assemble the OmegaForm from `localFormCoeff` + `localFormCoeff_contDiffOn` + `localFormCoeff_transition`. Estimated 50–100 LOC. Then 5.5c-I-c (partition sum at the OmegaForm level) / 5.5c-I-d (Pompeiu-as-form-inverse) / 5.5c-I-e (final assembly).
+### Sub-chip 5.5c-I-b-final — `OmegaForm.ofChartLocalFunction` constructor + general cocycle (2026-05-26)
+
+* **`localFormCoeff_transition_general`** + **`OmegaForm.ofChartLocalFunction`** ([`Manifold/OmegaFormOfChartLocalConstructor.lean`](JacobianChallenge/Manifold/OmegaFormOfChartLocalConstructor.lean), 240 LOC):
+  * `localFormCoeff_transition_general` upgrades the anchor-relative cocycle from 5.5c-I-b to a cocycle for **arbitrary chart pair** `(x1, y1)`. Case-split on `p ∈ chart_anchor.source`: if yes, apply the anchor-relative cocycle twice (to y1 and x1) and use the chain-rule identity `τ_{x → y1} = τ_{x1 → y1} · τ_{x → x1}` (via `deriv_comp` on `chart_y1 ∘ chart_x.symm = (chart_y1 ∘ chart_x1.symm) ∘ (chart_x1 ∘ chart_x.symm)` locally + `EventuallyEq.deriv_eq`) to cancel the anchor-shared factor. If no, `p ∉ tsupport β` (via `h_supp`), so both sides vanish via `localFormCoeff_eq_zero_of_not_mem_tsupport`. Final algebra: `mul_right_cancel₀` of conj(τ_{x → x1}) (nonzero by `deriv_chart_transition_ne_zero`).
+  * **`OmegaForm.ofChartLocalFunction x β h_β_smooth h_β_supp`** — the headline constructor. Anchor `x`, source `β`, smoothness + `tsupport β ⊆ chart_x.source`. Yields an `OmegaForm X` with `coeff := localFormCoeff x β`, smoothness from `localFormCoeff_contDiffOn`, and the general cocycle from `localFormCoeff_transition_general`.
+  * **Re-exports**: `ofChartLocalFunction_coeff` (`rfl`-unfolding), `ofChartLocalFunction_coeff_anchor_eqOn_target` (agreement with `chartPullbackZero` on chart_x.target), `ofChartLocalFunction_coeff_eq_zero_of_not_mem_tsupport`.
+
+  Sub-chip 5.5c-I-b is now COMPLETE end-to-end: definition + cocycle + smoothness + constructor. Total LOC across the 5.5c-I-b sub-chip family: 312 (def+cocycle) + 356 (smoothness) + 240 (constructor) = 908 LOC, all axiom-free.
+
+Next: **Sub-chip 5.5c-I-c — partition sum at the OmegaForm level**. Build `ω_i := OmegaForm.ofChartLocalFunction i.val (P.rhoC i * α)` for each `i ∈ cover.basePoints`, sum to `ω := Σ_i ω_i : OmegaForm X`, and prove that this sum recovers α-as-form (in the sense of having canonical-chart-coefficient α(y) at each y). Estimated 200-350 LOC. Then 5.5c-I-d (Pompeiu-as-form-inverse) / 5.5c-I-e (final assembly).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post Chip 4): Chips 5-7 (~10-18 sessions).
 
