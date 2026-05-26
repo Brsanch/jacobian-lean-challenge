@@ -71,7 +71,18 @@ Concrete options for Sub-chip 5.5c (architectural choice needed):
 
   This shifts 5.5c-I-b's signature from "lift arbitrary smooth α" to "lift `ρ_i α` (supported in `chart_xi.source` by Sub-chip 5.4a) via chart-`xi` anchor" — directly compatible with how 5.4b's `localPompeiuSolutionGlobal P i α χ_i` is built. The partition sum `Σ_i (OmegaForm.ofChartLocalFunction i.val (ρ_i α))` is then a well-defined form on X, and 5.5c-I-c will show it equals `α-as-form` (under whatever interpretation lifts α coherently).
 
-Next: **Sub-chip 5.5c-I-b — `OmegaForm.ofChartLocalFunction`** (~150–250 LOC): lift a chart-local function `β : X → ℂ` with `tsupport β ⊆ chart_xi.source` to an `OmegaForm X` by specifying its chart-`xi` view and propagating via the cocycle. Smoothness on chart_xi.target via the chart-pullback machinery from Sub-chip 5.3 (`chartPullbackZero`); smoothness on other charts via cocycle-image of zero-off-chart_xi.source. Then 5.5c-I-c: partition sum identity, 5.5c-I-d: Pompeiu-kernel-as-∂̄-inverse at the form level, 5.5c-I-e: assembly. The (0,1)-form encoding may itself partially resolve the τ-factor issue noted in `dec6a18`: the partition sum is well-defined at the form level (Σ_i ρ_i ω = ω is a partition-of-unity identity on forms with τ factors absorbed by the cocycle), but extracting the canonical-chart-coefficient identity `partialZBarManifold u y = α y` from the form-level equation may still face the lift question above.
+### Sub-chip 5.5c-I-b — chart-local coeff family + cocycle (2026-05-26)
+
+* **`localFormCoeff x β y z`** ([`Manifold/OmegaFormOfChartLocal.lean`](JacobianChallenge/Manifold/OmegaFormOfChartLocal.lean), 312 LOC): the chart-`y` view of "β-as-form-anchored-at-`x`", defined via the cocycle formula `β(chart_y.symm z) / conj(deriv(chart_y ∘ chart_x.symm)(chart_x(chart_y.symm z)))` when `chart_y.symm z ∈ chart_x.source`, and `0` otherwise. Structural lemmas:
+  * `localFormCoeff_of_mem` / `localFormCoeff_of_not_mem` — branch unfoldings.
+  * `localFormCoeff_eq_zero_of_not_mem_tsupport` — vanishing off `tsupport β` for `p ∈ chart_y.source`.
+  * `localFormCoeff_at_anchor_eqOn_target` — at `y = x` the coeff agrees with `chartPullbackZero x β` on `chart_x.target` (degenerate cocycle: `deriv (chart_x ∘ chart_x.symm) z = 1`, `conj 1 = 1`).
+  * `deriv_chart_transition_ne_zero` — chart-transition derivatives don't vanish on chart overlaps (via the analyticity of both directions + chain-rule reduction to `deriv id = 1`).
+  * **`localFormCoeff_transition`** — the headline `(0,1)`-form chart-change cocycle: for `p ∈ chart_x.source ∩ chart_y.source`, `localFormCoeff x β y (chart_y p) · conj(deriv(chart_y ∘ chart_x.symm)(chart_x p)) = localFormCoeff x β x (chart_x p)`.
+
+  This file ships **definition + structural lemmas + cocycle only**. The smoothness proof `ContDiffOn ℝ ∞ (localFormCoeff x β y) ((chartAt ℂ y).target)` — needed to feed `OmegaForm`'s `coeff_contDiffOn` field — is a separate follow-up sub-chip (5.5c-I-b-smoothness, ~250–400 LOC: glue across the open cover `{chart_y.target ∩ chart_y.symm⁻¹(chart_x.source), chart_y.target \ chart_y '' (tsupport β ∩ chart_y.source)}`, smooth via Sub-chip 5.3b on the first piece + constantly zero on the second). Sorry-free, axiom-free.
+
+Next: **Sub-chip 5.5c-I-b-smoothness** (~250–400 LOC, 1–2 sessions): `ContDiffOn ℝ ∞ (localFormCoeff x β y) (chart_y.target)` via two-open-set glue. Then **5.5c-I-b-final** assembles the `OmegaForm.ofChartLocalFunction` constructor from the smoothness + cocycle facts. Then 5.5c-I-c (partition sum) / 5.5c-I-d (Pompeiu-as-form-inverse) / 5.5c-I-e (final assembly).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post Chip 4): Chips 5-7 (~10-18 sessions).
 
