@@ -301,6 +301,7 @@ import JacobianChallenge.Manifold.PartitionSumMulAlpha
 import JacobianChallenge.Manifold.PartialZBarManifoldAtChart
 import JacobianChallenge.Manifold.LocalPompeiuSolutionAtChartIdentity
 import JacobianChallenge.Manifold.OmegaForm
+import JacobianChallenge.Manifold.OmegaFormOfChartLocal
 import JacobianChallenge.Manifold.DiskChartCoverSeminorm
 import JacobianChallenge.Manifold.DiskChartCoverSeminormAggregate
 import JacobianChallenge.Manifold.DiskChartCoverSeminormSeparating
