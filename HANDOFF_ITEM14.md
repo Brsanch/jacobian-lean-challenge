@@ -6,7 +6,7 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ---
 
-## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24) — **Chip 3c-F + Chip 4 COMPLETE; Chip 5 structural backbone (5.1 + 5.2 + 5.3{a,b,c} + 5.4{a,b,c-prep,c-final}) + assembly layer (7 chips) + Sub-chip 5.5a + 5.5b + 5.5c-I-{a, b (def+cocycle), b-smoothness, b-final} LANDED — Route I (0,1)-form encoding operational**
+## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24) — **Chip 3c-F + Chip 4 COMPLETE; Chip 5 structural backbone (5.1 + 5.2 + 5.3{a,b,c} + 5.4{a,b,c-prep,c-final}) + assembly layer (7 chips) + Sub-chip 5.5a + 5.5b LANDED. Route I (OmegaForm) ruled out 2026-05-26 by Forster audit; pivoting to Route III (Behnke-Stein iteration) — see `ROUTE_5_5C_FORSTER_AUDIT.md` + `ROUTE_5_5C_III_PLAN.md`. 5.5c-I-{a, b (def+cocycle), b-smoothness, b-final} = ~1140 LOC of (0,1)-form record + ofChartLocalFunction constructor remain in-tree as orphaned but correct infrastructure.**
 
 Last rewrite: 2026-05-26 (Sub-chip 5.5c-I-b-final landed — the `OmegaForm.ofChartLocalFunction` constructor + `localFormCoeff_transition_general` upgrading the anchor-relative cocycle to a cocycle for arbitrary chart pairs via chain rule + case-split. The 5.5c-I-b sub-chip family is now end-to-end COMPLETE: definition (5.5c-I-b def+cocycle, 312 LOC) + smoothness (5.5c-I-b-smoothness, 356 LOC) + constructor (5.5c-I-b-final, 240 LOC) = 908 LOC, all axiom-free. Route I ((0,1)-form record encoding from `ROUTE_5_5C_AUDIT.md`) is now operational for the partition-sum step). Headlines —
 
@@ -98,7 +98,29 @@ Concrete options for Sub-chip 5.5c (architectural choice needed):
 
   Sub-chip 5.5c-I-b is now COMPLETE end-to-end: definition + cocycle + smoothness + constructor. Total LOC across the 5.5c-I-b sub-chip family: 312 (def+cocycle) + 356 (smoothness) + 240 (constructor) = 908 LOC, all axiom-free.
 
-Next: **Sub-chip 5.5c-I-c — partition sum at the OmegaForm level**. Build `ω_i := OmegaForm.ofChartLocalFunction i.val (P.rhoC i * α)` for each `i ∈ cover.basePoints`, sum to `ω := Σ_i ω_i : OmegaForm X`, and prove that this sum recovers α-as-form (in the sense of having canonical-chart-coefficient α(y) at each y). Estimated 200-350 LOC. Then 5.5c-I-d (Pompeiu-as-form-inverse) / 5.5c-I-e (final assembly).
+**Route redirect (2026-05-26): Route I (OmegaForm partition sum) ruled out.**
+A Forster Ch.14 / Griffiths-Harris §0.4-0.5 audit before starting Sub-chip
+5.5c-I-c established that the OmegaForm partition-sum approach does **not**
+close `DBarSolvabilityAtGenusZero` on abstract `[ChartedSpace ℂ X]`: the
+chart-transition factors `conj(τ_{i.val→y}((chart_{i.val}) y))` do not
+collapse under partition-of-unity on functions, and there is a residual
+outer-ring cutoff-leakage error term. Forster's actual proof uses
+Behnke-Stein iteration (or, for ℂℙ¹, Laurent decomposition on the annulus
+overlap), not partition-of-unity. Audit doc:
+[`ROUTE_5_5C_FORSTER_AUDIT.md`](ROUTE_5_5C_FORSTER_AUDIT.md).
+
+The 5.5c-I-{a, b def+cocycle, b-smoothness, b-final} files (~1140 LOC) are
+correct (0,1)-form infrastructure but do not close the named hypothesis
+on their own. They remain in the tree as orphaned infrastructure
+potentially useful for a future bundle-based route; no further 5.5c-I-*
+work is planned.
+
+Next: **Route III (Behnke-Stein iteration)** — user-selected
+2026-05-26. Planning doc:
+[`ROUTE_5_5C_III_PLAN.md`](ROUTE_5_5C_III_PLAN.md). First chip:
+**Sub-chip 5.5c-III-1 — Pompeiu sup-norm bound on ℂ**, ~150-220 LOC,
+proves `|pompeiuKernel α z| ≤ (constant · R) · ‖α‖_∞` for α continuous
+with `tsupport α ⊆ closedBall 0 R`. Reuses Chip 1b's polar-coord bound.
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post Chip 4): Chips 5-7 (~10-18 sessions).
 
