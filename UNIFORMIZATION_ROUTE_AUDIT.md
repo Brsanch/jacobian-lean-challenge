@@ -1,5 +1,15 @@
 # Uniformization-named-hypothesis route audit
 
+> **⚠️ SUPERSEDED snapshot. Canonical current state for Item 14 lives
+> in [`HANDOFF_ITEM14.md`](HANDOFF_ITEM14.md) "ACTIVE ARC — CANONICAL
+> CURRENT STATE". This audit's "six parallel routes A-F" framing is
+> still correct as a Lean-level catalog of distinct named hypotheses,
+> but it overstates parallelism: per the canonical statement, all six
+> are textbook-equivalent to one classical theorem, and in-tree
+> transport machinery means closing any one closes them all. The
+> audit's "small equivalence-proving chip" recommendation is also
+> reframed by the canonical view as helpful but not closure-bearing.**
+
 **Date**: 2026-05-26.
 **Context**: After `DBAR_CONSUMER_AUDIT.md` showed abstract-`X`
 discharge of `DBarSolvabilityAtGenusZero X` is multi-month at this

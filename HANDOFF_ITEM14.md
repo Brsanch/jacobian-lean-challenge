@@ -1,43 +1,118 @@
 # Item 14 — handoff
 
-Last rewrite: 2026-05-25 (post Chip 2c-Final + étale-leg merge + Phase B Cauchy-Pompeiu audit + Pompeiu Chips 1a, 1b, 1c, 2a, 2b, 2c-prep, 2c-main, 2d, 3a, 3b, 3c-A, 3c-B, 3c-C₁, 3c-C₂, 3c-D, 3c-E, 3c-F-1, 3c-F-2-prep, 3c-F-2 polar transformation, 3c-F-2 bound lemma, 3c-F-2-final, 3c-F-3a, 3c-F-3b, 3c-F-3c, 3c-F-3d-1, **3c-F-3d-2-prep, 3c-F-3d-2a, 3c-F-3d-2b, 3c-F-3d-2c, 3c-F-3d-3, 3c-F-4, **4** landed — **Cauchy-Pompeiu identity on ℂ unconditional + chart-pullback lifted to manifold-side**).
+---
 
-Prior versions of this file accumulated layered banners across sessions. This rewrite consolidates the current state. `git log HANDOFF_ITEM14.md` preserves the history.
+## 🟢 ACTIVE ARC — CANONICAL CURRENT STATE (2026-05-26)
+
+**This section is the single source of truth for Item 14's frontier.**
+All other audit docs in this directory (DBAR_CONSUMER_AUDIT,
+REARCHITECTURE_AUDIT, UNIFORMIZATION_ROUTE_AUDIT, HSP_AUDIT,
+ROUTE_5_5C_*, the older sections below) are frozen analytical
+snapshots and may contradict this one. **Read this first.**
+
+Verified by compile 2026-05-26: `LEAN_NUM_THREADS=1 lake env lean
+JacobianChallenge/Topology/HTopFromSubsingleton.lean` exits 0.
+
+### Item 14 status on concrete X = RiemannSphere
+
+**Unconditionally closed.** `Topology/Item14ForRiemannSphere.lean:
+genus_eq_zero_iff_homeo_RiemannSphere`.
+
+### Item 14 status on abstract X
+
+**Open. Reduces to ONE classical theorem, with multiple equivalent
+textbook names — none of them in mathlib at this pin.** Pick any one
+of:
+
+* `ExistsMeroSimplePole_GenusZero X` (Forster Thm 16.9: compact
+  genus-0 Riemann surface admits a non-constant meromorphic function
+  with a single simple pole)
+* `ExistsSimplePoleGermAtSomePoint X` (= `hSP X`, the germ form of
+  the above)
+* `DBarSolvabilityAtGenusZero X` + `ChartAtConstantOnSource p` (the
+  Dolbeault form, `H¹(X, 𝒪) = 0` at genus 0)
+* `RR_DimGE2_GenusZero X` (the RR dimension inequality at genus 0)
+* `Nonempty (HolomorphicEquiv X RiemannSphere)` at `genus X = 0`
+  (uniformization)
+
+These are textbook-equivalent (Dolbeault ↔ Serre duality ↔ RR ↔
+uniformization). The repo's transport machinery converts a discharge
+of any one into a closure of the others, so they are NOT independent
+routes — they are five names for the same wall.
+
+### What IS unconditional in tree (no longer hypotheses)
+
+| Fact | File:line |
+|---|---|
+| `surjective_of_NonConstant_Analytic_Manifold_holds` | [`Manifold/SurjectiveOfNonConstantDischarge.lean:391`](JacobianChallenge/Manifold/SurjectiveOfNonConstantDischarge.lean#L391) |
+| `nearbyRegularWitnessHypothesis_holds_unconditional` | [`Manifold/NearbyRegularWitnessHolds.lean:32`](JacobianChallenge/Manifold/NearbyRegularWitnessHolds.lean#L32) |
+| `ramificationSumEqualsDegree_holds_unconditional` | [`Manifold/RamificationSumEqualsDegreeUnconditional.lean:471`](JacobianChallenge/Manifold/RamificationSumEqualsDegreeUnconditional.lean#L471) (composes nearbyRegularWitness + wd_reg) |
+| `bijectiveAnalyticIsBiholomorphism_holds` | [`Manifold/BijectiveAnalyticToBiholomorphismDischarge.lean`](JacobianChallenge/Manifold/BijectiveAnalyticToBiholomorphismDischarge.lean) |
+| `DegreeOneIsBiholomorphic_RS X` | composed unconditionally at [`Topology/Item14FinalComposition.lean:66`](JacobianChallenge/Topology/Item14FinalComposition.lean#L66) from the three above |
+| `existsSimplePoleGermAtSomePoint_of_holomorphicEquiv_RS` | [`Topology/ExistsSimplePoleGermFromHolomorphicEquivRS.lean:172`](JacobianChallenge/Topology/ExistsSimplePoleGermFromHolomorphicEquivRS.lean#L172) (transport along a biholomorphism) |
+| Reverse leg `S2ImpliesGenus0 X` | [`Topology/S2ImpliesGenus0FromEtalePrimitives.lean`](JacobianChallenge/Topology/S2ImpliesGenus0FromEtalePrimitives.lean) (étale-primitives arc) |
+| `riemannRochGenusZero_from_existence` (1-input reduction) | [`Topology/RiemannRochGenusZeroSingleInput.lean:54`](JacobianChallenge/Topology/RiemannRochGenusZeroSingleInput.lean#L54) |
+| One-input composition of Item 14 from hSP | [`Topology/Item14FromHSPOnly.lean:genus_eq_zero_iff_homeo_from_hSP`](JacobianChallenge/Topology/Item14FromHSPOnly.lean) |
+
+### Implications for chip work
+
+**There is no chip-sized step left between current state and Item 14
+abstract-X closure.** The remaining gap is one classical theorem
+(equivalently named in five ways above). At the project's measured
+chip velocity this is multi-month / multi-thousand-LOC work,
+consistent with what the repo's own files (e.g.
+`RiemannRochGenusZeroSingleInput.lean:28-30`) and external audits
+agree on.
+
+Honest next moves on Item 14 are:
+
+1. **Commit to a multi-month classical formalization arc.** Pick one
+   of {Forster §16.9 = `ExistsMeroSimplePole_GenusZero X`, Forster
+   Ch.27 + Dirichlet's principle = direct uniformization, RR + Serre
+   duality} and ship it as a multi-thousand-LOC sub-project. Each is
+   independently a mathlib-scale contribution.
+2. **Document the wall and move to other items.** Item 14 stays
+   conditional on a named classical hypothesis; closure for `X =
+   RiemannSphere` is already shipped; submission caveat is honest.
+3. **Build foundational pieces (no Item-14 closure claim).** E.g.
+   Phase B of `ROUTE_5_5C_III_FORSTER_PINNED.md` ships `H¹(Δ, O) = 0`
+   as standalone analytic infrastructure (~600–900 LOC), useful for
+   any of the three arcs above without committing to any.
+
+**What is NOT a productive chip:** further reduction of the named
+hypothesis to another named hypothesis (paraphrase, blocked by
+[[feedback_lean_paraphrase_antipattern]]), or further decomposition
+of the partition-Pompeiu candidate (the `outerRingLeakage` doesn't
+cancel via partition-of-unity per `DBAR_CONSUMER_AUDIT.md` §5; closing
+it is the same multi-month classical content).
+
+### Historical sections below
+
+The rest of this file is the per-session deliverable history and
+older planning notes, preserved for `git blame` continuity. **It is
+not authoritative current state.** Where it conflicts with the
+section above, the section above wins.
 
 ---
 
-## 🟢 ACTIVE ARC: Item 14 ↔ uniformization (the single remaining classical input)
+## 🔵 HISTORICAL — previous "ACTIVE ARC" framing (pre-canonical, 2026-05-26 AM)
 
-**Architectural state (2026-05-26, end of session)**: items 5, 11, 12,
-13, 14 collapse to ONE shared classical hypothesis,
-`UniformizationGenus0Hypothesis X` (≅ `genus X = 0 → Nonempty
-(HolomorphicEquiv X RiemannSphere)`). The repo's
-`feat(jacobian-arc)` commit family makes every HJ instance + RR
-chain auto-fire from this single input. On `X = RiemannSphere` the
-hypothesis is trivially discharged (`Homeomorph.refl`), so
-Item 14 is **unconditionally closed** for the concrete sphere
-(see `Topology/Item14ForRiemannSphere.lean:genus_eq_zero_iff_homeo_RiemannSphere`).
+The 2026-05-26 AM ACTIVE ARC framing presented three "independent
+routes" (Partition-Pompeiu, RR+Serre, Direct uniformization). The
+canonical section above replaces this with: they are not
+independent — they are five textbook-equivalent names for the same
+classical wall. Architecturally, the in-tree transport machinery
+makes a discharge of any one of them closure of all.
 
-**Open frontier**: `UniformizationGenus0Hypothesis X` for abstract
-`[ChartedSpace ℂ X]` with `genus X = 0`. Three independent routes
-into it, all in tree:
+Original three-route framing (kept for `git log` traceability):
 
-* **Partition-Pompeiu route** (this session's main work): builds
-  `globalSolutionCandidate P α χs` and proves
-  `partialZBarManifold u y = α y + outerRingLeakage P α χs y`
-  under global `ChartAtConstantOnSource`. Remaining content:
-  discharge `outerRingLeakage = 0` (the cutoff-derivative-times-
-  Pompeiu-kernel sum on the outer rings of the χ_i). See
-  `Manifold/OuterRingLeakage.lean` + `Manifold/OuterRingIndices.lean`.
-
-* **RR + Serre route**: linear-system + Möbius transitivity on RS
-  is unconditional; `RR_DimGE2_GenusZero_Germ` reduces to
-  uniformization-or-equivalent on abstract X
-  (`Topology/LinearSystemGermDeltaPFiniteDimRSUnconditional.lean`).
-
-* **Direct uniformization route**: build `HolomorphicEquiv X RS`
-  from genus = 0 directly (Forster Ch.16-17 + degree-1 biholomorphism
-  via Riemann existence; classical content).
+* Partition-Pompeiu route: `globalSolutionCandidate` candidate built;
+  `outerRingLeakage = 0` is the remaining frontier; doesn't cancel
+  via partition-of-unity per `DBAR_CONSUMER_AUDIT.md`.
+* RR + Serre route: `RR_DimGE2_GenusZero_Germ` reduces to
+  uniformization-or-equivalent on abstract X.
+* Direct uniformization route: build `HolomorphicEquiv X RS` from
+  genus = 0; Forster Ch.16-17 or Ch.27.
 
 ### This session's deliverables (2026-05-26, ~1660 LOC, 11 commits)
 

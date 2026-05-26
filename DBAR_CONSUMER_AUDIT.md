@@ -1,5 +1,16 @@
 # Downstream-consumer audit for `DBarSolvabilityAtGenusZero`
 
+> **⚠️ SUPERSEDED snapshot. Canonical current state for Item 14 lives
+> in [`HANDOFF_ITEM14.md`](HANDOFF_ITEM14.md) "ACTIVE ARC — CANONICAL
+> CURRENT STATE". This file remains for the analytical content but
+> its "honest options going forward" recommendations are framed as
+> if `DBarSolvabilityAtGenusZero X` were the load-bearing wall on its
+> own; the canonical statement clarifies it is ONE of five
+> textbook-equivalent names for the same classical wall. Discharging
+> the wall via any of those names closes Item 14 via in-tree
+> transport. The cost framing in this audit (multi-month / multi-
+> thousand-LOC for abstract X) remains accurate.**
+
 **Date**: 2026-05-26.
 **Context**: Before committing 600-900 LOC to Phase B (Behnke-Stein
 on the disk), check whether the named hypothesis can be discharged

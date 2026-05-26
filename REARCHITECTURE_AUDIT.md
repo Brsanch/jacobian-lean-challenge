@@ -1,5 +1,15 @@
 # Re-architecture audit — alternatives to `DBarSolvabilityAtGenusZero`
 
+> **⚠️ SUPERSEDED snapshot. Canonical current state for Item 14 lives
+> in [`HANDOFF_ITEM14.md`](HANDOFF_ITEM14.md) "ACTIVE ARC — CANONICAL
+> CURRENT STATE". This audit's conclusion ("no lighter classical
+> alternative exists, paths A-D are equivalent in cost") is correct
+> but is now stated more cleanly in canonical form: Item 14 reduces
+> to ONE classical theorem with five textbook-equivalent names, not
+> "four equivalent paths". The recommendation R1-R3 are still on the
+> table but should be evaluated against the canonical statement, not
+> this older multi-path framing.**
+
 **Date**: 2026-05-26.
 **Context**: After `DBAR_CONSUMER_AUDIT.md` showed that abstract-`X`
 discharge of `DBarSolvabilityAtGenusZero X` is multi-month / multi-

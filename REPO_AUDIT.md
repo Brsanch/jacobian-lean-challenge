@@ -45,7 +45,7 @@ OPEN.md's massive scoreboard.
 | 11 | `CompactSpace (Jacobian X)` | OPEN | Same as item 5. |
 | 12 | `IsManifold ... ω (Jacobian X)` | OPEN | Same as item 5. |
 | 13 | `LieAddGroup ... (Jacobian X)` | OPEN | Same as item 5. |
-| 14 | `genus_eq_zero_iff_homeo` | OPEN | hSP X only (post-2026-05-24 étale-leg merge; reverse-leg `S2ImpliesGenus0` now unconditional via `s2ImpliesGenus0_etalePrimitivesArc`; one-input composition in `Topology/Item14FromHSPOnly.lean`). Via Chip 2c-Final, hSP X further reduces to `DBarSolvabilityAtGenusZero X` + per-`p` `ChartAtConstantOnSource p`. See `HANDOFF_ITEM14.md`. |
+| 14 | `genus_eq_zero_iff_homeo` | OPEN | **Canonical:** one classical theorem with five textbook-equivalent names. See `HANDOFF_ITEM14.md` "ACTIVE ARC — CANONICAL CURRENT STATE". Equivalent open names: `ExistsMeroSimplePole_GenusZero X` (Forster Thm 16.9) / `hSP X` / `DBarSolvabilityAtGenusZero X` + `ChartAtConstantOnSource` / `RR_DimGE2_GenusZero X` / `Nonempty (HolomorphicEquiv X RS)` at genus = 0. In-tree transport collapses discharge of any one to closure of all. |
 | 15 | `ofCurve_self` | STRICT-CLOSED | Reduces to `[δP - δP] = 0`. |
 | 16 | `ofCurve_inj` | STRICT-CLOSED | Via `JacobianChallenge.ofCurve_inj_holds` unconditional discharge chain. |
 | 17 | `ofCurve_contMDiff` | OPEN | Reduces to item 5 + `JacobianAnalyticClosureBundle` smoothness field. |
