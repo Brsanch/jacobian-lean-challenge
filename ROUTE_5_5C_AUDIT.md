@@ -426,3 +426,119 @@ high structural risk on compact X and is not recommended.
 (the chart-anchored ∂̄ is the natural pre-bundle operator; the
 transfer lemma is the natural bridge from bundle data to chart
 representatives). No work is wasted.
+
+## Addendum (2026-05-26) — preliminary mathlib + repo bundle-encoding read
+
+Per the audit's recommendation, a brief read of
+`Mathlib/Geometry/Manifold/VectorBundle/*` + repo's
+`HolomorphicOneForm*` infrastructure was done before committing to
+the Route I LOC budget. Findings:
+
+### Mathlib pin offers
+
+* `Mathlib/Geometry/Manifold/VectorBundle/SmoothSection.lean`:
+  `ContMDiffSection I F n V` — smooth sections of a `FiberBundle`
+  with a `VectorBundle` instance. `AddCommGroup` + `Module 𝕜`
+  instances ship under `[VectorBundle 𝕜 F V]` alone (no
+  `ContMDiffVectorBundle` typeclass needed at this pin).
+* `Mathlib/Geometry/Manifold/VectorBundle/Tangent.lean` +
+  `Cotangent.lean` (referenced by the repo's `HolomorphicOneForm.lean`):
+  `FiberBundle` + `VectorBundle` instances on tangent / cotangent
+  bundles under `[IsManifold I 1 M]`, automatic forward instance
+  `[IsManifold I ω M] → [IsManifold I a M]` discharges the
+  prerequisite.
+* No anti-cotangent (`(0,1)`-form) bundle; no Dolbeault complex.
+
+### Repo offers
+
+The repo has a substantial `HolomorphicOneForm*` family (~25 files):
+
+* `HolomorphicOneForm X := ContMDiffSection 𝓘(ℂ) (ℂ →L[ℂ] ℂ) ω
+  (CotangentSpace 𝓘(ℂ))` — `C^ω` (= holomorphic) sections of the
+  cotangent bundle. The (1,0)-form analogue we'd mirror.
+* `HolomorphicOneFormChartCoeff.lean` + `OnChartCoeff.lean`: local
+  coefficient extraction via chart-y frame, with the cotangent
+  cocycle/transition handled via
+  `ContMDiffWithinAt.clm_apply` + chart-transition smoothness +
+  `congr_of_eventuallyEq`. The chart-y coefficient at chart image of
+  `y` is the form evaluated at the chart-y tangent basis (`1 : ℂ`).
+* `HolomorphicOneFormPullback*.lean` (~10 files): pullback under
+  holomorphic maps. Less relevant to our chip but documents the
+  mathlib `ContMDiffSection` integration patterns the repo uses.
+
+### Encoding plan for (0,1)-forms
+
+A `(0,1)`-form on a complex 1-manifold is a smooth section of the
+**anti-cotangent** bundle: fiber at `y` is `ℂ →L[ℂ̄] ℂ` (ℂ-antilinear
+maps from tangent fiber to ℂ), equivalently `ℂ →L[ℝ] ℂ` constrained
+to anti-linearity. Building this as a mathlib `VectorBundle` is the
+substantive infrastructure step.
+
+**Concrete encoding choice (recommended):** mirror the repo's
+`HolomorphicOneForm` setup but:
+
+1. Regularity `ω` → `∞` (`C^∞`-smooth, not holomorphic). A
+   (0,1)-form is generally only smooth.
+2. The fiber-type `ℂ →L[ℂ] ℂ` of `CotangentSpace 𝓘(ℂ)` represents
+   the (1,0) part. For the (0,1) part, we need either:
+   * **Option (a) — explicit anti-cotangent bundle.** Build a sibling
+     bundle to `Cotangent` with the same total space but the
+     transition cocycle conjugated (replace `deriv (chart_y ∘
+     chart_x.symm)` with `conj(deriv ...)`). ~300-400 LOC of bundle
+     infrastructure paralleling `Cotangent.lean`. Composes with all
+     existing `ContMDiffSection`-based machinery (sum, smul, partition
+     of unity over sections).
+   * **Option (b) — implicit chart-coefficient family without a
+     bundle.** Define `OmegaForm X` as a record carrying a
+     chart-coefficient function `coeff : X → (ℂ → ℂ)` (the chart-x
+     pullback) + smoothness + the explicit transition rule
+     `coeff y(chart_y ∘ chart_x.symm)(ζ) = coeff x(ζ) / conj(deriv
+     (chart_y ∘ chart_x.symm)(ζ))`. ~150-250 LOC, doesn't compose
+     with mathlib's `ContMDiffSection` (so we re-prove
+     algebra/partition-of-unity manually) but avoids bundle setup
+     friction.
+
+Option (b) is the faster route to closure for **this chip alone**;
+option (a) is the upstream-able / mathlib-compatible route that
+would also serve future complex-geometry work in the repo.
+
+**Recommendation:** start with **Option (b)** for Sub-chip 5.5c-I-a
+(define `OmegaForm X`, equip with `Add` / `SMul` / partition-of-
+unity / chart-coefficient evaluation), with a clear migration path
+to Option (a) if the repo's complex-geometry trajectory warrants the
+bundle build later. ~150-250 LOC.
+
+### Revised Route I cost estimate
+
+| Sub-chip | What | LOC | Sessions |
+|---|---|---|---|
+| 5.5c-I-a | `OmegaForm X` record + algebra + smoothness | ~150-250 | 1 |
+| 5.5c-I-b | Lift-from-function `α : X → ℂ` → `OmegaForm X` (interpreting α as chart-y coefficient) + smoothness of the lift | ~100-200 | 1 |
+| 5.5c-I-c | Partition-of-unity on `OmegaForm X` (`Σ_j ρ_j · ω = ω`) via the transition rule | ~150-250 | 1 |
+| 5.5c-I-d | Pompeiu solution at the `OmegaForm`-level (use 5.5a + 5.5b factor-free identity, plus `OmegaForm` lift to mediate) | ~200-300 | 1-2 |
+| 5.5c-I-e | Assembly: `∂̄_man u y = α y` from `OmegaForm`-level equation `∂̄u = α-as-form` | ~100-200 | 1 |
+
+**Total Route I revised:** ~700-1200 LOC, **5-6 sessions**.
+
+This is lower than the original audit's ~1000-1500 LOC / 6-10
+sessions estimate because:
+
+* The repo's `HolomorphicOneForm*` machinery is a strong template
+  for the (0,1) record encoding.
+* Option (b) (no full bundle build) skips ~300-400 LOC of bundle
+  infrastructure.
+* 5.5a + 5.5b's chart-anchored ∂̄ + transfer lemma are already in
+  the right form to feed 5.5c-I-d (one anchor per evaluation point,
+  τ factor consumed by the `OmegaForm` transition rule).
+
+### Decision-ready
+
+The preliminary read supports **proceeding with Route I, Option (b)**
+for Sub-chip 5.5c-I-a in the next session. The mathlib + repo
+audit confirms there is no shortcut, but the encoding cost is
+bounded and the existing (1,0)-form / 5.5a / 5.5b infrastructure
+substantially reduces the budget below the initial audit's
+estimate.
+
+This audit document can be retired (or pruned to a short summary
++ link to the commit landing 5.5c-I-a) once the first chip lands.
