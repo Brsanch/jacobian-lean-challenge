@@ -59,7 +59,7 @@ Concrete options for Sub-chip 5.5c (architectural choice needed):
 
 5.5a + 5.5b together = **clean primitives** in the anchored frame, useful in any of these three paths but not by themselves a partition-sum solution.
 
-Next: **architectural decision for 5.5c** (do not start chipping until this is resolved). Reading Forster §14, doing a mathlib audit for analytic-sheaf / (0,1)-form / uniformization assets, and possibly consulting external references before picking 5.5c-I/II/III. Estimated remaining for Chip 5 after the decision: ~800–1500 LOC, 4–7 sessions (the original 5.5 + 5.6 budget plus whichever framework cost the chosen path carries).
+Next: **architectural decision for 5.5c — see [`ROUTE_5_5C_AUDIT.md`](ROUTE_5_5C_AUDIT.md)** (2026-05-26). The audit's working conclusion (pending one more mathlib/repo bundle-encoding pre-read) is that **Route I (0,1)-form theory build-out) is the path**. Route II is rejected on the same uniformization grounds that ruled out the RR-direct route (`RR_AUDIT.md`). Route III (Behnke-Stein iteration adapted to compact X) is at high structural risk — Forster Ch. 14's argument is for non-compact RS, and the partition-of-unity error on compact X does not have a smaller-support iteration without significant adaptation. The audit recommends a 1-session preliminary read of `Mathlib/Geometry/Manifold/VectorBundle/*` and the repo's existing `Manifold/HolomorphicOneFormChartCoeff*.lean` infrastructure (which encodes (1,0)-forms chart-locally — the (0,1)-form analogue may be a straightforward conjugate construction) before committing to the Route I LOC budget. Estimated remaining for Chip 5 after picking Route I: ~1300–2000 LOC, 6–10 sessions (the (0,1)-form bundle build + 5.5c-e + 5.6 in the new framework). 5.5a + 5.5b remain useful primitives in Route I (the chart-anchored ∂̄ is the natural pre-bundle operator; the transfer lemma bridges bundle data to chart representatives).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post Chip 4): Chips 5-7 (~10-18 sessions).
 
@@ -1003,6 +1003,7 @@ The current branch state (`feat/item14-forward-dbar-mul`, tip `bcf6951`) is a st
 - [`OPEN.md`](OPEN.md) — per-item Buzzard-spec status (item 14 row updated 2026-05-24).
 - [`HSP_AUDIT.md`](HSP_AUDIT.md) — hSP-family chain-trace (audit 2026-05-23, post-Chip-2c-Final + post-merge banner added 2026-05-24).
 - [`RR_AUDIT.md`](RR_AUDIT.md) — RR-direct route audit (2026-05-24).
+- [`ROUTE_5_5C_AUDIT.md`](ROUTE_5_5C_AUDIT.md) — Sub-chip 5.5c route audit (2026-05-26): mathlib + in-repo + Forster Ch. 14 review for Routes I/II/III, working conclusion Route I.
 - [`C3_AUDIT.md`](C3_AUDIT.md) — Jacobian-side sorries (items 5/11/12/13/17/18/21).
 - [`RESIDUE_AUDIT.md`](RESIDUE_AUDIT.md) — residue-theorem sub-tree.
 - [`REPO_AUDIT.md`](REPO_AUDIT.md) — repo-wide audit per sorry.
