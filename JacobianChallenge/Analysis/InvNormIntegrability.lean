@@ -119,7 +119,7 @@ private lemma volume_polar_rect_eq (R : ℝ) :
 
 /-! ## Main lintegral bound -/
 
-private lemma lintegral_inv_enorm_closedBall_le (R : ℝ) :
+lemma lintegral_inv_enorm_closedBall_le (R : ℝ) :
     ∫⁻ ζ in Metric.closedBall (0 : ℂ) R, (‖ζ‖ₑ)⁻¹ ∂(volume : Measure ℂ) ≤
       ENNReal.ofReal (max R 0) * ENNReal.ofReal (2 * Real.pi) := by
   have h_meas : MeasurableSet (Metric.closedBall (0 : ℂ) R) :=
