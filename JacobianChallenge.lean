@@ -306,6 +306,7 @@ import JacobianChallenge.Manifold.OmegaForm
 import JacobianChallenge.Manifold.OmegaFormOfChartLocal
 import JacobianChallenge.Manifold.OmegaFormOfChartLocalSmoothness
 import JacobianChallenge.Manifold.OmegaFormOfChartLocalConstructor
+import JacobianChallenge.Manifold.OmegaPartitionSum
 import JacobianChallenge.Manifold.DiskChartCoverSeminorm
 import JacobianChallenge.Manifold.DiskChartCoverSeminormAggregate
 import JacobianChallenge.Manifold.DiskChartCoverSeminormSeparating
