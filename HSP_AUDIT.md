@@ -1,5 +1,16 @@
 # HSP / RR-dim sub-tree audit (item 14)
 
+> **⚠️ SUPERSEDED snapshot. Canonical current state for Item 14 lives
+> in [`HANDOFF_ITEM14.md`](HANDOFF_ITEM14.md) "ACTIVE ARC — CANONICAL
+> CURRENT STATE". This audit's §4.5 recommendation ("write
+> `ExistsSimplePoleGermFromGenusZeroDBarSolvability.lean`") has been
+> DONE — see `Manifold/ExistsSimplePoleGermFromGenusZeroDBarSolvability.lean`.
+> Item 14's frontier has compressed further since this audit: per
+> canonical, the entire chain reduces to one classical theorem with
+> five textbook-equivalent names. The Section 4 synthesis content
+> remains accurate as background.**
+
+
 > **🔄 UPDATE 2026-05-24 (post Chip 2c-Final + étale-leg merge).**
 >
 > Since the original audit, two changes:

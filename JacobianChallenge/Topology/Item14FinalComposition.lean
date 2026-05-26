@@ -17,22 +17,50 @@ This file ships the **final composition** of all named conditional
 hypotheses landed across zz309–zz330 into a single theorem stating
 how item 14 closes from explicit classical inputs.
 
-## The four named classical inputs
+## Current state (2026-05-26) — only inputs 4 + 5 remain open
 
-  1. `ramificationSumEqualsDegree_statement X RS` — sum of ram indices
-     over a fibre equals the degree (existing, conditional on
-     `NearbyRegularWitnessHypothesis`).
+Inputs 1, 2, 3 below are **unconditionally discharged in tree**.
+The theorem `degreeOneIsBiholomorphic_RS_of_conditionals` below
+still takes them as hypotheses for compositional clarity, but they
+are now consumed at the call sites via the named `_holds*` /
+`_holds_unconditional` theorems. See
+`Topology/HTopFromSubsingleton.lean:101-107` for the unconditional
+call-site composition, and `HANDOFF_ITEM14.md` "ACTIVE ARC —
+CANONICAL CURRENT STATE" for the single-theorem frontier.
+
+The genuinely-open inputs are 4 (`RiemannRochGenusZero X`, =
+Forster Thm 16.9 by 1-input reduction in
+`Topology/RiemannRochGenusZeroSingleInput.lean`) and 5 (the
+topological-sphere half of uniformization).
+
+## The five named inputs (with current status)
+
+  1. `ramificationSumEqualsDegree_statement X RS` — sum of ram
+     indices over a fibre equals the degree.
+     **UNCONDITIONAL** via
+     `Manifold/RamificationSumEqualsDegreeUnconditional.lean:471`
+     composed with `Manifold/NearbyRegularWitnessHolds.lean:32`.
+
   2. `Surjective_of_NonConstant_Analytic_Manifold X RS` — non-constant
-     ω-smooth maps are surjective (zz328).
+     ω-smooth maps are surjective. **UNCONDITIONAL** via
+     `Manifold/SurjectiveOfNonConstantDischarge.lean:391`.
+
   3. `BijectiveAnalyticIsBiholomorphism X` — bijective ω-smooth maps
-     upgrade to biholomorphisms (zz330).
+     upgrade to biholomorphisms. **UNCONDITIONAL** via
+     `Manifold/BijectiveAnalyticToBiholomorphismDischarge.lean`.
+
   4. `RiemannRochGenusZero X` — Riemann-Roch produces a degree-1
-     meromorphic function on genus-0 surfaces (zz325).
+     meromorphic function on genus-0 surfaces. **OPEN.** Reduces to
+     `ExistsMeroSimplePole_GenusZero X` (Forster Thm 16.9) via
+     `Topology/RiemannRochGenusZeroSingleInput.lean:54`. Equivalent
+     to four other classical statements per HANDOFF canonical.
 
 Plus the topological-sphere half of `UniformizationToRiemannSphere`:
 
   5. `Nonempty (X ≃ₜ StandardS2) → Nonempty (HolomorphicEquiv X RS)` —
-     uniformization for topological spheres.
+     uniformization for topological spheres. **OPEN.** Equivalent
+     to (4) via Dolbeault / Hodge / Serre / uniformization
+     classical equivalences.
 
 ## What ships here
 

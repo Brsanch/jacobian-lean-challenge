@@ -18,7 +18,34 @@ the chart-pullback derivative is nonzero — which holds when the
 ramification index is 1 everywhere, which is the conclusion of
 zz326 for degreeFiber-1 maps).
 
-Stated as a named open conditional:
+## Current status (2026-05-26)
+
+**This named hypothesis is UNCONDITIONALLY DISCHARGED in tree** at
+`Manifold/BijectiveAnalyticToBiholomorphismDischarge.lean`
+(theorem `bijectiveAnalyticIsBiholomorphism_holds`). Plus inputs 1
+and 2 of the four-input chain below are also unconditional:
+
+* (1) `ramificationSumEqualsDegree_holds_unconditional` —
+  `Manifold/RamificationSumEqualsDegreeUnconditional.lean:471`
+  composed with `Manifold/NearbyRegularWitnessHolds.lean:32`.
+* (2) `surjective_of_NonConstant_Analytic_Manifold_holds` —
+  `Manifold/SurjectiveOfNonConstantDischarge.lean:391`.
+* (3) `bijectiveAnalyticIsBiholomorphism_holds` — this file's
+  discharge.
+
+Composed, `DegreeOneIsBiholomorphic_RS X` is **unconditional in
+tree** via
+`Topology/Item14FinalComposition.lean:degreeOneIsBiholomorphic_RS_of_conditionals`
+applied to (1)+(2)+(3); see
+`Topology/HTopFromSubsingleton.lean:101-107` for the call-site
+composition. The only remaining open input for full item-14
+strict closure on abstract X is (4) `RiemannRochGenusZero X`,
+which itself reduces to `ExistsMeroSimplePole_GenusZero X`
+(Forster Thm 16.9) via
+`Topology/RiemannRochGenusZeroSingleInput.lean:54`. See
+`HANDOFF_ITEM14.md` "ACTIVE ARC — CANONICAL CURRENT STATE".
+
+## The named hypothesis (kept open as a `def Prop` for compositional clarity)
 
   BijectiveAnalyticIsBiholomorphism X Y :=
     ∀ f, ContMDiff ω f → Function.Bijective f →
@@ -32,24 +59,13 @@ Plus composition with zz329's bijection result:
     BijectiveAnalyticIsBiholomorphism X RS →
     DegreeOneIsBiholomorphic_RS X
 
-This is the FINAL composition: with the three named conditionals
-above, `DegreeOneIsBiholomorphic_RS X` (zz325) closes. Combined with
-`RiemannRochGenusZero X` (zz325), this closes
-`UniformizationToRiemannSphere_genus_zero_branch` (zz325). Combined
-with the corresponding S²-branch hypothesis (zz309), this closes
-`UniformizationToRiemannSphere X` (zz309), i.e., item 14 strict
-closure on the forward direction.
-
-The four named open inputs that would together strict-close item 14:
-
-1. `ramificationSumEqualsDegree_statement` (existing, conditional on
-   `NearbyRegularWitnessHypothesis`).
-2. `Surjective_of_NonConstant_Analytic_Manifold` (zz328).
-3. `BijectiveAnalyticIsBiholomorphism` (this file).
-4. `RiemannRochGenusZero` (zz325).
-
-All four are classical theorems with explicit references in Forster
-(Riemann Surfaces, ch. 11) but absent from mathlib at the pin.
+With the three discharges cited above, this composition produces
+`DegreeOneIsBiholomorphic_RS X` unconditionally. Combined with
+`RiemannRochGenusZero X` (still open), this closes
+`UniformizationToRiemannSphere_genus_zero_branch`. Combined with
+the corresponding S²-branch hypothesis (still open), this closes
+`UniformizationToRiemannSphere X`, i.e., item 14 strict closure on
+the forward direction.
 
 No `sorry`, no `axiom`.
 -/
