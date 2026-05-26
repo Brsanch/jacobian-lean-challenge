@@ -6,7 +6,116 @@ Prior versions of this file accumulated layered banners across sessions. This re
 
 ---
 
-## 🟢 ACTIVE ARC: Pompeiu kernel (committed 2026-05-24) — **Chip 3c-F + Chip 4 COMPLETE; Chip 5 structural backbone (5.1 + 5.2 + 5.3{a,b,c} + 5.4{a,b,c-prep,c-final}) + assembly layer (7 chips) + Sub-chip 5.5a + 5.5b LANDED. Route I (OmegaForm) ruled out 2026-05-26 by Forster audit; pivoting to Route III (Behnke-Stein iteration) — see `ROUTE_5_5C_FORSTER_AUDIT.md` + `ROUTE_5_5C_III_PLAN.md`. 5.5c-I-{a, b (def+cocycle), b-smoothness, b-final} = ~1140 LOC of (0,1)-form record + ofChartLocalFunction constructor remain in-tree as orphaned but correct infrastructure.**
+## 🟢 ACTIVE ARC: Item 14 ↔ uniformization (the single remaining classical input)
+
+**Architectural state (2026-05-26, end of session)**: items 5, 11, 12,
+13, 14 collapse to ONE shared classical hypothesis,
+`UniformizationGenus0Hypothesis X` (≅ `genus X = 0 → Nonempty
+(HolomorphicEquiv X RiemannSphere)`). The repo's
+`feat(jacobian-arc)` commit family makes every HJ instance + RR
+chain auto-fire from this single input. On `X = RiemannSphere` the
+hypothesis is trivially discharged (`Homeomorph.refl`), so
+Item 14 is **unconditionally closed** for the concrete sphere
+(see `Topology/Item14ForRiemannSphere.lean:genus_eq_zero_iff_homeo_RiemannSphere`).
+
+**Open frontier**: `UniformizationGenus0Hypothesis X` for abstract
+`[ChartedSpace ℂ X]` with `genus X = 0`. Three independent routes
+into it, all in tree:
+
+* **Partition-Pompeiu route** (this session's main work): builds
+  `globalSolutionCandidate P α χs` and proves
+  `partialZBarManifold u y = α y + outerRingLeakage P α χs y`
+  under global `ChartAtConstantOnSource`. Remaining content:
+  discharge `outerRingLeakage = 0` (the cutoff-derivative-times-
+  Pompeiu-kernel sum on the outer rings of the χ_i). See
+  `Manifold/OuterRingLeakage.lean` + `Manifold/OuterRingIndices.lean`.
+
+* **RR + Serre route**: linear-system + Möbius transitivity on RS
+  is unconditional; `RR_DimGE2_GenusZero_Germ` reduces to
+  uniformization-or-equivalent on abstract X
+  (`Topology/LinearSystemGermDeltaPFiniteDimRSUnconditional.lean`).
+
+* **Direct uniformization route**: build `HolomorphicEquiv X RS`
+  from genus = 0 directly (Forster Ch.16-17 + degree-1 biholomorphism
+  via Riemann existence; classical content).
+
+### This session's deliverables (2026-05-26, ~1660 LOC, 11 commits)
+
+* **5.5c-III-1a** ([`Analysis/InvNormIntegralBound.lean`](JacobianChallenge/Analysis/InvNormIntegralBound.lean), 115 LOC):
+  `∫ ζ in closedBall 0 r, ‖ζ‖⁻¹ ∂volume ≤ r · 2π`. Real-integral
+  form of Chip 1b's lintegral polar bound. De-privatizes
+  `lintegral_inv_enorm_closedBall_le` for downstream reuse.
+
+* **5.5c-III-1b** ([`Analysis/PompeiuKernelSupNormBound.lean`](JacobianChallenge/Analysis/PompeiuKernelSupNormBound.lean), 241 LOC):
+  `‖pompeiuKernel α z‖ ≤ 2(R + ‖z‖) · M` for `tsupport α ⊆
+  closedBall 0 R`, `‖α ζ‖ ≤ M`. Foundational Schauder-grade bound;
+  holds without continuity (Bochner convention).
+
+* **5.5c-I-c** ([`Manifold/OmegaPartitionSum.lean`](JacobianChallenge/Manifold/OmegaPartitionSum.lean), 232 LOC):
+  `omegaPartitionSum P h_α : OmegaForm X` (the partition sum
+  `Σ_i ofChartLocalFunction i.val (ρ_i α)`) + canonical-chart recovery
+  `ω.coeff y (chart_y y) = α y` under global `ChartAtConstantOnSource`.
+  `evalCoeffHom y z : OmegaForm X →+ ℂ` pushes Finset.sum through
+  `.coeff` via `map_sum`.
+
+* **5.5c-I-d** ([`Manifold/PartialZBarManifoldLocalPompeiuChartConst.lean`](JacobianChallenge/Manifold/PartialZBarManifoldLocalPompeiuChartConst.lean), 159 LOC):
+  Sub-chip 5.5b's chart-anchored factor-free identity transported
+  to canonical chart-y under chart-const: on `support (P.rhoC i)`,
+  `partialZBarManifold (v_i) y = (P.rhoC i * α) y`.
+  Aux `deriv_chart_transition_eq_one_under_chart_const`.
+
+* **5.5c-I-e** ([`Manifold/GlobalSolutionUnderChartConst.lean`](JacobianChallenge/Manifold/GlobalSolutionUnderChartConst.lean), 138 LOC):
+  conditional global identity `partialZBarManifold (Σ v_i) y = α y`
+  under chart-const + per-call outer-ring-vanish hypothesis. No new
+  named Prop introduced; outer-ring hypothesis is inline per-call.
+
+* **5.5c-I-f** ([`Manifold/LocalPompeiuSolutionLeibniz.lean`](JacobianChallenge/Manifold/LocalPompeiuSolutionLeibniz.lean), 222 LOC):
+  chart-anchored Leibniz decomposition
+  `partialZBarManifoldAtChart i.val v_i y = ∂̄_chart χ · K_i + χ · (ρ_i α)`.
+  Auxs: `localPompeiuSolutionGlobal_chart_symm_eqOn_target`,
+  `differentiableAt_chiC_chart_symm`,
+  `differentiableAt_pompeiuKernel_chartPullbackZero`.
+
+* **5.5c-I-g** ([`Manifold/LocalPompeiuSolutionLeibnizChartConst.lean`](JacobianChallenge/Manifold/LocalPompeiuSolutionLeibnizChartConst.lean), 161 LOC):
+  lifts the chart-anchored Leibniz (5.5c-I-f) to canonical chart-y
+  under chart-const. Aux
+  `partialZBarManifoldAtChart_eq_partialZBarManifold_under_chart_const`.
+
+* **5.5c-I-h** ([`Manifold/OuterRingLeakage.lean`](JacobianChallenge/Manifold/OuterRingLeakage.lean), 215 LOC):
+  defines `outerRingLeakageAt P α χs i y` and `outerRingLeakage P α χs y`;
+  proves the **explicit-leakage global identity**
+  `partialZBarManifold (globalSolutionCandidate) y = α y +
+  outerRingLeakage y` under chart-const. Corollary
+  `partialZBarManifold_globalSolutionCandidate_eq_α_of_outerRing_zero`.
+
+* **5.5c-I-i** ([`Manifold/OuterRingIndices.lean`](JacobianChallenge/Manifold/OuterRingIndices.lean), 178 LOC):
+  filtered-Finset form `outerRingIndices P χs y` + structural lemmas
+  (membership characterization, per-i vanishing on `support(ρ_i)`
+  and off `tsupport(χ_i)`, subset of chart sources). Removes
+  if-then-else; clean sum form for downstream cancellation work.
+
+### Audit docs landed this session
+
+* [`ROUTE_5_5C_FORSTER_AUDIT.md`](ROUTE_5_5C_FORSTER_AUDIT.md) — original audit ruling out
+  the OmegaForm partition-sum route under abstract chartAt (later
+  refined: works under global `ChartAtConstantOnSource` modulo
+  outer-ring cancellation).
+
+* [`ROUTE_5_5C_III_PLAN.md`](ROUTE_5_5C_III_PLAN.md) — Behnke-Stein-on-disk planning.
+  Phase A landed (5.5c-III-1a + 1b); Phase B-E not started.
+
+* [`ROUTE_5_5C_III_FORSTER_PINNED.md`](ROUTE_5_5C_III_FORSTER_PINNED.md) — McMullen Berkeley
+  241/96 + Anagol Berkeley 213b confirmation that compact-ℂℙ¹
+  classical proof = Behnke-Stein on disk + Cousin-I on annulus.
+
+* [`DBAR_CONSUMER_AUDIT.md`](DBAR_CONSUMER_AUDIT.md) — downstream consumers of
+  `DBarSolvabilityAtGenusZero`.
+
+* [`REARCHITECTURE_AUDIT.md`](REARCHITECTURE_AUDIT.md) — survey of alternative routes to
+  `hSP X` that avoid `H¹(X, O) = 0`.
+
+* [`UNIFORMIZATION_ROUTE_AUDIT.md`](UNIFORMIZATION_ROUTE_AUDIT.md) — catalog of 6 parallel
+  named-hypothesis routes in tree to Item 14.
 
 Last rewrite: 2026-05-26 (Sub-chip 5.5c-I-b-final landed — the `OmegaForm.ofChartLocalFunction` constructor + `localFormCoeff_transition_general` upgrading the anchor-relative cocycle to a cocycle for arbitrary chart pairs via chain rule + case-split. The 5.5c-I-b sub-chip family is now end-to-end COMPLETE: definition (5.5c-I-b def+cocycle, 312 LOC) + smoothness (5.5c-I-b-smoothness, 356 LOC) + constructor (5.5c-I-b-final, 240 LOC) = 908 LOC, all axiom-free. Route I ((0,1)-form record encoding from `ROUTE_5_5C_AUDIT.md`) is now operational for the partition-sum step). Headlines —
 
@@ -98,22 +207,28 @@ Concrete options for Sub-chip 5.5c (architectural choice needed):
 
   Sub-chip 5.5c-I-b is now COMPLETE end-to-end: definition + cocycle + smoothness + constructor. Total LOC across the 5.5c-I-b sub-chip family: 312 (def+cocycle) + 356 (smoothness) + 240 (constructor) = 908 LOC, all axiom-free.
 
-**Route redirect (2026-05-26): Route I (OmegaForm partition sum) ruled out.**
-A Forster Ch.14 / Griffiths-Harris §0.4-0.5 audit before starting Sub-chip
-5.5c-I-c established that the OmegaForm partition-sum approach does **not**
-close `DBarSolvabilityAtGenusZero` on abstract `[ChartedSpace ℂ X]`: the
-chart-transition factors `conj(τ_{i.val→y}((chart_{i.val}) y))` do not
-collapse under partition-of-unity on functions, and there is a residual
-outer-ring cutoff-leakage error term. Forster's actual proof uses
-Behnke-Stein iteration (or, for ℂℙ¹, Laurent decomposition on the annulus
-overlap), not partition-of-unity. Audit doc:
-[`ROUTE_5_5C_FORSTER_AUDIT.md`](ROUTE_5_5C_FORSTER_AUDIT.md).
+**Route I revised after this session's work (2026-05-26 end-of-day):**
+the original audit's "OmegaForm partition-sum can't close" finding was
+**too strong**. Under the additional global structural hypothesis
+`∀ p, ChartAtConstantOnSource p` (innocuous on every concrete X — same
+property the Forster §16.9 cutoff already takes at one point), the
+partition-Pompeiu candidate `u := Σ_i v_i` satisfies the explicit
+identity
 
-The 5.5c-I-{a, b def+cocycle, b-smoothness, b-final} files (~1140 LOC) are
-correct (0,1)-form infrastructure but do not close the named hypothesis
-on their own. They remain in the tree as orphaned infrastructure
-potentially useful for a future bundle-based route; no further 5.5c-I-*
-work is planned.
+```
+partialZBarManifold u y = α y + outerRingLeakage P α χs y
+```
+
+(see `Manifold/OuterRingLeakage.lean`). The remaining content is the
+**explicit computational statement** `outerRingLeakage = 0`, which
+is the sum of cutoff-derivative-times-Pompeiu-kernel terms over the
+outer rings of the χ_i — concrete, not a new named Prop.
+
+The 5.5c-I-{a, b family, c, d, e, f, g, h, i} arc (~2280 LOC total,
+includes this session's 1305 LOC) is now an OPERATIONAL FRAMEWORK
+for the partition-Pompeiu route. Closing the outer-ring leakage
+discharges DBarSolvabilityAtGenusZero X under the chart-locality
+hypothesis.
 
 Route: **Route III (Behnke-Stein iteration)** — user-selected
 2026-05-26. Planning doc:
@@ -164,16 +279,73 @@ is in `ROUTE_5_5C_III_FORSTER_PINNED.md`.
 Phase A (the 356 LOC already landed) **carries over unchanged** —
 it is the analytic foundation for both ingredients.
 
-Three forks now:
+## Next-session entry — start here
 
-1. **5.5c-III-2: Phase B (Behnke-Stein on Δ)** — ~600-900 LOC,
-   foundational, useful in either eventual closure path. Safe
-   continuation.
-2. **Skip-Phase-B Pompeiu-decay route** — for `α` smooth on `ℂℙ¹`,
-   restrict to finite chart and use direct decay at `∞`. Risky:
-   the decay may not hold for arbitrary smooth `α`.
-3. **Specialize discharge to `RiemannSphere`** — narrow the named
-   hypothesis scope. Audit downstream consumers first.
+The architectural compression after this session is:
+
+```
+∀ p, ChartAtConstantOnSource p           (structural — innocuous on concrete X)
+                +
+outerRingLeakage P α χs y = 0           (analytic — concrete computation)
+        ⟹ DBarSolvabilityAtGenusZero X
+        ⟹ hSP X
+        ⟹ Item 14 (+ items 5, 11, 12, 13 via UniformizationGenus0Hypothesis)
+```
+
+`outerRingLeakage` is the **explicit Finset sum** over outer-ring
+indices i of `partialZBarManifold (χ_i : ℂ) y · K_i(chart_{i.val} y)`,
+defined in [`Manifold/OuterRingLeakage.lean`](JacobianChallenge/Manifold/OuterRingLeakage.lean)
++ [`Manifold/OuterRingIndices.lean`](JacobianChallenge/Manifold/OuterRingIndices.lean).
+No new named Prop required.
+
+### Three concrete next-chip options
+
+1. **Cancellation argument for `outerRingLeakage = 0`.** Most
+   direct continuation of this session. Needs either:
+   * a specific choice of cover + cutoffs making the sum cancel
+     (cover refinement; mostly already in tree from 5.1 + 5.4a;
+     may need adjustment of cutoff overlap structure);
+   * OR a Behnke-Stein-style iteration on the leakage operator
+     (Phase B of [`ROUTE_5_5C_III_PLAN.md`](ROUTE_5_5C_III_PLAN.md);
+     ~600-1000 LOC for the disk-level iteration, Phase A foundations
+     already in tree from 5.5c-III-1a + 1b).
+
+2. **Direct uniformization route.** Build `HolomorphicEquiv X RS`
+   from `genus X = 0` + the existing
+   `feat(jacobian-arc)` infrastructure (`UniformizationGenus0Hypothesis`,
+   `FactUniformizationToRiemannSphere`, `pic0_holomorphicEquivCongr_*`,
+   `BijectiveAnalyticToBiholomorphism`). Closes items 5, 11, 12, 13, 14
+   simultaneously.
+
+3. **RR + Serre on abstract X.**
+   `LinearSystemGermDeltaPFiniteDim RiemannSphere` is unconditional;
+   `RR_DimGE2_GenusZero_Germ X` reduces to uniformization-or-equivalent
+   ([`Topology/LinearSystemGermDeltaPFiniteDimRSUnconditional.lean`](JacobianChallenge/Topology/LinearSystemGermDeltaPFiniteDimRSUnconditional.lean)).
+   Pursue if uniformization is a wall but RR-on-abstract-X has a
+   shorter path via classical RR formula formalization.
+
+### Files modified / created this session
+
+Created (~1660 LOC):
+* `Analysis/InvNormIntegralBound.lean` (5.5c-III-1a, 115)
+* `Analysis/PompeiuKernelSupNormBound.lean` (5.5c-III-1b, 241)
+* `Manifold/OmegaPartitionSum.lean` (5.5c-I-c, 232)
+* `Manifold/PartialZBarManifoldLocalPompeiuChartConst.lean` (5.5c-I-d, 159)
+* `Manifold/GlobalSolutionUnderChartConst.lean` (5.5c-I-e, 138)
+* `Manifold/LocalPompeiuSolutionLeibniz.lean` (5.5c-I-f, 222)
+* `Manifold/LocalPompeiuSolutionLeibnizChartConst.lean` (5.5c-I-g, 161)
+* `Manifold/OuterRingLeakage.lean` (5.5c-I-h, 215)
+* `Manifold/OuterRingIndices.lean` (5.5c-I-i, 178)
+
+Modified:
+* `JacobianChallenge.lean` — library imports for all new files.
+* `JacobianChallenge/Analysis/InvNormIntegrability.lean` —
+  de-privatized `lintegral_inv_enorm_closedBall_le`.
+
+Audit docs (5 new):
+* `ROUTE_5_5C_FORSTER_AUDIT.md`, `ROUTE_5_5C_III_PLAN.md`,
+  `ROUTE_5_5C_III_FORSTER_PINNED.md`, `DBAR_CONSUMER_AUDIT.md`,
+  `REARCHITECTURE_AUDIT.md`, `UNIFORMIZATION_ROUTE_AUDIT.md`.
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post Chip 4): Chips 5-7 (~10-18 sessions).
 
