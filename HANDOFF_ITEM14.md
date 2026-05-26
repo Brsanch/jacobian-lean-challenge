@@ -82,7 +82,14 @@ Concrete options for Sub-chip 5.5c (architectural choice needed):
 
   This file ships **definition + structural lemmas + cocycle only**. The smoothness proof `ContDiffOn ℝ ∞ (localFormCoeff x β y) ((chartAt ℂ y).target)` — needed to feed `OmegaForm`'s `coeff_contDiffOn` field — is a separate follow-up sub-chip (5.5c-I-b-smoothness, ~250–400 LOC: glue across the open cover `{chart_y.target ∩ chart_y.symm⁻¹(chart_x.source), chart_y.target \ chart_y '' (tsupport β ∩ chart_y.source)}`, smooth via Sub-chip 5.3b on the first piece + constantly zero on the second). Sorry-free, axiom-free.
 
-Next: **Sub-chip 5.5c-I-b-smoothness** (~250–400 LOC, 1–2 sessions): `ContDiffOn ℝ ∞ (localFormCoeff x β y) (chart_y.target)` via two-open-set glue. Then **5.5c-I-b-final** assembles the `OmegaForm.ofChartLocalFunction` constructor from the smoothness + cocycle facts. Then 5.5c-I-c (partition sum) / 5.5c-I-d (Pompeiu-as-form-inverse) / 5.5c-I-e (final assembly).
+### Sub-chip 5.5c-I-b-smoothness — smoothness of `localFormCoeff` on chart_y.target (2026-05-26)
+
+* **`localFormCoeff_contDiffOn`** ([`Manifold/OmegaFormOfChartLocalSmoothness.lean`](JacobianChallenge/Manifold/OmegaFormOfChartLocalSmoothness.lean), 356 LOC): for `β : X → ℂ` manifold-smooth with `tsupport β ⊆ (chartAt ℂ x).source` and any `y : X`, `ContDiffOn ℝ ∞ (localFormCoeff x β y) ((chartAt ℂ y).target)`. Glue across two open sets:
+  * **Set A** = `chart_y.target ∩ chart_y.symm⁻¹(chart_x.source)`: smoothness of the formula via `contDiffOn_formula_setA` (composition of smooth pieces: `β ∘ chart_y.symm`, `chart_x ∘ chart_y.symm`, `(deriv (chart_y ∘ chart_x.symm)) ∘ ...` via `analyticAt_chart_transition_of_isManifold` + `AnalyticAt.deriv` + `AnalyticAt.contDiffAt` + restrict-scalars via a local wrapper `contDiffAt_restrictScalars_R_C_C_local`, `Complex.conjCLE.contDiff` for `conj`, division as `mul ∘ inv` since `ContDiffOn.div` over ℝ with ℂ codomain isn't directly available).
+  * **Set B** = `chart_y.target ∩ chart_y.symm⁻¹((tsupport β)ᶜ)`: `localFormCoeff x β y` vanishes here via `localFormCoeff_eq_zero_of_not_mem_tsupport`; `ContDiffOn.congr` against `contDiffOn_const`.
+  Glue via `ContDiffOn.union_of_isOpen` (both sets manifestly open as intersections of open sets), with the cover identity `A ∪ B = chart_y.target` consuming the precondition `tsupport β ⊆ chart_x.source`: for any `p ∈ chart_y.source` with `p ∉ chart_x.source`, we have `p ∉ tsupport β` (contrapositive of `h_supp`), so `p ∈ (tsupport β)ᶜ`. Sorry-free, axiom-free.
+
+Next: **Sub-chip 5.5c-I-b-final — `OmegaForm.ofChartLocalFunction` constructor**. Assemble the OmegaForm from `localFormCoeff` + `localFormCoeff_contDiffOn` + `localFormCoeff_transition`. Estimated 50–100 LOC. Then 5.5c-I-c (partition sum at the OmegaForm level) / 5.5c-I-d (Pompeiu-as-form-inverse) / 5.5c-I-e (final assembly).
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post Chip 4): Chips 5-7 (~10-18 sessions).
 
