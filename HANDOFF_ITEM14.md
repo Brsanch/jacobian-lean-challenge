@@ -115,12 +115,44 @@ on their own. They remain in the tree as orphaned infrastructure
 potentially useful for a future bundle-based route; no further 5.5c-I-*
 work is planned.
 
-Next: **Route III (Behnke-Stein iteration)** — user-selected
+Route: **Route III (Behnke-Stein iteration)** — user-selected
 2026-05-26. Planning doc:
-[`ROUTE_5_5C_III_PLAN.md`](ROUTE_5_5C_III_PLAN.md). First chip:
-**Sub-chip 5.5c-III-1 — Pompeiu sup-norm bound on ℂ**, ~150-220 LOC,
-proves `|pompeiuKernel α z| ≤ (constant · R) · ‖α‖_∞` for α continuous
-with `tsupport α ⊆ closedBall 0 R`. Reuses Chip 1b's polar-coord bound.
+[`ROUTE_5_5C_III_PLAN.md`](ROUTE_5_5C_III_PLAN.md).
+
+**Phase A landed (2026-05-26)** — sup-norm bound on `pompeiuKernel`:
+
+* **5.5c-III-1a** ([`Analysis/InvNormIntegralBound.lean`](JacobianChallenge/Analysis/InvNormIntegralBound.lean), 115 LOC):
+  `integral_inv_norm_closedBall_le (r : ℝ) (hr : 0 ≤ r) :
+   ∫ ζ in closedBall (0 : ℂ) r, ‖ζ‖⁻¹ ∂volume ≤ r * (2 * π)`.
+  Real-integral form of Chip 1b's lintegral polar bound. Side change:
+  de-privatize `lintegral_inv_enorm_closedBall_le` in
+  `InvNormIntegrability.lean` for downstream reuse.
+
+* **5.5c-III-1b** ([`Analysis/PompeiuKernelSupNormBound.lean`](JacobianChallenge/Analysis/PompeiuKernelSupNormBound.lean), 241 LOC):
+  `norm_pompeiuKernel_le_of_compact_support_in_ball`:
+  for `tsupport α ⊆ closedBall 0 R` (R ≥ 0) + `‖α ζ‖ ≤ M`,
+  `‖pompeiuKernel α z‖ ≤ 2 · (R + ‖z‖) · M` (no continuity needed).
+  Method: Chip 2a's translated form + `norm_integral_le_of_norm_le`
+  against `(closedBall (-z) R).indicator (M · ‖·‖⁻¹)` +
+  `setIntegral_mono_set` via the inclusion
+  `closedBall (-z) R ⊆ closedBall 0 (R + ‖z‖)` + Sub-chip 5.5c-III-1a.
+
+**CRITICAL RISK still unresolved** (from `ROUTE_5_5C_III_PLAN.md` risk
+register): the classical Behnke-Stein iteration is for non-compact
+Stein RS, not compact. For compact ℂℙ¹ the actual classical path may
+be Cousin-I / Laurent decomposition on the two-chart annulus, not
+abstract iteration. Phase A (the sup-norm bound just landed) is
+useful in either path; **but Phase C (contraction-mapping iteration
+on X) commits to the iteration architecture. Resolve the risk
+before starting Phase C.**
+
+Next options (pick one):
+
+1. **5.5c-III-2 — Pompeiu Lipschitz/Hölder bound** (Phase A continuation,
+   ~250-400 LOC). Still robust to which Phase C wins.
+2. **Resolve the critical risk first**: open Forster §14 / a
+   reference treatment of `H¹(ℂℙ¹, O) = 0` and confirm the iteration
+   vs Cousin-I/Laurent choice before committing Phase C LOC.
 
 After exhaustive audit (2026-05-24) confirmed no route exists at this mathlib pin to close Item 14 without formalizing classical content, the **Pompeiu kernel + Riemann existence at genus 0** route was selected as the path with lowest expected surprise. Estimated remaining (post Chip 4): Chips 5-7 (~10-18 sessions).
 
