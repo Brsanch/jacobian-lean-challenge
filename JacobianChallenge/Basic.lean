@@ -68,6 +68,40 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
   [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 -- this proof avoids the hack answer `∀ X, genus X = 0`
+--
+-- SHIPPED CONDITIONAL on the named classical hypothesis
+-- `ExistsMeroSimplePole_GenusZero X` (= Forster Thm 16.9). All
+-- structural reductions are unconditional and compile-verified; the
+-- remaining `sorry` is the classical-content gap, not a structural
+-- one. Buzzard's signature has no hypothesis slot, so the closure
+-- chain cannot be discharged at this Prop without literally
+-- consuming the named hypothesis as an `axiom` (deliberately avoided).
+--
+-- Closure chain (all unconditional in tree):
+--   ExistsMeroSimplePole_GenusZero X   (= Forster Thm 16.9, OPEN)
+--     → RiemannRochGenusZero X         via Topology/RiemannRochGenusZeroSingleInput.lean:54
+--     → UniformizationToRiemannSphere X (genus=0 branch)
+--                                       via Topology/UniformizationFromRiemannRoch.lean
+--     + S²-branch hypothesis            (OPEN; equivalent classical content)
+--     → genus_eq_zero_iff_homeo         via Topology/Item14FromSingleUniformization.lean:168
+--                                            + Topology/Item14ClassTransport.lean
+--                                            + Topology/Item14ForRiemannSphere.lean (closes RS case)
+--
+-- Equivalent textbook names for the same wall (any closes Item 14
+-- on abstract X via in-tree transport):
+--   hSP X = ExistsSimplePoleGermAtSomePoint X
+--   DBarSolvabilityAtGenusZero X + ChartAtConstantOnSource
+--   RR_DimGE2_GenusZero X
+--   Nonempty (HolomorphicEquiv X RiemannSphere) at genus X = 0
+--
+-- Authoritative LOC audit (2026-05-26): closure costs ~28k–50k LOC
+-- of classical-mathlib-grade work across any arc. See
+-- HANDOFF_ITEM14.md "WALL DOCUMENTED" + "ACTIVE ARC — CANONICAL
+-- CURRENT STATE" for the chain, file:line citations of every
+-- in-tree unconditional discharge, and the arc-by-arc audit.
+--
+-- On the concrete X = RiemannSphere this lemma is unconditionally
+-- closed in Topology/Item14ForRiemannSphere.lean.
 lemma genus_eq_zero_iff_homeo :
     genus X = 0 ↔ Nonempty (X ≃ₜ (Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)) :=
   sorry
