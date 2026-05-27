@@ -76,37 +76,45 @@ authoritative item table that follows.
 
 ## The 8 OPEN items collapse to 2 substantive classical theorems
 
-(Was 3 pre-2026-05-24 merge; BSLB became obsolete when the étale-primitives
-arc merged in, leaving `DBarSolvabilityAtGenusZero X` and `C3FullInputExt X`.)
+**Canonical framing (2026-05-26):** the two walls are:
 
-After auditing every named-hypothesis chain to its leaves (2026-05-23):
+1. **Item 14's wall** — **`ExistsMeroSimplePole_GenusZero X`** =
+   Forster Thm 16.9: compact connected genus-0 Riemann surface admits
+   a non-constant meromorphic function with a single simple pole.
+   Defined at `Topology/RiemannRochGenusZeroDecomposition.lean:101`.
+   Equivalent textbook names (any closes Item 14 on abstract X via
+   in-tree transport): `hSP X` = `ExistsSimplePoleGermAtSomePoint X`,
+   `DBarSolvabilityAtGenusZero X` + `ChartAtConstantOnSource`,
+   `RR_DimGE2_GenusZero X`, `Nonempty (HolomorphicEquiv X RiemannSphere)`
+   at genus = 0. These are all textbook-equivalent (Dolbeault ↔ Serre
+   duality ↔ RR ↔ uniformization). **All structural reductions are
+   unconditional in tree and compile-verified.** Item 14 is **shipped
+   conditional** on this named hypothesis per the 2026-05-26 decision.
+   Authoritative LOC audit: closure cost ~28k–50k LOC across any
+   classical arc. See `HANDOFF_ITEM14.md` "WALL DOCUMENTED" +
+   canonical ACTIVE ARC for the chain proof, file:line citations, and
+   arc-by-arc audit.
 
-1. **Item 14's `hSP`** — `ExistsSimplePoleGermAtSomePoint X`. After
-   Chip 2c-Final (2026-05-24, `Manifold/ForsterCutoffPoleConstruction.lean`),
-   reduces further to **`DBarSolvabilityAtGenusZero X`** (= `H¹(X, 𝒪) = 0`
-   at genus 0, equivalently solvability of `∂̄ u = α` for smooth (0,1)
-   forms α at genus 0) plus a per-`p` structural hypothesis
-   `ChartAtConstantOnSource p` (innocuous on concrete X). DBar is the
-   actual classical-content gap. Bottom of the alternate Riemann-Roch
-   chain: `RR_DimGE2_GenusZero_Germ X` (equivalent statement, not
-   shorter).
-2. ~~**Item 14's `BSLB`**~~ **OBSOLETE for Item 14 (2026-05-24 merge).**
-   The reverse leg `S2ImpliesGenus0 X` is unconditionally discharged
-   on arbitrary X by `s2ImpliesGenus0_etalePrimitivesArc`
-   (`Topology/S2ImpliesGenus0FromEtalePrimitives.lean`, étale-primitives
-   arc from `feat/item14-affineChartTriangleSimplex-ball`). The BSLB
-   chain was a parallel route to the same conclusion and is no longer
-   needed. The one-input composition
-   `Topology/Item14FromHSPOnly.genus_eq_zero_iff_homeo_from_hSP` shows
-   Item 14 reduces to hSP alone.
-3. **C3's `C3FullInputExt X`** — bundle of Riemann bilinear relations
+2. **C3's `C3FullInputExt X`** — bundle of Riemann bilinear relations
    + Abel's theorem + Jacobi inversion. Closes items 5/11/12/13/17/18/21
    collectively once landed. Per-curve `lattice_match` certificates
-   close items 18/21.
+   close items 18/21. See `C3_AUDIT.md`.
 
-That's it. The infrastructure is enormously over-built (1072 `.lean`
-files, 182k LOC), but the genuine remaining classical content is
-textbook Forster Ch. III §16–21 / Griffiths-Harris Ch. 2 §2–§3.
+**Historical framing kept below for git-blame continuity:**
+
+(Pre-2026-05-24 merge there were 3 walls; BSLB became obsolete when
+the étale-primitives arc merged in. Pre-canonical the Item 14 wall
+was named `DBarSolvabilityAtGenusZero X`; canonical renames it
+`ExistsMeroSimplePole_GenusZero X` per Forster's textbook name. The
+reverse leg `S2ImpliesGenus0 X` is unconditionally discharged on
+arbitrary X by `s2ImpliesGenus0_etalePrimitivesArc`
+(`Topology/S2ImpliesGenus0FromEtalePrimitives.lean`); the one-input
+composition `Topology/Item14FromHSPOnly.genus_eq_zero_iff_homeo_from_hSP`
+shows Item 14 reduces to hSP alone.)
+
+The infrastructure is enormously over-built (1072 `.lean` files,
+182k LOC), but the genuine remaining classical content is textbook
+Forster Ch. III §16–21 / Griffiths-Harris Ch. 2 §2–§3.
 
 ## Mathlib-prerequisite candidates (likely needed before strict closure)
 
