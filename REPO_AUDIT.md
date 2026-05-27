@@ -36,23 +36,23 @@ OPEN.md's massive scoreboard.
 | 2 | `Jacobian X : Type u` | STRICT-CLOSED | `Pic⁰ X` with honest `PrincDiv`. |
 | 3 | `AddCommGroup (Jacobian X)` | STRICT-CLOSED | Inherited from honest Pic⁰. |
 | 4 | `TopologicalSpace (Jacobian X)` | STUB | Discrete topology — flips when item 5 rewires `Jacobian X` to analytic Jacobian. |
-| 5 | `ChartedSpace (Fin (genus X) → ℂ) (Jacobian X)` | OPEN | Reduces to `[Nonempty (C3FullInputExt X)]`; the bundle's substantive open subfields are Riemann bilinear, Abel, Jacobi inversion. |
+| 5 | `ChartedSpace (Fin (genus X) → ℂ) (Jacobian X)` | OPEN — SHIPPED CONDITIONAL | Reduces to `C3FullInputExt X`. RS-case unconditional via subsingleton. See [`HANDOFF_C3.md`](HANDOFF_C3.md) for canonical chain + per-field audit. |
 | 6 | `Jacobian.ofCurve` | STRICT-CLOSED | `[δQ - δP]` in honest Pic⁰. |
 | 7 | `Jacobian.pushforward` | STRICT-CLOSED | `JacobianChallenge.Jacobian.pushforward hf`. |
 | 8 | `Jacobian.pullback` | STRICT-CLOSED | `Jacobian.pullbackHonest_of_rsum`. |
 | 9 | `ContMDiff.degree` | STRICT-CLOSED | `degreeFiber` unconditional. |
 | 10 | `T2Space (Jacobian X)` | STUB | True via discrete; flips with item 4/5. |
-| 11 | `CompactSpace (Jacobian X)` | OPEN | Same as item 5. |
-| 12 | `IsManifold ... ω (Jacobian X)` | OPEN | Same as item 5. |
-| 13 | `LieAddGroup ... (Jacobian X)` | OPEN | Same as item 5. |
+| 11 | `CompactSpace (Jacobian X)` | OPEN — SHIPPED CONDITIONAL | Same chain as item 5. See [`HANDOFF_C3.md`](HANDOFF_C3.md). |
+| 12 | `IsManifold ... ω (Jacobian X)` | OPEN — SHIPPED CONDITIONAL | Same chain as item 5. See [`HANDOFF_C3.md`](HANDOFF_C3.md). |
+| 13 | `LieAddGroup ... (Jacobian X)` | OPEN — SHIPPED CONDITIONAL | Same chain as item 5. See [`HANDOFF_C3.md`](HANDOFF_C3.md). |
 | 14 | `genus_eq_zero_iff_homeo` | OPEN | **Canonical:** one classical theorem with five textbook-equivalent names. See `HANDOFF_ITEM14.md` "ACTIVE ARC — CANONICAL CURRENT STATE". Equivalent open names: `ExistsMeroSimplePole_GenusZero X` (Forster Thm 16.9) / `hSP X` / `DBarSolvabilityAtGenusZero X` + `ChartAtConstantOnSource` / `RR_DimGE2_GenusZero X` / `Nonempty (HolomorphicEquiv X RS)` at genus = 0. In-tree transport collapses discharge of any one to closure of all. |
 | 15 | `ofCurve_self` | STRICT-CLOSED | Reduces to `[δP - δP] = 0`. |
 | 16 | `ofCurve_inj` | STRICT-CLOSED | Via `JacobianChallenge.ofCurve_inj_holds` unconditional discharge chain. |
-| 17 | `ofCurve_contMDiff` | OPEN | Reduces to item 5 + `JacobianAnalyticClosureBundle` smoothness field. |
-| 18 | `pushforward_contMDiff` | OPEN | Reduces to item 5 + per-curve `JacobianAnalyticPushforwardLift`. |
+| 17 | `ofCurve_contMDiff` | OPEN — SHIPPED CONDITIONAL | Conditional on `C3FullInputExt X` (its `JacobianAnalyticClosureBundle` field). See [`HANDOFF_C3.md`](HANDOFF_C3.md). |
+| 18 | `pushforward_contMDiff` | OPEN — SHIPPED CONDITIONAL | Conditional on `C3FullInputExt X` + per-curve `C3FullInputCurve B_X B_Y f hf`. See [`HANDOFF_C3.md`](HANDOFF_C3.md). |
 | 19 | `pushforward_id_apply` | STRICT-CLOSED | Via `Pic0.pushforward_id`. |
 | 20 | `pushforward_comp_apply` | STRICT-CLOSED | Via `Pic0.pushforward_comp`. |
-| 21 | `pullback_contMDiff` | OPEN | Reduces to item 5 + per-curve `JacobianAnalyticPullbackLift`. |
+| 21 | `pullback_contMDiff` | OPEN — SHIPPED CONDITIONAL | Conditional on `C3FullInputExt X` + per-curve `C3FullInputCurve B_X B_Y f hf`. See [`HANDOFF_C3.md`](HANDOFF_C3.md). |
 | 22 | `pullback_id_apply` | STRICT-CLOSED | `pullbackHonest_of_rsum_id`. |
 | 23 | `pullback_comp_apply` | STRICT-CLOSED | `pullbackHonest_of_rsum_comp`. |
 | 24 | `pushforward_pullback` | STRICT-CLOSED | `pushforward_pullbackHonest_of_rsum`. |
