@@ -2,6 +2,33 @@
 
 ---
 
+## ✅ WALL DOCUMENTED — SHIPPED CONDITIONAL (2026-05-26)
+
+**Status decision**: Item 14 is shipped CONDITIONAL on the named
+classical hypothesis `ExistsMeroSimplePole_GenusZero X` (= Forster
+Thm 16.9). All structural reductions on both legs are proven and
+compile-verified; the remaining gap is one classical theorem
+requiring multi-thousand-LOC mathlib-grade infrastructure not at
+this pin. Per Buzzard's challenge spirit, packaging difficult
+classical content as a named open hypothesis is the appropriate
+finish at this mathlib pin. Further chip-by-chip progress on
+Item 14 abstract-X closure is not on the roadmap.
+
+* **Item 14 on `X = RiemannSphere`**: UNCONDITIONALLY closed
+  ([`Topology/Item14ForRiemannSphere.lean`](JacobianChallenge/Topology/Item14ForRiemannSphere.lean)).
+* **Item 14 on abstract X**: conditional on `ExistsMeroSimplePole_GenusZero X`
+  via the chain documented below.
+* **Authoritative LOC audit of remaining classical work** (2026-05-26,
+  four parallel sub-agents with 6,500-LOC-per-substantial-theorem
+  calibration from the measured Pompeiu chain): closure costs
+  ~28k–35k LOC for Arc 1 (RR + Serre), ~26k–46k LOC for Arc 3
+  (Dirichlet / Green's), or ~38k–56k LOC for Arc 2 abstract X.
+  Multi-month at this repo's chip velocity. No external Lean project
+  will land any arc soon. See git log for the audit-driven HANDOFF
+  refresh.
+
+The rest of this section remains the canonical structural picture.
+
 ## 🟢 ACTIVE ARC — CANONICAL CURRENT STATE (2026-05-26)
 
 **This section is the single source of truth for Item 14's frontier.**

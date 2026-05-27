@@ -13,16 +13,29 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-24, post Chip 2c-Final + étale-leg merge):**
-14 of 24 items STRICT-CLOSED, 2 STUB, 8 OPEN. The 8 open items collapse
-to **two substantive classical theorems**:
-* `DBarSolvabilityAtGenusZero X` (= `H¹(X, 𝒪) = 0` at genus 0) — closes Item 14.
-* `C3FullInputExt X` (Riemann bilinear + Abel + Jacobi inversion) — closes items 5, 11, 12, 13, 17, 18, 21 collectively.
+**Current state (2026-05-26, post canonical-frontier audit):** 14 of
+24 items STRICT-CLOSED, 2 STUB, 8 OPEN. The 8 open items collapse to
+**two substantive classical theorems** — both shipped as **named
+classical hypotheses** per Buzzard's challenge convention:
 
-(Pre-merge framing was three classical theorems; BSLB became obsolete
-when the étale-primitives reverse-leg arc merged into the forward-leg
-branch and the one-input composition `Topology/Item14FromHSPOnly.lean`
-landed.)
+* **Item 14** (`genus_eq_zero_iff_homeo`) is shipped CONDITIONAL on
+  `ExistsMeroSimplePole_GenusZero X` (= Forster Thm 16.9: compact
+  genus-0 Riemann surface admits a non-constant meromorphic function
+  with a single simple pole). Equivalently `hSP X`, equivalently
+  `H¹(X, 𝒪) = 0` at genus 0, equivalently `Nonempty (HolomorphicEquiv
+  X RiemannSphere)` at genus 0 — these are textbook-equivalent
+  (Dolbeault, Serre duality, RR, uniformization). All structural
+  reductions on both legs are unconditional in tree; the remaining
+  gap is the classical theorem itself. Authoritative LOC audit
+  (2026-05-26) puts the closure cost at ~28k–50k LOC across any
+  arc — multi-month, classical-mathlib-grade work. See
+  [`HANDOFF_ITEM14.md`](HANDOFF_ITEM14.md) "WALL DOCUMENTED" + "ACTIVE
+  ARC — CANONICAL CURRENT STATE" for chain, citations, and audit.
+  **Item 14 on the concrete `X = RiemannSphere` is unconditionally
+  closed** ([`Topology/Item14ForRiemannSphere.lean`](JacobianChallenge/Topology/Item14ForRiemannSphere.lean)).
+* **Items 5, 11, 12, 13, 17, 18, 21** (Jacobian-side ChartedSpace +
+  related instances) collapse to `C3FullInputExt X` (Riemann
+  bilinear + Abel + Jacobi inversion). See [`C3_AUDIT.md`](C3_AUDIT.md).
 
 **Earlier baseline (2026-05-23):** 14/24 STRICT-CLOSED, 2 STUB, 8 OPEN.
 Umbrella `lake build` clean at **9,326 jobs** (zero `sorry`, zero
