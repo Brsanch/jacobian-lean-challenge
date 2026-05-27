@@ -18,9 +18,18 @@ maxSynthPendingDepth = 3
 # workflow for Lean timeouts and loops".
 diagnostics = true
 
-# Pinned to the exact mathlib commit Buzzard specified in the challenge gist
-# (https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9, v0.3,
+# Pinned to the mathlib commit Buzzard specified in the v0.3 gist
+# (https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9,
 # "compiles with commit 8e3c989104daaa052921bf43de9eef0e1ac9fbf5 (15th April 2026)").
+#
+# Repo's Basic.lean signatures use the v0.4 notation (`𝓘(ℂ, E)` instead of
+# `modelWithCornersSelf ℂ E`) per the 2026-05-21 gist revision. v0.4's
+# stated mathlib pin is `548398201a64f3a5127d90d83945278cfe38cac4` (15th
+# May 2026); we remain pinned to v0.3's `8e3c989...` because Buzzard's
+# own v0.4 changelog states "v0.4 is syntactically identical to v0.3"
+# — both notations are definitionally equal in mathlib, so the math
+# content is identical. Pin bump deferred to avoid full-repo recompile
+# from source (no `cache get` due to apfsd panic risk per CLAUDE.md).
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
