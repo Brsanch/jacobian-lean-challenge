@@ -20,7 +20,7 @@ would let items 5/11/12/13 auto-discharge on `RiemannSphere` via
 [CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold
 𝓘(ℂ) ω X]` typeclass args. Adding a `[Nonempty (C3FullInputExt X)]`
 constraint would change Buzzard's signature, which the strict-closed
-bar per `feedback_jacobian_strict_closed_bar.md` does not admit. The
+bar does not admit. The
 heavier rewire-by-redefinition (route 1, ~1,500+ LOC redefining
 `Jacobian X = JacobianAnalyticChoice X`) would break the existing
 `Pic⁰`-based `ofCurve`/`pushforward`/`pullback` discharges of items
@@ -73,7 +73,7 @@ Plus structural pieces:
 
 | Piece | Cost | Notes |
 |---|---|---|
-| **Structural rewire** of `Jacobian X = Pic⁰ X` to fire analytic-Jacobian instances | **~400–800 LOC (route 2)** or ~1,500+ (route 1). **DEFERRED** — strict-signature incompatible per `feedback_jacobian_strict_closed_bar`. | All instances + `picZeroEquiv` already in tree at `JacobianAnalyticChoice.lean`; the rewire is the consumer side. |
+| **Structural rewire** of `Jacobian X = Pic⁰ X` to fire analytic-Jacobian instances | **~400–800 LOC (route 2)** or ~1,500+ (route 1). **DEFERRED** — strict-signature incompatible: Basic.lean instance signatures admit no extra typeclass argument, and a redefinition of `Jacobian X` would regress items 6/7/8/22 that currently discharge against `Pic⁰`. | All instances + `picZeroEquiv` already in tree at `JacobianAnalyticChoice.lean`; the rewire is the consumer side. |
 | **Per-curve `lattice_match`** (items 18/21 strict-closed without per-curve typeclass arg) | **~2–4k LOC** classical (period-pairing adjunction `∫_{f_*γ} α = ∫_γ f^*α`) | Algebraic side in `HolomorphicOneFormPullbackMatrix.lean:103`; genuinely-open part is the integral identity on cycles. |
 
 ### Authoritative LOC totals
@@ -184,11 +184,10 @@ all unaffected.
   ~57k midpoint has a real ±50% band → 30k–85k. PeriodLattice atoms
   are wider than the Pompeiu calibration (which is one identity), so
   factor-2 uncertainty in either direction is realistic.
-- **`feedback_lean_paraphrase_antipattern.md` risk**: PeriodLattice
-  already has `ofFourNamedAtoms`, `ofThreeNamedAtoms`,
-  `ofThreeNamedAtomsNoAlpha`, etc. Further `*From*Atoms` reductions
-  don't move the frontier. The four atoms ARE the frontier; chipping
-  toward them is the only progress.
+- **Paraphrase risk**: PeriodLattice already has `ofFourNamedAtoms`,
+  `ofThreeNamedAtoms`, `ofThreeNamedAtomsNoAlpha`, etc. Further
+  `*From*Atoms` reductions don't move the frontier. The four atoms ARE
+  the frontier; chipping toward them is the only progress.
 
 ### Related canonical docs
 
@@ -197,5 +196,3 @@ all unaffected.
 - [`OPEN.md`](OPEN.md) — per-item status table; Items 5/11/12/13/17/18/21
   rows point here.
 - [`REPO_AUDIT.md`](REPO_AUDIT.md) — full-repo chain-trace per sorry.
-- [`C3_AUDIT.md`](C3_AUDIT.md) — older C3-specific deep audit (now
-  superseded by this canonical; analytical content retained).
