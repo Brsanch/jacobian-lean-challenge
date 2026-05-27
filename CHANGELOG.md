@@ -1,5 +1,80 @@
 # Changelog
 
+## 2026-05-26 — Item 14 SHIPPED CONDITIONAL on `ExistsMeroSimplePole_GenusZero X` + doc consolidation
+
+**Decision**: ship Item 14 conditional on the named classical
+hypothesis `ExistsMeroSimplePole_GenusZero X` (= Forster Thm 16.9)
+and document the wall. The chip-velocity phase for Item 14
+abstract-X closure is over; remaining work is multi-thousand-LOC
+classical-mathlib-grade content. Per Buzzard's challenge spirit,
+packaging difficult classical theorems as named opens is the
+appropriate finish at this mathlib pin.
+
+### Authoritative LOC audit (commit `88270f7`)
+
+Four parallel sub-agents with 6,500-LOC-per-substantial-theorem
+calibration from the measured Pompeiu chain (`Analysis/Pompeiu*.lean`
++ `Analysis/InvNorm*.lean` = 6,587 LOC, 250 declarations, 1 substantial
+theorem `partialZBar_pompeiuKernel_eq_self`). Findings:
+
+* **Arc 1 (RR + Serre)**: ~28k–35k LOC remaining for abstract-X
+  closure (Forster Ch.15-17 decomposition); ~16.5k LOC of relevant
+  in-tree scaffolding already paid. Sub-theorems: coherent analytic
+  sheaves, Cartan-Serre finiteness, Leray-on-Stein, RR index, Serre
+  duality.
+* **Arc 2 (Behnke-Stein on disk + Cousin I)**: ~10k LOC for RS-only
+  closure (McMullen Berkeley 241/96 Thms 7.1-7.6); abstract X bundles
+  with uniformization step = ~38k–56k LOC total. Pompeiu Phase A
+  + bridges = 7,560 LOC reusable; 5,373 LOC partition-Pompeiu chain
+  is mostly sunk cost for this arc.
+* **Arc 3 (Dirichlet / Green's, Forster Ch.27-28)**: ~26k–46k LOC
+  remaining; requires Sobolev-on-manifolds + Laplace-Beltrami +
+  Rellich-Kondrachov + Dirichlet principle + Weyl's lemma + Green's
+  function — none in mathlib at pin or HEAD; each is its own
+  mathlib-scale sub-project.
+* **External survey**: pin is ~6 weeks old (2026-04-15 vs.
+  currentDate 2026-05-26). Mathlib HEAD has incremental sheaf-cohomology
+  API; pin-bump saves <1k LOC. No external Lean project formalizing
+  RS/RR/Serre/Hodge/uniformization. Joël Riou's derived-categories
+  foundation in mathlib, but Serre duality "on roadmap, not implemented".
+
+### Documentation changes (commits `17d4104`, `88270f7`, `ccee13b`)
+
+Consolidates Item 14 frontier story into a single canonical source:
+
+* `HANDOFF_ITEM14.md` — "WALL DOCUMENTED — SHIPPED CONDITIONAL"
+  header above canonical "ACTIVE ARC — CANONICAL CURRENT STATE"
+  section, with `ExistsMeroSimplePole_GenusZero` definition site
+  + full chain entry-point (file:line for each link) + textbook-
+  equivalent-names list + arc-by-arc audit numbers.
+* `README.md` Status — canonical framing (Item 14 conditional, RS-case
+  unconditional, pointer to HANDOFF).
+* `JacobianChallenge/Basic.lean` — comment block above the
+  `genus_eq_zero_iff_homeo` `sorry` documenting the closure chain
+  and named hypothesis the sorry is gated on. `sorry` stays
+  (Buzzard's signature has no hypothesis slot; consuming as `axiom`
+  deliberately avoided). Compile verified.
+* `OPEN.md` + `REPO_AUDIT.md` Item 14 rows — one-line canonical
+  pointers; pre-canonical session-by-session narrative preserved
+  as "Historical session log follows".
+* `OPEN.md` "Bottom line" — 2-walls framing rewritten to canonical
+  name `ExistsMeroSimplePole_GenusZero X` (Forster Thm 16.9) with
+  textbook-equivalent-names list explicit.
+* Audit docs (`DBAR_CONSUMER_AUDIT`, `REARCHITECTURE_AUDIT`,
+  `UNIFORMIZATION_ROUTE_AUDIT`, `HSP_AUDIT`) — SUPERSEDED banners
+  pointing to HANDOFF canonical.
+* `Item14FinalComposition.lean` + `BijectiveAnalyticToBiholomorphism.lean`
+  docstrings — updated to reflect 3 of 4 inputs of the four-input
+  chain unconditionally discharged. Both compile-verified.
+
+### Verification
+
+Compile-verified (`LEAN_NUM_THREADS=1 lake env lean FILE.lean`,
+exit 0): `Topology/HTopFromSubsingleton.lean` (the three
+`*_holds_unconditional` discharges compose to unconditional
+`DegreeOneIsBiholomorphic_RS X`); `Manifold/BijectiveAnalyticToBiholomorphism.lean`;
+`Topology/Item14FinalComposition.lean`; `JacobianChallenge/Basic.lean`.
+
 ## 2026-05-23 — holomorphic parametric integral arc closure: `ChartLocalPrimitiveSmoothExt` at `chartAt ℂ y` UNCONDITIONAL (6 chips, +1,376 Lean LOC across 6 new files)
 
 State: build single-file clean for each chip, repo now **1,072 `.lean`
