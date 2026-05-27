@@ -69,13 +69,13 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
 
 -- this proof avoids the hack answer `∀ X, genus X = 0`
 --
--- SHIPPED CONDITIONAL on the named classical hypothesis
+-- Shipped conditional on the named classical hypothesis
 -- `ExistsMeroSimplePole_GenusZero X` (= Forster Thm 16.9). All
 -- structural reductions are unconditional and compile-verified; the
 -- remaining `sorry` is the classical-content gap, not a structural
--- one. Buzzard's signature has no hypothesis slot, so the closure
--- chain cannot be discharged at this Prop without literally
--- consuming the named hypothesis as an `axiom` (deliberately avoided).
+-- one. The challenge signature admits no extra hypothesis argument,
+-- so the closure chain cannot be discharged at this Prop without
+-- introducing an axiom, which this repository does not do.
 --
 -- Closure chain (all unconditional in tree):
 --   ExistsMeroSimplePole_GenusZero X   (= Forster Thm 16.9, OPEN)

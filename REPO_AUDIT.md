@@ -13,7 +13,7 @@ topology, which is the wrong topology).
 | Line | Item | Reduces to |
 |---|---|---|
 | 73 | 14 | hSP X (one input — post-2026-05-24 merge, BSLB no longer needed; see `HANDOFF_ITEM14.md`) |
-| 103 | 5/11 | `[HasJacobianAnalyticStructure X]` (see `C3_AUDIT.md`) |
+| 103 | 5/11 | `[HasJacobianAnalyticStructure X]` (see [`HANDOFF_C3.md`](HANDOFF_C3.md)) |
 | 108 | 5/12 | same |
 | 111 | 5/12 | same |
 | 114 | 5/13 | same |
@@ -110,9 +110,7 @@ No other live `sorry`s exist outside Basic.lean (the other grep hits were docstr
 
 **`CHANGELOG.md` (6,684 lines).** Cumulative session-by-session change log. Not audited line-by-line (most entries are accurate session diffs, just numerous). The size itself is a smell; consider pruning to last ~5 sessions + a "see git log for older" pointer.
 
-**`CLOSURE_MAP.md` (959 lines).** Not audited line-by-line. Likely stale predictions from prior sessions.
-
-**`HANDOFF_2026_05_15_C3_PATH_LIFT.md` (276 lines).** Dated handoff from a single session — by definition stale. Should be deleted or absorbed into `HANDOFF_ITEM14.md` / `C3_AUDIT.md`.
+Notes from the original audit (2026-05-23): a `CLOSURE_MAP.md` (959 lines, stale predictions) and `HANDOFF_2026_05_15_C3_PATH_LIFT.md` (dated single-session handoff) were flagged for deletion. Both have since been removed; current canonical state lives in [`HANDOFF_ITEM14.md`](HANDOFF_ITEM14.md) and [`HANDOFF_C3.md`](HANDOFF_C3.md).
 
 **`README.md` (336 lines).** Not audited line-by-line. Worth re-reading to check it doesn't oversell.
 
@@ -120,7 +118,7 @@ No other live `sorry`s exist outside Basic.lean (the other grep hits were docstr
 
 1. **DELETE `Jacobian.lean:185` dead stub** (or rewire to `ofCurve_inj_holds`).
 2. **Trim `OPEN.md` Scoreboard section** to last 3 sessions + pointer to git log.
-3. **Delete `HANDOFF_2026_05_15_C3_PATH_LIFT.md`** (subsumed by `C3_AUDIT.md`).
+3. **Delete `HANDOFF_2026_05_15_C3_PATH_LIFT.md`** (subsumed by `HANDOFF_C3.md`).
 4. **Trim `CHANGELOG.md`** similarly.
 
 This audit itself is the deliverable; the cleanup is mechanical and

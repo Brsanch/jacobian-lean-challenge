@@ -2,14 +2,11 @@
 
 A Lean 4 / mathlib formalization in response to Kevin Buzzard's "Jacobians" AI
 challenge ([gist](https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9)).
-Basic.lean signatures match **v0.4** notation (2026-05-21, the `𝓘(ℂ, E)` revision
-of v0.3 — "syntactically identical to v0.3" per Buzzard's changelog). Mathlib
-remains pinned to v0.3's `8e3c989...` (2026-04-15); both notations are
-definitionally equal so the math content is identical (see `lakefile.toml` pin
-comment for the deferral reasoning).
+`Basic.lean` signatures use the **v0.4** notation (`𝓘(ℂ, E)`, per Buzzard's
+2026-05-21 gist revision — "syntactically identical to v0.3").
 
-The challenge asks for an API for the Jacobian variety of a compact Riemann
-surface: definitions of `genus`, `Jacobian`, `ofCurve` (Abel–Jacobi),
+The challenge asks for an API for the Jacobian variety of a compact connected
+Riemann surface: definitions of `genus`, `Jacobian`, `ofCurve` (Abel–Jacobi),
 `pushforward`, `pullback`, `ContMDiff.degree`, plus the structural typeclass
 instances and the headline lemmas (`genus_eq_zero_iff_homeo`, `ofCurve_inj`,
 holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
@@ -17,348 +14,77 @@ holomorphicity of `ofCurve` / `pushforward` / `pullback`, functoriality,
 
 ## Status
 
-**Current state (2026-05-26, post canonical-frontier audit):** 14 of
-24 items STRICT-CLOSED, 2 STUB, 8 OPEN. The 8 open items collapse to
-**two substantive classical theorems** — both shipped as **named
-classical hypotheses** per Buzzard's challenge convention:
+| Category | Count | Items |
+|---|---|---|
+| **Strict-closed** (real Lean proofs, no `sorry`) | **14 / 24** | 1, 2, 3, 6, 7, 8, 9, 15, 16, 19, 20, 22, 23, 24 |
+| Stub (compiles; placeholder body flips with the C3 structural rewire) | 2 | 4, 10 |
+| Shipped conditional on a named classical hypothesis (chain proven and compile-verified) | 8 | 5, 11, 12, 13, 14, 17, 18, 21 |
 
-* **Item 14** (`genus_eq_zero_iff_homeo`) is shipped CONDITIONAL on
-  `ExistsMeroSimplePole_GenusZero X` (= Forster Thm 16.9: compact
-  genus-0 Riemann surface admits a non-constant meromorphic function
-  with a single simple pole). Equivalently `hSP X`, equivalently
-  `H¹(X, 𝒪) = 0` at genus 0, equivalently `Nonempty (HolomorphicEquiv
-  X RiemannSphere)` at genus 0 — these are textbook-equivalent
-  (Dolbeault, Serre duality, RR, uniformization). All structural
-  reductions on both legs are unconditional in tree; the remaining
-  gap is the classical theorem itself. Authoritative LOC audit
-  (2026-05-26) puts the closure cost at ~28k–50k LOC across any
-  arc — multi-month, classical-mathlib-grade work. See
-  [`HANDOFF_ITEM14.md`](HANDOFF_ITEM14.md) "WALL DOCUMENTED" + "ACTIVE
-  ARC — CANONICAL CURRENT STATE" for chain, citations, and audit.
-  **Item 14 on the concrete `X = RiemannSphere` is unconditionally
-  closed** ([`Topology/Item14ForRiemannSphere.lean`](JacobianChallenge/Topology/Item14ForRiemannSphere.lean)).
-* **Items 5, 11, 12, 13, 17, 18, 21** (Jacobian-side ChartedSpace +
-  related instances + holomorphicity) are shipped CONDITIONAL on
-  `C3FullInputExt X` (= Riemann bilinear + Abel + Jacobi inversion
-  + AbelJacobi smoothness + AbelJacobi injectivity) plus per-curve
-  `C3FullInputCurve B_X B_Y f hf` (period-pairing adjunction, for
-  items 18/21). All structural reductions are unconditional in tree;
-  the remaining gap is genuine classical content. Authoritative LOC
-  audit (2026-05-26): ~40–60k LOC of classical-mathlib-grade work
-  for full C3 cluster closure on abstract X. **RS-case unconditionally
-  closed** via the subsingleton route
-  ([`Manifold/JacobianRiemannSphereInstances.lean`](JacobianChallenge/Manifold/JacobianRiemannSphereInstances.lean)
-  + [`Manifold/Pic0RiemannSphereSubsingleton.lean`](JacobianChallenge/Manifold/Pic0RiemannSphereSubsingleton.lean)).
-  See [`HANDOFF_C3.md`](HANDOFF_C3.md) "WALL DOCUMENTED" for chain,
-  per-field discharge, highest-leverage near-term chips (Weierstrass-σ
-  on T_L ~500–800 LOC; TLDivSumHypothesis ~2–4k LOC), and structural-
-  rewire deferral reasoning.
+On the concrete `X = RiemannSphere`, every item is unconditionally closed via
+the subsingleton route (`Manifold/JacobianRiemannSphereInstances.lean`,
+`Topology/Item14ForRiemannSphere.lean`).
 
-**Earlier baseline (2026-05-23):** 14/24 STRICT-CLOSED, 2 STUB, 8 OPEN.
-Umbrella `lake build` clean at **9,326 jobs** (zero `sorry`, zero
-`axiom`). Repo: **182,183 LOC across 1,072 `.lean` files**. Per-file
-`LEAN_NUM_THREADS=1 lake env lean` clean on all 6 chips of the
-2026-05-23 holomorphic parametric integral arc.
+### The two open walls
 
-Major recent landings (all on `main`):
+The 8 conditional items reduce to two classical theorems, neither of which is
+in mathlib at the pin.
 
-* **Holomorphic parametric integral arc** (2026-05-23, 6 chips,
-  +1,376 LOC). `ChartLocalPrimitiveSmoothExt (chartAt ℂ y) … y … om`
-  is **unconditional** for every `y : X` and `om : HolomorphicOneForm X`
-  (modulo the convex chart-target hypothesis already in the
-  definition). Chips: A (`AnalyticOn` of chart-coord parametric
-  integral via mathlib parametric Fréchet at 𝕜 = ℂ + Goursat) → B1+B2+B3
-  (chart-pulled identity for `chartLocalPrimitive` via non-loop
-  generalizations of `complexChainPeriod_single_eq_complex_integral`
-  and `pointwiseChartEvalIdentity_unconditional`) → C (manifold-side
-  transport via `ContMDiffOn.comp` with `contMDiffOn_chart` and
-  `ContMDiffOn.congr`). Plus D1 (`∫₀¹ ∂z-integrand dt = f(z)` FTC
-  atom) as the analytic input for the in-progress `ChartLocalPrimitiveFTC`
-  discharge.
+**Item 14** (`genus_eq_zero_iff_homeo`) reduces to
+`ExistsMeroSimplePole_GenusZero X` — Forster Theorem 16.9: a compact connected
+genus-0 Riemann surface admits a non-constant meromorphic function with a
+single simple pole. Equivalent textbook names (any closes Item 14 on abstract
+X via in-tree transport): `hSP X` = `ExistsSimplePoleGermAtSomePoint X`,
+`DBarSolvabilityAtGenusZero X` + `ChartAtConstantOnSource`,
+`RR_DimGE2_GenusZero X`, `Nonempty (HolomorphicEquiv X RiemannSphere)` at
+`genus X = 0`. Closure cost across any classical arc (Riemann–Roch + Serre,
+Dolbeault / Behnke–Stein, direct uniformization): ~28–50k LOC. See
+[`HANDOFF_ITEM14.md`](HANDOFF_ITEM14.md).
 
-* **Item-14 classical-content arc: chain assembly + Dolbeault + chart-
-  cell infra** (2026-05-21, 57 commits + merge `be4146d`, +3,639 LOC
-  across 23 new files via PR #1). *No items flipped*, but substantive
-  classical infrastructure landed toward item-14 reverse-leg closure on
-  simply-connected X. Chain-assembly chip is **closed for closed
-  polygonal loops in a single full-target chart** (any such loop is
-  the explicit boundary of a fan 2-chain → lies in `stokesBoundaries`),
-  via List-induction on `fanChain`/`polygonalChain`/`spokeResidue`.
-  Two-triangle outer-chain cancellation proven (`outerChain_mem_stokesBoundaries`).
-  Full chart-cell `Smooth2Simplex` constructor + chart-straight-line
-  `SmoothPath` + extensionality + face-equality + reverse identity.
-  Dolbeault chips 2-8: `dbarChart` + manifold-side `dbar` with full
-  biconditional `MDifferentiableAt ↔ dbar = 0`, ℂ-linearity, chain-
-  rule with holomorphic inner. `SmoothHomotopyPath` toolkit (structure
-  + chart-target straight-line interp + all four edge lemmas +
-  smoothness) — building blocks for the polygonal-approximation bordism
-  (final step toward `BasedSmoothLoopsBoundHypothesis X p₀` on simply-
-  connected X). Architectural reductions: Lebesgue subdivision of a
-  smooth path by chart cover; `SubdivisionTelescopingToLoop_named X`
-  reduced to universal BSLB and to `[Subsingleton (HolomorphicOneForm
-  X)]`. See `HANDOFF_ITEM14.md` for the remaining frontier.
+**C3 cluster** (items 5, 11, 12, 13, 17, 18, 21) reduces to `C3FullInputExt X`
+— bundling Riemann bilinear relations, Abel's theorem, Jacobi inversion,
+Abel–Jacobi smoothness, Abel–Jacobi injectivity — plus per-curve
+`C3FullInputCurve B_X B_Y f hf` (period-pairing adjunction, for items 18/21).
+Closure cost: ~40–60k LOC. See [`HANDOFF_C3.md`](HANDOFF_C3.md).
 
-* **Period-lattice plumbing + classical-content scaffolding + item-14
-  advances** (2026-05-20 late, two arcs, 35 commits + merge,
-  ~3,778 LOC across 34 new files, HEAD `ce776c9`). *No items flipped*
-  — work is foundational plumbing + named classical hypotheses; items
-  5/11/12/13/17/18/21 are now reducible to a single class hypothesis
-  `[HasJacobianAnalyticStructure X]` once it lands universally. **Arc
-  A** (period-lattice + classical, ~2,200 LOC): class-keyed
-  `CanonicalAnalyticJacobian` chain with 7 instances per X
-  (Compact/Charted/IsManifold/LieAddGroup on the analytic Jacobian
-  Type); basis-anonymous `HasJacobianAnalyticStructure X` class + RS
-  + T_L instances; `CanonicalOfCurve` with self-vanishing +
-  smoothness/constancy at genus 0; canonical pushforward/pullback
-  lifts + smoothness corollaries; RS + T_L smoke tests confirming
-  end-to-end composition; classical scaffolding via
-  `HodgeInnerProductHypothesis`, `HodgeFormMatrix`, `PeriodMatrix`,
-  `RiemannBilinearRelations` (first + second + bundled),
-  `RiemannBilinearImpliesLI` (genus-0 discharge),
-  `StandardSymplecticForm` (anti-symmetry `J^T = -J` proven),
-  `HodgeRiemannBridge` (the deep identity `i Π^T J Π̄ = H.toMatrix`,
-  Hermitian half proven). **Arc B** (item 14, ~1,580 LOC):
-  `ChartLocalPrimitiveExtend` + ContMDiff/mfderiv/Continuous transfer
-  theorems; global `pathPrimitive ContMDiff` + FTC via
-  `PathPrimitiveAdmissibleChartCover`; `S2ImpliesGenus0` from BSLB +
-  admissibility; **unconditional item-14 biconditional on `RiemannSphere`**;
-  `HasAdmissibleChartCover` + `HasConvexTargetChartCover` typeclasses
-  with class-driven compositions and automatic admissibility under
-  Subsingleton ω.
-
-* **Full T_L period-lattice closure + `ℂ⧸L ≃ₘ AnalyticJacobianSymp`
-  smooth diffeomorphism UNCONDITIONAL** (2026-05-19 late++++++, 20
-  chips, ~3,037 LOC). End-to-end closure of the period-lattice /
-  Abel-Jacobi infrastructure on the complex torus. `Nonempty
-  (PeriodLatticeSymplecticBundle … T_L)` unconditional via
-  `SmoothSymplecticBasis.reindex`; explicit AJ point formula
-  `abelJacobiPoint Q = mk (fun _ => Q.out)`; full lattice
-  characterization `periodLatticeImage = {fun _ => z : z ∈ L}`; two
-  classical hypotheses CLOSED unconditional (`AbelJacobiInjective`,
-  `AbelJacobiSmoothness`); `AbelHypothesis` reduced to T_L-level
-  `TLDivSumHypothesis` (Abel's elliptic theorem) and
-  `JacobiInversion.injective` reduced to `TLAbelConverseHypothesis`
-  (Weierstrass σ existence); `JacobiInversion.surjective` conditional
-  on `AbelHypothesis`. Headline `abelJacobiPointDiffeomorph` packages
-  ℂ⧸L ≃ₘ AnalyticJacobianSymp as a mathlib `Diffeomorph` —
-  UNCONDITIONAL.
-
-* **`SmoothPathLiftHypothesisTorus L` CLOSED unconditionally on T²**
-  (2026-05-19 late, 17 chips, 2,558 LOC). The universal-cover
-  smooth-lift content of the SmoothHurewicz reduction chain is now
-  unconditional. Every smooth based loop `γ` at `0` on `ℂ ⧸ L`
-  admits a smooth ambient lift `Γ : ℝ → ℂ` with `Γ(0) = 0` and
-  `mkQ ∘ Γ = γ.ambient` on `Icc 0 1`. Construction: chart-anchor
-  Lebesgue partition + cumulative seam-shift `∈ L` + per-piece
-  chart-symm composition + local agreement near seams (continuity
-  into discrete `L` + `discRadius_separates`) + bump multiplier
-  to extend smoothly to `ℝ`. Closes the hardest open atom on the
-  reduction chain; remaining genus-1 content is the bordism /
-  word-rep identification + the Cauchy-Stokes side.
-
-* **`riemannBilinear` CLOSED on T² + `SmoothHurewicz` arc opened**
-  (2026-05-19, 16 chips across two arcs, ~2,300 LOC). End-to-end
-  closure of `riemannBilinear` (period computation `∫_{γ_lam} dz =
-  lam` via mfderiv-mkQ-is-id + chain rule + integration; ℝ-linear-
-  independence via `(Fin 1 → ℂ) ≃ₗ[ℝ] ℂ`). Substantial
-  `SmoothHurewicz` infrastructure: `mkQ` is a covering map (via
-  mathlib's `AddSubgroup.isAddQuotientCoveringMap_of_comm`),
-  continuous lift (`contLift`), named smooth-lift atom
-  (`SmoothPathLiftHypothesisTorus`), and chart-based local smooth
-  lift (`localLift`) with smoothness + anchor identity. Also closes
-  `1 ≤ genus (ℂ ⧸ L)` lower bound via Forster-Riesz + `dz_ne_zero`.
-  Net atom closure: **1 full atom + 1 half-atom**.
-
-* **Complex torus `ℂ ⧸ L` infrastructure as the genus-1 example**
-  (2026-05-18 late late + 8, 10 chips, ~1,100 LOC). `IsManifold
-  𝓘(ℂ, ℂ) ω (ℂ ⧸ L)` instance, symplectic basis, smooth-path-
-  connectedness, named Hurewicz hypothesis on T², `H1_spans_top`
-  reduction unconditional in α.
-
-* **Smooth-Hurewicz arc completion (genus-≥1 syntactic + chart-local
-  geometry)** (2026-05-18 late late + 7, ~4,500 LOC across the session).
-  Built the full bordism+word-rep factoring of `SmoothHurewiczHypothesis`,
-  discharged the bordism side via concrete geometric construction
-  (`smoothBordant_of_smoothHomotopy` — explicit Smooth2Chain whose
-  boundary is `single γ₀ - single γ₁`), shipped the straight-line homotopy
-  in ℂ + the chart-local generalisation, and closed
-  `WordRepresentativeHypothesis` *syntactically* at any genus `g` on RS
-  and ℂ via the `constSymplecticBasis` discharge. **Honest caveat:** the
-  genus-≥1 syntactic closure uses a degenerate basis (all loops = const);
-  the genuinely-non-trivial genus-≥1 statement (basis representing
-  H₁-non-trivial classes on a non-simply-connected surface) remains open
-  and needs surface-topology infrastructure (T² = ℂ/Λ as a Riemann surface,
-  path lifting, cellular approximation) not in tree.
-
-* **Smooth-Hurewicz arc: symplectic basis + commutator
-  null-homology** (2026-05-18 late late + 6, 5 chips, ~622 LOC).
-  Opens the hardest open atom (`BasedLoopHomologyDecompositionHypothesis`,
-  the smooth-Hurewicz content on a genus-`g` surface) with the
-  symplectic-basis data structure, the `SmoothHurewiczHypothesis`
-  Prop, an `ofSmoothHurewicz` constructor through to the period-lattice
-  symplectic bundle, an `RS` validation, and a **real homological
-  identity** — `single_commutatorLoop_mem_stokesBoundaries`: the
-  commutator `[α, β]` of any two based loops is null-homologous in
-  `stokesBoundaries`, the classical "`H₁` is abelian" content
-  verified for arbitrary commutator words.
-
-* **Generic genus-≥1 period-lattice: per-based-loop homology +
-  complex-valued Stokes consolidation** (2026-05-18 late late + 5,
-  6 chips, ~964 LOC). The fourth atomic input
-  (`H1_spans_top_canonical`) factors through a per-based-loop homology
-  decomposition hypothesis + smooth-path-connectedness; the holomorphic
-  side's two real-valued vanishings consolidate into a single
-  complex-valued `HolomorphicComplexBoundaryVanishingHypothesis`. The
-  most-atomic constructor
-  `GenericGenusPeriodLatticeInputs.ofAtomicData` packages the reduced
-  data list. The
-  fourth atomic input of `GenericGenusPeriodLatticeInputs`
-  (`H1_spans_top_canonical`) now factors through a per-based-loop
-  homology decomposition hypothesis + smooth-path-connectedness, the
-  genuine generalisation of `BasedSmoothLoopsBoundHypothesis` (the
-  genus-0 case is the trivial decomposition). Headline
-  `H1_spans_top_canonical_of_basedLoopHomology` aggregates the
-  per-path decomposition over `c.support` and uses the αShift
-  cycle-property cancellation to track an extra
-  `∑ Nᵢ • cycleGens i` term alongside the original genus-0 argument.
-  Clean-atomic constructor
-  `GenericGenusPeriodLatticeInputs.ofBasedLoopHomology` packages the
-  reduced atomic data; validated on `RiemannSphere` end-to-end via
-  `genericGenusPeriodLatticeInputs_RiemannSphere_via_basedLoopHomology`.
-
-* **Full genus-0 period-lattice closure on `RiemannSphere`,
-  unconditional** (2026-05-18 late late + 4, HEAD `419b009`).
-  The 4-tuple `GenericGenusPeriodLatticeInputs` on RS is now
-  constructible without any classical-input hypothesis. Headline
-  `stokesBoundaries 𝓘(ℝ, ℂ) RiemannSphere = ⊤` (in
-  `Manifold/StokesBoundariesRiemannSphereTop.lean`) composes the
-  Finsupp cycle aggregation `cycle_in_stokesBoundaries_of_basedLoopsBound`
-  with the unconditional `basedSmoothLoopsBoundHypothesis_RS_holds`.
-  All four atomic inputs of `GenericGenusPeriodLatticeInputs` then
-  discharge: `cycleGens` via `IsEmpty.elim`, `riemannBilinear` via
-  `linearIndependent_empty_type`, `holomorphicCanonicalClosed` via
-  `HolomorphicComponentsCanonicalClosed.of_subsingleton`, and
-  `H1_spans_top_canonical` via `Subsingleton.elim` after
-  `subsingleton_canonical_H1_of_stokesBoundaries_eq_top` consumes
-  `stokesBoundaries_RS_eq_top`.
-
-* **Cotangent-bundle chart-pullback identity proven under frame
-  stability** (2026-05-18 late late + 4). The substantive identity
-  `α.eval (γ.ambient t) (γ.velocity t)
-    = α.localCoeff basePoint (chartPath t) * deriv chartPath t`
-  for chart-contained smooth loops is now an in-tree theorem
-  (`pointwiseChartEvalIdentity_of_frameStable` in
-  `Manifold/PointwiseChartEvalFromFrameStability.lean`).
-  Frame stability (`chartAt ℂ (γ.ambient t) = chartAt ℂ basePoint`)
-  is automatic on `RS` for `basePoint ≠ ∞`. Composite
-  `complexChainPeriod_vanishes_RiemannSphere` (in
-  `Manifold/CotangentChartFrameStableRS.lean`) gives **fully
-  unconditional per-loop complex-period vanishing** for any
-  chart-contained closed loop on RS with basepoint off ∞.
-
-* **`BasedSmoothLoopsBoundHypothesis 𝓘(ℝ, ℂ) RiemannSphere p₀`
-  UNCONDITIONAL** (2026-05-18 late late, HEAD `ce40ac7`). The full
-  load-bearing genus-0 input for canonical period-lattice closure
-  is now structurally complete: every smooth loop on `RS` at any
-  basepoint has its single in `stokesBoundaries`. End-to-end pipeline:
-
-  ```
-  smooth loop on RS
-    → [Sard via Hausdorff dimH ≤ 1 < 2 = finrank ℝ ℂ]
-      misses some point
-    → [Möbius `mobiusComposed c` + chart-N pullback via `tubularBump`]
-      factors through ℂ as `γ = push f γ'`
-    → [V-loop-bounds linear contraction + stokesBoundaries pushforward]
-      based loop bounds a smooth 2-chain
-    → [loop-rebasing + rebasing] every smooth loop's single ∈ stokesBoundaries
-    → [concat-additivity + reverse-cancellation + const-membership +
-       cycle-boundary-cancellation]
-      every smooth 1-cycle's single ∈ stokesBoundaries
-    → stokesBoundaries 𝓘(ℝ, ℂ) RiemannSphere = ⊤
-  ```
-
-  ~5,140 LOC across ~30 chips landed 2026-05-18 (concat-additivity
-  arc → V-loop-bounds → factorisation pipeline → chart-symm smoothness
-  → structural reduction → chart-N pullback discharge → Möbius shift
-  → missed-point discharge → capstone). Headline:
-  `basedSmoothLoopsBoundHypothesis_RS_holds` in
-  `Manifold/StokesBoundariesTopRiemannSphere.lean`.
-
-* **A1 + A2 closed unconditionally** — the two RS-side classical inputs
-  of the genus-0 Riemann–Roch chain (`LinearSystemAtInftyRS_BoundedBySimplePoleSpan`
-  via polynomial-growth Liouville at ∞; `ExistsMobiusToInftyRS` via
-  antipode + translation as `HolomorphicEquiv RS RS`).
-* **`Pic⁰(ℙ¹) = 0` unconditional in-tree** — every degree-zero divisor
-  on the Riemann sphere is principal. Headline:
-  `AbelJacobiInput.abelJacobiEquiv_of_RiemannSphere_unconditional`
-  gives `Pic⁰ RS ≃+ AnalyticJacobian RS` axiom-free.
-* **C3 + C4 reduced to atomic textbook hypotheses at general genus** —
-  `AbelHypothesis B` factors through `AbelGeneratorPeriodCondition B`
-  (per meromorphic function); `JacobiInversion` at genus 0 reduces to
-  `Subsingleton (Pic0 X)`.
-* **`SimplyConnectedS2` UNCONDITIONAL** (2026-05-15, 15-chip
-  polygonal-approximation arc, capstone in
-  `Topology/SimplyConnectedS2Unconditional.lean`) — the mathlib gap
-  `SimplyConnectedSpace JacobianChallenge.StandardS2` is closed via a
-  two-chart stereographic cover + `lebesgue_number_lemma` partition +
-  canonical `stereographicStraightLine` per piece + Baire-style finite
-  union of nowhere-dense ranges. Reduces the simple-connectedness
-  route for item 14's reverse leg from two named classical inputs to
-  one (the Stokes + Liouville analytic chain
-  `HolomorphicOneFormSubsingletonOfSimplyConnected X`).
-* **Hodge finite-dim Forster scaffolding** (2026-05-17, 16 chips,
-  +2,948 LOC) — `HolomorphicOneFormFiniteDim X` proof reduced to two
-  remaining steps: seminorm convergence (inner-disk uniform → outer-
-  disk seminorm via multi-chart density bound) and Riesz application
-  via `FiniteDimensional.of_isCompact_closedBall₀`.
-* **`RegularLevelSetLatticeClause` discharge — algebraic side
-  complete** (2026-05-17 evening, 19 chips, ~3,460 LOC). Three waves:
-  (i) per-`t` trace identity at sub-interval (6 chips); (ii) full
-  eventually-form composition near `t = 0` (6 chips); (iii)
-  **lifted-point chain rule + global integrand-trace integral
-  identity** (8 chips). The lifted-point breakthrough — sheets
-  centered at the lifted point `q := extend t₀ p` automatically
-  satisfy the sub-interval condition — bypasses Hurwitz subdivision
-  entirely. Headline now in tree:
-  ```
-  SmoothChain.integrate (levelSetChain f β) om
-    = ∫ t in 0..1, derivσ(t) *
-        applyCotangent (traceAt … (β(σ t)) om) (mfderiv β (σ t) 1)
-  ```
-  Remaining for full clause discharge: σ-reparametrisation,
-  `f_*ω` smooth-on-`regularValueSet` packaging, residue theorem
-  adaptation `principalDivisorMap → f_*ω` on ℙ¹.
-
-The remaining 12 items either depend on classical content not at the
-mathlib pin (Hodge L² finite-dim, period lattice for genus ≥ 1, surface
-classification for item 14's forward leg, Abel–Jacobi at genus ≥ 1) or
-on the named-hypothesis inputs above. See `OPEN.md` for the per-item
-map, `CLOSURE_MAP.md` §D.2.6 for the SimplyConnectedS2 arc, and
-`CHANGELOG.md` for the per-commit history.
+`Basic.lean` carries comment blocks above each `sorry` documenting the chain,
+the named hypothesis the gap reduces to, and file:line citations of every
+in-tree unconditional discharge.
 
 ## Layout
 
 ```
-JacobianChallenge.lean          -- library entry point
+JacobianChallenge.lean          library entry point
 JacobianChallenge/
-  Basic.lean                    -- Buzzard's challenge signature, verbatim
-  ...                           -- additional modules added as content lands
-lakefile.toml                   -- mathlib pinned to commit 8e3c989...
-lean-toolchain                  -- v4.30.0-rc1
-.github/workflows/              -- CI (lean-action, release-on-toolchain, mathlib update)
-DEVELOPMENT.md                  -- workstation rules + CI-as-default workflow
-OPEN.md                         -- sorry inventory mapped to challenge items
+  Basic.lean                    Buzzard's challenge signature
+  Analysis/                     Pompeiu kernel, integrability, Cauchy–Pompeiu
+  Manifold/                     manifold ∂̄, degree theory, period lattice,
+                                AbelJacobi, Hodge scaffolding, etc.
+  Topology/                     Item 14 chain, uniformization transport
+  Divisor/                      divisor / Pic⁰ infrastructure
+HANDOFF_ITEM14.md               Item 14 canonical wall doc + audit
+HANDOFF_C3.md                   C3 canonical wall doc + audit
+OPEN.md                         per-item status table
+REPO_AUDIT.md                   full-repo chain-trace per sorry
+DEVELOPMENT.md                  workstation + CI guidance
+lakefile.toml                   mathlib pin
+lean-toolchain                  Lean version
+.github/workflows/              CI
 ```
+
+The repo contains ~204k LOC across ~1,180 `.lean` files. Most of that is
+in-tree analytic scaffolding (Pompeiu kernel, residue theorem on a compact
+Riemann surface, manifold ∂̄ operator, degree / ramification theory, period
+lattice, path-integral FTC, biholomorphism upgrade lemmas) that is reusable
+beyond this challenge.
 
 ## Building
 
-This project is developed with **CI as the authoritative build**. See
-`DEVELOPMENT.md` for the full rationale (apfsd kernel-panic mitigation on
-Apple Silicon) and the recommended workflow. In short: do not run
-`lake build` locally on a Mac; push to GitHub and read the CI log.
+CI is the authoritative build (Lean Action CI on push). Local building on
+Apple Silicon is constrained by an apfsd kernel-panic risk with `lake build`
+and `lake exe cache get`; see [`DEVELOPMENT.md`](DEVELOPMENT.md) for the
+recommended workflow.
 
-For single-file no-write elaboration on a Linux box or a Mac that you're
-willing to risk:
+Single-file elaboration:
 
 ```sh
 LEAN_NUM_THREADS=1 lake env lean JacobianChallenge/Basic.lean
@@ -366,11 +92,16 @@ LEAN_NUM_THREADS=1 lake env lean JacobianChallenge/Basic.lean
 
 ## Mathlib pin
 
-The `lakefile.toml` pins mathlib to commit
-`8e3c989104daaa052921bf43de9eef0e1ac9fbf5` (15 April 2026), as required by
-Buzzard's challenge v0.3. Do not bump this without a corresponding bump in
-the challenge file's compatibility line.
+`lakefile.toml` pins mathlib to commit
+`8e3c989104daaa052921bf43de9eef0e1ac9fbf5` (15 April 2026), the pin from
+Buzzard's v0.3 gist. The pin was not bumped to v0.4's
+`548398201a64f3a5127d90d83945278cfe38cac4` (15 May 2026) because Buzzard's
+own v0.4 changelog states "v0.4 is syntactically identical to v0.3" — both
+notations are definitionally equal, the math content is unchanged, and a
+full-repo recompile under the bumped pin is prohibitively expensive without
+`lake exe cache get` (apfsd panic constraint). See the pin comment in
+`lakefile.toml` for details.
 
 ## License
 
-MIT. See `LICENSE`.
+MIT. See [`LICENSE`](LICENSE).
