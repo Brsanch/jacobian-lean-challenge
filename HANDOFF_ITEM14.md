@@ -6,26 +6,50 @@
 
 **Status decision**: Item 14 is shipped CONDITIONAL on the named
 classical hypothesis `ExistsMeroSimplePole_GenusZero X` (= Forster
-Thm 16.9). All structural reductions on both legs are proven and
-compile-verified; the remaining gap is one classical theorem
-requiring multi-thousand-LOC mathlib-grade infrastructure not at
-this pin. Per Buzzard's challenge spirit, packaging difficult
-classical content as a named open hypothesis is the appropriate
-finish at this mathlib pin. Further chip-by-chip progress on
-Item 14 abstract-X closure is not on the roadmap.
+Thm 16.9, defined at
+[`Topology/RiemannRochGenusZeroDecomposition.lean:101`](JacobianChallenge/Topology/RiemannRochGenusZeroDecomposition.lean#L101)).
+All structural reductions on both legs are proven and compile-verified;
+the remaining gap is one classical theorem requiring multi-thousand-LOC
+mathlib-grade infrastructure not at this pin. Per Buzzard's challenge
+spirit, packaging difficult classical content as a named open hypothesis
+is the appropriate finish at this mathlib pin. Further chip-by-chip
+progress on Item 14 abstract-X closure is not on the roadmap.
 
 * **Item 14 on `X = RiemannSphere`**: UNCONDITIONALLY closed
   ([`Topology/Item14ForRiemannSphere.lean`](JacobianChallenge/Topology/Item14ForRiemannSphere.lean)).
 * **Item 14 on abstract X**: conditional on `ExistsMeroSimplePole_GenusZero X`
   via the chain documented below.
+* **The chain entry-point (1-input composition)**:
+  [`Topology/RiemannRochGenusZeroSingleInput.lean:54`](JacobianChallenge/Topology/RiemannRochGenusZeroSingleInput.lean#L54)
+  `riemannRochGenusZero_from_existence : ExistsMeroSimplePole_GenusZero X → RiemannRochGenusZero X`,
+  then
+  [`Topology/UniformizationFromRiemannRoch.lean`](JacobianChallenge/Topology/UniformizationFromRiemannRoch.lean)
+  → `UniformizationToRiemannSphere X` (genus=0 branch),
+  then
+  [`Topology/Item14FromSingleUniformization.lean:168`](JacobianChallenge/Topology/Item14FromSingleUniformization.lean#L168)
+  `genus_eq_zero_iff_homeo_of_uniformizationToRiemannSphere` →
+  `genus X = 0 ↔ Nonempty (X ≃ₜ StandardS2)`, then
+  [`Topology/Item14ClassTransport.lean`](JacobianChallenge/Topology/Item14ClassTransport.lean)
+  to land in the `Basic.lean` signature shape.
+* **Equivalent textbook names of the same wall** (any closes Item 14
+  on abstract X via in-tree transport):
+  `hSP X` = `ExistsSimplePoleGermAtSomePoint X`,
+  `DBarSolvabilityAtGenusZero X` + `ChartAtConstantOnSource`,
+  `RR_DimGE2_GenusZero X`,
+  `Nonempty (HolomorphicEquiv X RiemannSphere)` at `genus X = 0`.
+  These are textbook-equivalent (Dolbeault ↔ Serre duality ↔ RR ↔
+  uniformization).
 * **Authoritative LOC audit of remaining classical work** (2026-05-26,
   four parallel sub-agents with 6,500-LOC-per-substantial-theorem
-  calibration from the measured Pompeiu chain): closure costs
-  ~28k–35k LOC for Arc 1 (RR + Serre), ~26k–46k LOC for Arc 3
-  (Dirichlet / Green's), or ~38k–56k LOC for Arc 2 abstract X.
-  Multi-month at this repo's chip velocity. No external Lean project
-  will land any arc soon. See git log for the audit-driven HANDOFF
-  refresh.
+  calibration from the measured Pompeiu chain at
+  `Analysis/Pompeiu*.lean` + `Analysis/InvNorm*.lean` = 6,587 LOC,
+  250 declarations, 1 substantial theorem `partialZBar_pompeiuKernel_eq_self`):
+  closure costs **~28k–35k LOC for Arc 1** (RR + Serre),
+  **~26k–46k LOC for Arc 3** (Dirichlet / Green's),
+  or **~38k–56k LOC for Arc 2 abstract X** (Behnke-Stein + Cousin I
+  with required uniformization step). Multi-month at this repo's chip
+  velocity. No external Lean project will land any arc soon; mathlib
+  pin bump saves <1k LOC.
 
 The rest of this section remains the canonical structural picture.
 
