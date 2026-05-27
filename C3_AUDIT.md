@@ -1,5 +1,15 @@
 # C3 deep audit (2026-05-23)
 
+> **⚠️ SUPERSEDED snapshot. Canonical current state for C3 lives in
+> [`HANDOFF_C3.md`](HANDOFF_C3.md) "WALL DOCUMENTED — SHIPPED
+> CONDITIONAL". The 2026-05-26 four-agent deep audit refined the
+> remaining-LOC numbers (~44–75k LOC, midpoint ~57k LOC, with ±50%
+> band) and verified per-field discharge status cell-by-cell with
+> file:line cites. This audit's structural analysis remains correct;
+> only the "next-session work order" framing is superseded by the
+> ship-conditional decision documented in HANDOFF_C3.**
+
+
 Companion to the item-14 audit. Same fresh-eyes lens: what's actually in
 tree, what would actually flip Basic.lean sorries.
 

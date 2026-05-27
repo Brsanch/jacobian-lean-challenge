@@ -134,17 +134,32 @@ instance : TopologicalSpace (Jacobian X) := inferInstance
 instance : T2Space (Jacobian X) := inferInstance
 
 -- Prop
+-- SHIPPED CONDITIONAL on `C3FullInputExt X`. Closure chain:
+--   C3FullInputExt X → JacobianAnalyticChoice X bundle (all 7 instances)
+--                      via Manifold/JacobianAnalyticChoice.lean:54+116
+--   then transport across picZeroEquiv : Pic⁰ X ≃+ JacobianAnalyticChoice X
+--   (UNCONDITIONAL bridge; consumer side is the deferred structural rewire).
+-- On X = RiemannSphere: unconditional via the subsingleton route
+--   (Manifold/JacobianRiemannSphereInstances.lean +
+--    Manifold/Pic0RiemannSphereSubsingleton.lean:163).
+-- See HANDOFF_C3.md "WALL DOCUMENTED" for the canonical chain, audit
+-- (~23-41k LOC remaining for PeriodLatticeAnalyticHypotheses field on
+-- abstract X), and the strict-signature reason the rewire is deferred.
 instance : CompactSpace (Jacobian X) := sorry
 
 -- data
 /-- The Jacobian of a compact Riemann surface is a complex manifold, of dimension
 equal to the genus of the surface. -/
+-- SHIPPED CONDITIONAL on `C3FullInputExt X`. Same chain as item 11
+-- above; see HANDOFF_C3.md.
 instance : ChartedSpace (Fin (genus X) → ℂ) (Jacobian X) := sorry
 
 -- Prop
+-- SHIPPED CONDITIONAL on `C3FullInputExt X`. Same chain; see HANDOFF_C3.md.
 instance : IsManifold (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) := sorry
 
 -- Prop
+-- SHIPPED CONDITIONAL on `C3FullInputExt X`. Same chain; see HANDOFF_C3.md.
 instance : LieAddGroup (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) := sorry
 
 /-- The Abel-Jacobi map from a compact Riemann surface to its Jacobian. **Stub
@@ -155,6 +170,12 @@ constructor lands in `Divisor.lean`. The `ofCurve_inj` lemma (item 16) is
 noncomputable def ofCurve (P : X) : X → Jacobian X :=
   JacobianChallenge.Jacobian.ofCurve P
 
+-- SHIPPED CONDITIONAL on `C3FullInputExt X` (specifically its
+-- JacobianAnalyticClosureBundle field). Closure: bundle →
+-- analyticJacobian_ofCurve_contMDiff_of_bundle at
+-- Manifold/JacobianAnalyticBasicLeanReduction.lean:70. Same deferred-
+-- rewire caveat as items 5/11/12/13; on X = RiemannSphere unconditional
+-- via Manifold/CanonicalOfCurveContMDiffSubsingleton.lean. See HANDOFF_C3.md.
 lemma ofCurve_contMDiff (P : X) : ContMDiff 𝓘(ℂ)
     (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) := sorry
 
@@ -189,6 +210,15 @@ noncomputable def pushforward (f : X → Y)
   JacobianChallenge.Jacobian.pushforward hf
 
 -- pushforward is holomorphic
+-- SHIPPED CONDITIONAL on `C3FullInputExt X` + per-curve
+-- `C3FullInputCurve B_X B_Y f hf`. Closure:
+-- C3FullInputCurve.toPushforwardLift at Manifold/C3FullInputCurve.lean:78
+-- → analyticJacobian_pushforward_contMDiff_of_lift at
+--   Manifold/JacobianAnalyticBasicLeanReduction.lean:113. Same deferred-
+-- rewire caveat. On RS (X = Y = RiemannSphere) unconditional via
+-- subsingleton. See HANDOFF_C3.md for per-curve `lattice_match`
+-- classical content (~2-4k LOC: period-pairing adjunction
+-- ∫_{f_*γ} α = ∫_γ f^*α).
 theorem pushforward_contMDiff :
   ContMDiff (modelWithCornersSelf ℂ (Fin (genus X) → ℂ))
   (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ)) ω (pushforward f hf) := sorry
@@ -230,6 +260,12 @@ noncomputable def pullback (f : X → Y)
     f hf
 
 -- pullback is holomorphic
+-- SHIPPED CONDITIONAL on `C3FullInputExt X` + per-curve
+-- `C3FullInputCurve B_X B_Y f hf`. Closure:
+-- C3FullInputCurve.toPullbackLift at Manifold/C3FullInputCurve.lean:128
+-- → analyticJacobian_pullback_contMDiff_of_lift at
+--   Manifold/JacobianAnalyticBasicLeanReduction.lean:134. Same deferred-
+-- rewire caveat. On RS unconditional via subsingleton. See HANDOFF_C3.md.
 theorem pullback_contMDiff :
     ContMDiff (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ))
       (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) := sorry

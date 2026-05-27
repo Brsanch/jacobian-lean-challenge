@@ -34,8 +34,21 @@ classical hypotheses** per Buzzard's challenge convention:
   **Item 14 on the concrete `X = RiemannSphere` is unconditionally
   closed** ([`Topology/Item14ForRiemannSphere.lean`](JacobianChallenge/Topology/Item14ForRiemannSphere.lean)).
 * **Items 5, 11, 12, 13, 17, 18, 21** (Jacobian-side ChartedSpace +
-  related instances) collapse to `C3FullInputExt X` (Riemann
-  bilinear + Abel + Jacobi inversion). See [`C3_AUDIT.md`](C3_AUDIT.md).
+  related instances + holomorphicity) are shipped CONDITIONAL on
+  `C3FullInputExt X` (= Riemann bilinear + Abel + Jacobi inversion
+  + AbelJacobi smoothness + AbelJacobi injectivity) plus per-curve
+  `C3FullInputCurve B_X B_Y f hf` (period-pairing adjunction, for
+  items 18/21). All structural reductions are unconditional in tree;
+  the remaining gap is genuine classical content. Authoritative LOC
+  audit (2026-05-26): ~40–60k LOC of classical-mathlib-grade work
+  for full C3 cluster closure on abstract X. **RS-case unconditionally
+  closed** via the subsingleton route
+  ([`Manifold/JacobianRiemannSphereInstances.lean`](JacobianChallenge/Manifold/JacobianRiemannSphereInstances.lean)
+  + [`Manifold/Pic0RiemannSphereSubsingleton.lean`](JacobianChallenge/Manifold/Pic0RiemannSphereSubsingleton.lean)).
+  See [`HANDOFF_C3.md`](HANDOFF_C3.md) "WALL DOCUMENTED" for chain,
+  per-field discharge, highest-leverage near-term chips (Weierstrass-σ
+  on T_L ~500–800 LOC; TLDivSumHypothesis ~2–4k LOC), and structural-
+  rewire deferral reasoning.
 
 **Earlier baseline (2026-05-23):** 14/24 STRICT-CLOSED, 2 STUB, 8 OPEN.
 Umbrella `lake build` clean at **9,326 jobs** (zero `sorry`, zero

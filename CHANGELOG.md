@@ -1,5 +1,71 @@
 # Changelog
 
+## 2026-05-26 — C3 SHIPPED CONDITIONAL on `C3FullInputExt X` + per-curve `C3FullInputCurve` + HANDOFF_C3 canonical
+
+**Decision**: ship items 5/11/12/13/17/18/21 (the Jacobian-side
+ChartedSpace + related instances + holomorphicity cluster) CONDITIONAL
+on the named classical hypotheses `C3FullInputExt X` (for items
+5/11/12/13/17) and per-curve `C3FullInputCurve B_X B_Y f hf` (for items
+18/21). The C3 analog of the Item 14 ship-conditional decision. RS-case
+unconditionally closed via subsingleton route.
+
+### Authoritative four-agent C3 audit
+
+Four parallel sub-agents using the same Pompeiu calibration (~6,500
+LOC/substantial classical theorem, measured from 6,587-LOC Pompeiu chain).
+Per-field findings (every cell file:line verified):
+
+| Field | RS | ℂ⧸L | Arbitrary X (remaining) |
+|---|---|---|---|
+| `PeriodLatticeAnalyticHypotheses` | ✅ | ✅ | ~23–41k LOC (mid 32k) — 4 named atoms: SmoothSymplecticBasis, riemannBilinear, SubdivisionTelescopingTo2Simplex_named, SmoothHurewiczHypothesis |
+| `AbelHypothesis` | ✅ unconditional via genus 0 | conditional on `TLDivSumHypothesis L` (~2–4k LOC) | ~4–10k LOC (mid 7k) via `AbelLatticeWitness X α h` |
+| `JacobiInversion` (surj+inj) | ✅ | surj ✅; inj conditional on `TLAbelConverseHypothesis L` (~500–800 LOC — Weierstrass-σ; uses existing mathlib ℘) | ~13–16.5k LOC (theta or compactness/open-mapping route) |
+| `AbelJacobiSmoothness` | ✅ | ✅ unconditional | ~1.5–3k LOC (wiring chip) |
+| `AbelJacobiInjective` | ✅ | ✅ unconditional | ~300 LOC if Abel converse done; ~6.5k standalone |
+| Structural rewire (Basic.lean Jacobian X → fire analytic-Jacobian instances) | — | — | ~400–800 LOC (route 2) or ~1,500+ (route 1). **DEFERRED** — strict-signature incompatible per `feedback_jacobian_strict_closed_bar`. |
+| Per-curve `lattice_match` (items 18/21 strict-closed without per-curve typeclass arg) | — | — | ~2–4k LOC classical (period-pairing adjunction `∫_{f_*γ} α = ∫_γ f^*α`) |
+
+**Total C3 cluster on abstract X**: ~44–75k LOC (midpoint ~57k), or
+~40–60k after shared-structure deduplication. Comparison: Item 14
+abstract-X = ~28–50k LOC. C3 is larger but closes 7 items vs Item 14's
+1 — higher scoreboard leverage per LOC.
+
+**Highest-leverage near-term chips** (not full closure):
+1. Weierstrass-σ on T_L (~500–800 LOC) — discharges `TLAbelConverseHypothesis L`.
+2. `TLDivSumHypothesis L` discharge (~2–4k LOC) — makes `AbelHypothesis` on T_L unconditional.
+3. Structural rewire (DEFERRED, ~400–800 LOC if feasible) — would auto-discharge items 5/11/12/13 on RS via typeclass mechanism.
+
+### Documentation changes
+
+* **`HANDOFF_C3.md`** — NEW canonical doc. Mirror of `HANDOFF_ITEM14.md`
+  "WALL DOCUMENTED" section. Per-field discharge status with file:line,
+  authoritative LOC audit, highest-leverage chips, structural-rewire
+  deferral reasoning, mathlib state, related-canonical-docs index.
+* **`OPEN.md`** — Items 5/11/12/13/17/18/21 rows updated with
+  "SHIPPED CONDITIONAL" status + canonical pointer. Bottom-line
+  C3 framing rewritten with full named-hypothesis list + audit numbers.
+* **`REPO_AUDIT.md`** — same item rows updated.
+* **`C3_AUDIT.md`** — SUPERSEDED banner pointing to HANDOFF_C3.
+  Analytical content retained.
+* **`README.md`** — Status section updated to canonical C3 framing.
+* **`JacobianChallenge/Basic.lean`** — comment blocks added at the
+  7 sorry sites (lines 137/142/145/148/159/194/235) documenting the
+  closure chain (`C3FullInputExt X` + per-curve `C3FullInputCurve`)
+  and pointing to HANDOFF_C3. Sorries stay — Buzzard's strict signature
+  does not admit added typeclass args.
+
+### Why the structural rewire was deferred
+
+The audit verified Basic.lean's instance signatures (lines 137/142/145/148/
+159/194/235) take only the ambient `[TopologicalSpace X] [T2Space X]
+[CompactSpace X] [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]`
+typeclass args. Adding `[Nonempty (C3FullInputExt X)]` would change
+Buzzard's signature, which the strict-closed bar per
+`feedback_jacobian_strict_closed_bar` does not admit. The heavier
+route-1 rewire (redefining `Jacobian X = JacobianAnalyticChoice X`)
+would break the existing `Pic⁰`-based `ofCurve`/`pushforward`/`pullback`
+discharges of items 6/7/8/22 — net regression. Same finish as Item 14.
+
 ## 2026-05-26 — Item 14 SHIPPED CONDITIONAL on `ExistsMeroSimplePole_GenusZero X` + doc consolidation
 
 **Decision**: ship Item 14 conditional on the named classical
