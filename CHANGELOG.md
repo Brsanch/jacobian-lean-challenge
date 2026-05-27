@@ -15,7 +15,7 @@ two notations are definitionally equal in mathlib.
 Mathlib pin **NOT bumped**: stays at v0.3's `8e3c989...` (2026-04-15)
 rather than v0.4's `548398201a...` (2026-05-15). Reasoning documented
 in `lakefile.toml` pin comment. Bumping the pin would require a
-full-repo recompile from source (no `cache get` per CLAUDE.md
+full-repo recompile from source (no `cache get` per DEVELOPMENT.md
 apfsd-panic constraint) — a multi-day commitment with breakage risk,
 not justified by Buzzard's own "syntactically identical" assessment of
 the math content.
@@ -34,7 +34,7 @@ unconditionally closed via subsingleton route.
 
 ### Authoritative four-agent C3 audit
 
-Four parallel sub-agents using the same Pompeiu calibration (~6,500
+Four parallel decomposition passes using the same Pompeiu calibration (~6,500
 LOC/substantial classical theorem, measured from 6,587-LOC Pompeiu chain).
 Per-field findings (every cell file:line verified):
 
@@ -101,7 +101,7 @@ appropriate finish at this mathlib pin.
 
 ### Authoritative LOC audit (commit `88270f7`)
 
-Four parallel sub-agents with 6,500-LOC-per-substantial-theorem
+Four parallel decomposition passes with 6,500-LOC-per-substantial-theorem
 calibration from the measured Pompeiu chain (`Analysis/Pompeiu*.lean`
 + `Analysis/InvNorm*.lean` = 6,587 LOC, 250 declarations, 1 substantial
 theorem `partialZBar_pompeiuKernel_eq_self`). Findings:

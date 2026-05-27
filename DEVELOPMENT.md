@@ -44,7 +44,7 @@ work. The triggers are predictable and avoidable.
   fresh `.olean`s for many files (e.g. after a mathlib bump) — for
   per-file chip iteration, the single-file `lake env lean` is enough.
 - ✅ For size info: `ls -ldh /path` (directory itself, no recursion)
-  or `df -h /Volumes/4TB\ SD` (free space only).
+  or `df -h .` (free space only).
 - ✅ For finding files: use `Glob` / file browser, not `find`.
 - ✅ For big copies: `rsync --bwlimit=30M`.
 
@@ -95,13 +95,13 @@ imported module.
 existing declaration* (whose name already lives in main). It is
 insufficient for *adding new names*.
 
-### Single-agent serial work: edit `main`-tracking branches directly
+### Editing main-tracking branches directly
 
 For one chip at a time, work directly in the canonical checkout on a
 feature branch:
 
 ```
-cd "/Volumes/4TB SD/ClaudeCode/jacobian-lean-challenge"
+cd path/to/jacobian-lean-challenge
 git checkout main && git pull
 git checkout -b feat/<chip-name>
 ```
@@ -120,153 +120,10 @@ Then the per-iteration loop is:
    the only way to surface duplicate-name conflicts with declarations
    already living in other files. Skip this step only if the chip is
    pure proof-body iteration on names already in main.
-6. Commit (no AI-attribution trailer).
+6. Commit.
 7. Push the branch. CI is then optional — only watch it if you want a
    final confidence check after local-green.
 
-### Multi-agent parallel work: independent clones + local verification
-
-When parallelising across sub-agents, give each agent its own
-independent `gh repo clone` checkout so concurrent commits don't
-entangle the parent. Each agent runs its own local single-file verify
-loop — **NOT** a CI-watch loop. CI watching used to be the only honest
-"done" signal; it isn't anymore.
-
-```sh
-cd /tmp
-for x in a b c; do
-  rm -rf agent-${x}-jacobian 2>/dev/null
-  gh repo clone Brsanch/jacobian-lean-challenge agent-${x}-jacobian \
-    -- --depth 1 --quiet
-done
-```
-
-In each agent's prompt: *"You are working in `/tmp/agent-a-jacobian`.
-You are the ONLY agent in this directory. Verify with
-`LEAN_NUM_THREADS=1 lake env lean ...` until your new file and the
-manifest both pass single-file checks; then commit and push your
-branch. Do NOT watch CI."*
-
-DO NOT use the Agent tool's `isolation: "worktree"` parameter for
-parallel work. Worktree-mode isolation leaks branch state into the
-parent checkout — confirmed in the 2026-04-26 jacobian session.
-
-### "Done" criterion for an agent
-
-The agent's local checks are the source of truth:
-
-- New file passes `LEAN_NUM_THREADS=1 lake env lean <file>`.
-- Manifest passes `LEAN_NUM_THREADS=1 lake env lean JacobianChallenge.lean`.
-- **Full `taskpolicy -b nice -n 19 lake build` passes** (mandatory for
-  any chip introducing a new top-level `def`/`lemma`/`theorem`/
-  `instance`; the single-file checks alone do *not* detect duplicate
-  `namespace.declName` registrations across files — two such regressions
-  in 2026-05-12: zzMER, zz264/267).
-- `grep -nE "sorry|axiom\s" <new file>` is empty.
-- `git diff main -- <listed upstream files>` is empty (no signature
-  changes outside the new file).
-
-Once those five pass, the agent reports done — no CI watching required.
-The parent session can push a CI run as a final-verification step if
-the chip is touching cross-cutting infrastructure, but that's optional
-and does not gate merge.
-
-### Use independent clones, NOT git worktree isolation
-
-For parallel sub-agents: make N **fully independent shallow clones**
-with `gh repo clone` before dispatching, and hard-code the path in each
-agent's prompt:
-
-```sh
-cd /tmp
-for x in a b c d e; do
-  rm -rf agent-${x}-jacobian 2>/dev/null
-  gh repo clone Brsanch/jacobian-lean-challenge agent-${x}-jacobian \
-    -- --depth 1 --quiet
-done
-```
-
-Then in each agent's prompt: *"You are working in `/tmp/agent-a-jacobian`.
-You are the ONLY agent in this directory. `cd` here for all git commands."*
-
-DO NOT use the Agent tool's `isolation: "worktree"` parameter for
-parallel work. Empirically, worktree-mode isolation leaks branch state
-into the parent checkout — `git status` in the parent flips between
-agents' feature branches, and concurrent pushes get entangled. The
-2026-04-26 jacobian-lean-challenge session discovered this; killed the
-five worktree-isolated agents and re-dispatched in independent clones,
-which then produced 8+ rounds of clean parallel work.
-
-### Escalate when an agent gets stuck
-
-When a sub-agent returns a "stuck" report, the parent session should
-NOT just abandon the branch.
-
-Escalation protocol (post-local-verify era):
-
-1. `cd` into the agent's clone (or check out its branch in the canonical
-   checkout via `git fetch origin <branch> && git checkout <branch>`).
-2. Run the agent's last failing single-file check:
-   ```sh
-   LEAN_NUM_THREADS=1 lake env lean JacobianChallenge/<file>
-   ```
-   The error is printed inline at the bottom of stdout. Often the agent
-   burned context trying tactic alternatives when the actual fix is a
-   single name / instance mismatch obvious on manual eyes.
-3. Make the fix. Re-verify single-file. Commit. Push.
-4. If still failing, repeat. You're now the iterator. There is no
-   per-cycle cap on local iteration.
-
-**Don't delete the agent's branch on the remote** — the commit chain is
-your starting point for escalation.
-
-**Don't escalate "no honest progress" reports** that name a specific
-mathematical or library blocker (e.g. "needs Mayer-Vietoris from
-mathlib," "needs ~600 LOC of bundle plumbing"). The agent's analysis is
-more reliable than the parent's gut. Escalate only when the failure
-looks like a specific tactic / name / instance issue, not a deep math
-gap.
-
-### Verbatim signatures are non-negotiable; watch for signature-cheating
-
-When a sub-agent reports "I closed item N," **diff the agent's branch
-against the verbatim spec file before merging**. Specifically check:
-
-1. Does the `def` / `lemma` *signature* match the spec verbatim?
-   (Type, argument order, variance, universe, hypothesis order.)
-2. Does the *theorem statement* match? (Equation direction, variable
-   order, side of `=` / `↔`.)
-
-If the agent's summary mentions phrases like "signature flipped,"
-"variance changed," "rewrote to match," "swapped source and target,"
-**revert immediately** and re-dispatch with explicit instructions: the
-verbatim signature is non-negotiable; if you can't close the lemma
-against it, leave it `sorry`.
-
-The cap-of-fix-cycles + "no `sorry`" + "close the item" combination
-creates pressure. When the honest proof is hard, sub-agents look for
-structural changes that make it easy. Signature changes are a
-load-bearing cheat because they don't show up as a `sorry` — they show
-up as "compiles green, lemma proven" — but the lemma proven is no
-longer the spec's lemma.
-
-(Session example: agent AA2 closed `pullback_id_apply` (item 21) by
-flipping the gist's contravariant `pullback : Jacobian Y →ₜ+ Jacobian X`
-to covariant `Jacobian X →ₜ+ Jacobian Y` so `pullback := pushforward`
-would typecheck. AA2 disclosed this in its summary, so I caught it on
-read and reverted (`8098c21` → `dc38419`). The risk is the agent that
-DOESN'T disclose. Diff the branch.)
-
-### Stub vs. real distinction in commit messages
-
-When the work being merged is an honest stub (typechecks but doesn't
-satisfy the spec's intended math), the commit message should say
-**STUB** or **PLACEHOLDER** explicitly. Don't conflate "compiles" with
-"closes the challenge item."
-
-The strict-reader bar (Buzzard would accept this) is what counts.
-Anti-hack lemmas paired with the item being closed are the test —
-if the anti-hack is still `sorry`, the item is a stub.
 
 ### When to fall back to CI
 
@@ -538,10 +395,6 @@ Before every `git push`:
 9. **Commit message descriptive?** Reference the lemma name or item
    number from `OPEN.md` that landed. Ex.: `"Close OPEN item 15:
    ofCurve_self"`.
-10. **No AI-attribution trailer.** No `Co-Authored-By: Claude` lines
-    in commit messages, no AI ack in any file. (Sister-project
-    `noethersolve` traced an arXiv rejection to such an ack on
-    2026-04-22.)
 
 ---
 

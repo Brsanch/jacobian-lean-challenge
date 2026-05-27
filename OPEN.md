@@ -103,7 +103,7 @@ authoritative item table that follows.
    are **shipped CONDITIONAL** on these named hypotheses per the
    2026-05-26 ship-conditional decision (analog of Item 14). RS-case
    unconditionally closed via subsingleton. Authoritative LOC audit
-   (2026-05-26, four parallel sub-agents): ~44–75k LOC across full
+   (2026-05-26, four parallel decomposition passes): ~44–75k LOC across full
    C3 cluster on abstract X, midpoint ~57k (~40–60k after shared-
    structure deduplication). Equivalent textbook content: Forster
    Ch. III §16-21 + Griffiths-Harris Ch. 2 §2-§3. See
