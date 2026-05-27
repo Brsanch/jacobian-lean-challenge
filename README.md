@@ -1,8 +1,12 @@
 # jacobian-lean-challenge
 
 A Lean 4 / mathlib formalization in response to Kevin Buzzard's "Jacobians" AI
-challenge ([gist](https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9),
-v0.3, 2026-04-15).
+challenge ([gist](https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9)).
+Basic.lean signatures match **v0.4** notation (2026-05-21, the `𝓘(ℂ, E)` revision
+of v0.3 — "syntactically identical to v0.3" per Buzzard's changelog). Mathlib
+remains pinned to v0.3's `8e3c989...` (2026-04-15); both notations are
+definitionally equal so the math content is identical (see `lakefile.toml` pin
+comment for the deferral reasoning).
 
 The challenge asks for an API for the Jacobian variety of a compact Riemann
 surface: definitions of `genus`, `Jacobian`, `ofCurve` (Abel–Jacobi),
