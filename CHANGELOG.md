@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-05-26 — v0.4 spec alignment (notation swap; mathlib pin unchanged)
+
+Updated `JacobianChallenge/Basic.lean`'s 5 instance/lemma signatures
+that use the model-with-corners notation, from v0.3's `modelWithCornersSelf
+ℂ (Fin (genus X) → ℂ)` to v0.4's `𝓘(ℂ, Fin (genus X) → ℂ)`. Affected:
+items 12 (`IsManifold`), 13 (`LieAddGroup`), 17 (`ofCurve_contMDiff`),
+18 (`pushforward_contMDiff`), 21 (`pullback_contMDiff`).
+
+Per Buzzard's v0.4 changelog (2026-05-21 gist revision): "v0.4 is
+syntactically identical to v0.3" — the swap is purely cosmetic and the
+two notations are definitionally equal in mathlib.
+
+Mathlib pin **NOT bumped**: stays at v0.3's `8e3c989...` (2026-04-15)
+rather than v0.4's `548398201a...` (2026-05-15). Reasoning documented
+in `lakefile.toml` pin comment. Bumping the pin would require a
+full-repo recompile from source (no `cache get` per CLAUDE.md
+apfsd-panic constraint) — a multi-day commitment with breakage risk,
+not justified by Buzzard's own "syntactically identical" assessment of
+the math content.
+
+`Basic.lean` compile-verified clean (`LEAN_NUM_THREADS=1 lake env lean
+JacobianChallenge/Basic.lean` → exit 0) after the swap.
+
 ## 2026-05-26 — C3 SHIPPED CONDITIONAL on `C3FullInputExt X` + per-curve `C3FullInputCurve` + HANDOFF_C3 canonical
 
 **Decision**: ship items 5/11/12/13/17/18/21 (the Jacobian-side

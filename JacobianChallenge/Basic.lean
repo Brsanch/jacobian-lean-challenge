@@ -156,11 +156,11 @@ instance : ChartedSpace (Fin (genus X) → ℂ) (Jacobian X) := sorry
 
 -- Prop
 -- SHIPPED CONDITIONAL on `C3FullInputExt X`. Same chain; see HANDOFF_C3.md.
-instance : IsManifold (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) := sorry
+instance : IsManifold 𝓘(ℂ, Fin (genus X) → ℂ) ω (Jacobian X) := sorry
 
 -- Prop
 -- SHIPPED CONDITIONAL on `C3FullInputExt X`. Same chain; see HANDOFF_C3.md.
-instance : LieAddGroup (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (Jacobian X) := sorry
+instance : LieAddGroup 𝓘(ℂ, Fin (genus X) → ℂ) ω (Jacobian X) := sorry
 
 /-- The Abel-Jacobi map from a compact Riemann surface to its Jacobian. **Stub
 at this pin** — see `JacobianChallenge.Jacobian.ofCurve` for the constant-zero
@@ -176,8 +176,7 @@ noncomputable def ofCurve (P : X) : X → Jacobian X :=
 -- Manifold/JacobianAnalyticBasicLeanReduction.lean:70. Same deferred-
 -- rewire caveat as items 5/11/12/13; on X = RiemannSphere unconditional
 -- via Manifold/CanonicalOfCurveContMDiffSubsingleton.lean. See HANDOFF_C3.md.
-lemma ofCurve_contMDiff (P : X) : ContMDiff 𝓘(ℂ)
-    (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (ofCurve P) := sorry
+lemma ofCurve_contMDiff (P : X) : ContMDiff 𝓘(ℂ) 𝓘(ℂ, Fin (genus X) → ℂ) ω (ofCurve P) := sorry
 
 lemma ofCurve_self (P : X) : ofCurve P P = 0 :=
   JacobianChallenge.Jacobian.ofCurve_self P
@@ -220,8 +219,7 @@ noncomputable def pushforward (f : X → Y)
 -- classical content (~2-4k LOC: period-pairing adjunction
 -- ∫_{f_*γ} α = ∫_γ f^*α).
 theorem pushforward_contMDiff :
-  ContMDiff (modelWithCornersSelf ℂ (Fin (genus X) → ℂ))
-  (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ)) ω (pushforward f hf) := sorry
+  ContMDiff 𝓘(ℂ, Fin (genus X) → ℂ) 𝓘(ℂ, Fin (genus Y) → ℂ) ω (pushforward f hf) := sorry
 
 -- functoriality
 lemma pushforward_id_apply (P : Jacobian X) : pushforward id contMDiff_id P = P :=
@@ -267,8 +265,7 @@ noncomputable def pullback (f : X → Y)
 --   Manifold/JacobianAnalyticBasicLeanReduction.lean:134. Same deferred-
 -- rewire caveat. On RS unconditional via subsingleton. See HANDOFF_C3.md.
 theorem pullback_contMDiff :
-    ContMDiff (modelWithCornersSelf ℂ (Fin (genus Y) → ℂ))
-      (modelWithCornersSelf ℂ (Fin (genus X) → ℂ)) ω (pullback f hf) := sorry
+    ContMDiff 𝓘(ℂ, Fin (genus Y) → ℂ) 𝓘(ℂ, Fin (genus X) → ℂ) ω (pullback f hf) := sorry
 
 -- functoriality
 -- Post-ZZ:BasicSwap (honest `pullback` body) and `pullbackHonest_of_rsum_id`
