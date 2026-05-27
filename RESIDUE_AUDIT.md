@@ -1,9 +1,7 @@
 # Residue Theorem Sub-Tree Audit
 
 Date: 2026-05-23
-Auditor: Claude (Opus 4.7 1M, Bryan Sanchez session, read-only audit)
-Worktree: `/Volumes/4TB SD/ClaudeCode/jacobian-lean-challenge-item14`
-Branch: `feat/item14-classical-content` @ `ee786d2`
+Branch at audit time: `feat/item14-classical-content` @ `ee786d2`
 
 Scope: 46 files under `JacobianChallenge/Manifold/` matching the residue /
 Stokes / chart-circle patterns named in the audit brief, plus
@@ -65,7 +63,7 @@ Both downstream-of-Basic-sorry users (`Basic.lean:195`,
 do NOT yet close `ResidueTheorem X`" is true but irrelevant — those files
 were never on the critical path. They are Route-B parallel-route bloat.
 
-This is exactly the anti-pattern documented in `tools/chip-prompt-preamble.md`
+This is the anti-paraphrase pattern flagged in the project's chip discipline
 (parallel routes to an already-closed conclusion are net-negative).
 
 ---
@@ -577,7 +575,7 @@ of the residue theorem does not.
 
 ### 5. Files to delete (safe — no `sorry` count change, no theorem statement change)
 
-Per the project's `tools/chip-prompt-preamble.md` (parallel-route + per-X
+Per the project's chip discipline (parallel-route + per-X
 + named-hypothesis-rename are net negative when their conclusion is
 already in tree):
 
@@ -624,9 +622,8 @@ core) would remain.
 ## Methodology note
 
 This audit was strictly read-only. No Lean files were compiled or
-modified. No `du` or heavy `find` was executed (kernel-panic risk per
-`CLAUDE.md`). All claims are traced via `grep`, `wc -l`, targeted
-`Read`s of statement / discharge points, and import-count via
+modified. All claims are traced via `grep`, `wc -l`, targeted
+reads of statement / discharge points, and import-count via
 `grep -rl "Manifold\.<file>"`.
 
 **Confidence**:
