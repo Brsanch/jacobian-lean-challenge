@@ -81,11 +81,44 @@ abstract X:
 | Arc | In-tree scaffolding (reusable) | Remaining for closure | Notes |
 |---|---|---|---|
 | **1. Riemann–Roch + Serre duality** (Forster Ch. III §15–17) | ~16,500 LOC | **~28,000–35,000 LOC** | Build coherent analytic sheaves, Cartan–Serre finiteness, Leray on Stein covers, RR index formula, Serre duality. Each is a substantial classical sub-project. Mathlib has abstract Grothendieck-topos sheaf cohomology (~334 LOC) but no analytic-RS instantiation. |
-| **2. Behnke–Stein on disk + Cousin I** (McMullen Berkeley 241/96 §7) | ~7,560 LOC (Pompeiu Phase A + bridges) | **~10,000 LOC (RS-only)** | Phase B (Dolbeault on Δ) + Phase C (Cousin I / Laurent on `ℂ*`) + Phase D (RS atlas assembly) + Phase E.1 (specialize). Discharges the named hypothesis for the concrete RS only; abstract X still requires a separate uniformization step. |
+| **2. Behnke–Stein on disk + Cousin I** (McMullen Berkeley 241/96 §7) | ~7,560 LOC (Pompeiu Phase A + bridges) | **~10,000 LOC (RS-only) — does NOT advance Item 14** | Phase B (Dolbeault on Δ) + Phase C (Cousin I / Laurent on `ℂ*`) + Phase D (RS atlas assembly) + Phase E.1 (specialize). Discharges the named hypothesis for the concrete `X = RiemannSphere` only. **But Item 14 on `RiemannSphere` is already unconditionally closed** (`Topology/Item14ForRiemannSphere.lean`), so this ~10k buys nothing for the *open* (abstract-X) statement. The "reduce abstract X to RS" step is **uniformization**, which is itself one of the five equivalent names of the wall (circular — it is not a cheaper sub-step). **The real floor for abstract-X Item 14 is Arc 1 (~28–35k LOC), not this ~10k.** |
 | **3. Dirichlet's principle / Green's function** (Forster Ch. 27–28) | ~3,000–5,000 LOC | **~26,000–46,000 LOC** | Build Riemannian metric + Laplace–Beltrami on a charted 2-manifold, full variational `H¹(M)` with Rellich–Kondrachov, direct method of CoV, Weyl's lemma, Green's function. Each piece is its own mathlib-grade sub-project; mathlib has none of them at pin or HEAD. |
 
 The audits show no closure arc is chip-sized. All are multi-month
 formalization commitments of classical mathlib-grade content.
+
+### Trace verification (2026-05-28): Serre duality is the confirmed blocker
+
+A symbol-level trace of the Pompeiu → `DBarSolvabilityAtGenusZero X`
+chain confirms (not just by reasoning, but by what is and isn't in
+tree) that the wall is the global vanishing `H¹(X, 𝒪) = 0`, i.e. one
+direction of Serre duality:
+
+- `DBarSolvabilityAtGenusZero X`
+  (`Manifold/ExistsSimplePoleGermFromGenusZeroDBarSolvability.lean:121`)
+  is **defined once, consumed once** as the hypothesis `h_dbar`
+  (`Manifold/ForsterCutoffPoleConstruction.lean:1357`), and **never
+  concluded by any theorem**. It is a pure named hypothesis. Its
+  statement is "genus 0 → ∂̄ is globally surjective on smooth (0,1)-forms",
+  which *is* `H¹(X, 𝒪) = 0` at genus 0.
+- The Pompeiu arc delivers the **local** solution
+  (`partialZBar_pompeiuKernel_eq_self`, axiom-free) and patches it by
+  partition of unity into `globalSolutionCandidate`, proving the
+  axiom-free identity
+  `partialZBarManifold (globalSolutionCandidate P α χs) y = α y + outerRingLeakage P α χs y`
+  (`Manifold/OuterRingLeakage.lean`).
+- The error `outerRingLeakage = Σᵢ ∂̄χᵢ · Kᵢ(...)` does not vanish.
+  Killing it requires solving a *second* global ∂̄-problem — exactly
+  `H¹(X, 𝒪) = 0`. On non-compact/Stein surfaces this is free (classical
+  Behnke–Stein); **compact is precisely where it is not**, and at genus
+  0 the vanishing is Serre duality (`H¹(𝒪) ≅ H⁰(Ω¹)* = 0`).
+
+So the Pompeiu work is complete up to — and stops exactly at — the
+Serre-duality wall. No in-tree partition/cutoff construction closes the
+gap (see also `Manifold/GlobalSolutionUnderChartConst.lean` and
+`Manifold/OuterRingLeakage.lean` documenting the residual leakage). The
+only levers are: formalize Serre duality / RR (Arc 1, multi-month), or
+a mathlib pin bump once Serre duality lands upstream.
 
 External infrastructure scan (2026-05-26): no public Lean project
 formalizes Riemann surface theory, sheaf cohomology of analytic
