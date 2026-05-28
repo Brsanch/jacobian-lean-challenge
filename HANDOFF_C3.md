@@ -162,11 +162,37 @@ Pin bump to HEAD (~6 weeks of delta) saves at most a few hundred LOC
 of categorical scaffolding; the analytic-instantiation gaps above are
 all unaffected.
 
+### Trace verification (2026-05-28)
+
+A symbol-level trace resolved this audit's first open unknown and
+re-confirmed the honesty of the cluster:
+
+- **`PeriodPairingData.ofSmoothCycle` is a working integration
+  definition, NOT a hypothesis bundle.** `ofSmoothCycle`
+  (`Manifold/PeriodPairingDataFromSmoothCycle.lean:64`) sets
+  `H1 := SmoothCycle 𝓘(ℝ,ℂ) X` (= `ker (SmoothChain.boundary)`,
+  `Manifold/SmoothCycle.lean:51`) and `pairing := complexPeriodBilinear`,
+  which bottoms out at `complexPeriod → SmoothCycle.integrate →
+  SmoothPath.integrate = ∫₀¹ ω(γt)(γ't) dt` (mathlib `intervalIntegral`,
+  `Manifold/SmoothPathIntegral.lean:117`), axiom-free. **The flagged
+  "+3–8k hidden LOC under that name" risk is retired** — the period
+  integration is genuine, so the LOC totals above are not stub-inflated.
+- **`C3FullInputExt X` is never constructed free for arbitrary X.** The
+  arbitrary-X composite
+  (`nonempty_c3FullInputExtSymp_of_hodgeChainViaStandardForm_and_AJ_hypotheses`,
+  `Manifold/C3FullInputExtSympFromHodgeChainViaStandardForm.lean:61`) is an
+  honest *reduction* that still consumes `SmoothSymplecticBasis`,
+  `SmoothHurewiczHypothesis`, `CompleteHodgeRiemannHypothesis`, Abel,
+  Jacobi-inversion, smoothness, and injectivity all as hypotheses. The
+  four named atoms remain the genuine frontier; no vacuous discharge.
+- **`Jacobian X = Pic⁰ X` is honest.** Active `PrincDiv X =
+  PrincDivHonestCandidate X = AddSubgroup.closure (range
+  principalDivisorMap)` (`Divisor/PrincipalDivisorRange.lean:437`), not
+  `⊥`. (The `Basic.lean` "principal-divisor subgroup is ⊥" docstring is
+  a stale comment — see OPEN.md item 2.)
+
 ### What was NOT investigated in this audit
 
-- Whether `PeriodPairingData.ofSmoothCycle` is a working integration
-  definition or a hypothesis bundle. If the latter, an additional
-  ~3–8k LOC of integration infrastructure is hidden under that name.
 - The exact LOC cost of the route-1 structural rewire (redefining
   `Jacobian X`). The audit puts it at ~1,500+ LOC but didn't trace the
   full consumer cascade in `Basic.lean` items 6/7/8/22.
