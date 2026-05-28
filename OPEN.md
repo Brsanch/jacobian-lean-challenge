@@ -90,10 +90,18 @@ authoritative item table that follows.
    duality ↔ RR ↔ uniformization). **All structural reductions are
    unconditional in tree and compile-verified.** Item 14 is **shipped
    conditional** on this named hypothesis per the 2026-05-26 decision.
-   Authoritative LOC audit: closure cost ~28k–50k LOC across any
-   classical arc. See `HANDOFF_ITEM14.md` "WALL DOCUMENTED" +
-   canonical ACTIVE ARC for the chain proof, file:line citations, and
-   arc-by-arc audit.
+   Authoritative LOC audit: abstract-X closure floor ~28k–35k LOC
+   (Arc 1, RR + Serre duality); the ~10k Behnke–Stein arc is **RS-only
+   and does not advance abstract-X Item 14** (RS is already closed).
+   **Trace verified (2026-05-28):** the wall is `H¹(X, 𝒪) = 0` at
+   genus 0 = Serre duality — `DBarSolvabilityAtGenusZero X` is
+   defined-once / consumed-once / never-discharged, and the Pompeiu
+   arc proves the axiom-free `∂̄(globalSolutionCandidate) = α +
+   outerRingLeakage` identity (`Manifold/OuterRingLeakage.lean`) whose
+   residual leakage vanishes only given the global cohomology
+   vanishing. See `HANDOFF_ITEM14.md` "WALL DOCUMENTED" + canonical
+   ACTIVE ARC + "Trace verification (2026-05-28)" for the chain proof,
+   file:line citations, and arc-by-arc audit.
 
 2. **C3's `C3FullInputExt X`** — bundle of Riemann bilinear relations
    + Abel's theorem + Jacobi inversion + AbelJacobi smoothness +
@@ -135,13 +143,14 @@ Forster Ch. III §16–21 / Griffiths-Harris Ch. 2 §2–§3.
   was tagged for the BSLB path; **obsolete after the 2026-05-24
   étale-primitives merge** (reverse leg discharged unconditionally
   without Whitney machinery).
-- **Cauchy-Pompeiu kernel + ∂̄-solvability on disks** — would let us
-  formalize Forster's elementary route to `DBarSolvabilityAtGenusZero X`
-  if combined with classical content on globalization. Mathlib has
-  the building blocks (rectangle Stokes, divergence thm, 2D integrals)
-  but not the explicit kernel. ~1k LOC, 2–4 weeks. Useful upstream
-  even outside this project. **Does not by itself close item 14** —
-  globalization still requires `H¹(𝒪) = 0` at genus 0 or equivalent.
+- **Cauchy-Pompeiu kernel + ∂̄-solvability on disks** — **DONE in tree
+  for the local statement** (`Analysis/PompeiuKernelCauchyPompeiu.lean`,
+  axiom-free) and patched to a global candidate. **Does not by itself
+  close item 14** — the partition-of-unity patch leaves a residual
+  `outerRingLeakage` term (`Manifold/OuterRingLeakage.lean`) that
+  vanishes only given the global `H¹(𝒪) = 0` at genus 0 (Serre
+  duality). Trace 2026-05-28 confirms the Pompeiu arc stops exactly at
+  this wall; no in-tree cutoff/partition construction crosses it.
 - **Riemann–Roch + Serre duality** — for item 14 `hSP` (alternate
   classical route to DBar). Multi-month Lean project; no current
   mathlib coverage.
