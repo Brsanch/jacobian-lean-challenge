@@ -147,3 +147,37 @@ expected value at this mathlib pin. (4) is speculative.
 Option (2) ships valuable analytic content with no false claims
 about Item 14 closure. Option (1) is the most honest about the
 permanent bottleneck.
+
+## Update (2026-05-28): prediction compile-confirmed
+
+The analytic primitive this audit recommended (option 2) has since
+landed in tree, and a symbol-level trace confirms this audit's
+central claim — the wall is `H¹(X, 𝒪) = 0` at genus 0 (Serre
+duality), not a chip-sized gap:
+
+* **Local Pompeiu solvability is DONE, axiom-free.**
+  `Analysis/PompeiuKernelCauchyPompeiu.lean:194`
+  (`partialZBar_pompeiuKernel_eq_self`) proves `∂̄(pompeiuKernel α) = α`
+  for compactly-supported C¹ `α` on ℂ; lifted to charts via
+  `Manifold/ChartPompeiuKernel.lean`.
+* **The global candidate + leakage identity is formalized, axiom-free.**
+  `Manifold/OuterRingLeakage.lean` proves
+  `partialZBarManifold (globalSolutionCandidate P α χs) y = α y + outerRingLeakage P α χs y`,
+  where `outerRingLeakage = Σᵢ ∂̄χᵢ · Kᵢ(...)`. This is the explicit,
+  in-tree realization of option-(B)'s "outer-ring leakage error" —
+  now a compiled term, not a hand-wave. It confirms the
+  partition-of-unity patch has **no** cancellation, exactly as this
+  audit predicted.
+* **`DBarSolvabilityAtGenusZero X` is defined once
+  (`Manifold/ExistsSimplePoleGermFromGenusZeroDBarSolvability.lean:121`),
+  consumed once as the hypothesis `h_dbar`
+  (`Manifold/ForsterCutoffPoleConstruction.lean:1357`), and never
+  concluded by any theorem.** It is a pure named hypothesis whose
+  statement is `H¹(X, 𝒪) = 0` at genus 0.
+
+Net: the recommendation stands at option (1)/(2). The Pompeiu arc is
+complete up to — and stops exactly at — the Serre-duality wall. Floor
+for abstract-X closure is the RR + Serre arc (~28–35k LOC); the
+RS-only Behnke–Stein number does not advance Item 14 because Item 14
+on `RiemannSphere` is already unconditionally closed. See
+`HANDOFF_ITEM14.md` "Trace verification (2026-05-28)".
