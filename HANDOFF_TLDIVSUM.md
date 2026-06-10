@@ -159,9 +159,33 @@ Remaining, in order:
    `sideX_ne_of_coord...` (the contour avoids such points) and
    **`boundaryIntegral_inv_sub_of_coord_ne`** — the single winding
    evaluator (`±2πi` if both coords in `(0,1)`, else `0`).
-3. **Pairing algebra** (piece 1) + applying the winding engine to
-   `Δ_h, Δ_v` (chain rule for `F ∘ side`, using
-   `meromorphic_liftedFun` + analyticity off the divisor).
+3. ✅ **Pairing algebra** (piece 1, core) DONE 2026-06-10 —
+   `Analysis/ParallelogramPairing.lean`:
+   **`boundaryIntegral_mul_eq_pairing`** — for doubly periodic `g`
+   continuous along the two generator sides,
+   `∮_{∂Π(a)} z·g(z) dz = ω₁·Δ_v − ω₂·Δ_h` with
+   `Δ_h = ∫₀¹ g(a+t·ω₁)·ω₁ dt`, `Δ_v = ∫₀¹ g(a+t·ω₂)·ω₂ dt`
+   (opposite-side cancellation: reversed-side reparametrization
+   `integral_comp_sub_left` + periodicity). ⚠️ Lean gotchas hit here,
+   for future chips: `∫ t in 0..1, body - X` parses `- X` INTO the
+   integral body (parenthesize products of integrals!); `rw ←` with
+   `r * ∫ f` / `-∫ f` higher-order patterns fails — state concrete
+   `have`s via term-mode `integral_const_mul`/`integral_neg` instead;
+   `Continuous (fun t => a + t • ω₁)` needs the `Complex.real_smul`
+   reroute (`ContinuousSMul ℝ ℂ` synth fails).
+   Still open from piece 1's plan: applying the winding engine
+   (`LogDerivWinding.integral_logDeriv_closed_mem`) to `Δ_h, Δ_v` —
+   needs the chain rule for `F ∘ side` (`meromorphic_liftedFun` +
+   analyticity off the divisor + regular position). That belongs to
+   the assembly.
 4. **Assembly** (piece 5) ⟹ `TLDivSumHypothesis L` ⟹ (with the
    2026-06-09 chord arc) the full T_L C3 closure from zero named
-   hypotheses.
+   hypotheses. All four ingredient files are now in tree
+   (`ParallelogramResidue`, `ParallelogramCoordinates`,
+   `AbelIntegrandDecomposition`, `ParallelogramRegularPosition`,
+   `ParallelogramPairing` + the 2026-06-10 keystones); what remains is
+   ONE consumer file on the torus side: lift `f` to `F` via
+   `liftedOrderCorrespondence`, choose the ball and regular-position
+   `a`, equate the two evaluations of `I(a)` (residue side
+   `ε·2πi·∑ ord·x̃` vs pairing side `ω₁·Δ_v − ω₂·Δ_h ∈ 2πi·L`), and
+   conclude `evalSum (div f) = 0` in `ℂ ⧸ L`.
