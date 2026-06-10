@@ -1004,6 +1004,7 @@ import JacobianChallenge.Analysis.AbelIntegrandDecomposition
 import JacobianChallenge.Analysis.ParallelogramRegularPosition
 import JacobianChallenge.Analysis.ParallelogramPairing
 import JacobianChallenge.Analysis.PeriodSideWinding
+import JacobianChallenge.Manifold.LiftedFunRegularPoints
 import JacobianChallenge.Manifold.TorusChordRelations
 import JacobianChallenge.Manifold.TLAbelConverseFromTLDivSum
 import JacobianChallenge.Manifold.ComplexTorusGenusLowerBound
