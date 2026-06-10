@@ -189,7 +189,22 @@ Remaining, in order:
    (`ParallelogramResidue`, `ParallelogramCoordinates`,
    `AbelIntegrandDecomposition`, `ParallelogramRegularPosition`,
    `ParallelogramPairing`, `PeriodSideWinding` + the 2026-06-10
-   keystones); what remains is ONE consumer file on the torus side:
+   keystones), plus the first torus-side glue
+   (`Manifold/LiftedFunRegularPoints.lean`, 2026-06-10:
+   `analyticAt_nonzero_of_meromorphicOrderAt_eq_zero` — order 0 +
+   continuity ⟹ honestly analytic nonvanishing including the value;
+   `liftedFun_analyticAt_nonzero_of_order_zero` — the lift is analytic
+   nonvanishing at every `z` with `mmeromorphicOrderAt f (mkQ z) = 0`,
+   via `liftedOrderCorrespondence_holds` + `regular_continuousAt` +
+   `isOpenQuotientMap_mkQ`); what remains is ONE consumer file on the
+   torus side. Remaining glue inside it: (a) off-support ⟹ order 0
+   (divisor-value/order relation from `MMeromorphicOn.divisor` —
+   `principalDivisorMap` API); (b) finiteness of
+   `Z = (supp-lifts + L) ∩ ball` (L discrete+closed ⟹ L ∩ compact
+   finite); (c) the `basisFin2OfL` repr bridge `ℓ ∈ L ↔ ∃ m₁ m₂ : ℤ,
+   ℓ = m₁•ω₁ + m₂•ω₂` for `exists_regular_position`; (d) the
+   complete-set-of-representatives count; then the equation chain
+   below:
    lift `f` to `F` via `liftedOrderCorrespondence` /
    `meromorphic_liftedFun`, collect the divisor-support lifts (finite;
    lattice translates within a big ball ⊇ Π̄ — needs L-discreteness
