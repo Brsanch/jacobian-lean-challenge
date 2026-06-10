@@ -123,11 +123,18 @@ authoritative item table that follows.
    THEOREM given `TLDivSumHypothesis L`
    (`Manifold/TLAbelConverseFromTLDivSum.lean`, chord-and-tangent via
    mathlib's ℘ + in-tree residue theorem; ~1,850 LOC across 6 files).
-   The full T_L C3 closure
-   (`nonempty_C3FullInputExtSymp_complexTorus_of_TLDivSum`) is
-   conditional on the SINGLE named hypothesis `TLDivSumHypothesis L`
-   (forward Abel, ~2–4k LOC contour-integration arc). No Basic.lean
-   item flips; the named-hypothesis pile for T_L shrinks 2 → 1.
+   **Update 2026-06-10: `TLDivSumHypothesis L` is now a THEOREM**
+   (`Manifold/TLDivSumAssembly.lean`: `tlDivSumHypothesis_holds` —
+   Abel's theorem on elliptic functions by the parallelogram contour
+   argument; the full arc is ~12 files of parallelogram residue
+   calculus + torus glue, inventory in `HANDOFF_TLDIVSUM.md`). The
+   full T_L C3 closure
+   (`nonempty_C3FullInputExtSymp_complexTorus_unconditional`) holds
+   from **ZERO named hypotheses** (only the
+   `PeriodLatticeSymplecticBundle` data argument). No Basic.lean item
+   flips (those quantify over abstract X); the named-hypothesis pile
+   for T_L is EMPTY — the C3 conditional chain is demonstrated
+   genuinely dischargeable on the first nontrivial concrete family.
 
 **Historical framing kept below for git-blame continuity:**
 

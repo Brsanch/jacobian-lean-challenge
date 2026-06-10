@@ -1007,6 +1007,8 @@ import JacobianChallenge.Analysis.PeriodSideWinding
 import JacobianChallenge.Manifold.LiftedFunRegularPoints
 import JacobianChallenge.Manifold.MkQPreimageFinite
 import JacobianChallenge.Analysis.LatticeCrossNeZero
+import JacobianChallenge.Analysis.ParallelogramInteriorTranslate
+import JacobianChallenge.Manifold.TLDivSumAssembly
 import JacobianChallenge.Manifold.TorusChordRelations
 import JacobianChallenge.Manifold.TLAbelConverseFromTLDivSum
 import JacobianChallenge.Manifold.ComplexTorusGenusLowerBound
