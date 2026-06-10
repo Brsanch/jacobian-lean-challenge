@@ -149,7 +149,16 @@ Remaining, in order:
    the (iv) dichotomy: regular-position `a` puts every pole's coords
    off `∂[0,1]²`, splitting into interior (`±2πi`) and exterior (`0`)
    cases. Result: `I(a) = ε·2πi·∑_{x̃ interior} ord·x̃`.
-2. **Regular position** (piece 4).
+2. ✅ **Regular position** (piece 4) DONE 2026-06-10 —
+   `Analysis/ParallelogramRegularPosition.lean`:
+   **`exists_regular_position`** — for every finite `P` there is a base
+   point `a` with both Cramer coordinates of every lattice translate
+   `p + m₁·ω₁ + m₂·ω₂` off `{0,1}` (bad set = countable union of
+   `s_p + ℤ` lines in `(σ,ρ)`-coordinates, `ℝ` uncountable via
+   `Cardinal.not_countable_real`). Plus the assembly interface:
+   `sideX_ne_of_coord...` (the contour avoids such points) and
+   **`boundaryIntegral_inv_sub_of_coord_ne`** — the single winding
+   evaluator (`±2πi` if both coords in `(0,1)`, else `0`).
 3. **Pairing algebra** (piece 1) + applying the winding engine to
    `Δ_h, Δ_v` (chain rule for `F ∘ side`, using
    `meromorphic_liftedFun` + analyticity off the divisor).
