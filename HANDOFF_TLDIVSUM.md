@@ -98,15 +98,30 @@ in tree and `z·g dz` does not descend anyway (`z` is not periodic).
 
 Remaining, in order:
 
-1. **Principal-part subtraction + primitive telescoping** (the rest of
-   piece 3): near each divisor point `x̃`,
-   `z·g(z) − ord·x̃/(z−x̃)` is analytic (LogDerivLaurent-style local
-   form); `H := z·g − ∑ ord·x̃/(z−x̃)` analytic on a convex open
-   `U ⊇ Π̄` has `∮_{∂Π} H = 0` by primitive + per-side FTC (check
-   mathlib for primitives on convex/star-shaped opens; if absent this
-   is the one remaining infrastructure gap), and
-   `∮ (z−x̃)ⁿ = 0` for `n ≤ −2` by the global primitive on `ℂ∖{x̃}`.
-   With the keystone, `I(a) = ±2πi·∑ ord·x̃` follows.
+1. **Principal-part subtraction** (the rest of piece 3). Infrastructure
+   now DONE (2026-06-10):
+   * `Analysis/ParallelogramCauchy.lean` —
+     `boundaryIntegral_eq_zero_of_primitive` (FTC telescoping; the
+     chain rule routed through ℂ + `comp_ofReal`, dodging the
+     `IsScalarTower ℝ ℂ ℂ` diamond) and
+     `boundaryIntegral_eq_zero_of_differentiableOn_ball` (via mathlib's
+     `DifferentiableOn.isExactOn_ball` Morera machinery — primitives on
+     disks suffice; subtract ALL principal parts inside one big ball
+     `⊇ Π̄`).
+   * `Analysis/ParallelogramWindingExterior.lean` —
+     `boundaryIntegral_inv_sub_exterior`: separated-exterior winding
+     vanishes (rotated-log primitive on the separating half-plane).
+   Remaining for piece 3: (i) local Laurent form `g − n/(z−x̃)`
+   analytic-germ at `x̃` from `meromorphicOrderAt_eq_int_iff`;
+   (ii) removable-singularity extension of
+   `H := z·g − ∑ n_j·x̃_j/(z−x̃_j)` at the finitely many `x̃_j` in the
+   big ball (mathlib `Complex.RemovableSingularity`), giving
+   `DifferentiableOn H̃ ball`; (iii) linearity of `boundaryIntegral`
+   over the finite principal-part sum; (iv) the coordinate map
+   `z ↦ (s, r)` (explicit Cramer formulas via `latticeCross`) giving
+   the interior/exterior dichotomy + separating functionals for
+   exterior lattice-translate points. Then
+   `I(a) = ε·2πi·∑ ord·x̃` follows.
 2. **Regular position** (piece 4).
 3. **Pairing algebra** (piece 1) + applying the winding engine to
    `Δ_h, Δ_v` (chain rule for `F ∘ side`, using
