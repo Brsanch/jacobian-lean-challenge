@@ -111,17 +111,27 @@ Remaining, in order:
    * `Analysis/ParallelogramWindingExterior.lean` —
      `boundaryIntegral_inv_sub_exterior`: separated-exterior winding
      vanishes (rotated-log primitive on the separating half-plane).
-   Remaining for piece 3: (i) local Laurent form `g − n/(z−x̃)`
-   analytic-germ at `x̃` from `meromorphicOrderAt_eq_int_iff`;
-   (ii) removable-singularity extension of
-   `H := z·g − ∑ n_j·x̃_j/(z−x̃_j)` at the finitely many `x̃_j` in the
-   big ball (mathlib `Complex.RemovableSingularity`), giving
-   `DifferentiableOn H̃ ball`; (iii) linearity of `boundaryIntegral`
-   over the finite principal-part sum; (iv) the coordinate map
-   `z ↦ (s, r)` (explicit Cramer formulas via `latticeCross`) giving
-   the interior/exterior dichotomy + separating functionals for
-   exterior lattice-translate points. Then
-   `I(a) = ε·2πi·∑ ord·x̃` follows.
+   * ✅ (i) DONE 2026-06-10 — `Analysis/LogDerivPrincipalPart.lean`:
+     local Laurent form; `z·F'/F − n·x₀/(z−x₀)` agrees near `x₀` with
+     an analytic function (`mul_logDeriv_sub_principalPart_eventuallyEq`).
+   * ✅ (iii) DONE 2026-06-10 — `Analysis/ParallelogramResidue.lean`:
+     **`boundaryIntegral_eq_sum_winding`** — given decomposition data
+     `f = H + ∑_{x ∈ P} coeff x/(z−x)` on a ball ⊇ the four sides, `H`
+     differentiable on the ball, poles off the boundary:
+     `∮_{∂Π} f = ∑ coeff x · ∮_{∂Π} (z−x)⁻¹` (per-segment congruence +
+     `integral_add`/`integral_finset_sum`/`integral_const_mul` +
+     disk Cauchy kills `H`).
+   Remaining for piece 3: (ii) GLUING — produce the decomposition data
+   for the actual Abel integrand `f = z·g`: removable-singularity
+   extension of `H := z·g − ∑ n_j·x̃_j/(z−x̃_j)` at the finitely many
+   `x̃_j` in the big ball (mathlib `Complex.RemovableSingularity` +
+   (i)'s local form; note the cross-terms `∑_{k≠j} n_k·x̃_k/(z−x̃_k)`
+   are analytic at `x̃_j`, so (i) gives exactly the removability of
+   `H` at each `x̃_j`), giving `DifferentiableOn H̃ ball`; (iv) the
+   coordinate map `z ↦ (s, r)` (explicit Cramer formulas via
+   `latticeCross`) giving the interior/exterior dichotomy + separating
+   functionals for exterior lattice-translate points. Then
+   `I(a) = ε·2πi·∑ ord·x̃` follows by feeding (ii)+(iv) into (iii).
 2. **Regular position** (piece 4).
 3. **Pairing algebra** (piece 1) + applying the winding engine to
    `Δ_h, Δ_v` (chain rule for `F ∘ side`, using
