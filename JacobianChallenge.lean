@@ -991,6 +991,7 @@ import JacobianChallenge.Manifold.ComplexTorusDescendPeriodic
 import JacobianChallenge.Manifold.WeierstrassPDescend
 import JacobianChallenge.Manifold.WeierstrassDivisorShapes
 import JacobianChallenge.Manifold.TorusChordRelations
+import JacobianChallenge.Manifold.TLAbelConverseFromTLDivSum
 import JacobianChallenge.Manifold.ComplexTorusGenusLowerBound
 import JacobianChallenge.Manifold.ComplexTorusPeriodComputation
 import JacobianChallenge.Manifold.ComplexTorusMkQMfderiv
