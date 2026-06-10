@@ -131,20 +131,24 @@ Remaining, in order:
      outside `[0,1]` ⟹ `0`, via the coordinate separating functional
      `sepFunctional β = I·conj β` with `Re(u·sepFunctional β) =
      latticeCross u β`, all four cases through one `exterior_core`).
-   Remaining for piece 3: (ii) GLUING — produce the decomposition data
-   for the actual Abel integrand `f = z·g`: removable-singularity
-   extension of `H := z·g − ∑ n_j·x̃_j/(z−x̃_j)` at the finitely many
-   `x̃_j` in the big ball (mathlib `Complex.RemovableSingularity` +
-   (i)'s local form; note the cross-terms `∑_{k≠j} n_k·x̃_k/(z−x̃_k)`
-   are analytic at `x̃_j`, so (i) gives exactly the removability of
-   `H` at each `x̃_j`), giving `DifferentiableOn H̃ ball`. Then
-   `I(a) = ε·2πi·∑ ord·x̃` follows by feeding (ii) into (iii) and
-   evaluating each winding with (iv) (poles off `∂Π` by regular
-   position ⟹ coords off the boundary of `[0,1]²`; interior ⟹ `±2πi`,
-   exterior ⟹ `0`). ⚠️ note the dichotomy's exterior case needs the
-   pole's coords outside `[0,1]` — for a regular-position `a` the
-   poles have coords off `∂[0,1]²`, which splits exactly into the
-   interior/exterior cases of (iv).
+   * ✅ (ii) DONE 2026-06-10 — `Analysis/AbelIntegrandDecomposition.lean`:
+     **`abelIntegrand_decomposition`** — for `F` meromorphic of finite
+     order `n x` at each point of a finite `Z` and analytic nonvanishing
+     elsewhere on a ball, `z·F′/F = H + ∑_{x∈Z} (n x·x)/(z−x)` with `H`
+     differentiable on the whole ball. Construction: `glueAcross`
+     (punctured limits across `Z`); at each `x ∈ Z` the (i) local form
+     plus analyticity of the cross terms gives the removable extension —
+     no `Complex.RemovableSingularity` import needed, the eventual
+     equality + `limUnder` + `AnalyticAt.congr` suffice.
+   **Piece 3 ingredients are now ALL in tree.** The remaining piece-3
+   work is pure assembly in the consumer: choose the big ball ⊇ Π̄,
+   instantiate `abelIntegrand_decomposition` (Z = divisor-support
+   translates in the ball, n = orders via
+   `liftedOrderCorrespondence_holds`), feed into
+   `boundaryIntegral_eq_sum_winding`, and evaluate each winding with
+   the (iv) dichotomy: regular-position `a` puts every pole's coords
+   off `∂[0,1]²`, splitting into interior (`±2πi`) and exterior (`0`)
+   cases. Result: `I(a) = ε·2πi·∑_{x̃ interior} ord·x̃`.
 2. **Regular position** (piece 4).
 3. **Pairing algebra** (piece 1) + applying the winding engine to
    `Δ_h, Δ_v` (chain rule for `F ∘ side`, using
