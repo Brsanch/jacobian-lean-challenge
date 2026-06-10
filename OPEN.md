@@ -117,9 +117,17 @@ authoritative item table that follows.
    Ch. III §16-21 + Griffiths-Harris Ch. 2 §2-§3. See
    [`HANDOFF_C3.md`](HANDOFF_C3.md) "WALL DOCUMENTED" for the
    canonical chain, per-field discharge status with file:line cites,
-   highest-leverage near-term chips (Weierstrass-σ on T_L ~500–800
-   LOC; TLDivSumHypothesis ~2–4k LOC), and structural-rewire
-   deferral reasoning.
+   highest-leverage near-term chips, and structural-rewire deferral
+   reasoning. **Update 2026-06-09:** `TLAbelConverseHypothesis L`
+   (formerly priced as a ~500–800 LOC Weierstrass-σ arc) is now a
+   THEOREM given `TLDivSumHypothesis L`
+   (`Manifold/TLAbelConverseFromTLDivSum.lean`, chord-and-tangent via
+   mathlib's ℘ + in-tree residue theorem; ~1,850 LOC across 6 files).
+   The full T_L C3 closure
+   (`nonempty_C3FullInputExtSymp_complexTorus_of_TLDivSum`) is
+   conditional on the SINGLE named hypothesis `TLDivSumHypothesis L`
+   (forward Abel, ~2–4k LOC contour-integration arc). No Basic.lean
+   item flips; the named-hypothesis pile for T_L shrinks 2 → 1.
 
 **Historical framing kept below for git-blame continuity:**
 

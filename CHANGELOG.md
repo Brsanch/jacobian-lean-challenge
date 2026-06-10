@@ -1,5 +1,51 @@
 # Changelog
 
+## 2026-06-09 — `TLAbelConverseHypothesis` discharged from `TLDivSumHypothesis` (chord-and-tangent; no σ)
+
+Abel's converse on the torus is now a theorem given forward Abel:
+`tlAbelConverseHypothesis_of_tlDivSum` in
+`Manifold/TLAbelConverseFromTLDivSum.lean`. Consequence
+(`nonempty_C3FullInputExtSymp_complexTorus_of_TLDivSum`): the full T_L
+C3 closure is conditional on the **single** named hypothesis
+`TLDivSumHypothesis L`; the named-hypothesis pile of
+`nonempty_C3FullInputExtSymp_complexTorus_of_two_named_hypotheses`
+halves. The Weierstrass-σ pricing (~500–800 LOC of new
+product-expansion analysis) is retired — the chord-and-tangent route
+through mathlib's `℘` and the in-tree residue theorem replaces it.
+
+Six new files (~1,850 LOC), all single-file-verified + full-graph
+gate:
+
+* `Manifold/ComplexTorusDescendPeriodic.lean` — descend `L`-periodic
+  meromorphic `F : ℂ → ℂ` to `MeromorphicNonzero (ℂ ⧸ L)` with order
+  and divisor correspondence (the converse direction of
+  `LiftedMeromorphicComplexTorus.lean`; the torus chart inverse is the
+  *total* `mkQ`, so the chart pullback of a descent is literally `F`).
+* `Manifold/WeierstrassPDescend.lean` — `PeriodPair` from
+  `basisFin2OfL`; **new over mathlib**: pole order of `℘'` at lattice
+  points is exactly `-3`; descents of `℘ − c` and `℘' − (a℘ + b)`.
+* `Divisor/EffectiveExtraction.lean` — effective degree-`k` divisors
+  are sums of `k` singles; single-pole degree-0 divisors decompose as
+  `∑ [g i] − k[0]`; fiber-count and `evalSum` corollaries.
+* `Manifold/WeierstrassDivisorShapes.lean` — the counting argument:
+  divisor shapes `2`/`3` singles minus `2[0]`/`3[0]` for the two
+  descended families, zeros placed among the decomposition points.
+* `Manifold/TorusChordRelations.lean` — `[u]+[v]−[u+v]−[0] ∈ PrincDiv`
+  for ALL `u, v`, given `TLDivSumHypothesis` only: `℘` separates
+  points up to sign; pair relation; generic chord with third zero
+  located by forward Abel (not the addition theorem); tangent case via
+  an auxiliary quarter-period point (pigeonhole over three candidates)
+  with **no second-derivative analysis**.
+* `Manifold/TLAbelConverseFromTLDivSum.lean` — headline: `u ↦ [[u]−[0]]`
+  is a hom into `Div ⧸ PrincDiv` by the chord relation; a degree-0
+  divisor is `∑ n_x([x]−[0])`, so balance ⟹ principal.
+
+No Basic.lean item flips (items remain shipped-conditional per
+2026-05-26); the remaining T_L-side gap is `TLDivSumHypothesis L`
+alone (forward Abel, contour integration on a fundamental
+parallelogram, ~2–4k LOC). The 2026-06-09 σ scaffold branch
+`feat/torus-abel-sigma-wip-scaffold` is superseded.
+
 ## 2026-05-26 — v0.4 spec alignment (notation swap; mathlib pin unchanged)
 
 Updated `JacobianChallenge/Basic.lean`'s 5 instance/lemma signatures
