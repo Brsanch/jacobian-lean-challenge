@@ -53,6 +53,7 @@ import JacobianChallenge.Divisor.PrincipalDivisor
 import JacobianChallenge.Divisor.PrincipalDivisorDegree
 import JacobianChallenge.Divisor.PrincipalDivisorRange
 import JacobianChallenge.Divisor.Single
+import JacobianChallenge.Divisor.EffectiveExtraction
 import JacobianChallenge.Divisor.EvalSum
 import JacobianChallenge.Divisor.StrictClosurePath
 import JacobianChallenge.Jacobian
@@ -988,6 +989,8 @@ import JacobianChallenge.Manifold.ComplexTorusDz
 import JacobianChallenge.Manifold.ComplexTorusBasicInstances
 import JacobianChallenge.Manifold.ComplexTorusDescendPeriodic
 import JacobianChallenge.Manifold.WeierstrassPDescend
+import JacobianChallenge.Manifold.WeierstrassDivisorShapes
+import JacobianChallenge.Manifold.TorusChordRelations
 import JacobianChallenge.Manifold.ComplexTorusGenusLowerBound
 import JacobianChallenge.Manifold.ComplexTorusPeriodComputation
 import JacobianChallenge.Manifold.ComplexTorusMkQMfderiv
