@@ -196,13 +196,19 @@ Remaining, in order:
    `liftedFun_analyticAt_nonzero_of_order_zero` — the lift is analytic
    nonvanishing at every `z` with `mmeromorphicOrderAt f (mkQ z) = 0`,
    via `liftedOrderCorrespondence_holds` + `regular_continuousAt` +
-   `isOpenQuotientMap_mkQ`); what remains is ONE consumer file on the
-   torus side. Remaining glue inside it: (a) off-support ⟹ order 0
-   (divisor-value/order relation from `MMeromorphicOn.divisor` —
-   `principalDivisorMap` API); (b) finiteness of
-   `Z = (supp-lifts + L) ∩ ball` (L discrete+closed ⟹ L ∩ compact
-   finite); (c) the `basisFin2OfL` repr bridge `ℓ ∈ L ↔ ∃ m₁ m₂ : ℤ,
-   ℓ = m₁•ω₁ + m₂•ω₂` for `exists_regular_position`; (d) the
+   `isOpenQuotientMap_mkQ`), and the second
+   (`Manifold/MkQPreimageFinite.lean`, 2026-06-10:
+   **`finite_mkQ_preimage_inter_isBounded`** — the `mkQ`-preimage of a
+   finite class set meets every bounded subset of ℂ finitely; per
+   class the fiber is `x.out + L` and
+   `Metric.finite_isBounded_inter_isClosed` + the
+   `change`-to-`L.toAddSubgroup` trick from mathlib's ZLattice file
+   finishes — this builds the finite `Z` for the decomposition); what
+   remains is ONE consumer file on the torus side. Remaining glue
+   inside it: (a) off-support ⟹ order 0 (divisor-value/order relation
+   from `MMeromorphicOn.divisor` — `principalDivisorMap` API); (c) the
+   `basisFin2OfL` repr bridge `ℓ ∈ L ↔ ∃ m₁ m₂ : ℤ, ℓ = m₁•ω₁ + m₂•ω₂`
+   for `exists_regular_position`; (d) the
    complete-set-of-representatives count; then the equation chain
    below:
    lift `f` to `F` via `liftedOrderCorrespondence` /
