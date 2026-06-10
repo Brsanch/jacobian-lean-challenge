@@ -204,13 +204,31 @@ Remaining, in order:
    `Metric.finite_isBounded_inter_isClosed` + the
    `change`-to-`L.toAddSubgroup` trick from mathlib's ZLattice file
    finishes — this builds the finite `Z` for the decomposition); what
-   remains is ONE consumer file on the torus side. Remaining glue
-   inside it: (a) off-support ⟹ order 0 (divisor-value/order relation
-   from `MMeromorphicOn.divisor` — `principalDivisorMap` API); (c) the
-   `basisFin2OfL` repr bridge `ℓ ∈ L ↔ ∃ m₁ m₂ : ℤ, ℓ = m₁•ω₁ + m₂•ω₂`
-   for `exists_regular_position`; (d) the
-   complete-set-of-representatives count; then the equation chain
-   below:
+   remains is ONE consumer file on the torus side.
+   **Interface inventory verified 2026-06-10 (all in tree, ready):**
+   * (c) basis bridge: `basisFin2OfL_isZBasisOfL : IsZBasisOfL L lam₁
+     lam₂` (`IsZBasisOfL` = `∀ z ∈ L, ∃ m₁ m₂ : ℤ, z = m₁•lam₁ +
+     m₂•lam₂`, `ComplexTorusSmoothHurewiczFromBasis.lean:57`), periods
+     `lam₁/₂_complexTorus` with `_mem` lemmas;
+   * orientation: `latticeCross_ne_zero_of_linearIndependent`
+     (`Analysis/LatticeCrossNeZero.lean`, 2026-06-10) +
+     `basisFin2OfL_realLinearIndependent` give the `hD` consumed by
+     the whole parallelogram toolbox;
+   * (a) off-support ⟹ order 0: `mem_supportFinset` (`Divisor.lean:83`,
+     `x ∈ D.supportFinset ↔ D x ≠ 0`) + the divisor's value is
+     `orderFun = (mmeromorphicOrderAt …).untop₀`
+     (`MeromorphicDivisor.lean:83`) + `orderFun_eq_zero_iff`
+     (with `f.nonvanishing_germ`) — two-line connectors;
+   * order ⟹ regular: `liftedFun_analyticAt_nonzero_of_order_zero`;
+   * orders on lifts: `liftedOrderCorrespondence_holds`,
+     `meromorphic_liftedFun`, `liftedFun_periodic`, `mkQ_out`;
+   * finite `Z`: `finite_mkQ_preimage_inter_isBounded`.
+   **Remaining work in the assembly file:** (d) the complete-set-of-
+   representatives count (each `p ∈ supp`-lift has exactly one
+   translate with coords in `(0,1)²` — via `coordS/R_translate`:
+   `s_p + m₁ − σ ∈ (0,1)` has exactly one integer solution `m₁` given
+   coords avoid `{0,1}`), the `Finset` sum re-indexing (interior
+   translates ↔ supportFinset), and the equation chain below:
    lift `f` to `F` via `liftedOrderCorrespondence` /
    `meromorphic_liftedFun`, collect the divisor-support lifts (finite;
    lattice translates within a big ball ⊇ Π̄ — needs L-discreteness
