@@ -27,10 +27,30 @@ integrals).
 |---|---|---|
 | 0 | Lift meromorphy + order correspondence (`F` meromorphic on ℂ, `ord_z F = ord_{mkQ z} f`) | ✅ **DONE 2026-06-09 unconditional** — `Manifold/ComplexTorusLiftedOrderCorrespondence.lean` (`liftedOrderCorrespondence_holds`, `meromorphic_liftedFun`) |
 | 1 | Pairing algebra: `I(a) = -ω₁·Δ_v - ω₂·Δ_h` where `Δ_h/Δ_v` are the unweighted `∫ g` along the two generator sides (opposite-side cancellation by periodicity + reparametrization) | elementary, long (~400–800 LOC interval-integral algebra); needs piece 4's regular position for integrability |
-| 2 | Winding integrality: `Δ_h, Δ_v ∈ 2πi·ℤ` | self-contained exp-trick (~200–400 LOC): `h(t) := exp(-∫₀ᵗ q)·F(γ t)` has `h' = 0`, so `exp(∫₀¹ q) = F(γ 1)/F(γ 0) = 1` (periodicity) ⟹ integral `∈ 2πi ℤ` (`Complex.exp_eq_one_iff`). Needs continuity of the integrand on the side (piece 4) + FTC for parameterized complex integrals |
-| 3 | **Residue side: `I(a) = 2πi·∑_{x̃ ∈ Π} ord_{x̃}(F)·x̃`** | ⚠️ **THE WALL** — see below |
+| 2 | Winding integrality: `Δ_h, Δ_v ∈ 2πi·ℤ` | ✅ **ENGINE DONE 2026-06-10** — `Analysis/LogDerivWinding.lean`: `exp_integral_logDeriv` (the exp-identity `exp(∫φ'/φ) = φ1/φ0`), `integral_logDeriv_closed_mem` (closed loop ⟹ `2πi·ℤ`), `sum_integral_logDeriv_chain_mem` (cyclic chains). Applying to `Δ_h, Δ_v` needs only piece 4's regular position + the chain rule for `F ∘ side` |
+| 3 | **Residue side: `I(a) = 2πi·∑_{x̃ ∈ Π} ord_{x̃}(F)·x̃`** | ⚠️ remaining wall, but **the keystone is DONE** — see below |
 | 4 | Regular position: choose `a` with `∂Π(a)` avoiding the zero/pole set of `F` (= `L`-translates of the finite `supp(div f)` lifted) | countable-bad-set avoidance (~200–400 LOC); the bad `a`-set per side is a finite union of `L`-translate line families; a Baire/measure or explicit-perturbation argument |
 | 5 | Bookkeeping: zeros in `Π` are a complete set of representatives; `∑ ord·x̃ mod L` = `evalSum (div f)`; assemble 1+2+3 ⟹ `evalSum ∈ L`-image = 0 | mechanical given 0 and 3 (~200–400 LOC) |
+
+## ✅ KEYSTONE DONE (2026-06-10)
+
+`Analysis/ParallelogramWinding.lean` + `Analysis/ArctanLinearIntegral.lean`
++ `Analysis/ParallelogramWindingEval.lean`:
+
+* `ParallelogramWinding.boundaryIntegral a ω₁ ω₂ f` — the four-side
+  contour integral over `∂Π(a; ω₁, ω₂)`;
+* `parallelogram_winding_integrality` — `∮ (z−x)⁻¹ ∈ 2πi·ℤ` for `x` off
+  the boundary (four exp-identities, telescoping corners);
+* **`boundaryIntegral_inv_sub_interior`** — for
+  `x = a + s·ω₁ + r·ω₂`, `s, r ∈ (0,1)`:
+  `∮_{∂Π} (z−x)⁻¹ dz = (sign of ω₁×ω₂)·2πi`, **at every interior point
+  simultaneously**. The planned keystone-2 (local constancy) and
+  keystone-3 (`Complex.log` evaluation) were never needed: the
+  imaginary part is a sum of four swept angles
+  (`Im(α/(tα+β)) = c/|tα+β|²`, `c ∈ {rD, (1−s)D, (1−r)D, sD}`), each an
+  arctan difference that is sign-definite and `< π` in magnitude, so
+  membership in `2πi·ℤ` pins the value to `±2πi`. Pure real analysis —
+  no branch cuts, no connectivity.
 
 ## The wall (piece 3) at maximum resolution
 
@@ -62,21 +82,10 @@ form; `g` has simple poles with integer residues `ord`). So with
   FTC.
 * `∮_{∂Π} (z−x̃)ⁿ dz = 0` for `n ≤ −2` — same telescoping (global
   primitive on `ℂ \ {x̃}`).
-* **KEYSTONE (the actual open problem)**:
-  `∮_{∂Π(a)} dz/(z − x̃) = 2πi` for `x̃ ∈ int Π`. Candidate proof, all
-  pieces individually plausible but none in mathlib:
-  1. integrality: exp-trick on the closed 4-segment path (`h := z − x̃`
-     is a closed curve in `ℂ*`) ⟹ value `∈ 2πi ℤ`;
-  2. local constancy in `x̃` on `int Π` (parametric continuity of the 4
-     interval integrals + ℤ-valued + connected ⟹ constant);
-  3. one explicit evaluation, e.g. at the center
-     `c = a + (ω₁+ω₂)/2`: each side-integral is
-     `∫ ds/(s − ζ)` with `Im ζ ≠ 0` along a real segment, whose
-     primitive is `Complex.log (s − ζ)` (valid: the argument never meets
-     the branch cut since `Im` is constant ≠ 0) — then a
-     `Complex.log`-arithmetic computation sums the four log differences
-     to `2πi`. The branch bookkeeping here is the fiddliest single step
-     of the whole arc.
+* ~~**KEYSTONE**~~: `∮_{∂Π(a)} dz/(z − x̃) = ±2πi` for `x̃ ∈ int Π` —
+  **DONE 2026-06-10** (`boundaryIntegral_inv_sub_interior`, see above;
+  the arctan/swept-angle route replaced the planned `Complex.log`
+  branch bookkeeping entirely).
 
 Alternative routes considered and rejected 2026-06-09: (a) deriving
 forward Abel from the converse machinery is circular (the chord's third
@@ -85,11 +94,23 @@ transcendental input; (c) Vieta on the cubic ODE constrains `℘`-values,
 not point sums mod `L`; (d) torus-side residue-of-1-form theorem is not
 in tree and `z·g dz` does not descend anyway (`z` is not periodic).
 
-## Suggested chip order
+## Suggested chip order (updated 2026-06-10; engine + keystone done)
 
-2 (exp-trick winding, self-contained) → keystone-1 (integrality, same
-machinery) → keystone-3 (explicit center evaluation) → keystone-2
-(parametric continuity) → 4 (regular position) → 1 (pairing) → 5
-(assembly). The exp-trick machinery is shared by chip 2 and keystone-1;
-build it once as a lemma about `∫₀¹ (deriv (F ∘ γ))/(F ∘ γ)` for `γ`
-affine with `F ∘ γ` nonvanishing and `F (γ 0) = F (γ 1)`.
+Remaining, in order:
+
+1. **Principal-part subtraction + primitive telescoping** (the rest of
+   piece 3): near each divisor point `x̃`,
+   `z·g(z) − ord·x̃/(z−x̃)` is analytic (LogDerivLaurent-style local
+   form); `H := z·g − ∑ ord·x̃/(z−x̃)` analytic on a convex open
+   `U ⊇ Π̄` has `∮_{∂Π} H = 0` by primitive + per-side FTC (check
+   mathlib for primitives on convex/star-shaped opens; if absent this
+   is the one remaining infrastructure gap), and
+   `∮ (z−x̃)ⁿ = 0` for `n ≤ −2` by the global primitive on `ℂ∖{x̃}`.
+   With the keystone, `I(a) = ±2πi·∑ ord·x̃` follows.
+2. **Regular position** (piece 4).
+3. **Pairing algebra** (piece 1) + applying the winding engine to
+   `Δ_h, Δ_v` (chain rule for `F ∘ side`, using
+   `meromorphic_liftedFun` + analyticity off the divisor).
+4. **Assembly** (piece 5) ⟹ `TLDivSumHypothesis L` ⟹ (with the
+   2026-06-09 chord arc) the full T_L C3 closure from zero named
+   hypotheses.
