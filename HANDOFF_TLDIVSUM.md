@@ -173,19 +173,40 @@ Remaining, in order:
    `have`s via term-mode `integral_const_mul`/`integral_neg` instead;
    `Continuous (fun t => a + t • ω₁)` needs the `Complex.real_smul`
    reroute (`ContinuousSMul ℝ ℂ` synth fails).
-   Still open from piece 1's plan: applying the winding engine
-   (`LogDerivWinding.integral_logDeriv_closed_mem`) to `Δ_h, Δ_v` —
-   needs the chain rule for `F ∘ side` (`meromorphic_liftedFun` +
-   analyticity off the divisor + regular position). That belongs to
-   the assembly.
+   ✅ Winding-engine application DONE 2026-06-10 —
+   `Analysis/PeriodSideWinding.lean`:
+   `periodSide_logDeriv_integral_mem` (chain rule through ℂ +
+   `comp_ofReal` feeds `integral_logDeriv_closed_mem`:
+   `∫₀¹ (F′/F)(a+t·ω)·ω dt ∈ 2πi·ℤ` for `F` analytic nonvanishing on
+   the side with `F(a+ω)=F(a)`), `deriv_eq_of_periodic`, and
+   **`boundaryIntegral_mul_logDeriv_mem`** — for `F` doubly periodic,
+   analytic nonvanishing along both generator sides:
+   `∮_{∂Π(a)} z·(F′/F) dz = 2πi·(k₁ω₁ + k₂ω₂)`, `k₁ k₂ : ℤ`. **The
+   pairing-side evaluation of `I(a)` is complete.**
 4. **Assembly** (piece 5) ⟹ `TLDivSumHypothesis L` ⟹ (with the
    2026-06-09 chord arc) the full T_L C3 closure from zero named
-   hypotheses. All four ingredient files are now in tree
+   hypotheses. ALL analysis ingredients are now in tree
    (`ParallelogramResidue`, `ParallelogramCoordinates`,
    `AbelIntegrandDecomposition`, `ParallelogramRegularPosition`,
-   `ParallelogramPairing` + the 2026-06-10 keystones); what remains is
-   ONE consumer file on the torus side: lift `f` to `F` via
-   `liftedOrderCorrespondence`, choose the ball and regular-position
-   `a`, equate the two evaluations of `I(a)` (residue side
-   `ε·2πi·∑ ord·x̃` vs pairing side `ω₁·Δ_v − ω₂·Δ_h ∈ 2πi·L`), and
-   conclude `evalSum (div f) = 0` in `ℂ ⧸ L`.
+   `ParallelogramPairing`, `PeriodSideWinding` + the 2026-06-10
+   keystones); what remains is ONE consumer file on the torus side:
+   lift `f` to `F` via `liftedOrderCorrespondence` /
+   `meromorphic_liftedFun`, collect the divisor-support lifts (finite;
+   lattice translates within a big ball ⊇ Π̄ — needs L-discreteness
+   for finiteness of `Z`), choose regular-position `a`
+   (`exists_regular_position` — bridge L-elements to `(m₁,m₂) : ℤ²`
+   via `basisFin2OfL` repr), then equate the two evaluations of
+   `I(a) = ∮ z·(F′/F)`:
+   * residue side = `abelIntegrand_decomposition` →
+     `boundaryIntegral_eq_sum_winding` →
+     `boundaryIntegral_inv_sub_of_coord_ne` per pole:
+     `I(a) = ε·2πi·∑_{x̃ interior} ord·x̃`;
+   * pairing side = `boundaryIntegral_mul_logDeriv_mem`:
+     `I(a) = 2πi·(k₁ω₁ + k₂ω₂) ∈ 2πi·L`.
+   Divide by `±2πi` ⟹ `∑_{interior} ord·x̃ ∈ L`; interior translates
+   form a complete set of representatives of `supp(div f)` (per-base-
+   point uniqueness: exactly one `(m₁,m₂)` puts `p`'s translate in
+   `Π(a)°` — coordS/R_translate make this explicit:
+   `s_p + m₁ − σ ∈ (0,1)` has exactly one integer solution since the
+   coords avoid `{0,1}`) ⟹ `evalSum (div f) = 0` in `ℂ ⧸ L` =
+   `TLDivSumHypothesis L`.
