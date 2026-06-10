@@ -991,6 +991,8 @@ import JacobianChallenge.Manifold.ComplexTorusDescendPeriodic
 import JacobianChallenge.Manifold.WeierstrassPDescend
 import JacobianChallenge.Manifold.WeierstrassDivisorShapes
 import JacobianChallenge.Manifold.ComplexTorusLiftedOrderCorrespondence
+import JacobianChallenge.Analysis.LogDerivWinding
+import JacobianChallenge.Analysis.ParallelogramWinding
 import JacobianChallenge.Manifold.TorusChordRelations
 import JacobianChallenge.Manifold.TLAbelConverseFromTLDivSum
 import JacobianChallenge.Manifold.ComplexTorusGenusLowerBound
