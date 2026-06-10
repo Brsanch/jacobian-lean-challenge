@@ -996,6 +996,7 @@ import JacobianChallenge.Analysis.ParallelogramWinding
 import JacobianChallenge.Analysis.ArctanLinearIntegral
 import JacobianChallenge.Analysis.ParallelogramWindingEval
 import JacobianChallenge.Analysis.ParallelogramCauchy
+import JacobianChallenge.Analysis.ParallelogramWindingExterior
 import JacobianChallenge.Manifold.TorusChordRelations
 import JacobianChallenge.Manifold.TLAbelConverseFromTLDivSum
 import JacobianChallenge.Manifold.ComplexTorusGenusLowerBound
