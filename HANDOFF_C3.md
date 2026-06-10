@@ -65,7 +65,7 @@ named open hypotheses is the appropriate finish at this mathlib pin.
 |---|---|---|---|---|
 | `PeriodLatticeAnalyticHypotheses` | ✅ unconditional via `trivial_at_genus_zero` ([`PeriodLatticeSymplecticBundle.lean:270`](JacobianChallenge/Manifold/PeriodLatticeSymplecticBundle.lean#L270)) | ✅ unconditional (explicit complex-torus chain) | **~23–41k LOC (mid 32k)**: 4 named atoms — `SmoothSymplecticBasis` (~8–15k), `riemannBilinear` (~6–10k), `SubdivisionTelescopingTo2Simplex_named` (~3–6k), `SmoothHurewiczHypothesis` (~6–10k) | [`Manifold/PeriodLatticeFromPairing.lean:182`](JacobianChallenge/Manifold/PeriodLatticeFromPairing.lean#L182) |
 | `AbelHypothesis` | ✅ unconditional via `abelHypothesis_of_genus_zero` ([`Manifold/AbelHypothesisGenusZero.lean:113`](JacobianChallenge/Manifold/AbelHypothesisGenusZero.lean#L113)) | conditional on `TLDivSumHypothesis L` (**~2–4k LOC** — Liouville on fundamental parallelogram) | **~4–10k LOC (mid 7k)** via `AbelLatticeWitness X α h` — pushforward 1-form + residue on ℙ¹ + level-set chain | [`Manifold/AbelJacobiPic0.lean:73`](JacobianChallenge/Manifold/AbelJacobiPic0.lean#L73) |
-| `JacobiInversion` (surj + inj) | ✅ via subsingleton | surj ✅ unconditional; inj conditional on `TLAbelConverseHypothesis L` (**~500–800 LOC** — Weierstrass-σ; uses mathlib's existing ℘) | **~13–16.5k LOC** (surj ~6.5–10k via theta or compactness/open-mapping + inj ~6.5k via Abel converse + ~2k mathlib-grade `Symᵍ X` charted-manifold) | [`Manifold/AbelJacobiIso.lean:70`](JacobianChallenge/Manifold/AbelJacobiIso.lean#L70) |
+| `JacobiInversion` (surj + inj) | ✅ via subsingleton | surj ✅ unconditional; inj conditional on `TLDivSumHypothesis L` only (**`TLAbelConverseHypothesis L` DISCHARGED 2026-06-09** from forward Abel via chord-and-tangent, `Manifold/TLAbelConverseFromTLDivSum.lean` — no σ needed) | **~13–16.5k LOC** (surj ~6.5–10k via theta or compactness/open-mapping + inj ~6.5k via Abel converse + ~2k mathlib-grade `Symᵍ X` charted-manifold) | [`Manifold/AbelJacobiIso.lean:70`](JacobianChallenge/Manifold/AbelJacobiIso.lean#L70) |
 | `AbelJacobiSmoothness` | ✅ on RS | ✅ unconditional ([`Manifold/AbelJacobiSmoothnessComplexTorus.lean`](JacobianChallenge/Manifold/AbelJacobiSmoothnessComplexTorus.lean), 352 LOC) | **~1.5–3k LOC** (wiring chip; PathPrimitive/ChartLocal infra ~5,500 LOC already paid) | [`Manifold/JacobianAnalyticOfCurveContMDiff.lean:80`](JacobianChallenge/Manifold/JacobianAnalyticOfCurveContMDiff.lean#L80) |
 | `AbelJacobiInjective` | ✅ vacuous | ✅ unconditional ([`Manifold/AbelJacobiInjectiveComplexTorus.lean:52`](JacobianChallenge/Manifold/AbelJacobiInjectiveComplexTorus.lean#L52), 118 LOC) | **~300 LOC if Abel converse done** (as part of JacobiInversion); ~6.5k standalone | [`Manifold/JacobianAnalyticOfCurveInjective.lean:54`](JacobianChallenge/Manifold/JacobianAnalyticOfCurveInjective.lean#L54) |
 
@@ -114,16 +114,29 @@ upstream.
 The audits surfaced three chips much smaller than the full cluster
 that produce real progress:
 
-1. **Weierstrass-σ on T_L (~500–800 LOC)** — discharges
-   `TLAbelConverseHypothesis L`, making `JacobiInversion.injective` on
-   T_L unconditional. Uses mathlib's existing ℘ infrastructure
-   (`Mathlib/Analysis/SpecialFunctions/Elliptic/Weierstrass.lean`).
-   **Single highest-leverage gap** per the Jacobi audit. Self-contained
-   classical content with no further prerequisites.
+1. ~~**Weierstrass-σ on T_L (~500–800 LOC)**~~ — **DONE 2026-06-09,
+   with zero σ-function analysis**:
+   `tlAbelConverseHypothesis_of_tlDivSum`
+   (`Manifold/TLAbelConverseFromTLDivSum.lean`) proves
+   `TLAbelConverseHypothesis L` from `TLDivSumHypothesis L` (which the
+   consumer requires anyway) via the chord-and-tangent route: descend
+   `℘ − c` / `℘' − (a℘ + b)` to `MeromorphicNonzero (ℂ ⧸ L)`
+   (`ComplexTorusDescendPeriodic.lean`, `WeierstrassPDescend.lean`),
+   pin their divisor shapes by residue-theorem counting
+   (`Divisor/EffectiveExtraction.lean`, `WeierstrassDivisorShapes.lean`),
+   locate the third chord zero by forward Abel (NOT the addition
+   theorem), and handle the tangent case by an auxiliary quarter-period
+   point instead of any second-derivative analysis
+   (`TorusChordRelations.lean`). Net consumer effect:
+   `nonempty_C3FullInputExtSymp_complexTorus_of_TLDivSum` — the T_L C3
+   closure is conditional on the SINGLE named hypothesis
+   `TLDivSumHypothesis L`. (The 2026-06-09 σ proof scaffold on
+   `feat/torus-abel-sigma-wip-scaffold` is superseded.)
 2. **`TLDivSumHypothesis L` discharge (~2–4k LOC)** — Liouville on
    fundamental parallelogram. Makes `AbelHypothesis` on T_L
    unconditional. "Lowest-hanging C3 fruit by calibration" per the
-   Abel audit.
+   Abel audit. **Now the ONLY remaining named hypothesis for the full
+   T_L C3 closure** (post-2026-06-09).
 3. **Structural rewire (~400–800 LOC, possibly ~1,500+)** — DEFERRED
    pending strict-signature confirmation. Would flip items 5/11/12/13
    to typeclass-conditional closure on `[Nonempty (C3FullInputExt X)]`
