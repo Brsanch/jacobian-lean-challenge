@@ -1,6 +1,19 @@
 # `TLDivSumHypothesis L` — handoff (the last named hypothesis for the T_L C3 closure)
 
-**Status 2026-06-09**: OPEN. This is now the ONLY named hypothesis between
+**Status 2026-06-10: ✅ CLOSED — `TLDivSumHypothesis L` is a THEOREM.**
+`Manifold/TLDivSumAssembly.lean`:
+* **`tlDivSumHypothesis_holds : TLDivSumHypothesis L`** — Abel's
+  theorem on elliptic functions, by the two-evaluation contour
+  argument below, no `sorry`, no `axiom`, no named hypotheses;
+* **`nonempty_C3FullInputExtSymp_complexTorus_unconditional`** — the
+  full T_L C3 input from ZERO named hypotheses (only the
+  `PeriodLatticeSymplecticBundle` data argument remains, as in the
+  conditional version).
+The named-hypothesis pile for T_L is now EMPTY. Everything below is
+the historical plan + per-piece inventory of the proof, kept for
+maintenance.
+
+**Status 2026-06-09 (historical)**: OPEN. This is now the ONLY named hypothesis between
 the tree and `Nonempty (C3FullInputExtSymp (ℂ ⧸ L))`
 (`nonempty_C3FullInputExtSymp_complexTorus_of_TLDivSum` in
 `Manifold/TLAbelConverseFromTLDivSum.lean` consumes it alone;
