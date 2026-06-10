@@ -121,17 +121,30 @@ Remaining, in order:
      `∮_{∂Π} f = ∑ coeff x · ∮_{∂Π} (z−x)⁻¹` (per-segment congruence +
      `integral_add`/`integral_finset_sum`/`integral_const_mul` +
      disk Cauchy kills `H`).
+   * ✅ (iv) DONE 2026-06-10 — `Analysis/ParallelogramCoordinates.lean`:
+     Cramer coordinates `coordS`/`coordR` (`z = a + s·ω₁ + r·ω₂`),
+     reconstruction `interiorPt_coords`, side coordinate values (all in
+     `[0,1]`), and the complete winding dichotomy in coordinates:
+     **`boundaryIntegral_inv_sub_of_coord_interior`** (coords in
+     `(0,1)²` ⟹ `±2πi`) and
+     **`boundaryIntegral_inv_sub_of_coord_exterior`** (either coord
+     outside `[0,1]` ⟹ `0`, via the coordinate separating functional
+     `sepFunctional β = I·conj β` with `Re(u·sepFunctional β) =
+     latticeCross u β`, all four cases through one `exterior_core`).
    Remaining for piece 3: (ii) GLUING — produce the decomposition data
    for the actual Abel integrand `f = z·g`: removable-singularity
    extension of `H := z·g − ∑ n_j·x̃_j/(z−x̃_j)` at the finitely many
    `x̃_j` in the big ball (mathlib `Complex.RemovableSingularity` +
    (i)'s local form; note the cross-terms `∑_{k≠j} n_k·x̃_k/(z−x̃_k)`
    are analytic at `x̃_j`, so (i) gives exactly the removability of
-   `H` at each `x̃_j`), giving `DifferentiableOn H̃ ball`; (iv) the
-   coordinate map `z ↦ (s, r)` (explicit Cramer formulas via
-   `latticeCross`) giving the interior/exterior dichotomy + separating
-   functionals for exterior lattice-translate points. Then
-   `I(a) = ε·2πi·∑ ord·x̃` follows by feeding (ii)+(iv) into (iii).
+   `H` at each `x̃_j`), giving `DifferentiableOn H̃ ball`. Then
+   `I(a) = ε·2πi·∑ ord·x̃` follows by feeding (ii) into (iii) and
+   evaluating each winding with (iv) (poles off `∂Π` by regular
+   position ⟹ coords off the boundary of `[0,1]²`; interior ⟹ `±2πi`,
+   exterior ⟹ `0`). ⚠️ note the dichotomy's exterior case needs the
+   pole's coords outside `[0,1]` — for a regular-position `a` the
+   poles have coords off `∂[0,1]²`, which splits exactly into the
+   interior/exterior cases of (iv).
 2. **Regular position** (piece 4).
 3. **Pairing algebra** (piece 1) + applying the winding engine to
    `Δ_h, Δ_v` (chain rule for `F ∘ side`, using
