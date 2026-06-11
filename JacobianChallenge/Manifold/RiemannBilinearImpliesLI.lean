@@ -21,8 +21,13 @@ The implication factors through symplectic block decomposition:
 Steps 1-2 require symplectic linear algebra; step 3 is straightforward.
 
 This file states the implication as a **named theorem** with a
-genus-0 discharge. The general-g proof is left as a future chip
-(pure linear algebra, no analytic content).
+genus-0 discharge. ⚠️ **The general-g proof is DONE** (2026-05-20):
+`RiemannBilinear2ImpliesRealLI_of_relations` in
+`PeriodSigmaRealLI.lean` (chip 2C, via the Σ-block argument of
+`PeriodSigmaInvertibility.lean`), consumed end-to-end by
+`BilinearFromHodgeChain.lean`. Do NOT re-prove this implication —
+2026-06-10 a session drafted a duplicate parallel route before
+catching it here.
 
 ## What this file ships
 
