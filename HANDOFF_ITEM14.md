@@ -129,6 +129,57 @@ implemented. Pin bump from this repo's v0.3 pin (`8e3c989...`,
 2026-04-15) to the v0.4 pin (`548398201a...`, 2026-05-15) saves at
 most a few hundred LOC of categorical scaffolding.
 
+## 🚀 ACTIVE ARC (2026-06-10): Arc 1 committed — L²-Hodge-lite route
+
+Decision (Bryan, 2026-06-10): commit to Arc 1 (the RR+Serre wall) as
+the multi-month arc. **Route refinement**: we do NOT need full
+Cartan–Serre / coherent sheaves / Čech / the RR index formula. The
+target is `DBarSolvabilityAtGenusZero X` directly (the Dolbeault name
+of the wall): *at genus 0, every smooth (0,1)-form on X is ∂̄f*. The
+only Serre-duality content needed is the vanishing direction
+`H¹_∂̄(𝒪) = 0 when H⁰(Ω) = 0`, and the repo's `genus` is already
+`dim H⁰(Ω)` — no genus-identification step needed.
+
+Classical chain (L²-Hodge-lite): orthogonal decomposition of
+L²(0,1)-forms against `closure(im ∂̄)` + Weyl regularity for the
+complement + genus-0 emptiness of the harmonic space + a closed-range
+step. Chips, in order:
+
+1. **Weyl lemma on ℂ** (ENTRY CHIP): `h` continuous on open `U ⊆ ℂ`
+   with `∫ h · ∂̄φ = 0` for every smooth compactly-supported `φ` ⟹ `h`
+   holomorphic on `U`. Proof: mollify (`h_ε := ρ_ε ⋆ h` smooth;
+   weak condition ⟹ `∂̄h_ε = 0` ⟹ holomorphic by smooth+CR), then
+   `h_ε → h` locally uniformly ⟹ holomorphic. Mathlib pieces verified
+   at pin 2026-06-10: `Mathlib/Analysis/Convolution.lean`,
+   `ContDiffBump` + `BumpFunction/Convolution.lean` (mollifier
+   convergence), `TendstoLocallyUniformlyOn.differentiableOn`
+   (Weierstrass). Self-contained analysis on ℂ; no named hypotheses;
+   reusable for every later regularity step. Genuinely-new content
+   (nothing in tree or mathlib states it — checked 2026-06-10).
+2. **L² inner product on (0,1)-forms** over the finite disk-chart
+   cover (reuse `DiskChartCover` atlas + the Pompeiu arc's partition
+   of unity). Design choice in-chip: fixed Hilbert completion vs
+   working subspace.
+3. **Weak orthogonality ⟹ anti-holomorphic**: `β ⊥ ∂̄(C^∞(X))` ⟹ per
+   chart `β̄` is weakly holomorphic (integration by parts), chip 1 ⟹
+   `conj β ∈ H⁰(Ω)`.
+4. **Genus-0 conclusion**: `genus X = 0` means `H⁰(Ω) = 0` ⟹
+   complement trivial ⟹ every smooth `α` lies in
+   `L²-closure(im ∂̄)`.
+5. **Closed-range / regularity** (⚠️ the mass of the arc lives here):
+   smooth `α ∈ closure(im ∂̄)` ⟹ `α = ∂̄f`, `f` smooth. Needs a
+   finiteness-grade a priori estimate (Forster §14-style L² Čech
+   bound or a Hörmander-type estimate). Risk register: if this
+   balloons, fall back to Forster §14 finiteness + §17 duality as
+   originally priced.
+6. **Assembly**: discharge `DBarSolvabilityAtGenusZero X` (+ in-tree
+   `ChartAtConstantOnSource`) → `hSP X` → Item 14 closes on abstract X
+   via `Topology/Item14FromHSPOnly.lean`.
+
+Chips 1–4 are bounded (high-hundreds LOC each, calibrated against the
+Pompeiu chain); chip 5 is the multi-month core. Sessions should enter
+at the lowest unfinished chip number.
+
 ## Implications for chip work
 
 There is no chip-sized step left between the current state and Item 14
