@@ -1,5 +1,15 @@
 # jacobian-lean-challenge
 
+> **⚠ Challenge completed externally (2026-06-11).** The full challenge has
+> been solved — sorry-free, axiom-clean, conformance-checked against the
+> verbatim gist — in [rkirov/jacobian-claude](https://github.com/rkirov/jacobian-claude)
+> (AI-produced; ~3.3k LOC of this repo's degree/fibre machinery is part of it,
+> credited). A statement-level review from this repo found **no
+> misformalization**: see [`EXTERNAL_COMPLETION_REVIEW.md`](EXTERNAL_COMPLETION_REVIEW.md).
+> This repo is now **frozen as an independent partial development**
+> (14/24 strict-closed); its remaining open walls are closed in the external
+> tree.
+
 A Lean 4 / mathlib formalization in response to Kevin Buzzard's "Jacobians" AI
 challenge ([gist](https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9)).
 `Basic.lean` signatures use the **v0.4** notation (`𝓘(ℂ, E)`, per Buzzard's

@@ -1,5 +1,12 @@
 # OPEN
 
+> **⚠ FROZEN 2026-06-11 — challenge completed externally.** All 24 items are
+> closed (sorry-free, conformance-checked) in
+> [rkirov/jacobian-claude](https://github.com/rkirov/jacobian-claude); review
+> record in `EXTERNAL_COMPLETION_REVIEW.md`. The table below is the historical
+> state of THIS repo's independent development. Do not start new chips toward
+> the open walls — they would duplicate a verified external artifact.
+
 The 24 challenge items in `JacobianChallenge/Basic.lean`, mapped to Buzzard's
 spec. Three statuses, with one tag for partial progress:
 
