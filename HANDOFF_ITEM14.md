@@ -197,9 +197,29 @@ step. Chips, in order:
    (use defeq `show`); `MeasureSpace ℂ` needs
    `LinearAlgebra.Complex.FiniteDimensional` +
    `InnerProductSpace.Basic` in the import closure, NOT just
-   `Measure.Lebesgue.Complex`. Remaining chip-2 work = the L² pairing
-   definition over the `FiniteChartCoverPartition` + assembling
-   overlap invariance from this substitution rule.
+   `Measure.Lebesgue.Complex`.
+   ✅ **Chip-2 COMPLETE 2026-06-11**:
+   `Manifold/L2PairingZeroOneForms.lean` — the L² pairing + overlap
+   invariance. `chartTransitionDerivAt x y` (= the transfer-lemma
+   factor τ_x; anchored coefficient = `α y * conj τ_x y`) +
+   `chartTransitionDerivAt_cocycle` (chain rule via
+   `analyticAt_chart_transition_of_isManifold` + `deriv_comp`);
+   `normSqTransitionC` weight; `pairingIntegrand` / `L2PairSummand` /
+   `L2PairForms` over the `FiniteChartCoverPartition`; main theorem
+   `integral_chartPullbackZero_mul_normSqTransitionC_chart_indep` —
+   for `tsupport g ⊆ source i ∩ source j`, the chart-i integral of the
+   `normSq τ_i`-weighted density equals the chart-j integral of the
+   `normSq τ_j`-weighted one (chip-2b substitution + cocycle; fully
+   unconditional in `g` — no integrability hypotheses, junk-value
+   robust); consumer form `L2PairSummand_eq_integral_in_chart`
+   (summand computable in any chart containing `tsupport ρᵢ` — the
+   single-chart collapse chips 3–4 quote). **Design choice resolved:
+   working definition on raw coefficient functions, NO Hilbert
+   completion** — chips 3–4 only quote `⟪∂̄f, β⟫ = 0` identities;
+   `MemLp`-packaging deferred to chip 5. Residuals for chip 3:
+   sesquilinearity/symmetry lemmas of `L2PairForms` (cheap, add
+   when first quoted), and the `∑ᶠ ρᵢ = 1` collapse of the full
+   pairing against a single-chart test density.
 3. **Weak orthogonality ⟹ anti-holomorphic**: `β ⊥ ∂̄(C^∞(X))` ⟹ per
    chart `β̄` is weakly holomorphic (integration by parts), chip 1 ⟹
    `conj β ∈ H⁰(Ω)`.
