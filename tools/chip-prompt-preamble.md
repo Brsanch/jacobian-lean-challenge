@@ -23,6 +23,24 @@ repo ballooned from a ~130k LOC budget toward 200k+ via paraphrase chips)
 Before writing ANY new code, the chip must pass ALL of the following gates. If
 it fails any, REJECT the chip and report `✗ REJECTED` with the failing gate.
 
+0. **Discharge-map gate (added 2026-06-10 after the second duplicate-work
+   incident).** Before chipping toward ANY named Prop, search
+   `DISCHARGE_MAP.md` (repo root) for the target. It is auto-generated
+   from the compiled environment — for every repo-defined Prop/structure
+   it lists every declaration concluding it, with the repo-named Props
+   each one still consumes (`needs: []` ⟹ heuristically unconditional).
+   If the target already has a discharge whose `needs` you can supply,
+   the chip is a DUPLICATE — REJECT. If the map looks stale relative to
+   recent commits, regenerate first (warm `.olean`s, ~1 min, panic-safe):
+   `LEAN_NUM_THREADS=1 lake env lean tools/DischargeMap.lean`.
+   Hand-maintained docs (HANDOFF_*, OPEN.md, in-file docstrings saying
+   "left as a future chip") are NOT trustworthy for open/closed status —
+   two incidents (2026-05-24 reverse-leg, 2026-06-10 bilinear ℝ-LI) came
+   from exactly that staleness. The discharge map is the ground truth;
+   prose docs are for routes and rationale only.
+   At session END, regenerate the map and commit it with your chip so
+   the next session inherits fresh state.
+
 1. **Paraphrase gate.** A chip that takes an existing theorem `T_old (h₁ ... hₙ)` and
    ships `T_new (h₁ ... hₖ)` for `k < n` by auto-discharging the dropped
    hypotheses via a NEW named hypothesis (typeclass, structural Prop, etc.)
