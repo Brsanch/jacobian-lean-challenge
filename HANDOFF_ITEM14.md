@@ -161,9 +161,27 @@ step. Chips, in order:
    `exact Complex.real_smul`. Also `HasCompactSupport.fderiv` needs
    `(𝕜 := ℝ)` explicitly.
 2. **L² inner product on (0,1)-forms** over the finite disk-chart
-   cover (reuse `DiskChartCover` atlas + the Pompeiu arc's partition
-   of unity). Design choice in-chip: fixed Hilbert completion vs
-   working subspace.
+   cover (reuse `FiniteChartCover` + `FiniteChartCoverPartition`'s
+   `rhoC` + `chartPullbackZero` from the Pompeiu arc). Design choice
+   in-chip: fixed Hilbert completion vs working subspace.
+   **Encoding facts pinned 2026-06-10**: the repo's (0,1)-form is a
+   global function `α : X → ℂ` = the canonical per-point-chart
+   coefficient (`partialZBarManifold` uses the chart AT each point);
+   anchored-chart coefficients differ by the conj-transition factor
+   (`partialZBarManifoldAtChart_eq_manifold_mul_transition`). The
+   chart-overlap change-of-variables (holomorphic-Jacobian `|φ′|²`
+   substitution) is the technical mass of this chip — needed to
+   collapse the per-chart sum into an invariant pairing for the
+   integration-by-parts computation.
+   ✅ **Chip-2 core DONE 2026-06-10**:
+   `Analysis/DBarIntegrationByParts.lean` — the formal-adjoint
+   toolkit: `DBarIBP.integral_partialZBar_eq_zero` (`∫_ℂ ∂̄h = 0`,
+   compactly supported C¹, via ℂ≃ᵐℝ×ℝ Fubini + 1-D FTC per slice)
+   and `DBarIBP.integral_partialZBar_mul`
+   (`∫ ∂̄ψ·g = −∫ ψ·∂̄g`) + reusable support/continuity helpers for
+   `z ↦ fderiv ℝ h z v` and real-line slices. This is the identity
+   every chip-3+ orthogonality computation consumes; remaining
+   chip-2 work = the pairing definition + chart-overlap invariance.
 3. **Weak orthogonality ⟹ anti-holomorphic**: `β ⊥ ∂̄(C^∞(X))` ⟹ per
    chart `β̄` is weakly holomorphic (integration by parts), chip 1 ⟹
    `conj β ∈ H⁰(Ω)`.

@@ -1121,3 +1121,4 @@ import JacobianChallenge.Manifold.C3FullInputExtSympFromHodgeChainViaStandardFor
 import JacobianChallenge.Manifold.HasJacobianHodgeChainViaStandardFormRiemannSphere
 
 import JacobianChallenge.Analysis.WeylDBarMollification
+import JacobianChallenge.Analysis.DBarIntegrationByParts
