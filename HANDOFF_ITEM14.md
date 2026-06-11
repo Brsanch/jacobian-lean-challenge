@@ -145,17 +145,21 @@ L²(0,1)-forms against `closure(im ∂̄)` + Weyl regularity for the
 complement + genus-0 emptiness of the harmonic space + a closed-range
 step. Chips, in order:
 
-1. **Weyl lemma on ℂ** (ENTRY CHIP): `h` continuous on open `U ⊆ ℂ`
-   with `∫ h · ∂̄φ = 0` for every smooth compactly-supported `φ` ⟹ `h`
-   holomorphic on `U`. Proof: mollify (`h_ε := ρ_ε ⋆ h` smooth;
-   weak condition ⟹ `∂̄h_ε = 0` ⟹ holomorphic by smooth+CR), then
-   `h_ε → h` locally uniformly ⟹ holomorphic. Mathlib pieces verified
-   at pin 2026-06-10: `Mathlib/Analysis/Convolution.lean`,
-   `ContDiffBump` + `BumpFunction/Convolution.lean` (mollifier
-   convergence), `TendstoLocallyUniformlyOn.differentiableOn`
-   (Weierstrass). Self-contained analysis on ℂ; no named hypotheses;
-   reusable for every later regularity step. Genuinely-new content
-   (nothing in tree or mathlib states it — checked 2026-06-10).
+1. ✅ **Weyl lemma on ℂ** DONE 2026-06-10 (commit `d55c3f9`):
+   `Analysis/WeylDBarMollification.lean` —
+   `WeylDBar.differentiableOn_of_weaklyDBarZeroOn` (+ `analyticOnNhd_`
+   form): `h` continuous on open `U ⊆ ℂ` with `∫ h · ∂̄φ = 0` for every
+   smooth compactly-supported `φ` supported in `U` ⟹ `h` holomorphic
+   on `U`. Mollification + shifted-bump test function +
+   `integral_sub_left_eq_self` + in-tree CR converse + locally-uniform
+   Weierstrass limit. No sorry/axiom/named hypotheses; full throttled
+   build green. ⚠️ Lean gotcha for later chips: a statement-side
+   `(r : ℝ) • (c : ℂ)` elaborates as coerce-mul `↑r * c` while
+   convolution-side smuls are honest ℝ-smuls with a different instance
+   term — `simp [Complex.real_smul]` will NOT bridge them; state
+   integrands in `↑r * c` form and bridge with term-mode
+   `exact Complex.real_smul`. Also `HasCompactSupport.fderiv` needs
+   `(𝕜 := ℝ)` explicitly.
 2. **L² inner product on (0,1)-forms** over the finite disk-chart
    cover (reuse `DiskChartCover` atlas + the Pompeiu arc's partition
    of unity). Design choice in-chip: fixed Hilbert completion vs
