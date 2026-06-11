@@ -1122,3 +1122,4 @@ import JacobianChallenge.Manifold.HasJacobianHodgeChainViaStandardFormRiemannSph
 
 import JacobianChallenge.Analysis.WeylDBarMollification
 import JacobianChallenge.Analysis.DBarIntegrationByParts
+import JacobianChallenge.Analysis.HolomorphicChangeOfVariables
