@@ -147,6 +147,45 @@ that produce real progress:
 None of (1)/(2) alone closes a Basic.lean item, but both produce
 durably valuable infrastructure and shrink the T_L-side gap to zero.
 
+### PeriodLattice atom status correction (2026-06-10 trace)
+
+The per-field table above is STALE for the `PeriodLatticeAnalyticHypotheses`
+row; a symbol-level trace (2026-06-10) found the in-tree state is well
+ahead of the 2026-05-26 pricing:
+
+* **`SubdivisionTelescopingTo2Simplex_named` atom: ✅ DONE unconditionally**
+  (2026-05-20). `uniformChartContainmentDepth_named_holds`
+  (`Manifold/UniformChartContainmentDepth.lean:277`, Lebesgue number +
+  midpoint-subdivision depth) + the bridge
+  `subdivisionTelescopingTo2Simplex_named_of_uniformChartContainmentDepth`
+  (`Manifold/SubdivisionTelescopingFromUniformDepth.lean`). Downstream
+  `HolomorphicStokesHypothesis X` etc. are unconditional corollaries.
+* **`riemannBilinear` atom: linear-algebra half ✅ DONE** (2026-05-20,
+  chips 1–3 + 10–11 of the Hodge chain):
+  - `RiemannBilinear2ImpliesRealLI_of_relations`
+    (`Manifold/PeriodSigmaRealLI.lean:227`, Σ-block argument) proves
+    relations ⟹ ℝ-LI of period vectors at every genus. **Do NOT
+    re-prove** — a 2026-06-10 session drafted a duplicate before
+    catching it (the "future chip" docstring in
+    `RiemannBilinearImpliesLI.lean` was stale; now fixed).
+  - Positive-definiteness leaf is AUTOMATIC: `standardHodgeForm`
+    (`Manifold/HodgeInnerProductUnconditional.lean`, ℓ²-in-basis form).
+  - Remaining open leaf = `CompleteHodgeRiemannHypothesis`
+    (`Manifold/BilinearFromHodgeChain.lean:69`): ∃ J with
+    `RiemannBilinearFirstRelation` (`Πᵀ·J·Π = 0`) +
+    `HodgeRiemannBridgeHypothesis` (`i·Πᵀ·J·Π̄ = H.toMatrix`). This is
+    the genuinely analytic/topological content (cut-polygon Stokes +
+    Hodge-form integration); only a genus-1 first-relation file exists
+    (`RiemannBilinearFirstRelationGenusOne.lean`).
+* **Funnel**: the three remaining atoms (symplectic loops, Hurewicz,
+  CompleteHodgeRiemann) enter through the single structure
+  `SmoothHomologyDataPackage` (`Manifold/SmoothHomologyDataPackage.lean`)
+  via the `*FromHodgeChain*` consumers. On arbitrary X all three reduce
+  to **surface-topology content absent from mathlib**: genus-g surface
+  classification / smooth H₁ basis with intersection form, plus the
+  bilinear-relations integration. Only const-loop (vacuous), RS, and
+  ℂ⧸L discharges exist for loops/Hurewicz.
+
 ### Mathlib state (pin 2026-04-15)
 
 - ✅ `Module.ZLattice` infrastructure (`IsZLattice`, `ZSpan.span_top`,
