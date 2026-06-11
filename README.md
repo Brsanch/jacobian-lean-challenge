@@ -9,6 +9,15 @@
 > This repo is now **frozen as an independent partial development**
 > (14/24 strict-closed); its remaining open walls are closed in the external
 > tree.
+>
+> **Final version (v1.0.0, 2026-06-11):** the tree was debloated for the
+> freeze — an import-reachability sweep (`tools/reachability.py`) removed 730
+> modules (~110k LOC) of paraphrase chips, parallel routes, and superseded
+> scaffolding, keeping the 480 modules reachable from the challenge
+> implementation (`Basic.lean`), the Arc-1 L² analysis toolkit, the
+> Riemann-sphere end-to-end demo, and the substantive closed towers
+> (Cauchy–Pompeiu identity, unconditional residue theorem, étale-primitives
+> reverse leg). Every deleted file remains in git history.
 
 A Lean 4 / mathlib formalization in response to Kevin Buzzard's "Jacobians" AI
 challenge ([gist](https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9)).
