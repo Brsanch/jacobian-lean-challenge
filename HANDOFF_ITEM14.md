@@ -182,6 +182,24 @@ step. Chips, in order:
    `z ↦ fderiv ℝ h z v` and real-line slices. This is the identity
    every chip-3+ orthogonality computation consumes; remaining
    chip-2 work = the pairing definition + chart-overlap invariance.
+   ✅ **Chip-2b DONE 2026-06-11**:
+   `Analysis/HolomorphicChangeOfVariables.lean` — the chart-overlap
+   substitution rule:
+   `HolomorphicCoV.setIntegral_image_eq_of_differentiableOn`
+   (`∫_{f''U} g = ∫_U normSq(deriv f)·g∘f` for injective holomorphic
+   `f` on open `U`; explicit-derivative form
+   `setIntegral_image_eq_integral_normSq_deriv_mul`), via mathlib's
+   Jacobian change of variables + `det_smul_one_CLM` (real Jacobian of
+   multiplication-by-`c` is `normSq c`, computed in the basis `{1,I}`
+   — deliberately NOT via `restrictScalars`/`Algebra.norm`, which hit
+   the `IsScalarTower ℝ ℂ ℂ` diamond). ⚠️ new gotchas recorded: simp
+   won't fire on rfl-true CLM-coe applications across instance paths
+   (use defeq `show`); `MeasureSpace ℂ` needs
+   `LinearAlgebra.Complex.FiniteDimensional` +
+   `InnerProductSpace.Basic` in the import closure, NOT just
+   `Measure.Lebesgue.Complex`. Remaining chip-2 work = the L² pairing
+   definition over the `FiniteChartCoverPartition` + assembling
+   overlap invariance from this substitution rule.
 3. **Weak orthogonality ⟹ anti-holomorphic**: `β ⊥ ∂̄(C^∞(X))` ⟹ per
    chart `β̄` is weakly holomorphic (integration by parts), chip 1 ⟹
    `conj β ∈ H⁰(Ω)`.
