@@ -129,7 +129,20 @@ implemented. Pin bump from this repo's v0.3 pin (`8e3c989...`,
 2026-04-15) to the v0.4 pin (`548398201a...`, 2026-05-15) saves at
 most a few hundred LOC of categorical scaffolding.
 
-## 🚀 ACTIVE ARC (2026-06-10): Arc 1 committed — L²-Hodge-lite route
+## ⚠ ARC 1 FROZEN (2026-06-11): challenge completed externally
+
+The full challenge — including `DBarSolvabilityAtGenusZero`-equivalent
+content (disk ∂̄-solvability, Čech finiteness, RR + Serre duality) and
+the entire Abel/period-lattice chain — is closed, sorry-free and
+conformance-checked, in
+[rkirov/jacobian-claude](https://github.com/rkirov/jacobian-claude).
+Statement-level review from this repo found no misformalization:
+`EXTERNAL_COMPLETION_REVIEW.md`. Continuing the chip sequence below
+would duplicate a verified artifact; the arc is frozen at chip-2
+complete (the L² pairing + overlap invariance, commit `d189e27`).
+The section below is preserved as the historical plan.
+
+## 🧊 FORMER ACTIVE ARC (2026-06-10, frozen 2026-06-11): Arc 1 — L²-Hodge-lite route
 
 Decision (Bryan, 2026-06-10): commit to Arc 1 (the RR+Serre wall) as
 the multi-month arc. **Route refinement**: we do NOT need full
