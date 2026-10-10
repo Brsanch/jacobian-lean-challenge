@@ -1,0 +1,20 @@
+name: Statement integrity check
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-statement:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: leanprover/lean-action@v1
+      - name: Frozen statement + axiom audit
+        run: scripts/check_statement.sh

@@ -124,3 +124,14 @@ full-repo recompile under the bumped pin is prohibitively expensive without
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
+
+## Statement-integrity check
+
+`scripts/check_statement.sh` (CI: `.github/workflows/statement_check.yml`), modelled on
+[anthropics/formal-math](https://github.com/anthropics/formal-math): for every declaration of the
+spec module `JacobianChallenge/Basic.lean` it (a) diffs the fully elaborated (`pp.all`) statement
+against the frozen copy in `scripts/frozen/statements.txt`, and (b) audits axioms, allowing only
+`propext`, `Classical.choice`, `Quot.sound`. It currently **fails by design**: 8 spec items are still
+`sorry` here (the challenge was completed externally — see `EXTERNAL_COMPLETION_REVIEW.md`).
+Re-freeze deliberately with `scripts/check_statement.sh --freeze` and review the diff.
+On the Mac Studio run it as `LAKE="$HOME/.claude/bin/lakelock lake" scripts/check_statement.sh`.
